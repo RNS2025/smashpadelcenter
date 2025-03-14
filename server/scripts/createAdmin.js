@@ -1,11 +1,13 @@
 const User = require("../models/user");
+const bcrypt = require("bcrypt");
 
 async function createAdmin() {
   try {
+    const hashedPassword = await bcrypt.hash("admin", 10);
     const [admin, created] = await User.findOrCreate({
       where: { username: "admin" },
       defaults: {
-        password: "admin", // Change this to a secure password
+        password: hashedPassword,
         role: "admin",
       },
     });

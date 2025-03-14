@@ -15,4 +15,10 @@ user.use("access admin page", (req) => {
   }
 });
 
+user.use("access user page", (req) => {
+  if (req.user && req.user.role === "user") {
+    return true;
+  }
+});
+
 module.exports = user;
