@@ -1,25 +1,20 @@
-import './App.css'
-import {BrowserRouter, Route, Routes} from "react-router-dom";
-import LoginPage from "./pages/LoginPage.tsx";
-import {HelmetProvider} from "react-helmet-async";
+import "./App.css";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import LoginPage from "./pages/LoginPage";
+import HomePage from "./pages/HomePage";
+import { HelmetProvider } from "react-helmet-async";
 
 function App() {
-
-
   return (
-      <HelmetProvider>
+    <HelmetProvider>
       <BrowserRouter>
-          <Routes>
-              <Route index path="/" element={<LoginPage/>}/>
-
-
-
-
-
-          </Routes>
+        <Routes>
+          <Route index path="/" element={<LoginPage />} />
+          <Route path="/home" element={<HomePage />} />
+        </Routes>
       </BrowserRouter>
-      </HelmetProvider>
-  )
+    </HelmetProvider>
+  );
 }
 
-export default App
+export default App;
