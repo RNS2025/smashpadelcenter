@@ -1,22 +1,75 @@
-const express = require('express');
-const cors = require('cors');
-const dataRoutes = require('./routes/dateRoutes.js');
-
+const express = require("express");
+const cors = require("cors");
+const session = require("express-session");
+const passport = require("./config/passport");
+const user = require("./config/roles");
+const mainRoutes = require("./routes/routes");
+const { swaggerUi, specs } = require("./config/swagger");
+const sequelize = require("./config/database");
+const User = require("./models/user");
+const createAdmin = require("./scripts/createAdmin");
+require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Middleware
 app.use(express.json());
-app.use(cors({
-    origin: '*',
-}));
-app.use('/api', dataRoutes);
 
-app.get("/", (req, res) => {
-    res.send("Server is running");
+// CORS configuration
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
+  res.header("Access-Control-Allow-Credentials", "true");
+  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
+  next();
 });
 
+// Session setup
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET || "your_secret_key",
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      secure: process.env.NODE_ENV === "production", // Use secure cookies in production
+      httpOnly: true,
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Needed for cross-origin cookies
+    },
+  })
+);
 
-app.listen(PORT, () => {
+// Passport setup
+app.use(passport.initialize());
+app.use(passport.session());
+
+// Connect-Roles setup
+app.use(user.middleware());
+
+// Swagger setup
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
+
+// Routes
+app.use("/api/v1", mainRoutes);
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send({ error: "Something went wrong!" });
+});
+
+// Sync database and create admin user, then start server
+sequelize.sync().then(async () => {
+  await createAdmin();
+  app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
+  });
 });
