@@ -1,7 +1,7 @@
 const passport = require("passport");
 const LocalStrategy = require("passport-local").Strategy;
 const User = require("../models/user");
-const bcrypt = require("bcrypt");
+const argon2 = require("argon2");
 
 passport.use(
   new LocalStrategy(async function (username, password, done) {
@@ -10,10 +10,13 @@ passport.use(
       if (!user) {
         return done(null, false, { message: "Incorrect username." });
       }
-      const isMatch = await bcrypt.compare(password, user.password);
+
+      // Use argon2 to verify the password
+      const isMatch = await argon2.verify(user.password, password);
       if (!isMatch) {
         return done(null, false, { message: "Incorrect password." });
       }
+
       return done(null, user);
     } catch (err) {
       return done(err);

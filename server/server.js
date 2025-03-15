@@ -5,8 +5,7 @@ const passport = require("./config/passport");
 const user = require("./config/roles");
 const mainRoutes = require("./routes/routes");
 const { swaggerUi, specs } = require("./config/swagger");
-const sequelize = require("./config/database");
-const User = require("./models/user");
+const mongoose = require("./config/database"); 
 const createAdmin = require("./scripts/createAdmin");
 require("dotenv").config();
 
@@ -66,10 +65,15 @@ app.use((err, req, res, next) => {
   res.status(500).send({ error: "Something went wrong!" });
 });
 
-// Sync database and create admin user, then start server
-sequelize.sync().then(async () => {
+// Wait for MongoDB to connect before starting the server
+mongoose.connection.once("open", async () => {
+  console.log("✅ Connected to MongoDB");
+
+  // Ensure the admin user exists
   await createAdmin();
+
+  // Start the server
   app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+    console.log(`🚀 Server is running on http://localhost:${PORT}`);
   });
 });

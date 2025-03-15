@@ -1,0 +1,42 @@
+version: "3.8"
+services:
+  mongo:
+    image: mongo:6
+    container_name: mongodb
+    restart: always
+    networks:
+      - app_network
+    volumes:
+      - mongo-data:/data/db
+
+  backend:
+    build: ./server
+    container_name: express-api
+    restart: always
+    networks:
+      - app_network
+    environment:
+      MONGO_URI: mongodb://mongo:27017/smashpadelcenter
+      FRONTEND_URL: http://vite-frontend:5173
+    depends_on:
+      - mongo
+    ports:
+      - "3001:3001"
+
+  frontend:
+    build: ./
+    container_name: vite-frontend
+    restart: always
+    networks:
+      - app_network
+    depends_on:
+      - backend
+    ports:
+      - "5173:5173"
+
+networks:
+  app_network:
+    driver: bridge
+
+volumes:
+  mongo-data:

@@ -1,7 +1,7 @@
 const express = require("express");
 const passport = require("../config/passport");
 const user = require("../config/roles");
-const User = require("../models/user");
+const databaseService = require("../Services/databaseService");
 
 const router = express.Router();
 
@@ -84,7 +84,7 @@ router.get("/admin", user.can("access admin page"), (req, res) => {
 router.post("/register", async (req, res) => {
   const { username, password } = req.body;
   try {
-    const newUser = await User.create({ username, password, role: "user" });
+    const newUser = await databaseService.createUser({ username, password });
     res.status(201).json(newUser);
   } catch (err) {
     res.status(400).json({ error: err.message });
@@ -104,9 +104,7 @@ router.post("/register", async (req, res) => {
  */
 router.get("/users", async (req, res) => {
   try {
-    const users = await User.findAll({
-      attributes: ["username", "role"],
-    });
+    const users = await databaseService.getAllUsers();
     res.status(200).json(users);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -140,13 +138,8 @@ router.get("/users", async (req, res) => {
 router.post("/change-role", user.can("access admin page"), async (req, res) => {
   const { username, role } = req.body;
   try {
-    const user = await User.findOne({ where: { username } });
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
-    user.role = role;
-    await user.save();
-    res.status(200).json({ message: "Role updated" });
+    const updatedUser = await databaseService.updateUserRole(username, role);
+    res.status(200).json({ message: "Role updated", user: updatedUser });
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
