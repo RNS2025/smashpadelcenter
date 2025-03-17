@@ -3,10 +3,11 @@ const cors = require("cors");
 const session = require("express-session");
 const passport = require("./config/passport");
 const user = require("./config/roles");
-const mainRoutes = require("./routes/routes");
+const mainRoutes = require("./routes/authRoutes");
 const { swaggerUi, specs } = require("./config/swagger");
 const mongoose = require("./config/database");
 const createAdmin = require("./scripts/createAdmin");
+const createTenUsers = require("./scripts/createTenUsers");
 require("dotenv").config();
 
 const app = express();
@@ -19,10 +20,9 @@ app.use(express.json());
 app.use(
   cors({
     origin: [
-      "http://localhost:5173", // This is what your browser will use
-      "http://127.0.0.1:5173", // Alternative localhost
+      "http://localhost:5173",
+      "http://127.0.0.1:5173",
       "http://localhost:3001",
-      // Keep the Docker network URLs for container-to-container communication
       "http://frontend:5173",
       "http://backend:3001",
     ],
@@ -69,6 +69,9 @@ mongoose.connection.once("open", async () => {
 
   // Ensure the admin user exists
   await createAdmin();
+
+  // Ensure the ten users exist
+  await createTenUsers();
 
   // Start the server
   app.listen(PORT, () => {

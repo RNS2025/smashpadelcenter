@@ -14,6 +14,7 @@ export const LoginPage = () => {
     try {
       const data = await login(username, password);
       console.log("Logged in:", data);
+
       // Handle successful login
       navigate("/home");
     } catch (err) {

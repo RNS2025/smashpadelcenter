@@ -6,7 +6,7 @@ services:
     networks:
       - app_network
     volumes:
-      - mongo-data:/data/db
+      - mongodb-data:/data/db
 
   backend:
     build: ./server
@@ -38,4 +38,4 @@ networks:
     driver: bridge
 
 volumes:
-  mongo-data:
+  mongodb-data:

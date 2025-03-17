@@ -43,3 +43,31 @@ export const getUserRole = async () => {
     throw new Error("Failed to fetch user role");
   }
 };
+
+export const getUsers = async () => {
+  try {
+    const response = await api.get("/users");
+    return response.data;
+  } catch (error) {
+    throw new Error("Failed to fetch users");
+  }
+};
+
+export const changeUserRole = async (username: string, role: string) => {
+  try {
+    const response = await api.post("/change-role", { username, role });
+    return response.data;
+  } catch (error) {
+    throw new Error("Failed to change user role");
+  }
+};
+
+// Logout method
+export const logout = async () => {
+  try {
+    const response = await api.post("/logout");
+    return response.data; // Assuming response contains a message or status
+  } catch (error) {
+    throw new Error("Failed to log out. Please try again later.");
+  }
+};

@@ -55,21 +55,6 @@ router.post("/login", (req, res, next) => {
 
 /**
  * @swagger
- * /api/v1/admin:
- *   get:
- *     summary: Access the admin page
- *     responses:
- *       200:
- *         description: Welcome to the admin page
- *       403:
- *         description: Access Denied
- */
-router.get("/admin", user.can("access admin page"), (req, res) => {
-  res.send("Welcome to the admin page");
-});
-
-/**
- * @swagger
  * /api/v1/register:
  *   post:
  *     summary: Register a new user
@@ -104,15 +89,34 @@ router.post("/register", async (req, res) => {
  * @swagger
  * /api/v1/users:
  *   get:
- *     summary: Get all users and their roles
+ *     summary: Get all users and their roles (Admin only)
+ *     security:
+ *       - cookieAuth: []
  *     responses:
  *       200:
  *         description: A list of users and their roles
+ *       401:
+ *         description: Unauthorized - No user logged in
+ *       403:
+ *         description: Forbidden - User is not an admin
  *       500:
  *         description: Server error
  */
 router.get("/users", async (req, res) => {
   try {
+    // Ensure user is logged in
+    if (!req.user) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized - No user logged in" });
+    }
+
+    // Ensure user is an admin
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ message: "Forbidden - Admins only" });
+    }
+
+    // Fetch users from database
     const users = await databaseService.getAllUsers();
     res.status(200).json(users);
   } catch (err) {
@@ -183,6 +187,34 @@ router.get("/role", (req, res) => {
     console.error("Error fetching user role:", err);
     res.status(500).json({ message: "Internal Server Error" });
   }
+});
+
+/**
+ * @swagger
+ * /api/v1/logout:
+ *   post:
+ *     summary: Log out the current user
+ *     responses:
+ *       200:
+ *         description: Logged out successfully
+ *       500:
+ *         description: Internal Server Error
+ */
+router.post("/logout", (req, res) => {
+  req.logout((err) => {
+    if (err) {
+      console.error("Error logging out:", err);
+      return res.status(500).json({ message: "Internal Server Error" });
+    }
+    req.session.destroy((err) => {
+      if (err) {
+        console.error("Error destroying session:", err);
+        return res.status(500).json({ message: "Internal Server Error" });
+      }
+      res.clearCookie("connect.sid"); // Clear the session cookie
+      res.status(200).json({ message: "Logged out successfully" });
+    });
+  });
 });
 
 module.exports = router;
