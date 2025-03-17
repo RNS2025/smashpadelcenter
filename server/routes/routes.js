@@ -40,8 +40,17 @@ router.get("/", (req, res) => {
  *       401:
  *         description: Incorrect credentials
  */
-router.post("/login", passport.authenticate("local"), (req, res) => {
-  res.send("Logged in");
+router.post("/login", (req, res, next) => {
+  passport.authenticate("local", (err, user, info) => {
+    if (err) return next(err);
+    if (!user)
+      return res.status(401).json({ message: info?.message || "Unauthorized" });
+
+    req.login(user, (err) => {
+      if (err) return next(err);
+      return res.json({ message: "Logged in successfully", user });
+    });
+  })(req, res, next);
 });
 
 /**
@@ -157,10 +166,22 @@ router.post("/change-role", user.can("access admin page"), async (req, res) => {
  *         description: Unauthorized
  */
 router.get("/role", (req, res) => {
-  if (req.isAuthenticated()) {
+  try {
+    console.log("Cookies:", req.cookies); // Debugging
+    console.log("Session ID:", req.sessionID); // Debugging
+    console.log("Session Data:", req.session); // Debugging
+    console.log("User from session:", req.user); // Debugging
+
+    if (!req.user) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized - No user logged in" });
+    }
+
     res.json({ role: req.user.role });
-  } else {
-    res.status(401).json({ error: "Unauthorized" });
+  } catch (err) {
+    console.error("Error fetching user role:", err);
+    res.status(500).json({ message: "Internal Server Error" });
   }
 });
 

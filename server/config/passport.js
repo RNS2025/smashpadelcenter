@@ -6,7 +6,7 @@ const argon2 = require("argon2");
 passport.use(
   new LocalStrategy(async function (username, password, done) {
     try {
-      const user = await User.findOne({ where: { username } });
+      const user = await User.findOne({ username });
       if (!user) {
         return done(null, false, { message: "Incorrect username." });
       }
@@ -30,7 +30,7 @@ passport.serializeUser(function (user, done) {
 
 passport.deserializeUser(async function (id, done) {
   try {
-    const user = await User.findByPk(id);
+    const user = await User.findById(id);
     done(null, user);
   } catch (err) {
     done(err);

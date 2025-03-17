@@ -12,10 +12,9 @@ async function createAdmin() {
     }
 
     // If user doesn't exist, create a new user
-    const hashedPassword = await argon2.hash("admin");
     const newAdmin = await User.create({
       username: "admin",
-      password: hashedPassword,
+      password: "admin",
       role: "admin",
     });
 

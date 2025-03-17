@@ -5,7 +5,7 @@ const passport = require("./config/passport");
 const user = require("./config/roles");
 const mainRoutes = require("./routes/routes");
 const { swaggerUi, specs } = require("./config/swagger");
-const mongoose = require("./config/database"); 
+const mongoose = require("./config/database");
 const createAdmin = require("./scripts/createAdmin");
 require("dotenv").config();
 
@@ -16,21 +16,19 @@ const PORT = process.env.PORT || 3001;
 app.use(express.json());
 
 // CORS configuration
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
-  res.header("Access-Control-Allow-Credentials", "true");
-  res.header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-  res.header(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
-  );
-
-  if (req.method === "OPTIONS") {
-    return res.status(200).end();
-  }
-
-  next();
-});
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173", // This is what your browser will use
+      "http://127.0.0.1:5173", // Alternative localhost
+      "http://localhost:3001",
+      // Keep the Docker network URLs for container-to-container communication
+      "http://frontend:5173",
+      "http://backend:3001",
+    ],
+    credentials: true,
+  })
+);
 
 // Session setup
 app.use(
