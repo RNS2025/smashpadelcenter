@@ -1,21 +1,21 @@
 import { useNavigate } from "react-router-dom";
-import { useUser } from "../context/UserContext"; // Import the useUser hook
+import { useUser } from "../context/UserContext";
 
 const HomeBar = () => {
-  const { role, logout } = useUser(); // Access the logout function from context
+  const { role, logout } = useUser();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    await logout(); // Call the logout function from context
-    navigate("/"); // Redirect to the login page after logout
+    await logout();
+    navigate("/");
   };
 
   const handleHomeClick = () => {
-    navigate("/home"); // Navigate to home page
+    navigate("/home");
   };
 
   const handleAdminClick = () => {
-    navigate("/admin"); // Navigate to admin page
+    navigate("/admin");
   };
 
   return (

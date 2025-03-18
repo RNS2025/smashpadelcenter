@@ -3,10 +3,10 @@ import { useState, useEffect } from "react";
 import { getUsers, changeUserRole } from "../api/auth";
 import User from "../types/user";
 import HomeBar from "../components/HomeBar";
-import { useUser } from "../context/UserContext"; // Import the context
+import { useUser } from "../context/UserContext";
 
 export const AdminPage = () => {
-  const { role, error } = useUser(); // Access role and error from context
+  const { role, error } = useUser();
   const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
@@ -15,7 +15,6 @@ export const AdminPage = () => {
         const data = await getUsers();
         setUsers(data);
       } catch {
-        // The error handling is now centralized in the UserContext, so no need for `setError`
         console.error("Failed to fetch users");
       }
     };
@@ -36,16 +35,6 @@ export const AdminPage = () => {
     }
   };
 
-  if (role !== "admin") {
-    return (
-      <div>
-        <p style={{ color: "red" }}>
-          Access Denied: You do not have permission to view this page.
-        </p>
-      </div>
-    );
-  }
-
   return (
     <>
       <HomeBar />
@@ -55,7 +44,6 @@ export const AdminPage = () => {
       <div>
         <h1>Admin Page</h1>
         {error && <p style={{ color: "red" }}>{error}</p>}{" "}
-        {/* Use the error from context */}
         <table>
           <thead>
             <tr>

@@ -1,12 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { getUserRole } from "../api/auth"; // Assuming this is your API call
+import { getUserRole, logout as authLogout } from "../api/auth";
 import { useNavigate } from "react-router-dom";
 
 interface UserContextType {
   role: string | null;
   error: string | null;
-  fetchRole: () => Promise<void>; // Add the fetchRole function here
-  refreshUser: () => Promise<void>; // Added refreshUser function here
+  fetchRole: () => Promise<void>;
+  refreshUser: () => Promise<void>;
   logout: () => void;
 }
 
@@ -17,40 +17,39 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  // Function to fetch the user's role
   const fetchRole = async () => {
     try {
-      const data = await getUserRole(); // Fetch the user's role from the API
+      const data = await getUserRole();
       setRole(data.role);
-      setError(null); // Clear any previous errors
+      setError(null);
     } catch (error) {
       setError("Permission denied - Login to view this page");
+      navigate("/", {
+        state: { message: "Please login to access this page" },
+      });
     }
   };
 
-  // Function to refresh user data
   const refreshUser = async () => {
     try {
-      await fetchRole(); // Simply call fetchRole to refresh user data
+      await fetchRole();
     } catch (error) {
       console.error("Error refreshing user", error);
     }
   };
 
-  // Handle logout
   const logout = async () => {
     try {
-      // Add your logout logic here (e.g., calling your logout API)
-      await fetch("/api/v1/logout", { method: "POST", credentials: "include" });
-      setRole(null); // Reset the role after logout
-      navigate("/"); // Redirect to login page after logout
+      await authLogout();
+      setRole(null);
+      navigate("/");
     } catch (error) {
       console.error("Error during logout", error);
     }
   };
 
   useEffect(() => {
-    fetchRole(); // Call the function to fetch the role initially
+    fetchRole();
   }, []);
 
   return (

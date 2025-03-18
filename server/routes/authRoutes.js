@@ -211,7 +211,7 @@ router.post("/logout", (req, res) => {
         console.error("Error destroying session:", err);
         return res.status(500).json({ message: "Internal Server Error" });
       }
-      res.clearCookie("connect.sid"); // Clear the session cookie
+      res.clearCookie("connect.sid");
       res.status(200).json({ message: "Logged out successfully" });
     });
   });

@@ -4,7 +4,7 @@ import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage";
 import AdminPage from "./pages/AdminPage";
 import { HelmetProvider } from "react-helmet-async";
-import { UserProvider } from "./context/UserContext"; // Import UserProvider
+import { UserProvider } from "./context/UserContext";
 
 function App() {
   return (
@@ -12,7 +12,6 @@ function App() {
       <BrowserRouter>
         <UserProvider>
           {" "}
-          {/* Wrap the UserProvider inside the BrowserRouter */}
           <Routes>
             <Route index path="/" element={<LoginPage />} />
             <Route path="/home" element={<HomePage />} />

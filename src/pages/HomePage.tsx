@@ -1,45 +1,27 @@
 import { Helmet } from "react-helmet-async";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import HomeBar from "../components/HomeBar";
-import { useUser } from "../context/UserContext"; // Import the context
+import { useUser } from "../context/UserContext";
 import { useEffect, useState } from "react";
 
 export const HomePage = () => {
-  const { role, error, refreshUser } = useUser(); // Access role, error, and refreshUser from context
+  const { role, error, refreshUser } = useUser();
   const navigate = useNavigate();
-  const [isRefreshing, setIsRefreshing] = useState(false); // Track refresh state
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     // If role is not authenticated, try refreshing the user data
     if (!role && !isRefreshing) {
       setIsRefreshing(true);
-      refreshUser() // Assuming refreshUser fetches the user data again
+      refreshUser()
         .then(() => {
           setIsRefreshing(false);
         })
         .catch(() => {
-          setIsRefreshing(false); // Handle the error
+          setIsRefreshing(false);
         });
     }
   }, [role, isRefreshing, refreshUser]);
-
-  // If role is still not set or there is an error
-  if (!role || error) {
-    return (
-      <div>
-        <p style={{ color: "red" }}>{error || "You are not authenticated."}</p>
-        <button
-          onClick={() =>
-            navigate("/", {
-              state: { message: "Please login to access this page" },
-            })
-          }
-        >
-          Go to Login
-        </button>
-      </div>
-    );
-  }
 
   return (
     <>

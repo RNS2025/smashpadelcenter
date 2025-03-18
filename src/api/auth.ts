@@ -5,7 +5,7 @@ import axios from "axios";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  withCredentials: true, // Keep this to ensure cookies are sent
+  withCredentials: true,
 });
 
 export default api;
@@ -62,11 +62,11 @@ export const changeUserRole = async (username: string, role: string) => {
   }
 };
 
-// Logout method
 export const logout = async () => {
   try {
-    const response = await api.post("/logout");
-    return response.data; // Assuming response contains a message or status
+    await api.post("/logout");
+    document.cookie =
+      "session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; HttpOnly;";
   } catch (error) {
     throw new Error("Failed to log out. Please try again later.");
   }
