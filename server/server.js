@@ -3,7 +3,8 @@ const cors = require("cors");
 const session = require("express-session");
 const passport = require("./config/passport");
 const user = require("./config/roles");
-const mainRoutes = require("./routes/authRoutes");
+const authRoutes = require("./routes/authRoutes");
+const rankedInRoutes = require("./routes/rankedinRoutes");
 const { swaggerUi, specs } = require("./config/swagger");
 const mongoose = require("./config/database");
 const createAdmin = require("./scripts/createAdmin");
@@ -55,7 +56,8 @@ app.use(user.middleware());
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
 // Routes
-app.use("/api/v1", mainRoutes);
+app.use("/api/v1", authRoutes);
+app.use("/api/v1", rankedInRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { getUserRole, logout as authLogout } from "../api/auth";
+import { getUserRole, logout as authLogout } from "../services/auth";
 import { useNavigate } from "react-router-dom";
 
 interface UserContextType {

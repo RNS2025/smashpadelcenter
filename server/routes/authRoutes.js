@@ -10,6 +10,7 @@ const router = express.Router();
  * /api/v1/:
  *   get:
  *     summary: Check if the server is running
+ *     tags: [Auth]
  *     responses:
  *       200:
  *         description: Server is running
@@ -23,6 +24,7 @@ router.get("/", (req, res) => {
  * /api/v1/login:
  *   post:
  *     summary: Log in a user
+ *     tags: [Auth]
  *     requestBody:
  *       required: true
  *       content:
@@ -58,6 +60,7 @@ router.post("/login", (req, res, next) => {
  * /api/v1/register:
  *   post:
  *     summary: Register a new user
+ *     tags: [Auth]
  *     requestBody:
  *       required: true
  *       content:
@@ -90,6 +93,7 @@ router.post("/register", async (req, res) => {
  * /api/v1/users:
  *   get:
  *     summary: Get all users and their roles (Admin only)
+ *     tags: [Auth]
  *     security:
  *       - cookieAuth: []
  *     responses:
@@ -129,6 +133,7 @@ router.get("/users", async (req, res) => {
  * /api/v1/change-role:
  *   post:
  *     summary: Change the role of a user
+ *     tags: [Auth]
  *     requestBody:
  *       required: true
  *       content:
@@ -163,6 +168,7 @@ router.post("/change-role", user.can("access admin page"), async (req, res) => {
  * /api/v1/role:
  *   get:
  *     summary: Get the role of the logged-in user
+ *     tags: [Auth]
  *     responses:
  *       200:
  *         description: User role
@@ -194,6 +200,7 @@ router.get("/role", (req, res) => {
  * /api/v1/logout:
  *   post:
  *     summary: Log out the current user
+ *     tags: [Auth]
  *     responses:
  *       200:
  *         description: Logged out successfully

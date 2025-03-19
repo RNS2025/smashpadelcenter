@@ -1,7 +1,7 @@
 import { Helmet } from "react-helmet-async";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { login } from "../api/auth";
+import { login } from "../services/auth";
 
 export const LoginPage = () => {
   const [username, setUsername] = useState("");

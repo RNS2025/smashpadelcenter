@@ -1,6 +1,6 @@
 import { Helmet } from "react-helmet-async";
 import { useState, useEffect } from "react";
-import { getUsers, changeUserRole } from "../api/auth";
+import { getUsers, changeUserRole } from "../services/auth";
 import User from "../types/user";
 import HomeBar from "../components/HomeBar";
 import { useUser } from "../context/UserContext";
