@@ -10,14 +10,23 @@ function App() {
   return (
     <HelmetProvider>
       <BrowserRouter>
-        <UserProvider>
-          {" "}
-          <Routes>
-            <Route index path="/" element={<LoginPage />} />
-            <Route path="/home" element={<HomePage />} />
-            <Route path="/admin" element={<AdminPage />} />
-          </Routes>
-        </UserProvider>
+        {/* Tournament check-in route outside of UserProvider */}
+        <Routes>
+
+          {/* Protected routes inside UserProvider */}
+          <Route
+            path="/*"
+            element={
+              <UserProvider>
+                <Routes>
+                  <Route index path="/" element={<LoginPage />} />
+                  <Route path="/home" element={<HomePage />} />
+                  <Route path="/admin" element={<AdminPage />} />
+                </Routes>
+              </UserProvider>
+            }
+          />
+        </Routes>
       </BrowserRouter>
     </HelmetProvider>
   );
