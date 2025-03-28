@@ -5,6 +5,7 @@ import HomePage from "./pages/HomePage";
 import AdminPage from "./pages/AdminPage";
 import { HelmetProvider } from "react-helmet-async";
 import { UserProvider } from "./context/UserContext";
+import RankedInTestPage from "./pages/rankedinTESTPAGE";
 
 function App() {
   return (
@@ -12,7 +13,9 @@ function App() {
       <BrowserRouter>
         {/* Tournament check-in route outside of UserProvider */}
         <Routes>
-
+          <Route path="/check-in" element={<RankedInTestPage />} />
+        </Routes>
+        <Routes>
           {/* Protected routes inside UserProvider */}
           <Route
             path="/*"
