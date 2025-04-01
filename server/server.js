@@ -5,6 +5,7 @@ const passport = require("./config/passport");
 const user = require("./config/roles");
 const authRoutes = require("./routes/authRoutes");
 const rankedInRoutes = require("./routes/rankedinRoutes");
+const checkInRoutes = require("./routes/check-inRoutes");
 const { swaggerUi, specs } = require("./config/swagger");
 const mongoose = require("./config/database");
 const createAdmin = require("./scripts/createAdmin");
@@ -58,6 +59,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 // Routes
 app.use("/api/v1", authRoutes);
 app.use("/api/v1", rankedInRoutes);
+app.use("/api/v1", checkInRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

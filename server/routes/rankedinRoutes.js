@@ -168,4 +168,37 @@ router.get("/GetAvailableTournaments", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/v1/GetPlayersMatches:
+ *   get:
+ *     summary: Get all matches for a specific player
+ *     tags: [RankedIn]
+ *     parameters:
+ *       - in: query
+ *         name: playerId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the player
+ *       - in: query
+ *         name: rowId
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: The ID of the tournament
+ *     responses:
+ *       200:
+ *         description: All matches for the player
+ */
+router.get("/GetPlayersMatches", async (req, res) => {
+  try {
+    const { playerId, rowId } = req.query;
+    const matches = await rankedInService.getPlayersMatches(playerId, rowId);
+    res.status(200).json(matches);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;

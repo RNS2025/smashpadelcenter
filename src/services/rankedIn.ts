@@ -2,7 +2,11 @@ import api from "../api/api";
 import Player from "../types/Player";
 import Row from "../types/Row";
 import Tournament from "../types/Tournament";
+import Match from "../types/Match";
 import TournamentWithPlayers from "../types/TournamentWithPlayers";
+import CheckInStatus from "../types/CheckInStatus";
+import CheckInUpdateRequest from "../types/CheckInUpdateRequest";
+import BulkCheckInUpdateRequest from "../types/BulkCheckInUpdateRequest";
 
 const rankedInService = {
   // Fetch all available tournaments
@@ -88,6 +92,44 @@ const rankedInService = {
     }
   },
 
+  // Get check-in status for players in a specific tournament and row
+  getCheckInStatus: async (
+    tournamentId: string,
+    rowId: string
+  ): Promise<CheckInStatus[]> => {
+    try {
+      const response = await api.get("/check-in/status", {
+        params: { tournamentId, rowId },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching check-in status:", error);
+      throw error;
+    }
+  },
+
+  // Update check-in status for a player
+  updateCheckInStatus: async (request: CheckInUpdateRequest): Promise<void> => {
+    try {
+      await api.post("/check-in/update", request);
+    } catch (error) {
+      console.error("Error updating check-in status:", error);
+      throw error;
+    }
+  },
+
+  // Bulk update check-in status for multiple players
+  bulkUpdateCheckInStatus: async (
+    request: BulkCheckInUpdateRequest
+  ): Promise<void> => {
+    try {
+      await api.post("/check-in/bulk-update", request);
+    } catch (error) {
+      console.error("Error bulk updating check-in status:", error);
+      throw error;
+    }
+  },
+
   // Combine tournament, rows, and players into one structure
   getTournamentWithPlayers: async (): Promise<TournamentWithPlayers[]> => {
     try {
@@ -134,6 +176,55 @@ const rankedInService = {
       return tournamentsWithPlayers;
     } catch (error) {
       console.error("Error fetching tournament data:", error);
+      throw error;
+    }
+  },
+
+  getPlayerMatches: async ({
+    playerId,
+    rowId,
+    drawStrength = 0,
+    drawStage = 0,
+    language = "en",
+  }: {
+    playerId: string;
+    rowId: string;
+    drawStrength?: number;
+    drawStage?: number;
+    language?: string;
+  }): Promise<Match[]> => {
+    try {
+      const response = await api.get("/GetPlayersMatches", {
+        params: {
+          playerId,
+          rowId,
+          drawStrength,
+          drawStage,
+          language,
+        },
+      });
+
+      return response.data.map((match: any) => ({
+        matchId: match.matchId,
+        round: match.round,
+        date: match.date ? new Date(match.date) : null,
+        courtName: match.courtName,
+        durationMinutes: match.durationMinutes,
+        challenger: {
+          firstPlayer: match.challenger.firstPlayer,
+          secondPlayer: match.challenger.secondPlayer || null,
+        },
+        challenged: {
+          firstPlayer: match.challenged.firstPlayer,
+          secondPlayer: match.challenged.secondPlayer || null,
+        },
+        score: match.score,
+        isPlayed: match.isPlayed,
+        winnerParticipantId: match.winnerParticipantId,
+        matchType: match.matchType,
+      }));
+    } catch (error) {
+      console.error("Error fetching player matches:", error);
       throw error;
     }
   },

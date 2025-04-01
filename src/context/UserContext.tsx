@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { getUserRole, logout as authLogout } from "../services/auth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import { WHITELIST_ROUTES } from "./WhitelistRoutes";
 
 interface UserContextType {
   role: string | null;
@@ -16,6 +17,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [role, setRole] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const fetchRole = async () => {
     try {
@@ -23,10 +25,15 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       setRole(data.role);
       setError(null);
     } catch (error) {
-      setError("Permission denied - Login to view this page");
-      navigate("/", {
-        state: { message: "Please login to access this page" },
-      });
+      setRole(null); // Ensure role is cleared on failure
+
+      // Only redirect if the route is NOT whitelisted
+      if (!WHITELIST_ROUTES.includes(location.pathname)) {
+        setError("Permission denied - Login to view this page");
+        navigate("/", {
+          state: { message: "Please login to access this page" },
+        });
+      }
     }
   };
 
