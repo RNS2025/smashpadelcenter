@@ -13,6 +13,21 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
+// Utility function to check if a path matches a route pattern
+const isRouteWhitelisted = (pathname: string, whitelist: string[]): boolean => {
+  return whitelist.some((route) => {
+    // If it's a static route, check exact match
+    if (!route.includes(":")) return route === pathname;
+
+    // For dynamic routes, create a regex pattern
+    const pattern = route
+      .replace(/:[^/]+/g, "[^/]+") // Replace :param with wildcard
+      .replace(/\//g, "\\/"); // Escape slashes
+    const regex = new RegExp(`^${pattern}$`);
+    return regex.test(pathname);
+  });
+};
+
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [role, setRole] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -25,10 +40,10 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       setRole(data.role);
       setError(null);
     } catch (error) {
-      setRole(null); // Ensure role is cleared on failure
+      setRole(null);
 
       // Only redirect if the route is NOT whitelisted
-      if (!WHITELIST_ROUTES.includes(location.pathname)) {
+      if (!isRouteWhitelisted(location.pathname, WHITELIST_ROUTES)) {
         setError("Permission denied - Login to view this page");
         navigate("/", {
           state: { message: "Please login to access this page" },
@@ -57,7 +72,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     fetchRole();
-  }, []);
+  }, [location.pathname]);
 
   return (
     <UserContext.Provider

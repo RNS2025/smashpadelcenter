@@ -23,7 +23,6 @@ const rankedInService = {
     skip?: number; // Optional
     take?: number; // Optional
   } = {}): Promise<Tournament[]> => {
-    // Default empty object to make the entire argument optional
     try {
       const response = await api.get("/GetAvailableTournaments", {
         params: { organisationId, isFinished, language, skip, take },
@@ -48,14 +47,12 @@ const rankedInService = {
     }
   },
 
-  // Fetch all rows for a given tournament
   getAllRows: async (tournamentId: string): Promise<Row[]> => {
     try {
       const response = await api.get("/GetAllRows", {
         params: { id: tournamentId },
       });
 
-      // Mapping rows into the Row type
       return response.data.map((row: any) => ({
         Name: row.Name,
         Id: row.Id,
@@ -66,7 +63,6 @@ const rankedInService = {
     }
   },
 
-  // Fetch players in a specific row
   getPlayersInRow: async ({
     tournamentId,
     tournamentClassId,
@@ -81,7 +77,6 @@ const rankedInService = {
         params: { tournamentId, tournamentClassId, language },
       });
 
-      // Mapping players into the Player type
       return response.data.map((player: any) => ({
         Name: player.Name,
         RankedInId: player.RankedInId,
@@ -92,7 +87,6 @@ const rankedInService = {
     }
   },
 
-  // Get check-in status for players in a specific tournament and row
   getCheckInStatus: async (
     tournamentId: string,
     rowId: string
@@ -108,7 +102,6 @@ const rankedInService = {
     }
   },
 
-  // Update check-in status for a player
   updateCheckInStatus: async (request: CheckInUpdateRequest): Promise<void> => {
     try {
       await api.post("/check-in/update", request);
@@ -118,7 +111,6 @@ const rankedInService = {
     }
   },
 
-  // Bulk update check-in status for multiple players
   bulkUpdateCheckInStatus: async (
     request: BulkCheckInUpdateRequest
   ): Promise<void> => {
@@ -130,7 +122,6 @@ const rankedInService = {
     }
   },
 
-  // Combine tournament, rows, and players into one structure
   getTournamentWithPlayers: async (): Promise<TournamentWithPlayers[]> => {
     try {
       // Fetch tournaments
