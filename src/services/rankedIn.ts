@@ -228,6 +228,17 @@ const rankedInService = {
       throw error;
     }
   },
+  getPlayerDetails: async (playerId: string): Promise<Player> => {
+    try {
+      const response = await api.get("/GetPlayerDetails", {
+        params: { playerId },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching player details:", error);
+      throw error;
+    }
+  },
 };
 
 export default rankedInService;

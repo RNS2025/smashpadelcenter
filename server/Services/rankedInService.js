@@ -298,10 +298,32 @@ const getPlayersMatches = async (
   }
 };
 
+const getPlayerDetails = async (playerId, language = "en") => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}player/playerprofileinfoasync`,
+      {
+        params: {
+          rankedinId: playerId,
+          language: language,
+        },
+      }
+    );
+
+    const playerData = response.data;
+
+    return playerData;
+  } catch (error) {
+    console.error("Error fetching player details:", error.message);
+    throw new Error("Failed to fetch player details");
+  }
+};
+
 module.exports = {
   getAllTournamentPlayers,
   getAllRows,
   getPlayersInRow,
   getAvailableTournaments,
   getPlayersMatches,
+  getPlayerDetails,
 };

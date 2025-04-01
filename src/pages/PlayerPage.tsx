@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import rankedInService from "../services/rankedIn";
 import Match from "../types/Match";
+import PlayerData from "../types/PlayerData";
 
 const PlayerPage = () => {
   const { playerId, tournamentClassId } = useParams<{
@@ -9,11 +10,12 @@ const PlayerPage = () => {
     tournamentClassId: string;
   }>();
   const [matches, setMatches] = useState<Match[]>([]);
+  const [playerData, setPlayerData] = useState<PlayerData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchMatches = async () => {
+    const fetchData = async () => {
       if (!playerId || !tournamentClassId) {
         setError("Missing player ID or tournament class ID.");
         setLoading(false);
@@ -27,15 +29,18 @@ const PlayerPage = () => {
           language: "en",
         });
         setMatches(playerMatches);
+
+        const playerDetails = await rankedInService.getPlayerDetails(playerId);
+        setPlayerData(playerDetails);
       } catch (err) {
-        setError("Failed to fetch matches.");
+        setError("Failed to fetch data.");
         console.error(err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchMatches();
+    fetchData();
   }, [playerId, tournamentClassId]);
 
   if (loading) {
@@ -57,9 +62,100 @@ const PlayerPage = () => {
 
   return (
     <div className="container mx-auto p-6 max-w-4xl">
-      <h1 className="text-3xl font-bold text-gray-800 mb-6">
-        Matches for Player {playerId} (Tournament Class {tournamentClassId})
-      </h1>
+      {/* Player Profile Section */}
+      {playerData?.Header && (
+        <div className="bg-white shadow-md rounded-lg p-6 mb-6 border border-gray-200">
+          <div className="flex flex-col md:flex-row items-center gap-6">
+            {playerData.Header.ImageThumbnailUrl && (
+              <img
+                src={playerData.Header.ImageThumbnailUrl}
+                alt={`${playerData.Header.FullName}'s profile`}
+                className="w-32 h-32 rounded-full object-cover"
+              />
+            )}
+            <div>
+              <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                {playerData.Header.FullName}
+              </h1>
+              <div className="space-y-1 text-gray-600">
+                <p>
+                  <strong>RankedIn ID:</strong> {playerData.Header.RankedinId}
+                </p>
+                {playerData.Header.HomeClubName && (
+                  <p>
+                    <strong>Home Club:</strong>{" "}
+                    <a
+                      href={playerData.Header.HomeClubUrl || "#"}
+                      className="text-blue-500 hover:underline"
+                    >
+                      {playerData.Header.HomeClubName}
+                    </a>
+                  </p>
+                )}
+                {playerData.Header.CountryShort && (
+                  <p>
+                    <strong>Country:</strong>{" "}
+                    {playerData.Header.CountryShort.toUpperCase()}
+                  </p>
+                )}
+                {playerData.Header.Age && (
+                  <p>
+                    <strong>Age:</strong> {playerData.Header.Age}
+                  </p>
+                )}
+                {playerData.Header.Form && (
+                  <p>
+                    <strong>Recent Form:</strong>{" "}
+                    {playerData.Header.Form.join(" ") || "No recent matches"}
+                  </p>
+                )}
+                {playerData.Header.IsProPlayer && (
+                  <p className="text-green-600 font-semibold">
+                    Professional Player
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Statistics Section */}
+          {playerData.Statistics && (
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                  Current Year Stats
+                </h3>
+                <p>
+                  <strong>Doubles W-L:</strong>{" "}
+                  {playerData.Statistics.WinLossDoublesCurrentYear}
+                </p>
+                <p>
+                  <strong>Doubles Events:</strong>{" "}
+                  {playerData.Statistics.EventsParticipatedDoublesCurrentYear}
+                </p>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                  Career Stats
+                </h3>
+                <p>
+                  <strong>Doubles W-L:</strong>{" "}
+                  {playerData.Statistics.CareerWinLossDoubles}
+                </p>
+                <p>
+                  <strong>Doubles Events:</strong>{" "}
+                  {playerData.Statistics.CareerEventsParticipatedDoubles}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Matches Section */}
+      <h2 className="text-2xl font-bold text-gray-800 mb-6">
+        Matches for {playerData?.Header?.FullName || "Player"}
+      </h2>
       {matches.length === 0 ? (
         <p className="text-gray-600 text-lg">
           No matches found for this player.

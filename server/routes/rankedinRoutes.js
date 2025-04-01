@@ -201,4 +201,42 @@ router.get("/GetPlayersMatches", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/v1/GetPlayerDetails:
+ *   get:
+ *     summary: Get details of a specific player
+ *     tags: [RankedIn]
+ *     parameters:
+ *       - in: query
+ *         name: playerId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the player
+ *       - in: query
+ *         name: language
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: The language for the response (default is "en")
+ *     responses:
+ *       200:
+ *         description: Details of the specified player
+ *       500:
+ *         description: Server error
+ */
+router.get("/GetPlayerDetails", async (req, res) => {
+  try {
+    const { playerId, language } = req.query; // Fixed: Added language to destructuring
+    const playerDetails = await rankedInService.getPlayerDetails(
+      playerId,
+      language
+    );
+    res.status(200).json(playerDetails);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
