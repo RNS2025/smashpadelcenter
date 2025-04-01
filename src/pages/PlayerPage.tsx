@@ -5,9 +5,9 @@ import Match from "../types/Match";
 import PlayerData from "../types/PlayerData";
 
 const PlayerPage = () => {
-  const { playerId, tournamentClassId } = useParams<{
+  const { playerId, rowId: rowId } = useParams<{
     playerId: string;
-    tournamentClassId: string;
+    rowId: string;
   }>();
   const [matches, setMatches] = useState<Match[]>([]);
   const [playerData, setPlayerData] = useState<PlayerData | null>(null);
@@ -16,7 +16,7 @@ const PlayerPage = () => {
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!playerId || !tournamentClassId) {
+      if (!playerId || !rowId) {
         setError("Missing player ID or tournament class ID.");
         setLoading(false);
         return;
@@ -25,7 +25,7 @@ const PlayerPage = () => {
       try {
         const playerMatches = await rankedInService.getPlayerMatches({
           playerId,
-          rowId: tournamentClassId,
+          rowId: rowId,
           language: "en",
         });
         setMatches(playerMatches);
@@ -41,7 +41,7 @@ const PlayerPage = () => {
     };
 
     fetchData();
-  }, [playerId, tournamentClassId]);
+  }, [playerId, rowId]);
 
   if (loading) {
     return (
