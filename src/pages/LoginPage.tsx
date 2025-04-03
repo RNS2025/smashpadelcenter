@@ -6,7 +6,7 @@ import { login } from "../services/auth";
 export const LoginPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [_, setError] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleLogin = async (e: FormEvent) => {
@@ -118,9 +118,11 @@ export const LoginPage = () => {
                   />
                 </div>
 
+                {error && (
                 <div className="col-span-6">
-                  <p className="text-red-500 text-sm">Brugernavn eller adgangskode er forkert%</p>
+                  <p className="text-red-500 text-sm">Forkert brugernavn eller adgangskode.</p>
                 </div>
+                )}
 
                 <div className="col-span-6 sm:flex sm:items-center sm:gap-4">
                   <button

@@ -17,14 +17,14 @@ const RowSelector: React.FC<RowSelectorProps> = ({
 }) => {
   return (
     <div className="mb-6">
-      <h2 className="text-xl font-semibold mb-3">Select Row</h2>
+      <h2 className="text-xl font-semibold mb-3">Vælg række</h2>
       {loading ? (
         <div className="flex items-center text-gray-500">
           <LoadingSpinner />
-          Loading rows...
+          Indlæser rækker...
         </div>
       ) : rows.length === 0 ? (
-        <p className="text-gray-500">No rows available for this tournament.</p>
+        <p className="text-gray-500">Rækker ikke tilgængelige for denne turnering.</p>
       ) : (
         <div className="flex flex-wrap gap-2">
           {rows.map((row) => (

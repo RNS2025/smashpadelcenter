@@ -7,6 +7,7 @@ interface Match {
   courtName: string | null;
   durationMinutes: number | null;
   challenger: {
+    id: string;
     firstPlayer: Player;
     secondPlayer: Player | null;
   };

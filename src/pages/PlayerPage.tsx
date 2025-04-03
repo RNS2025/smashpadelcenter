@@ -3,6 +3,8 @@ import { useParams } from "react-router-dom";
 import rankedInService from "../services/rankedIn";
 import Match from "../types/Match";
 import PlayerData from "../types/PlayerData";
+import { format } from "date-fns";
+import {da} from "date-fns/locale";
 
 const PlayerPage = () => {
   const { playerId, rowId: rowId } = useParams<{
@@ -17,7 +19,7 @@ const PlayerPage = () => {
   useEffect(() => {
     const fetchData = async () => {
       if (!playerId || !rowId) {
-        setError("Missing player ID or tournament class ID.");
+        setError("Spiller-ID eller turneringsklasse-ID mangler.");
         setLoading(false);
         return;
       }
@@ -26,7 +28,7 @@ const PlayerPage = () => {
         const playerMatches = await rankedInService.getPlayerMatches({
           playerId,
           rowId: rowId,
-          language: "en",
+          language: "da",
         });
         setMatches(playerMatches);
 
@@ -40,14 +42,14 @@ const PlayerPage = () => {
       }
     };
 
-    fetchData();
+    fetchData().then();
   }, [playerId, rowId]);
 
   if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
-        <p className="ml-4 text-lg text-gray-700">Loading matches...</p>
+        <p className="ml-4 text-lg text-gray-700">Indlæser kampe...</p>
       </div>
     );
   }
@@ -69,7 +71,7 @@ const PlayerPage = () => {
             {playerData.Header.ImageThumbnailUrl && (
               <img
                 src={playerData.Header.ImageThumbnailUrl}
-                alt={`${playerData.Header.FullName}'s profile`}
+                alt={`${playerData.Header.FullName}'s profil`}
                 className="w-32 h-32 rounded-full object-cover"
               />
             )}
@@ -83,7 +85,7 @@ const PlayerPage = () => {
                 </p>
                 {playerData.Header.HomeClubName && (
                   <p>
-                    <strong>Home Club:</strong>{" "}
+                    <strong>Klub:</strong>{" "}
                     <a
                       href={playerData.Header.HomeClubUrl || "#"}
                       className="text-blue-500 hover:underline"
@@ -94,26 +96,43 @@ const PlayerPage = () => {
                 )}
                 {playerData.Header.CountryShort && (
                   <p>
-                    <strong>Country:</strong>{" "}
+                    <strong>Land:</strong>{" "}
                     {playerData.Header.CountryShort.toUpperCase()}
                   </p>
                 )}
                 {playerData.Header.Age && (
                   <p>
-                    <strong>Age:</strong> {playerData.Header.Age}
+                    <strong>Alder:</strong> {playerData.Header.Age}
                   </p>
                 )}
-                {playerData.Header.Form && (
-                  <p>
-                    <strong>Recent Form:</strong>{" "}
-                    {playerData.Header.Form.join(" ") || "No recent matches"}
-                  </p>
+
+                {playerData.Header.Form && playerData.Header.Form.length > 0 ? (
+                    <p>
+                      <strong>Seneste form:</strong>{" "}
+                      {playerData.Header.Form.map((result: string, index: number) => (
+                          <span
+                              key={index}
+                              className={
+                                result === "W"
+                                    ? "text-green-600"
+                                    : "text-red-600"
+                              }
+                          >
+                            {result}{" "}
+                          </span>
+                      ))}
+                    </p>
+                ) : (
+                    <p>
+                      <strong>Seneste form:</strong> Ingen kampe at vise
+                    </p>
                 )}
-                {playerData.Header.IsProPlayer && (
+
+                {/*{playerData.Header.IsProPlayer && (
                   <p className="text-green-600 font-semibold">
                     Professional Player
                   </p>
-                )}
+                )}*/}
               </div>
             </div>
           </div>
@@ -123,26 +142,26 @@ const PlayerPage = () => {
             <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                  Current Year Stats
+                  Statistik for {new Date().getFullYear()}
                 </h3>
-                <p>
+                <p className="text-gray-800">
                   <strong>Doubles W-L:</strong>{" "}
                   {playerData.Statistics.WinLossDoublesCurrentYear}
                 </p>
-                <p>
+                <p className="text-gray-800">
                   <strong>Doubles Events:</strong>{" "}
                   {playerData.Statistics.EventsParticipatedDoublesCurrentYear}
                 </p>
               </div>
               <div>
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                  Career Stats
+                  Karrierestatistik
                 </h3>
-                <p>
+                <p className="text-gray-800">
                   <strong>Doubles W-L:</strong>{" "}
                   {playerData.Statistics.CareerWinLossDoubles}
                 </p>
-                <p>
+                <p className="text-gray-800">
                   <strong>Doubles Events:</strong>{" "}
                   {playerData.Statistics.CareerEventsParticipatedDoubles}
                 </p>
@@ -153,12 +172,12 @@ const PlayerPage = () => {
       )}
 
       {/* Matches Section */}
-      <h2 className="text-2xl font-bold text-gray-800 mb-6">
-        Matches for {playerData?.Header?.FullName || "Player"}
+      <h2 className="text-2xl font-bold  mb-6">
+        Kommende kampe for {playerData?.Header?.FullName || "spiller"}
       </h2>
       {matches.length === 0 ? (
-        <p className="text-gray-600 text-lg">
-          No matches found for this player.
+        <p className="text-gray-800 text-lg">
+          Ingen kampe fundet for spiller.
         </p>
       ) : (
         <div className="grid gap-6">
@@ -168,9 +187,8 @@ const PlayerPage = () => {
               className="bg-white shadow-md rounded-lg p-5 border border-gray-200 hover:shadow-lg transition-shadow duration-300"
             >
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold text-gray-800">
-                  {match.matchType} - Round {match.round}
-                </h2>
+                <h2 className="text-xl font-semibold text-gray-800">{match.matchType.replace(/([a-z])([A-Z])/g, "$1 $2")} {match.matchType !== "RoundRobin" ? `- Runde ${match.round}` : ""}</h2>
+
                 <span
                   className={`px-3 py-1 rounded-full text-sm font-medium ${
                     match.isPlayed
@@ -178,21 +196,21 @@ const PlayerPage = () => {
                       : "bg-yellow-100 text-yellow-800"
                   }`}
                 >
-                  {match.isPlayed ? "Played" : "Upcoming"}
+                  {match.isPlayed ? "Afviklet" : "Kommende"}
                 </span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-gray-600">
-                    <strong>Challenger:</strong>{" "}
+                  <p className="text-gray-800">
+                    <strong>Udfordrere:</strong>{" "}
                     {match.challenger.firstPlayer.Name}
                     {match.challenger.secondPlayer
                       ? ` & ${match.challenger.secondPlayer.Name}`
                       : ""}
                   </p>
-                  <p className="text-gray-600">
-                    <strong>Challenged:</strong>{" "}
+                  <p className="text-gray-800">
+                    <strong>Modstanderpar:</strong>{" "}
                     {match.challenged.firstPlayer.Name}
                     {match.challenged.secondPlayer
                       ? ` & ${match.challenged.secondPlayer.Name}`
@@ -200,36 +218,31 @@ const PlayerPage = () => {
                   </p>
                 </div>
                 <div>
-                  <p className="text-gray-600">
-                    <strong>Date:</strong>{" "}
+                  <p className="text-gray-800">
+                    <strong>Tidspunkt:</strong>{" "}
                     {match.date
-                      ? new Intl.DateTimeFormat("en-US", {
-                          dateStyle: "medium",
-                          timeStyle: "short",
-                        }).format(new Date(match.date))
+                      ? format(new Date(match.date), "dd. MMMM yyyy - HH:mm", {locale: da})
                       : "TBD"}
                   </p>
-                  <p className="text-gray-600">
-                    <strong>Court:</strong> {match.courtName || "Not assigned"}
-                  </p>
-                  <p className="text-gray-600">
-                    <strong>Duration:</strong>{" "}
+                  <p className="text-gray-800"><strong>Bane:</strong> {match.courtName || "Ikke tildelt"}</p>
+                  <p className="text-gray-800">
+                    <strong>Varighed:</strong>{" "}
                     {match.durationMinutes
-                      ? `${match.durationMinutes} minutes`
-                      : "Not set"}
+                      ? `${match.durationMinutes} minutter`
+                      : "Ikke sat"}
                   </p>
                 </div>
               </div>
 
               <div className="mt-4">
-                <p className="text-gray-700">
-                  <strong>Score:</strong> {match.score || "Not played yet"}
+                <p className="text-gray-800">
+                  <strong>Resultat:</strong> {match.score || "Ikke afviklet"}
                 </p>
                 {match.winnerParticipantId && (
-                  <p className="text-gray-700">
-                    <strong>Winner:</strong>{" "}
+                  <p className="text-gray-800">
+                    <strong>Vinder:</strong>{" "}
                     {match.winnerParticipantId ===
-                    match.challenger.firstPlayer.Id
+                    match.challenger.firstPlayer.id
                       ? match.challenger.firstPlayer.Name
                       : match.challenged.firstPlayer.Name}
                   </p>

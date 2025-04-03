@@ -23,14 +23,14 @@ const PlayerCheckInList: React.FC<PlayerCheckInListProps> = ({
   onPlayerClick,
 }) => {
   if (loading) {
-    return <p>Loading players...</p>;
+    return <p>Indlæser spillere...</p>;
   }
 
   return (
     <div className="mt-6">
-      <h2 className="text-xl font-semibold mb-4">Players</h2>
+      <h2 className="text-xl font-semibold mb-4">Spillere</h2>
       {players.length === 0 ? (
-        <p>No players found in this row.</p>
+        <p>Ingen spillere fundet i denne række.</p>
       ) : (
         <>
           <ul className="space-y-4">

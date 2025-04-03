@@ -9,6 +9,7 @@ import RowSelector from "../components/RowSelector";
 import PlayerCheckInList from "../components/PlayerCheckInList";
 import AlertMessage from "../components/AlertMessage";
 import { useUser } from "../context/UserContext";
+import Animation from "../components/misc/Animation.tsx";
 
 const RankedInPage = () => {
   const { role, error: authError, refreshUser } = useUser();
@@ -32,7 +33,7 @@ const RankedInPage = () => {
 
   useEffect(() => {
     if (authError) {
-      refreshUser();
+      refreshUser().then();
     }
   }, [authError, refreshUser]);
 
@@ -54,7 +55,7 @@ const RankedInPage = () => {
       }
     };
 
-    fetchTournaments();
+    fetchTournaments().then();
   }, []);
 
   useEffect(() => {
@@ -78,7 +79,7 @@ const RankedInPage = () => {
       }
     };
 
-    fetchRows();
+    fetchRows().then();
   }, [selectedTournament]);
 
   useEffect(() => {
@@ -115,7 +116,7 @@ const RankedInPage = () => {
       }
     };
 
-    fetchPlayersWithCheckInStatus();
+    fetchPlayersWithCheckInStatus().then();
   }, [selectedTournament, selectedRowId]);
 
   const handleTournamentSelect = (tournament: Tournament) => {
@@ -219,10 +220,12 @@ const RankedInPage = () => {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-2xl font-bold mb-6">
-        Tournament Check-In Management
-      </h1>
+      <>
+      <Animation>
+
+        <div className="container mx-auto p-4">
+
+          <h1 className="text-2xl font-bold mb-6">Check-in for kommende turneringer</h1>
 
       {error && (
         <AlertMessage
@@ -268,7 +271,11 @@ const RankedInPage = () => {
           onPlayerClick={handlePlayerClick} // Pass the new handler
         />
       )}
-    </div>
+        </div>
+
+
+      </Animation>
+      </>
   );
 };
 

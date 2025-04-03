@@ -6,7 +6,7 @@ import HomeBar from "../components/HomeBar";
 import { useUser } from "../context/UserContext";
 
 export const AdminPage = () => {
-  const { role, error } = useUser();
+  const {error} = useUser();
   const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
@@ -19,7 +19,7 @@ export const AdminPage = () => {
       }
     };
 
-    fetchUsers();
+    fetchUsers().then();
   }, []);
 
   const handleRoleChange = async (username: string, newRole: string) => {
@@ -43,7 +43,7 @@ export const AdminPage = () => {
       </Helmet>
       <div>
         <h1>Admin Page</h1>
-        {error && <p style={{ color: "red" }}>{error}</p>}{" "}
+        {error && <p className="text-red-500">{error}</p>}{" "}
         <table>
           <thead>
             <tr>
@@ -59,6 +59,7 @@ export const AdminPage = () => {
                 <td>{user.role}</td>
                 <td>
                   <select
+                      className="text-black"
                     value={user.role}
                     onChange={(e) =>
                       handleRoleChange(user.username, e.target.value)

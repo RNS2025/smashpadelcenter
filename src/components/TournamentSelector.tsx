@@ -26,14 +26,14 @@ const TournamentSelector: React.FC<TournamentSelectorProps> = ({
 
   return (
     <div className="mb-6">
-      <h2 className="text-xl font-semibold mb-3">Select Tournament</h2>
+      <h2 className="text-xl font-semibold mb-3">Vælg turnering</h2>
       {loading ? (
         <div className="flex items-center text-gray-500">
           <LoadingSpinner />
-          Loading tournaments...
+          Indlæser turneringer...
         </div>
       ) : upcomingTournaments.length === 0 ? (
-        <p className="text-gray-500">No upcoming tournaments available.</p>
+        <p className="text-gray-500">Ingen kommende turneringer tilgængelige.</p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {upcomingTournaments.map((tournament) => (

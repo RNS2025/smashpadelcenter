@@ -7,6 +7,7 @@ import TournamentWithPlayers from "../types/TournamentWithPlayers";
 import CheckInStatus from "../types/CheckInStatus";
 import CheckInUpdateRequest from "../types/CheckInUpdateRequest";
 import BulkCheckInUpdateRequest from "../types/BulkCheckInUpdateRequest";
+import PlayerData from "../types/PlayerData.ts";
 
 const rankedInService = {
   // Fetch all available tournaments
@@ -219,7 +220,7 @@ const rankedInService = {
       throw error;
     }
   },
-  getPlayerDetails: async (playerId: string): Promise<Player> => {
+  getPlayerDetails: async (playerId: string): Promise<PlayerData> => {
     try {
       const response = await api.get("/GetPlayerDetails", {
         params: { playerId },
