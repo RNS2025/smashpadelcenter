@@ -34,31 +34,41 @@ const PlayerCheckInList: React.FC<PlayerCheckInListProps> = ({
       ) : (
         <>
           <ul className="space-y-4">
-            {players.map((player) => (
-              <li
-                key={player.RankedInId}
-                className="flex items-center justify-between p-4 bg-white shadow rounded-lg"
-              >
-                <span
-                  className="text-blue-600 hover:underline cursor-pointer"
-                  onClick={() => onPlayerClick(player.RankedInId)}
-                >
-                  {player.Name}
-                </span>
-                <label className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={checkedInPlayers.has(player.RankedInId)}
-                    onChange={() =>
-                      onCheckInToggle(player.RankedInId, player.Name)
-                    }
-                    disabled={isCheckingIn}
-                    className="h-5 w-5 text-blue-600"
-                  />
-                  <span className="ml-2 text-gray-700">Checked In</span>
-                </label>
-              </li>
-            ))}
+            {Array.from({ length: Math.ceil(players.length / 2) }).map((_, index) => {
+              const player1 = players[index * 2];
+              const player2 = players[index * 2 + 1];
+
+              return (
+                  <li
+                      key={player1.RankedInId}
+                      className="flex flex-col gap-4 p-4 bg-white shadow rounded-lg"
+                  >
+                    {[player1, player2].map(
+                        (player) =>
+                            player && (
+                                <div key={player.RankedInId} className="flex justify-between items-center">
+                                  <span className="text-blue-600 hover:underline cursor-pointer block" onClick={() => onPlayerClick(player.RankedInId)}>
+                                    {player.Name}
+                                  </span>
+
+                                  <label className="flex items-center">
+                                    <input
+                                        type="checkbox"
+                                        checked={checkedInPlayers.has(player.RankedInId)}
+                                        onChange={() =>
+                                            onCheckInToggle(player.RankedInId, player.Name)
+                                        }
+                                        disabled={isCheckingIn}
+                                        className="h-5 w-5 text-blue-600"
+                                    />
+                                    <span className="ml-2 text-gray-700">Checked In</span>
+                                  </label>
+                                </div>
+                            ))}
+                  </li>
+              );
+            })}
+
           </ul>
           {userRole === "admin" && (
             <div className="mt-4 flex space-x-4">

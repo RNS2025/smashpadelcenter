@@ -1,6 +1,6 @@
 import React from "react";
 import Row from "../types/Row";
-import LoadingSpinner from "./LoadingSpinner";
+import LoadingSpinner from "./misc/LoadingSpinner.tsx";
 
 type RowSelectorProps = {
   rows: Row[];

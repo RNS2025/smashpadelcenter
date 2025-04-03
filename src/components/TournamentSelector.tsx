@@ -1,6 +1,8 @@
 import React from "react";
 import Tournament from "../types/Tournament";
-import LoadingSpinner from "./LoadingSpinner";
+import LoadingSpinner from "./misc/LoadingSpinner.tsx";
+import { format } from "date-fns";
+import {da} from "date-fns/locale/da";
 
 type TournamentSelectorProps = {
   tournaments: Tournament[];
@@ -39,18 +41,17 @@ const TournamentSelector: React.FC<TournamentSelectorProps> = ({
               key={tournament.eventId}
               className={`p-4 border rounded-lg cursor-pointer transition-colors ${
                 selectedTournament?.eventId === tournament.eventId
-                  ? "bg-blue-100 border-blue-500"
-                  : "bg-white hover:bg-gray-50"
+                  ? "border-cyan-500"
+                  : "hover:bg-gray-600"
               }`}
               onClick={() => onSelect(tournament)}
             >
               <h3 className="font-bold">{tournament.eventName}</h3>
-              <p className="text-sm text-gray-600">
+              <p className="text-gray-400">
                 {tournament.club}, {tournament.city}
               </p>
-              <p className="text-xs text-gray-500">
-                {new Date(tournament.startDate).toLocaleDateString()} -
-                {new Date(tournament.endDate).toLocaleDateString()}
+              <p className="text-gray-400">
+                {format(new Date(tournament.startDate), "dd. MMMM yyyy", {locale: da})}
               </p>
             </div>
           ))}

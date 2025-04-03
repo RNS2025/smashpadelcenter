@@ -3,7 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage";
 import AdminPage from "./pages/AdminPage";
-import CheckInPage from "./pages/checkInPage";
+import CheckInPage from "./pages/CheckInPage.tsx";
 import PlayerPage from "./pages/PlayerPage";
 import { HelmetProvider } from "react-helmet-async";
 import { UserProvider } from "./context/UserContext";

@@ -19,6 +19,7 @@ const HomeBar = () => {
   };
 
   return (
+
     <nav style={{ padding: "10px", borderBottom: "1px solid #ccc" }}>
       <button onClick={handleHomeClick} style={{ marginRight: "10px" }}>
         Home

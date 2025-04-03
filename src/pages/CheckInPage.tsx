@@ -14,8 +14,7 @@ const RankedInPage = () => {
   const { role, error: authError, refreshUser } = useUser();
   const navigate = useNavigate(); // For programmatic navigation
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
-  const [selectedTournament, setSelectedTournament] =
-    useState<Tournament | null>(null);
+  const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
   const [rows, setRows] = useState<Row[]>([]);
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
@@ -263,7 +262,7 @@ const RankedInPage = () => {
           checkedInPlayers={checkedInPlayers}
           loading={loading.players}
           isCheckingIn={loading.checkIn}
-          userRole={role}
+          userRole={role!}
           onCheckInToggle={handleCheckInToggle}
           onBulkCheckIn={handleBulkCheckIn}
           onPlayerClick={handlePlayerClick} // Pass the new handler
