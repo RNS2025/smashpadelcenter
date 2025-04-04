@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import rankedInService from "../services/rankedIn";
-import Match from "../types/Match";
-import PlayerData from "../types/PlayerData";
+import rankedInService from "../../../services/rankedIn";
+import Match from "../../../types/Match";
+import PlayerData from "../../../types/PlayerData";
 import { format } from "date-fns";
-import {da} from "date-fns/locale";
+import { da } from "date-fns/locale";
 
 const PlayerPage = () => {
   const { playerId, rowId: rowId } = useParams<{
@@ -107,25 +107,25 @@ const PlayerPage = () => {
                 )}
 
                 {playerData.Header.Form && playerData.Header.Form.length > 0 ? (
-                    <p>
-                      <strong>Seneste form:</strong>{" "}
-                      {playerData.Header.Form.map((result: string, index: number) => (
-                          <span
-                              key={index}
-                              className={
-                                result === "W"
-                                    ? "text-green-600"
-                                    : "text-red-600"
-                              }
-                          >
-                            {result}{" "}
-                          </span>
-                      ))}
-                    </p>
+                  <p>
+                    <strong>Seneste form:</strong>{" "}
+                    {playerData.Header.Form.map(
+                      (result: string, index: number) => (
+                        <span
+                          key={index}
+                          className={
+                            result === "W" ? "text-green-600" : "text-red-600"
+                          }
+                        >
+                          {result}{" "}
+                        </span>
+                      )
+                    )}
+                  </p>
                 ) : (
-                    <p>
-                      <strong>Seneste form:</strong> Ingen kampe at vise
-                    </p>
+                  <p>
+                    <strong>Seneste form:</strong> Ingen kampe at vise
+                  </p>
                 )}
 
                 {/*{playerData.Header.IsProPlayer && (
@@ -176,9 +176,7 @@ const PlayerPage = () => {
         Kommende kampe for {playerData?.Header?.FullName || "spiller"}
       </h2>
       {matches.length === 0 ? (
-        <p className="text-gray-800 text-lg">
-          Ingen kampe fundet for spiller.
-        </p>
+        <p className="text-gray-800 text-lg">Ingen kampe fundet for spiller.</p>
       ) : (
         <div className="grid gap-6">
           {matches.map((match) => (
@@ -187,7 +185,12 @@ const PlayerPage = () => {
               className="bg-white shadow-md rounded-lg p-5 border border-gray-200 hover:shadow-lg transition-shadow duration-300"
             >
               <div className="flex justify-between items-center mb-4">
-                <h2 className="text-xl font-semibold text-gray-800">{match.matchType.replace(/([a-z])([A-Z])/g, "$1 $2")} {match.matchType !== "RoundRobin" ? `- Runde ${match.round}` : ""}</h2>
+                <h2 className="text-xl font-semibold text-gray-800">
+                  {match.matchType.replace(/([a-z])([A-Z])/g, "$1 $2")}{" "}
+                  {match.matchType !== "RoundRobin"
+                    ? `- Runde ${match.round}`
+                    : ""}
+                </h2>
 
                 <span
                   className={`px-3 py-1 rounded-full text-sm font-medium ${
@@ -221,10 +224,14 @@ const PlayerPage = () => {
                   <p className="text-gray-800">
                     <strong>Tidspunkt:</strong>{" "}
                     {match.date
-                      ? format(new Date(match.date), "dd. MMMM yyyy - HH:mm", {locale: da})
+                      ? format(new Date(match.date), "dd. MMMM yyyy - HH:mm", {
+                          locale: da,
+                        })
                       : "TBD"}
                   </p>
-                  <p className="text-gray-800"><strong>Bane:</strong> {match.courtName || "Ikke tildelt"}</p>
+                  <p className="text-gray-800">
+                    <strong>Bane:</strong> {match.courtName || "Ikke tildelt"}
+                  </p>
                   <p className="text-gray-800">
                     <strong>Varighed:</strong>{" "}
                     {match.durationMinutes

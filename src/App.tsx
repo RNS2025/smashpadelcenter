@@ -1,22 +1,22 @@
 import "./App.css";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
-import HomePage from "./pages/HomePage";
-import AdminPage from "./pages/AdminPage";
+import HomePage from "./pages/(logged-in)/HomePage.tsx";
+import AdminPage from "./pages/(logged-in)/AdminPage.tsx";
 import CheckInPage from "./pages/CheckInPage.tsx";
-import PlayerPage from "./pages/PlayerPage";
+import PlayerPage from "./pages/(logged-in)/tournament/PlayerPage.tsx";
 import { HelmetProvider } from "react-helmet-async";
-import { UserProvider } from "./context/UserContext";
-import BookCourtPage from "./pages/CardBookCourtWithSelector.tsx";
-import BookTrainingPage from "./pages/BookTranningCardithSelctor.tsx";
-import CommunityPage from "./pages/CommunityPage.tsx";
-import TournamentPage from "./pages/TournamentPage.tsx";
-import RanglistePage from "./pages/RanglistePage";
-import NewsPage from "./pages/NewsPage";
-import CouponPage from "./pages/CuponPage.tsx";
-import LunarLigaPage from "./pages/LunarLigaPage";
-import PartnerPage from "./pages/PartnerPage";
-import ArrangementPage from "./pages/ArrangementPage";
+import { UserProvider, useUser } from "./context/UserContext";
+import BookCourtPage from "./pages/(logged-in)/CardBookCourtWithSelector.tsx";
+import BookTrainingPage from "./pages/(logged-in)/BookTranningCardithSelctor.tsx";
+import CommunityPage from "./pages/(logged-in)/CommunityPage.tsx";
+import TournamentPage from "./pages/(logged-in)/tournament/TournamentPage.tsx";
+import RanglistePage from "./pages/(logged-in)/RanglistePage.tsx";
+import NewsPage from "./pages/(logged-in)/NewsPage.tsx";
+import CouponPage from "./pages/(logged-in)/CuponPage.tsx";
+import LunarLigaPage from "./pages/(logged-in)/LunarLigaPage.tsx";
+import PartnerPage from "./pages/(logged-in)/PartnerPage.tsx";
+import ArrangementPage from "./pages/(logged-in)/ArrangementPage.tsx";
 
 function App() {
   return (

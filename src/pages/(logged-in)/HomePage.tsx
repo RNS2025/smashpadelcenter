@@ -1,22 +1,19 @@
 import { Helmet } from "react-helmet-async";
-import HomeBar from "../components/HomeBar";
-import { useUser } from "../context/UserContext";
+import HomeBar from "../../components/misc/HomeBar.tsx";
+import { useUser } from "../../context/UserContext.tsx";
 import { useEffect, useState } from "react";
-import Animation from "../components/misc/Animation";
-import HomeScreenCard from "../components/HomeScreen/HomeScreenCard.tsx";
+import Animation from "../../components/misc/Animation.tsx";
+import HomeScreenCard from "../../components/HomeScreen/HomeScreenCard.tsx";
 import {
   AcademicCapIcon,
   ChartBarIcon,
   CalendarIcon,
   CheckCircleIcon,
   CogIcon,
-  HomeIcon,
   ListBulletIcon,
   MoonIcon,
   NewspaperIcon,
-  ShieldCheckIcon,
   TicketIcon,
-  UserIcon,
   BuildingOfficeIcon,
   TrophyIcon,
   UsersIcon,
@@ -44,9 +41,8 @@ export const HomePage = () => {
       <Animation>
         <HomeBar />
 
-
-            <div className="flex h-screen -mt-20 items-center justify-center">
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="flex mt-10 items-center justify-center">
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
             <HomeScreenCard
               icon={<CalendarIcon className="h-10 w-10" aria-hidden="true" />}
               title="Book Bane"

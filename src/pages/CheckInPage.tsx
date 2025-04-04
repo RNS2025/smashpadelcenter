@@ -15,7 +15,8 @@ const RankedInPage = () => {
   const { role, error: authError, refreshUser } = useUser();
   const navigate = useNavigate(); // For programmatic navigation
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
-  const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
+  const [selectedTournament, setSelectedTournament] =
+    useState<Tournament | null>(null);
   const [rows, setRows] = useState<Row[]>([]);
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
@@ -220,62 +221,60 @@ const RankedInPage = () => {
   };
 
   return (
-      <>
+    <>
       <Animation>
-
         <div className="container mx-auto p-4">
+          <h1 className="text-2xl font-bold mb-6">
+            Check-in for kommende turneringer
+          </h1>
 
-          <h1 className="text-2xl font-bold mb-6">Check-in for kommende turneringer</h1>
+          {error && (
+            <AlertMessage
+              type="error"
+              message={error}
+              onClose={() => setError(null)}
+            />
+          )}
 
-      {error && (
-        <AlertMessage
-          type="error"
-          message={error}
-          onClose={() => setError(null)}
-        />
-      )}
+          {successMessage && (
+            <AlertMessage
+              type="success"
+              message={successMessage}
+              onClose={() => setSuccessMessage(null)}
+            />
+          )}
 
-      {successMessage && (
-        <AlertMessage
-          type="success"
-          message={successMessage}
-          onClose={() => setSuccessMessage(null)}
-        />
-      )}
+          <TournamentSelector
+            tournaments={tournaments}
+            selectedTournament={selectedTournament}
+            loading={loading.tournaments}
+            onSelect={handleTournamentSelect}
+          />
 
-      <TournamentSelector
-        tournaments={tournaments}
-        selectedTournament={selectedTournament}
-        loading={loading.tournaments}
-        onSelect={handleTournamentSelect}
-      />
+          {selectedTournament && (
+            <RowSelector
+              rows={rows}
+              selectedRowId={selectedRowId}
+              loading={loading.rows}
+              onSelect={handleRowSelect}
+            />
+          )}
 
-      {selectedTournament && (
-        <RowSelector
-          rows={rows}
-          selectedRowId={selectedRowId}
-          loading={loading.rows}
-          onSelect={handleRowSelect}
-        />
-      )}
-
-      {selectedRowId && (
-        <PlayerCheckInList
-          players={players}
-          checkedInPlayers={checkedInPlayers}
-          loading={loading.players}
-          isCheckingIn={loading.checkIn}
-          userRole={role!}
-          onCheckInToggle={handleCheckInToggle}
-          onBulkCheckIn={handleBulkCheckIn}
-          onPlayerClick={handlePlayerClick} // Pass the new handler
-        />
-      )}
+          {selectedRowId && (
+            <PlayerCheckInList
+              players={players}
+              checkedInPlayers={checkedInPlayers}
+              loading={loading.players}
+              isCheckingIn={loading.checkIn}
+              userRole={role!}
+              onCheckInToggle={handleCheckInToggle}
+              onBulkCheckIn={handleBulkCheckIn}
+              onPlayerClick={handlePlayerClick} // Pass the new handler
+            />
+          )}
         </div>
-
-
       </Animation>
-      </>
+    </>
   );
 };
 

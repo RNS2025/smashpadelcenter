@@ -1,12 +1,12 @@
 import { Helmet } from "react-helmet-async";
 import { useState, useEffect } from "react";
-import { getUsers, changeUserRole } from "../services/auth";
-import User from "../types/user";
-import HomeBar from "../components/HomeBar";
-import { useUser } from "../context/UserContext";
+import { getUsers, changeUserRole } from "../../services/auth";
+import User from "../../types/user";
+import HomeBar from "../../components/misc/HomeBar";
+import { useUser } from "../../context/UserContext";
 
 export const AdminPage = () => {
-  const {error} = useUser();
+  const { error } = useUser();
   const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
@@ -59,7 +59,7 @@ export const AdminPage = () => {
                 <td>{user.role}</td>
                 <td>
                   <select
-                      className="text-black"
+                    className="text-black"
                     value={user.role}
                     onChange={(e) =>
                       handleRoleChange(user.username, e.target.value)
