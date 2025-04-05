@@ -6,6 +6,7 @@ const user = require("./config/roles");
 const authRoutes = require("./routes/authRoutes");
 const rankedInRoutes = require("./routes/rankedinRoutes");
 const checkInRoutes = require("./routes/check-inRoutes");
+const subscriptionRoutes = require("./routes/subscriptionRoutes");
 const { swaggerUi, specs } = require("./config/swagger");
 const mongoose = require("./config/database");
 const createAdmin = require("./scripts/createAdmin");
@@ -21,13 +22,7 @@ app.use(express.json());
 // CORS configuration
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "http://127.0.0.1:5173",
-      "http://localhost:3001",
-      "http://frontend:5173",
-      "http://backend:3001",
-    ],
+    origin: "http://localhost:5173",
     credentials: true,
   })
 );
@@ -60,6 +55,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 app.use("/api/v1", authRoutes);
 app.use("/api/v1", rankedInRoutes);
 app.use("/api/v1", checkInRoutes);
+app.use("/api/v1", subscriptionRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

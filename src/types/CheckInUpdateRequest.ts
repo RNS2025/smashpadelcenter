@@ -5,6 +5,7 @@ interface CheckInUpdateRequest {
   playerId: string;
   playerName: string;
   checkedIn: boolean;
+  userId: string;
 }
 
 export default CheckInUpdateRequest;

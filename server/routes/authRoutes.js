@@ -197,6 +197,46 @@ router.get("/role", (req, res) => {
 
 /**
  * @swagger
+ * /api/v1/username:
+ *   get:
+ *     summary: Get the username of the logged-in user
+ *     tags: [Auth]
+ *     security:
+ *       - cookieAuth: []
+ *     responses:
+ *       200:
+ *         description: Username of the logged-in user
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 username:
+ *                   type: string
+ *       401:
+ *         description: Unauthorized - No user logged in
+ *       500:
+ *         description: Internal Server Error
+ */
+router.get("/username", (req, res) => {
+  try {
+    // Check if user is logged in
+    if (!req.user) {
+      return res
+        .status(401)
+        .json({ message: "Unauthorized - No user logged in" });
+    }
+
+    // Return the username from the authenticated user object
+    res.status(200).json({ username: req.user.username });
+  } catch (err) {
+    console.error("Error fetching username:", err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+});
+
+/**
+ * @swagger
  * /api/v1/logout:
  *   post:
  *     summary: Log out the current user

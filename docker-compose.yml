@@ -3,6 +3,8 @@ services:
   mongo:
     image: mongo:6
     restart: always
+    ports:
+      - "27017:27017"
     networks:
       - app_network
     volumes:
@@ -17,9 +19,8 @@ services:
       MONGO_URI: mongodb://mongo:27017/smashpadelcenter
       FRONTEND_URL: http://frontend:5173
       PORT: 3001
-      VAPID_PUBLIC_KEY: BHV4VfK4x3KvenR_4MOnl7D5hphAWNLQKRq1GyjGSDhzgfQGw8JsBhxwNrSjYZM-JHkpMFWZCxIe-Tp-BslQ3wQ
-      VAPID_PRIVATE_KEY: 2IxzMFQyoYEQVvipXGgOBVWtepunvvUaWSXbx12QeY8
-      VAPID_EMAIL: your_email@example.com
+      VAPID_PUBLIC_KEY: BNs6vAoTALj4B4HwsVW3Kz6y3EYGc6XK5ZjM9V3QH42XDolvBKNQNmMBkThCu6TualLn5ZMzpydHp74wrk7aqXY
+      VAPID_PRIVATE_KEY: qQte9v2HUtpVMYqMMu-BstuVKMcgHP8ZehaOHGoFnEw
     depends_on:
       - mongo
     ports:
@@ -28,7 +29,8 @@ services:
   frontend:
     build: ./
     environment:
-      - REACT_APP_API_BASE_URL=http://backend:3001/api/v1
+      - REACT_APP_API_BASE_URL=http://localhost:3001/api/v1
+      - VAPID_PUBLIC_KEY=BNs6vAoTALj4B4HwsVW3Kz6y3EYGc6XK5ZjM9V3QH42XDolvBKNQNmMBkThCu6TualLn5ZMzpydHp74wrk7aqXY
     restart: always
     networks:
       - app_network

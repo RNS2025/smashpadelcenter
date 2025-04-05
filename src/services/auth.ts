@@ -36,6 +36,15 @@ export const getUserRole = async () => {
   }
 };
 
+export const getUsername = async () => {
+  try {
+    const response = await api.get("/username");
+    return response.data;
+  } catch (error) {
+    throw new Error("Failed to fetch username");
+  }
+};
+
 export const getUsers = async () => {
   try {
     const response = await api.get("/users");

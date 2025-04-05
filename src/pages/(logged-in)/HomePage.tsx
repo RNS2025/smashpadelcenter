@@ -18,19 +18,36 @@ import {
   TrophyIcon,
   UsersIcon,
 } from "@heroicons/react/24/outline";
+import { setupNotifications } from "../../utils/notifications";
 
 export const HomePage = () => {
-  const { role, refreshUser } = useUser();
+  const { role, refreshUser, username } = useUser();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
+    // Refresh user data if role is not set
     if (!role && !isRefreshing) {
       setIsRefreshing(true);
       refreshUser()
         .then(() => setIsRefreshing(false))
         .catch(() => setIsRefreshing(false));
     }
-  }, [role, isRefreshing, refreshUser]);
+
+    // Setup notifications when the homepage loads
+    const initializeNotifications = async () => {
+      try {
+        if (username) {
+          await setupNotifications(username);
+        } else {
+          console.error("Username is null. Notifications setup skipped.");
+        }
+      } catch (error) {
+        console.error("Failed to initialize notifications:", error);
+      }
+    };
+
+    initializeNotifications();
+  }, [role, isRefreshing, refreshUser, username]); // Dependencies ensure it runs on mount and role change
 
   return (
     <>

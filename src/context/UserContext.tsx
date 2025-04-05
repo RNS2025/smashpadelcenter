@@ -1,15 +1,12 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { getUserRole, logout as authLogout } from "../services/auth";
+import {
+  getUserRole,
+  getUsername,
+  logout as authLogout,
+} from "../services/auth";
 import { useNavigate, useLocation } from "react-router-dom";
 import { WHITELIST_ROUTES } from "./WhitelistRoutes";
-
-interface UserContextType {
-  role: string | null;
-  error: string | null;
-  fetchRole: () => Promise<void>;
-  refreshUser: () => Promise<void>;
-  logout: () => void;
-}
+import UserContextType from "../types/UserContextType";
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
@@ -31,6 +28,7 @@ const isRouteWhitelisted = (pathname: string, whitelist: string[]): boolean => {
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [role, setRole] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [username, setUsername] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -38,6 +36,8 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       const data = await getUserRole();
       setRole(data.role);
+      const user = await getUsername();
+      setUsername(user.username);
       setError(null);
     } catch (error) {
       setRole(null);
@@ -76,7 +76,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <UserContext.Provider
-      value={{ role, error, fetchRole, refreshUser, logout }}
+      value={{ role, error, fetchRole, refreshUser, logout, username }}
     >
       {children}
     </UserContext.Provider>

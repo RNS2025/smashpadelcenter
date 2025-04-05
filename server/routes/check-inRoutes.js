@@ -1,5 +1,6 @@
 const express = require("express");
 const checkInService = require("../Services/checkInService");
+const { sendNotification } = require("../Services/subscriptionService");
 
 const router = express.Router();
 
@@ -72,7 +73,9 @@ router.get("/check-in/status", async (req, res) => {
  */
 router.post("/check-in/update", async (req, res) => {
   try {
-    const { tournamentId, rowId, playerId, playerName, checkedIn } = req.body;
+    const { tournamentId, rowId, playerId, playerName, checkedIn, userId } =
+      req.body;
+    // Update the check-in status
     await checkInService.updateCheckInStatus(
       tournamentId,
       rowId,
@@ -80,12 +83,19 @@ router.post("/check-in/update", async (req, res) => {
       playerName,
       checkedIn
     );
+
+    await sendNotification(
+      userId,
+      "Check-in Successful",
+      "You’ve checked in!",
+      null
+    );
+
     res.status(200).json({ message: "Check-in status updated successfully" });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
-
 /**
  * @swagger
  * /api/v1/check-in/bulk-update:
@@ -129,11 +139,9 @@ router.post("/check-in/bulk-update", async (req, res) => {
       checkedIn,
       players
     );
-    res
-      .status(200)
-      .json({
-        message: "Check-in status updated successfully for all players",
-      });
+    res.status(200).json({
+      message: "Check-in status updated successfully for all players",
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

@@ -6,7 +6,7 @@ import AdminPage from "./pages/(logged-in)/AdminPage.tsx";
 import CheckInPage from "./pages/CheckInPage.tsx";
 import PlayerPage from "./pages/(logged-in)/tournament/PlayerPage.tsx";
 import { HelmetProvider } from "react-helmet-async";
-import { UserProvider, useUser } from "./context/UserContext";
+import { UserProvider } from "./context/UserContext";
 import BookCourtPage from "./pages/(logged-in)/CardBookCourtWithSelector.tsx";
 import BookTrainingPage from "./pages/(logged-in)/BookTranningCardithSelctor.tsx";
 import CommunityPage from "./pages/(logged-in)/CommunityPage.tsx";

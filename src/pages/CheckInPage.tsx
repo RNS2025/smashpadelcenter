@@ -12,7 +12,7 @@ import { useUser } from "../context/UserContext";
 import Animation from "../components/misc/Animation.tsx";
 
 const RankedInPage = () => {
-  const { role, error: authError, refreshUser } = useUser();
+  const { role, error: authError, refreshUser, username } = useUser();
   const navigate = useNavigate(); // For programmatic navigation
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [selectedTournament, setSelectedTournament] =
@@ -147,6 +147,7 @@ const RankedInPage = () => {
         playerId: playerId,
         playerName: playerName,
         checkedIn: newCheckInStatus,
+        userId: username || "Unknown",
       });
 
       setCheckedInPlayers((prev) => {
