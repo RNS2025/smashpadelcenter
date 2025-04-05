@@ -17,6 +17,7 @@ import CouponPage from "./pages/(logged-in)/CuponPage.tsx";
 import LunarLigaPage from "./pages/(logged-in)/LunarLigaPage.tsx";
 import PartnerPage from "./pages/(logged-in)/PartnerPage.tsx";
 import ArrangementPage from "./pages/(logged-in)/ArrangementPage.tsx";
+import ProfilePage from "./pages/(logged-in)/ProfilePage.tsx";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
 
             {/* Protected Routes */}
             <Route path="/" element={<LoginPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/book-court" element={<BookCourtPage />} />

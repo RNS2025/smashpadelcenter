@@ -1,5 +1,8 @@
 const SubscriptionService = require("../models/Subscription");
 const webPush = require("web-push");
+const SubscriptionPreference = require("../models/subscriptionPreferenceSchema");
+const { v4: uuidv4 } = require("uuid");
+const NotificationHistory = require("../models/NotificationHistory");
 
 // Configure VAPID keys
 const vapidKeys = {
@@ -31,6 +34,19 @@ const saveSubscription = async (subscription, userId) => {
       throw new Error("Invalid subscription data: missing required fields");
     }
 
+    // Check if subscription already exists for the user
+    const existingSubscription = await SubscriptionService.findOne({
+      userId,
+      "keys.p256dh": subscription.keys.p256dh,
+      "keys.auth": subscription.keys.auth,
+    });
+
+    if (existingSubscription) {
+      console.log(`Subscription for user ${userId} already exists.`);
+      return existingSubscription; // Return the existing subscription
+    }
+
+    // Save the new subscription
     const newSubscription = await SubscriptionService.create({
       endpoint: subscription.endpoint,
       keys: {
@@ -47,7 +63,7 @@ const saveSubscription = async (subscription, userId) => {
   }
 };
 
-const sendNotification = async (userId, title, body, image) => {
+const sendNotification = async (userId, title, body, image, category) => {
   try {
     const filter = userId ? { userId } : {};
     const subscriptions = await SubscriptionService.find(filter);
@@ -57,7 +73,50 @@ const sendNotification = async (userId, title, body, image) => {
       return;
     }
 
-    const notificationPromises = subscriptions.map((subscription) => {
+    // Process each subscription
+    const notificationPromises = [];
+
+    const notificationId = uuidv4(); // Generate unique notification ID
+
+    // Check if the notification was already sent to this user
+    const existingNotification = await NotificationHistory.findOne({
+      userId,
+      notificationId,
+    });
+
+    if (existingNotification) {
+      console.log(
+        `Notification with ID ${notificationId} already sent to user ${userId}.`
+      );
+      return; // Skip sending if already sent
+    }
+
+    // Add to history to mark this notification as sent
+    await NotificationHistory.create({
+      userId,
+      notificationId,
+    });
+
+    for (const subscription of subscriptions) {
+      // Check user preferences if a category is specified
+      if (category) {
+        const userPrefs = await SubscriptionPreference.findOne({
+          userId: subscription.userId,
+        });
+
+        // Skip if user has disabled this notification category
+        if (
+          userPrefs &&
+          userPrefs.preferences &&
+          userPrefs.preferences[category] === false
+        ) {
+          console.log(
+            `User ${subscription.userId} has disabled ${category} notifications. Skipping.`
+          );
+          continue;
+        }
+      }
+
       const sub = {
         endpoint: subscription.endpoint,
         keys: {
@@ -71,18 +130,22 @@ const sendNotification = async (userId, title, body, image) => {
           title,
           body,
           image,
+          category,
+          notificationId, // Include notificationId in the payload
         },
       });
 
-      return webPush
-        .sendNotification(sub, payload)
-        .then(() =>
-          console.log(`Notification sent to ${subscription.endpoint}`)
-        )
-        .catch((error) =>
-          console.error(`Error sending to ${subscription.endpoint}:`, error)
-        );
-    });
+      notificationPromises.push(
+        webPush
+          .sendNotification(sub, payload)
+          .then(() =>
+            console.log(`Notification sent to ${subscription.endpoint}`)
+          )
+          .catch((error) =>
+            console.error(`Error sending to ${subscription.endpoint}:`, error)
+          )
+      );
+    }
 
     await Promise.all(notificationPromises);
   } catch (error) {

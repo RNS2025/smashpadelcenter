@@ -127,12 +127,6 @@ const PlayerPage = () => {
                     <strong>Seneste form:</strong> Ingen kampe at vise
                   </p>
                 )}
-
-                {/*{playerData.Header.IsProPlayer && (
-                  <p className="text-green-600 font-semibold">
-                    Professional Player
-                  </p>
-                )}*/}
               </div>
             </div>
           </div>
@@ -241,7 +235,7 @@ const PlayerPage = () => {
                 </div>
               </div>
 
-              <div className="mt-4">
+              {/* <div className="mt-4">
                 <p className="text-gray-800">
                   <strong>Resultat:</strong> {match.score || "Ikke afviklet"}
                 </p>
@@ -254,7 +248,7 @@ const PlayerPage = () => {
                       : match.challenged.firstPlayer.Name}
                   </p>
                 )}
-              </div>
+              </div> */}
             </div>
           ))}
         </div>

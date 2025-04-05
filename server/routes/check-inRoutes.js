@@ -87,8 +87,9 @@ router.post("/check-in/update", async (req, res) => {
     await sendNotification(
       userId,
       "Check-in Successful",
-      "You’ve checked in!",
-      null
+      `${playerName} checked in!`,
+      "https://www.smash.dk/wp-content/uploads/2021/05/SMASH-neg-udenby@4x.png",
+      "turneringer"
     );
 
     res.status(200).json({ message: "Check-in status updated successfully" });

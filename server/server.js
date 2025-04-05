@@ -22,7 +22,11 @@ app.use(express.json());
 // CORS configuration
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: [
+      "http://localhost:5173",
+      "http://192.168.1.124:5173",
+      "http://frontend:5173",
+    ],
     credentials: true,
   })
 );

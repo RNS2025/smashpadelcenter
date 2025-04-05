@@ -3,6 +3,7 @@ const {
   saveSubscription,
   sendNotification,
 } = require("../Services/subscriptionService");
+const SubscriptionPreference = require("../models/subscriptionPreferenceSchema");
 
 const router = express.Router();
 
@@ -75,12 +76,62 @@ router.post("/subscribe", async (req, res) => {
  */
 router.post("/notify", async (req, res) => {
   try {
-    const { userId, title, body, image } = req.body;
-    await sendNotification(userId, title, body, image);
+    const { userId, title, body, image, category } = req.body;
+    await sendNotification(userId, title, body, image, category);
     res.status(200).json({ message: "Notification sent successfully." });
   } catch (error) {
     console.error("Error sending notification:", error);
     res.status(500).json({ error: "Failed to send notification." });
+  }
+});
+
+// Get user preferences
+router.get("/preferences/:userId", async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const preferences = await SubscriptionPreference.findOne({ userId });
+
+    if (!preferences) {
+      // Return default preferences if none exist
+      return res.status(200).json({
+        preferences: {
+          updates: true,
+          messages: true,
+          events: false,
+          promotions: false,
+        },
+      });
+    }
+
+    res.status(200).json({ preferences: preferences.preferences });
+  } catch (error) {
+    console.error("Error fetching notification preferences:", error);
+    res
+      .status(500)
+      .json({ error: "Failed to fetch notification preferences." });
+  }
+});
+
+// Save user preferences
+router.post("/preferences", async (req, res) => {
+  try {
+    const { userId, preferences } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ error: "User ID is required" });
+    }
+
+    // Use upsert to create if doesn't exist or update if it does
+    await SubscriptionPreference.findOneAndUpdate(
+      { userId },
+      { userId, preferences, updatedAt: Date.now() },
+      { upsert: true, new: true }
+    );
+
+    res.status(200).json({ message: "Preferences saved successfully" });
+  } catch (error) {
+    console.error("Error saving notification preferences:", error);
+    res.status(500).json({ error: "Failed to save notification preferences." });
   }
 });
 
