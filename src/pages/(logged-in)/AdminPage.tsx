@@ -4,6 +4,7 @@ import { getUsers, changeUserRole } from "../../services/auth";
 import User from "../../types/user";
 import HomeBar from "../../components/misc/HomeBar";
 import { useUser } from "../../context/UserContext";
+import CourtSchedule from "../../components/CourtSchedule";
 
 export const AdminPage = () => {
   const { error } = useUser();
@@ -43,7 +44,7 @@ export const AdminPage = () => {
       </Helmet>
       <div>
         <h1>Admin Page</h1>
-        {error && <p className="text-red-500">{error}</p>}{" "}
+        {error && <p className="text-red-500">{error}</p>} <h2>Users</h2>
         <table>
           <thead>
             <tr>
@@ -73,6 +74,7 @@ export const AdminPage = () => {
             ))}
           </tbody>
         </table>
+        <CourtSchedule />
       </div>
     </>
   );
