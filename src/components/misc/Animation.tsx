@@ -15,7 +15,7 @@ const Animation: FC<AnimationProps> = ({ children }) => {
     }, []);
 
     return (
-        <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+        <div className={`transition-all duration-1000 overflow-hidden ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
             {children}
         </div>
     );

@@ -28,7 +28,7 @@ export const CourtsMap = () => {
     ];
 
     return (
-        <svg viewBox="0 0 370 600" className="w-screen h-screen" preserveAspectRatio="xMidYMid meet">
+        <svg viewBox="0 0 360 580" className="w-screen h-screen" preserveAspectRatio="xMidYMid meet">
 
             <text
                 x="190"
