@@ -13,3 +13,5 @@ const CommunityPage: React.FC = () => {
 };
 
 export default CommunityPage;
+
+// TODO: Add the actual content and functionality for the Community Page.

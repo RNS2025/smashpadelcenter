@@ -63,8 +63,10 @@ const saveSubscription = async (subscription, userId) => {
   }
 };
 
-const sendNotification = async (userId, title, body, image, category) => {
+const sendNotification = async (userId, title, body, category) => {
   try {
+    const image =
+      "https://www.smash.dk/wp-content/uploads/2021/05/SMASH-neg-udenby@4x.png"; // Default image URL
     const filter = userId ? { userId } : {};
     const subscriptions = await SubscriptionService.find(filter);
 

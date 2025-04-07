@@ -13,3 +13,5 @@ const PartnerPage: React.FC = () => {
 };
 
 export default PartnerPage;
+
+// TODO: Add the actual content and functionality for the Partner Page.

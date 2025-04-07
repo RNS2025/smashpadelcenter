@@ -45,7 +45,7 @@ router.post("/subscribe", async (req, res) => {
 
 /**
  * @swagger
- * /api/subscriptions/notify:
+ * /api/v1/notify:
  *   post:
  *     summary: Send a notification to a user or all users
  *     tags: [Subscriptions]
@@ -77,7 +77,7 @@ router.post("/subscribe", async (req, res) => {
 router.post("/notify", async (req, res) => {
   try {
     const { userId, title, body, category } = req.body;
-    await sendNotification(userId, title, body, image, category);
+    await sendNotification(userId, title, body, category);
     res.status(200).json({ message: "Notification sent successfully." });
   } catch (error) {
     console.error("Error sending notification:", error);

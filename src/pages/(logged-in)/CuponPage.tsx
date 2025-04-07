@@ -13,3 +13,5 @@ const CouponPage: React.FC = () => {
 };
 
 export default CouponPage;
+
+// TODO: Add the actual content and functionality for the Coupon Page.

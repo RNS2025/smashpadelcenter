@@ -22,7 +22,7 @@ import { sendNotification } from "../utils/notifications";
 import { useUser } from "../context/UserContext";
 
 const CourtSchedule: React.FC = () => {
-  const { username } = useUser(); // Get username from user context
+  const { username, role } = useUser(); // Get username from user context
   const [courtTimes, setCourtTimes] = useState<CourtData[] | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -333,24 +333,28 @@ const CourtSchedule: React.FC = () => {
       )}
 
       {/* Send notification and Select All buttons */}
-      <Box mt={2} display="flex" justifyContent="center" gap={2}>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={handleSendNotification}
-          disabled={selectedTimes.size === 0}
-        >
-          Send Notification
-        </Button>
-        <Button
-          variant="outlined"
-          color="secondary"
-          onClick={handleSelectAllTimes}
-          disabled={!startTime || !endTime}
-        >
-          Select All Available Times
-        </Button>
-      </Box>
+      {/* Only show for admins */}
+      {role === "admin" && (
+        <Box mt={2} display="flex" justifyContent="center" gap={2}>
+          {/* Buttons for sending notifications and selecting all times */}
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleSendNotification}
+            disabled={selectedTimes.size === 0}
+          >
+            Send Notification
+          </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={handleSelectAllTimes}
+            disabled={!startTime || !endTime}
+          >
+            Select All Available Times
+          </Button>
+        </Box>
+      )}
     </Box>
   );
 };

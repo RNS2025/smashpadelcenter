@@ -13,3 +13,5 @@ const RanglistePage: React.FC = () => {
 };
 
 export default RanglistePage;
+
+// TODO: Add the actual content and functionality for the Rangliste Page.
