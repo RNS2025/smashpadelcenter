@@ -14,3 +14,5 @@ const ProfilePage: React.FC = () => {
 };
 
 export default ProfilePage;
+
+// TODO: Add the actual content and functionality for the Profile Page.

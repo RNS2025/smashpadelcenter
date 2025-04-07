@@ -13,3 +13,5 @@ const LunarLigaPage: React.FC = () => {
 };
 
 export default LunarLigaPage;
+
+// TODO: Add the actual content and functionality for the Lunar Liga Page.

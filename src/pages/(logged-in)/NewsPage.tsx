@@ -13,3 +13,5 @@ const NewsPage: React.FC = () => {
 };
 
 export default NewsPage;
+
+// TODO: Add the actual content and functionality for the News Page.

@@ -8,6 +8,8 @@ const rankedInRoutes = require("./routes/rankedinRoutes");
 const checkInRoutes = require("./routes/check-inRoutes");
 const subscriptionRoutes = require("./routes/subscriptionRoutes");
 const bookingSystemRoutes = require("./routes/bookingSystemRoutes");
+const trainerRoutes = require("./routes/bookTrainersRoutes");
+const smashEventRoutes = require("./routes/smashEventRoutes");
 const { swaggerUi, specs } = require("./config/swagger");
 const mongoose = require("./config/database");
 const createAdmin = require("./scripts/createAdmin");
@@ -62,6 +64,8 @@ app.use("/api/v1", rankedInRoutes);
 app.use("/api/v1", checkInRoutes);
 app.use("/api/v1", subscriptionRoutes);
 app.use("/api/v1", bookingSystemRoutes);
+app.use("/api/v1", trainerRoutes);
+app.use("/api/v1", smashEventRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
