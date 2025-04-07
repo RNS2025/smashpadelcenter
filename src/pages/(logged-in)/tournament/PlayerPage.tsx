@@ -170,7 +170,7 @@ const PlayerPage = () => {
         Kommende kampe for {playerData?.Header?.FullName || "spiller"}
       </h2>
       {matches.length === 0 ? (
-        <p className="text-gray-800 text-lg">Ingen kampe fundet for spiller.</p>
+        <p className="text-lg">Ingen kampe fundet for spiller.</p>
       ) : (
         <div className="grid gap-6">
           {matches.map((match) => (

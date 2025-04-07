@@ -1,6 +1,6 @@
 import React from "react";
-import Row from "../types/Row";
-import LoadingSpinner from "./misc/LoadingSpinner.tsx";
+import Row from "../../../types/Row.ts";
+import LoadingSpinner from "../../misc/LoadingSpinner.tsx";
 
 type RowSelectorProps = {
   rows: Row[];
@@ -26,20 +26,20 @@ const RowSelector: React.FC<RowSelectorProps> = ({
       ) : rows.length === 0 ? (
         <p className="text-gray-500">Rækker ikke tilgængelige for denne turnering.</p>
       ) : (
-        <div className="flex flex-wrap gap-2">
-          {rows.map((row) => (
-            <button
-              key={row.Id}
-              className={`px-4 py-2 rounded-md transition-colors ${
-                selectedRowId === row.Id.toString()
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 hover:bg-gray-300 text-gray-800"
-              }`}
-              onClick={() => onSelect(row.Id.toString())}
-            >
-              {row.Name || `Row ${row.Id}`}
-            </button>
-          ))}
+        <div className="flex">
+          <select
+              className="border rounded-md p-2 text-black"
+              value={selectedRowId || ""}
+              onChange={(e) => onSelect(e.target.value)}>
+            <option value="" disabled>
+              Vælg række
+            </option>
+            {rows.map((row) => (
+                <option key={row.Id} value={row.Id} className="text-black">
+                  {row.Name}
+                </option>
+            ))}
+          </select>
         </div>
       )}
     </div>

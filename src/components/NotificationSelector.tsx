@@ -44,7 +44,7 @@ const NotificationSelector: React.FC<NotificationSelectorProps> = ({
     };
 
     if (userId) {
-      fetchPreferences();
+      fetchPreferences().then();
     }
   }, [userId]);
 
@@ -87,7 +87,7 @@ const NotificationSelector: React.FC<NotificationSelectorProps> = ({
             sx={{ display: "flex", alignItems: "center", gap: 1 }}
           >
             <Bell size={20} />
-            Notification Preferences
+            Notifikationer
           </Typography>
         }
       />
@@ -127,7 +127,7 @@ const NotificationSelector: React.FC<NotificationSelectorProps> = ({
             onClick={savePreferences}
             disabled={loading}
           >
-            {loading ? "Saving..." : "Save Preferences"}
+            {loading ? "Gemmer..." : "Gem præferencer"}
           </Button>
 
           {saveStatus === "success" && (

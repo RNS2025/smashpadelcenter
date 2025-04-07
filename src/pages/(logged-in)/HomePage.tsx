@@ -8,7 +8,6 @@ import {
   AcademicCapIcon,
   ChartBarIcon,
   CalendarIcon,
-  CheckCircleIcon,
   CogIcon,
   ListBulletIcon,
   MoonIcon,
@@ -84,21 +83,13 @@ export const HomePage = () => {
               icon={<TrophyIcon className="h-10 w-10" aria-hidden="true" />}
               title="Turneringer"
               description="Deltag i spændende turneringer"
-              link="/tournament"
+              link="/turneringer"
             />
             <HomeScreenCard
               icon={<ListBulletIcon className="h-10 w-10" aria-hidden="true" />}
               title="Rangliste"
               description="Stryg hele vejen til tops i ranglisten"
               link="/rangliste"
-            />
-            <HomeScreenCard
-              icon={
-                <CheckCircleIcon className="h-10 w-10" aria-hidden="true" />
-              }
-              title="Check-in"
-              description="Check ind til dine bookinger"
-              link="/check-in"
             />
             <HomeScreenCard
               icon={<NewspaperIcon className="h-10 w-10" aria-hidden="true" />}

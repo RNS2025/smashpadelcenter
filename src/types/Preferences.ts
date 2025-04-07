@@ -23,12 +23,12 @@ export type Preferences = {
 
 // Centralized configuration for preference labels and icons
 export const preferenceConfig = {
-  updates: { label: "Court Updates", icon: Bell },
-  messages: { label: "New Messages", icon: MessageSquare },
-  events: { label: "Event Reminders", icon: Calendar },
-  promotions: { label: "Promotions & Offers", icon: ShoppingCart },
-  makkerbors: { label: "Partner Board", icon: Users },
-  rangliste: { label: "Rankings", icon: BarChart },
-  nyheder: { label: "News", icon: FileText },
-  turneringer: { label: "Tournaments", icon: Star },
+  updates: { label: "Baneopdateringer", icon: Bell },
+  messages: { label: "Nye beskeder", icon: MessageSquare },
+  events: { label: "Begivenheder", icon: Calendar },
+  promotions: { label: "Tilbud og kampagner", icon: ShoppingCart },
+  makkerbors: { label: "Makkerbørs", icon: Users },
+  rangliste: { label: "Rangliste", icon: BarChart },
+  nyheder: { label: "Nyheder", icon: FileText },
+  turneringer: { label: "Turneringer", icon: Star },
 };

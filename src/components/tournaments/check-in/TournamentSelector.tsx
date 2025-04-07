@@ -1,6 +1,6 @@
 import React from "react";
-import Tournament from "../types/Tournament";
-import LoadingSpinner from "./misc/LoadingSpinner.tsx";
+import Tournament from "../../../types/Tournament.ts";
+import LoadingSpinner from "../../misc/LoadingSpinner.tsx";
 import { format } from "date-fns";
 import {da} from "date-fns/locale/da";
 

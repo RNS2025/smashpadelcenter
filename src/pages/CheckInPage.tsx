@@ -1,15 +1,16 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom"; // Add useNavigate for navigation
+import { useNavigate } from "react-router-dom";
 import rankedInService from "../services/rankedIn";
 import Player from "../types/Player";
 import Tournament from "../types/Tournament";
 import Row from "../types/Row";
-import TournamentSelector from "../components/TournamentSelector";
-import RowSelector from "../components/RowSelector";
-import PlayerCheckInList from "../components/PlayerCheckInList";
-import AlertMessage from "../components/AlertMessage";
+import TournamentSelector from "../components/tournaments/check-in/TournamentSelector.tsx";
+import RowSelector from "../components/tournaments/check-in/RowSelector.tsx";
+import PlayerCheckInList from "../components/tournaments/check-in/PlayerCheckInList.tsx";
+import AlertMessage from "../components/tournaments/check-in/AlertMessage.tsx";
 import { useUser } from "../context/UserContext";
 import Animation from "../components/misc/Animation.tsx";
+import HomeBar from "../components/misc/HomeBar.tsx";
 
 const RankedInPage = () => {
   const { role, error: authError, refreshUser, username } = useUser();
@@ -224,9 +225,11 @@ const RankedInPage = () => {
   return (
     <>
       <Animation>
+        <HomeBar/>
+
         <div className="container mx-auto p-4">
           <h1 className="text-2xl font-bold mb-6">
-            Check-in for kommende turneringer
+            Indtjekning for kommende turneringer
           </h1>
 
           {error && (

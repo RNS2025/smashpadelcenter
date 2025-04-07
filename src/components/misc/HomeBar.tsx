@@ -54,16 +54,13 @@ const HomeBar = () => {
         {/* Left side: Navigation buttons */}
         <Stack direction="row" spacing={2} alignItems="center">
           <Button variant="text" onClick={handleHomeClick}>
-            Home
+            Hjem
           </Button>
           {role === "admin" && (
             <Button variant="text" onClick={handleAdminClick}>
               Admin Panel
             </Button>
           )}
-          <Button variant="text" onClick={handleLogout}>
-            Logout
-          </Button>
         </Stack>
 
         {/* Right side: Username and bell icon */}
@@ -76,6 +73,9 @@ const HomeBar = () => {
           <IconButton onClick={handleToggle} size="large">
             <Bell />
           </IconButton>
+          <Button variant="text" onClick={handleLogout}>
+            Log ud
+          </Button>
         </Stack>
       </Toolbar>
 

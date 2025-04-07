@@ -1,5 +1,5 @@
 import React from "react";
-import Player from "../types/Player";
+import Player from "../../../types/Player.ts";
 
 interface PlayerCheckInListProps {
   players: Player[];
@@ -27,6 +27,7 @@ const PlayerCheckInList: React.FC<PlayerCheckInListProps> = ({
   }
 
   return (
+
     <div className="mt-6">
       <h2 className="text-xl font-semibold mb-4">Spillere</h2>
       {players.length === 0 ? (
@@ -47,7 +48,7 @@ const PlayerCheckInList: React.FC<PlayerCheckInListProps> = ({
                         (player) =>
                             player && (
                                 <div key={player.RankedInId} className="flex justify-between items-center">
-                                  <span className="text-blue-600 hover:underline cursor-pointer block" onClick={() => onPlayerClick(player.RankedInId)}>
+                                  <span className="text-gray-800 font-semibold hover:underline cursor-pointer block" onClick={() => onPlayerClick(player.RankedInId)}>
                                     {player.Name}
                                   </span>
 
@@ -59,9 +60,9 @@ const PlayerCheckInList: React.FC<PlayerCheckInListProps> = ({
                                             onCheckInToggle(player.RankedInId, player.Name)
                                         }
                                         disabled={isCheckingIn}
-                                        className="h-5 w-5 text-blue-600"
+                                        className="h-5 w-5 text-cyan-500"
                                     />
-                                    <span className="ml-2 text-gray-700">Checked In</span>
+                                    <span className="ml-2 text-gray-700">Tjek ind</span>
                                   </label>
                                 </div>
                             ))}
@@ -75,16 +76,16 @@ const PlayerCheckInList: React.FC<PlayerCheckInListProps> = ({
               <button
                 onClick={() => onBulkCheckIn(true)}
                 disabled={isCheckingIn}
-                className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:bg-gray-400"
+                className="px-4 py-2 bg-cyan-500 text-white rounded hover:bg-green-700 disabled:bg-gray-400"
               >
-                Check In All
+                Indtjek alle
               </button>
               <button
                 onClick={() => onBulkCheckIn(false)}
                 disabled={isCheckingIn}
                 className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:bg-gray-400"
               >
-                Check Out All
+                Udtjek alle
               </button>
             </div>
           )}
