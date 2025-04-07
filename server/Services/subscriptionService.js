@@ -131,7 +131,7 @@ const sendNotification = async (userId, title, body, image, category) => {
           body,
           image,
           category,
-          notificationId, // Include notificationId in the payload
+          notificationId,
         },
       });
 

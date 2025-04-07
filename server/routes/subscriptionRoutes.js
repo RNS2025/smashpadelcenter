@@ -76,7 +76,7 @@ router.post("/subscribe", async (req, res) => {
  */
 router.post("/notify", async (req, res) => {
   try {
-    const { userId, title, body, image, category } = req.body;
+    const { userId, title, body, category } = req.body;
     await sendNotification(userId, title, body, image, category);
     res.status(200).json({ message: "Notification sent successfully." });
   } catch (error) {

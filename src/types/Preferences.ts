@@ -23,7 +23,7 @@ export type Preferences = {
 
 // Centralized configuration for preference labels and icons
 export const preferenceConfig = {
-  updates: { label: "Product Updates", icon: Bell },
+  updates: { label: "Court Updates", icon: Bell },
   messages: { label: "New Messages", icon: MessageSquare },
   events: { label: "Event Reminders", icon: Calendar },
   promotions: { label: "Promotions & Offers", icon: ShoppingCart },

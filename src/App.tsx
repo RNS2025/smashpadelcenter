@@ -18,6 +18,7 @@ import LunarLigaPage from "./pages/(logged-in)/LunarLigaPage.tsx";
 import PartnerPage from "./pages/(logged-in)/PartnerPage.tsx";
 import ArrangementPage from "./pages/(logged-in)/ArrangementPage.tsx";
 import ProfilePage from "./pages/(logged-in)/ProfilePage.tsx";
+import CourtTimes from "./pages/court-times.tsx";
 
 function App() {
   return (
@@ -28,6 +29,7 @@ function App() {
             {/* Whitelisted Routes */}
             <Route path="/check-in" element={<CheckInPage />} />
             <Route path="/player/:playerId/:rowId" element={<PlayerPage />} />
+            <Route path="/court-times" element={<CourtTimes />} />
 
             {/* Protected Routes */}
             <Route path="/" element={<LoginPage />} />

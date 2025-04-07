@@ -45,6 +45,38 @@ export async function setupNotifications(userId: string): Promise<void> {
   }
 }
 
+export async function sendNotification(
+  username: string | null,
+  title: string,
+  body: string,
+  category?: string
+): Promise<void> {
+  if (!username) {
+    console.error("Username is required to send notification.");
+    return;
+  }
+  const userId = username;
+  try {
+    const payload = {
+      userId,
+      title,
+      body,
+      category,
+    };
+
+    const response = await api.post("/notify", payload);
+
+    if (response.status === 200) {
+      console.log("Notification sent successfully.");
+    } else {
+      console.error("Failed to send notification:", response.data);
+    }
+  } catch (error) {
+    console.error("Error sending notification:", error);
+    throw error;
+  }
+}
+
 async function subscribeUser(
   registration: ServiceWorkerRegistration,
   userId: string
