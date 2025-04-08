@@ -28,7 +28,8 @@ export const CourtsMap = () => {
     ];
 
     return (
-        <svg viewBox="0 0 360 580" className="w-screen h-screen" preserveAspectRatio="xMidYMid meet">
+        <div className="mx-auto">
+        <svg viewBox="0 0 360 580" className="lg:w-auto lg:h-screen">
 
             <text
                 x="190"
@@ -45,6 +46,19 @@ export const CourtsMap = () => {
             {/* Hal 2 */}
             <rect x="20" y="50" width="130" height="410" fill="none" stroke="white" strokeWidth="3" />
             <rect x="20" y="420" width="130" height="40" fill="gray" stroke="white" strokeWidth="3" />
+            <rect x="100" y="460" width="50" height="40" fill="blue" stroke="white" strokeWidth="3" />
+            <text
+                x="125"
+                y="480"
+                textAnchor="middle"
+                alignmentBaseline="middle"
+                fill="white"
+                fontSize="10"
+                fontWeight="bold"
+                className="select-none"
+            >
+                Indgang
+            </text>
             <text
                 x="85"
                 y="440"
@@ -109,6 +123,7 @@ export const CourtsMap = () => {
                 return null;
             })}
         </svg>
+        </div>
     );
 };
 
