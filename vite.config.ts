@@ -9,4 +9,9 @@ export default defineConfig({
     port: 5173,
     strictPort: true,
   },
+  resolve: {
+    alias: {
+      "date-fns/locale/da": "date-fns/locale/da/index.js",
+    },
+  },
 });
