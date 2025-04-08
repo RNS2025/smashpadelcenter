@@ -10,10 +10,12 @@ const subscriptionRoutes = require("./routes/subscriptionRoutes");
 const bookingSystemRoutes = require("./routes/bookingSystemRoutes");
 const trainerRoutes = require("./routes/bookTrainersRoutes");
 const smashEventRoutes = require("./routes/smashEventRoutes");
+const newsRoutes = require("./routes/newsRoutes");
 const { swaggerUi, specs } = require("./config/swagger");
 const mongoose = require("./config/database");
 const createAdmin = require("./scripts/createAdmin");
 const createTenUsers = require("./scripts/createTenUsers");
+const path = require("path");
 require("dotenv").config();
 
 const app = express();
@@ -55,6 +57,9 @@ app.use(passport.session());
 // Connect-Roles setup
 app.use(user.middleware());
 
+// Serve static files from the 'uploads' folder
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 // Swagger setup
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 
@@ -66,6 +71,7 @@ app.use("/api/v1", subscriptionRoutes);
 app.use("/api/v1", bookingSystemRoutes);
 app.use("/api/v1", trainerRoutes);
 app.use("/api/v1", smashEventRoutes);
+app.use("/api/v1", newsRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

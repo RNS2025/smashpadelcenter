@@ -1,7 +1,7 @@
 # Use official Node.js LTS image
 FROM node:18-alpine
 
-# Set working directory inside container
+# Set working directory inside the container
 WORKDIR /app
 
 # Copy package.json and package-lock.json first to leverage Docker cache
@@ -13,8 +13,14 @@ RUN npm install --omit=dev
 # Copy the entire project into the container
 COPY . .
 
+# Ensure the uploads/images folder exists in the container
+RUN mkdir -p /app/uploads/images
+
 # Expose the port the app runs on
 EXPOSE 3001
+
+# Serve static files from the "uploads" folder (inside container)
+RUN mkdir -p /app/uploads/images
 
 # Start the application
 CMD ["node", "server.js"]
