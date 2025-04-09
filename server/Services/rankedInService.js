@@ -34,6 +34,30 @@ const getAvailableTournaments = async (
   }
 };
 
+const getUpcomingTournament = async (
+  organisationId = "4310",
+  language = "en"
+) => {
+  try {
+    console.debug("Fetching upcoming tournament with params:", {
+      organisationId,
+      language,
+    });
+
+    const tournaments = await getAvailableTournaments(
+      organisationId,
+      false,
+      language,
+      0,
+      1
+    );
+    return tournaments;
+  } catch (error) {
+    console.error("Error fetching upcoming tournament:", error.message);
+    throw new Error("Failed to fetch upcoming tournament");
+  }
+};
+
 const getAllTournamentPlayers = async (tournamentId, language = "en") => {
   try {
     const response = await axios.get(
@@ -331,4 +355,5 @@ module.exports = {
   API_BASE_URL,
   OrganisationIdSmashHorsens,
   OrganisationIdSmashStensballe,
+  getUpcomingTournament,
 };

@@ -111,6 +111,27 @@ router.get("/GetPlayersInRow", async (req, res) => {
 
 /**
  * @swagger
+ * /api/v1/GetUpcomingTournament:
+ *   get:
+ *     summary: Get all upcoming tournaments
+ *     tags: [RankedIn]
+ *     responses:
+ *       200:
+ *         description: List of upcoming tournaments
+ *       500:
+ *         description: Server error
+ */
+router.get("/GetUpcomingTournament", async (req, res) => {
+  try {
+    const tournaments = await rankedInService.getUpcomingTournament();
+    res.status(200).json(tournaments);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+/**
+ * @swagger
  * /api/v1/GetAvailableTournaments:
  *   get:
  *     summary: Get all available tournaments
