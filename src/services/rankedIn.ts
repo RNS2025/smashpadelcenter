@@ -232,13 +232,12 @@ const rankedInService = {
       throw error;
     }
   },
-  //TODO: Skal [] ikke fjernes fra return type?
-  getUpcomingTournament: async (): Promise<Tournament[]> => {
+  getUpcomingTournament: async (): Promise<Tournament> => {
     try {
       const response = await api.get("/GetUpcomingTournament", {
         params: { organisationId: "4310" },
       });
-      return response.data;
+      return response.data.payload[0];
     } catch (error) {
       console.error("Error fetching upcoming tournaments:", error);
       throw error;

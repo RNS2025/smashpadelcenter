@@ -6,7 +6,7 @@ import rankedInService from "../../../services/rankedIn.ts";
 
 export const TournamentsResultsPage = () => {
 
-    const [selectedTournament, setSelectedTournament] = useState<Tournament | null>(null);
+    const [tournament, setTournament] = useState<Tournament | null>(null);
     const [, setLoading] = useState({
         tournaments: false,
         rows: false,
@@ -20,7 +20,7 @@ export const TournamentsResultsPage = () => {
             try {
                 setLoading((prev) => ({ ...prev, tournaments: true }));
                 const tournament = await rankedInService.getUpcomingTournament();
-                setSelectedTournament(tournament);
+                setTournament(tournament);
             } catch (err) {
                 console.error(err);
             } finally {
@@ -41,7 +41,7 @@ export const TournamentsResultsPage = () => {
             <div className="w-full h-screen flex flex-col">
                 <HomeBar backPage="/turneringer"/>
                     <iframe
-                        src={`https://rankedin.com${selectedTournament?.joinUrl}/draws`}
+                        src={`https://rankedin.com${tournament?.eventUrl}/draws`}
                         title="RankedIn-resultater"
                         className="w-full h-full"
                         allowFullScreen
