@@ -1413,7 +1413,24 @@ const LunarLigaPage: React.FC = () => {
             !selectedMatchDetails[0]?.Matches.Matches ? (
               <p className="text-red-600">No match details available.</p>
             ) : (
-              selectedMatchDetails[0].Matches.Matches.map((match: any) => (
+              selectedMatchDetails[0].Matches.Matches.filter((match: any) => {
+                const challengerNames = [
+                  match.Challenger.Name,
+                  match.Challenger.Player2Name,
+                ]
+                  .filter(Boolean)
+                  .map((name) => name.toLowerCase());
+                const challengedNames = [
+                  match.Challenged.Name,
+                  match.Challenged.Player2Name,
+                ]
+                  .filter(Boolean)
+                  .map((name) => name.toLowerCase());
+                return (
+                  !challengerNames.some((name) => name.includes("pending")) &&
+                  !challengedNames.some((name) => name.includes("pending"))
+                );
+              }).map((match: any) => (
                 <div key={match.Id} className="mb-6 border-b pb-4">
                   <p className="text-sm text-gray-600 mb-2">
                     <span className="font-medium">Date:</span>{" "}
