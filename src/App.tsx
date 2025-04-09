@@ -18,6 +18,7 @@ import PartnerPage from "./pages/(logged-in)/PartnerPage.tsx";
 import ArrangementPage from "./pages/(logged-in)/ArrangementPage.tsx";
 import ProfilePage from "./pages/(logged-in)/ProfilePage.tsx";
 import FeedbackPage from "./pages/(logged-in)/FeedbackPage.tsx";
+import RegisterPage from "./pages/RegisterUserPage.tsx";
 import CourtTimes from "./pages/court-times.tsx";
 import TournamentTabs from "./pages/(logged-in)/tournament/TournamentTabs.tsx";
 import CourtMapPage from "./pages/(logged-in)/tournament/CourtMapPage.tsx";
@@ -36,6 +37,7 @@ function App() {
             />
             <Route path="/player/:playerId/:rowId" element={<PlayerPage />} />
             <Route path="/court-times" element={<CourtTimes />} />
+            <Route path="/register" element={<RegisterPage />} />
 
             {/* Protected Routes */}
             <Route path="/" element={<LoginPage />} />
