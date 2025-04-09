@@ -14,6 +14,7 @@ import {
   Typography,
   Stack,
 } from "@mui/material";
+import BackArrow from "./BackArrow";
 
 const HomeBar = () => {
   const { role, logout, username } = useUser();
@@ -53,6 +54,7 @@ const HomeBar = () => {
       >
         {/* Left side: Navigation buttons */}
         <Stack direction="row" spacing={2} alignItems="center">
+          <BackArrow/>
           <Button variant="text" onClick={handleHomeClick}>
             Hjem
           </Button>
