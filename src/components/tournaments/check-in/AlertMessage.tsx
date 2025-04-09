@@ -1,4 +1,4 @@
-import React from "react";
+import {FC} from "react";
 
 type AlertMessageProps = {
   type: "error" | "success";
@@ -6,7 +6,7 @@ type AlertMessageProps = {
   onClose: () => void;
 };
 
-const AlertMessage: React.FC<AlertMessageProps> = ({
+const AlertMessage: FC<AlertMessageProps> = ({
   type,
   message,
   onClose,

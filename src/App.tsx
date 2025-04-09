@@ -21,6 +21,7 @@ import FeedbackPage from "./pages/(logged-in)/FeedbackPage.tsx";
 import CourtTimes from "./pages/court-times.tsx";
 import TournamentTabs from "./pages/(logged-in)/tournament/TournamentTabs.tsx";
 import CourtMapPage from "./pages/(logged-in)/tournament/CourtMapPage.tsx";
+import TournamentsResultsPage from "./pages/(logged-in)/tournament/TournamentsResultsPage.tsx";
 
 function App() {
   return (
@@ -45,7 +46,12 @@ function App() {
             <Route path="/book-court" element={<BookCourtPage />} />
             <Route path="/book-training" element={<BookTrainingPage />} />
             <Route path="/community" element={<CommunityPage />} />
+
+
             <Route path="/turneringer" element={<TournamentTabs />} />
+            <Route path="/turneringer/resultater" element={<TournamentsResultsPage />} />
+
+
             <Route path="/rangliste" element={<RanglistePage />} />
             <Route path="/news" element={<NewsPage />} />
             <Route path="/coupon" element={<CouponPage />} />

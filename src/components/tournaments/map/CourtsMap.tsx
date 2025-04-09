@@ -43,8 +43,8 @@ export const CourtsMap = ({ onSelect }: CourtsMapProps) => {
 
             {/* Hal 2 */}
             <rect x="20" y="0" width="130" height="410" fill="none" stroke="white" strokeWidth="3" />
-            <rect x="20" y="370" width="130" height="40" fill="gray" stroke="white" strokeWidth="3" />
-            <rect x="100" y="410" width="50" height="40" fill="blue" stroke="white" strokeWidth="3" />
+            <rect x="20" y="370" width="130" height="40" fill="gray" stroke="white" strokeWidth="2" />
+            <rect x="100" y="410" width="50" height="40" fill="blue" stroke="white" strokeWidth="2" />
             <text
                 x="125"
                 y="430"
@@ -77,7 +77,7 @@ export const CourtsMap = ({ onSelect }: CourtsMapProps) => {
             <rect x="250" y="0" width="100" height="300" fill="none" stroke="white" strokeWidth="3" />
 
             {/* Lounge */}
-            <rect x="150" y="390" width="40" height="110" fill="gray" stroke="white" strokeWidth="3" />
+            <rect x="150" y="390" width="40" height="110" fill="gray" stroke="white" strokeWidth="2" />
             <g transform="rotate(270, 100, 100)">
                 <text
                     x="-250"

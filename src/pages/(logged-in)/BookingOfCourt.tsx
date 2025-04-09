@@ -16,7 +16,6 @@ const BookCourtPage: React.FC = () => {
         src="https://book.smash.dk/newlook/default.asp?topmenu=12"
         title="Court Booking System"
         className="w-full h-full"
-        frameBorder="0"
         allowFullScreen
         sandbox="allow-same-origin allow-scripts allow-forms allow-top-navigation"
       ></iframe>

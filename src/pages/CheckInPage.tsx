@@ -12,7 +12,7 @@ import { useUser } from "../context/UserContext";
 import Animation from "../components/misc/Animation.tsx";
 import HomeBar from "../components/misc/HomeBar.tsx";
 
-const RankedInPage = () => {
+const CheckInPage = () => {
   const { role, error: authError, refreshUser, username } = useUser();
   const navigate = useNavigate(); // For programmatic navigation
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
@@ -32,6 +32,7 @@ const RankedInPage = () => {
   });
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [successType, setSuccessType] = useState<"success" | "error">("success");
 
   useEffect(() => {
     if (authError) {
@@ -39,6 +40,7 @@ const RankedInPage = () => {
     }
   }, [authError, refreshUser]);
 
+  // TODO: Måske lave dette om til et hook?
   useEffect(() => {
     const fetchTournaments = async () => {
       try {
@@ -133,47 +135,46 @@ const RankedInPage = () => {
     setError(null);
   };
 
-  const handleCheckInToggle = async (playerId: string, playerName: string) => {
+  const handleCheckInToggle = async (playerIds: string[], playerNames: string[]) => {
     if (!selectedTournament || !selectedRowId) return;
 
     try {
       setLoading((prev) => ({ ...prev, checkIn: true }));
 
-      const isCurrentlyCheckedIn = checkedInPlayers.has(playerId);
-      const newCheckInStatus = !isCurrentlyCheckedIn;
+      const newCheckInStatus = !checkedInPlayers.has(playerIds[0]); // Antag begge har samme status
 
-      await rankedInService.updateCheckInStatus({
-        tournamentId: selectedTournament.eventId.toString(),
-        rowId: selectedRowId,
-        playerId: playerId,
-        playerName: playerName,
-        checkedIn: newCheckInStatus,
-        userId: username || "Unknown",
-      });
+      await Promise.all(
+          playerIds.map((id, i) =>
+              rankedInService.updateCheckInStatus({
+                tournamentId: selectedTournament.eventId.toString(),
+                rowId: selectedRowId,
+                playerId: id,
+                playerName: playerNames[i],
+                checkedIn: newCheckInStatus,
+                userId: username || "Unknown",
+              })
+          )
+      );
 
       setCheckedInPlayers((prev) => {
         const updated = new Set(prev);
-        if (newCheckInStatus) {
-          updated.add(playerId);
-        } else {
-          updated.delete(playerId);
-        }
+        playerIds.forEach((id) =>
+            newCheckInStatus ? updated.add(id) : updated.delete(id)
+        );
         return updated;
       });
 
-      setSuccessMessage(
-        `Successfully ${
-          newCheckInStatus ? "checked in" : "checked out"
-        } ${playerName}`
-      );
-      setTimeout(() => setSuccessMessage(null), 3000);
+      setSuccessType(newCheckInStatus ? "success" : "error");
+      setSuccessMessage(`${playerNames.join(" & ")} ${newCheckInStatus ? "er nu tjekket ind" : "er nu tjekket ud"}`);
+      setTimeout(() => setSuccessMessage(null), 5000);
     } catch (err) {
-      setError(`Failed to update check-in status for ${playerName}.`);
+      setError(`Failed to update check-in for ${playerNames.join(" & ")}.`);
       console.error(err);
     } finally {
       setLoading((prev) => ({ ...prev, checkIn: false }));
     }
   };
+
 
   const handleBulkCheckIn = async (checkIn: boolean) => {
     if (
@@ -187,6 +188,7 @@ const RankedInPage = () => {
     try {
       setLoading((prev) => ({ ...prev, checkIn: true }));
 
+      //TODO: Metoden virker ikke efter at have sat makkerparrets indtjekning sammen
       await rankedInService.bulkUpdateCheckInStatus({
         tournamentId: selectedTournament.eventId.toString(),
         rowId: selectedRowId,
@@ -203,10 +205,11 @@ const RankedInPage = () => {
       }
       setCheckedInPlayers(updatedSet);
 
+      setSuccessType(checkIn ? "success" : "error");
       setSuccessMessage(
-        `Successfully ${checkIn ? "checked in" : "checked out"} all players`
+        `Alle spillere markeret som ${checkIn ? "tjekket ind" : "tjekket ud"}`
       );
-      setTimeout(() => setSuccessMessage(null), 3000);
+      setTimeout(() => setSuccessMessage(null), 5000);
     } catch (err) {
       setError(`Failed to ${checkIn ? "check in" : "check out"} all players.`);
       console.error(err);
@@ -242,7 +245,7 @@ const RankedInPage = () => {
 
           {successMessage && (
             <AlertMessage
-              type="success"
+              type={successType}
               message={successMessage}
               onClose={() => setSuccessMessage(null)}
             />
@@ -271,6 +274,7 @@ const RankedInPage = () => {
               loading={loading.players}
               isCheckingIn={loading.checkIn}
               userRole={role!}
+              tournamentNotToday={selectedTournament?.startDate !== new Date().toISOString()}
               onCheckInToggle={handleCheckInToggle}
               onBulkCheckIn={handleBulkCheckIn}
               onPlayerClick={handlePlayerClick} // Pass the new handler
@@ -282,4 +286,4 @@ const RankedInPage = () => {
   );
 };
 
-export default RankedInPage;
+export default CheckInPage;

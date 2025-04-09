@@ -1,8 +1,8 @@
-import React from "react";
+import {FC} from "react";
 import Tournament from "../../../types/Tournament.ts";
 import LoadingSpinner from "../../misc/LoadingSpinner.tsx";
 import { format } from "date-fns";
-import {da} from "date-fns/locale/da";
+import da from "date-fns/locale/da";
 
 type TournamentSelectorProps = {
   tournaments: Tournament[];
@@ -11,7 +11,7 @@ type TournamentSelectorProps = {
   onSelect: (tournament: Tournament) => void;
 };
 
-const TournamentSelector: React.FC<TournamentSelectorProps> = ({
+const TournamentSelector: FC<TournamentSelectorProps> = ({
   tournaments,
   selectedTournament,
   loading,

@@ -1,10 +1,17 @@
 import {ArrowLongLeftIcon} from "@heroicons/react/24/outline";
 import {useNavigate} from "react-router-dom";
 
-const BackArrow = () => {
+const BackArrow = ({backPage}: {
+    backPage?: string
+}) => {
     const navigate = useNavigate();
 
     const handleNavigateBack = () => {
+        if (backPage) {
+            navigate(backPage);
+            return;
+        }
+
         if (window.history.length > 1) {
             navigate(-1);
         } else {
@@ -15,7 +22,6 @@ const BackArrow = () => {
 
 
     return (
-        <>
             <div
                 onClick={handleNavigateBack}
                 className="ml-3 mt-5 h-8 w-8 shrink-0 rounded-full p-1 border bg-[#4e4e4e] cursor-pointer flex items-center justify-center"
@@ -23,8 +29,6 @@ const BackArrow = () => {
                 <ArrowLongLeftIcon className="h-full w-full text-white" />
             </div>
 
-
-        </>
     )
 }
 export default BackArrow
