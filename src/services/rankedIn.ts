@@ -15,7 +15,7 @@ const rankedInService = {
     organisationId = "4310", // Optional with default empty string
     isFinished = false, // Optional with default false
     language = "en", // Optional with default 'en'
-      //TODO: Er det muligt at bruge "da"?
+    //TODO: Er det muligt at bruge "da"?
     skip = 0, // Optional with default 0
     take = 10, // Optional with default 10
   }: {
@@ -229,6 +229,17 @@ const rankedInService = {
       return response.data;
     } catch (error) {
       console.error("Error fetching player details:", error);
+      throw error;
+    }
+  },
+  getUpcommingTournament: async (): Promise<Tournament[]> => {
+    try {
+      const response = await api.get("/GetUpcomingTournament", {
+        params: { organisationId: "4310" },
+      });
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching upcoming tournaments:", error);
       throw error;
     }
   },
