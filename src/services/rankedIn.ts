@@ -232,7 +232,8 @@ const rankedInService = {
       throw error;
     }
   },
-  getUpcommingTournament: async (): Promise<Tournament[]> => {
+  //TODO: Skal [] ikke fjernes fra return type?
+  getUpcomingTournament: async (): Promise<Tournament[]> => {
     try {
       const response = await api.get("/GetUpcomingTournament", {
         params: { organisationId: "4310" },

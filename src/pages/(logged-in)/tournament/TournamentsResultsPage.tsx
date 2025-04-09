@@ -15,22 +15,12 @@ export const TournamentsResultsPage = () => {
     });
 
 
-    //TODO
     useEffect(() => {
         const fetchNextTournament = async () => {
             try {
                 setLoading((prev) => ({ ...prev, tournaments: true }));
-                const fetchedTournaments = await rankedInService.getAvailableTournaments();
-
-                const now = new Date();
-
-                const upcoming = fetchedTournaments
-                    .filter((t) => new Date(t.startDate) > now)
-                    .sort((a, b) => new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
-
-                if (upcoming.length > 0) {
-                    setSelectedTournament(upcoming[0]);
-                }
+                const tournament = await rankedInService.getUpcomingTournament();
+                setSelectedTournament(tournament);
             } catch (err) {
                 console.error(err);
             } finally {
