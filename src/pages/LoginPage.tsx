@@ -16,7 +16,7 @@ export const LoginPage = () => {
       console.log("Logged in:", data);
 
       // Handle successful login
-      navigate("/home");
+      navigate("/hjem");
     } catch (err) {
       setError((err as any).message);
     }

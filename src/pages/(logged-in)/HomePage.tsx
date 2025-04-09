@@ -45,7 +45,7 @@ export const HomePage = () => {
       }
     };
 
-    initializeNotifications();
+    initializeNotifications().then();
   }, [role, isRefreshing, refreshUser, username]); // Dependencies ensure it runs on mount and role change
 
   return (
@@ -105,9 +105,9 @@ export const HomePage = () => {
             />
             <HomeScreenCard
               icon={<MoonIcon className="h-10 w-10" aria-hidden="true" />}
-              title="Lunar Liga"
-              description="Deltag i Lunar Liga events"
-              link="/lunar-liga"
+              title="Holdligaer"
+              description="Overblik over ligaholdene tilknyttet SMASH"
+              link="/holdligaer"
             />
             <HomeScreenCard
               icon={

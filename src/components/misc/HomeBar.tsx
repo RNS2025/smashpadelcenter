@@ -40,7 +40,7 @@ const HomeBar = ({backPage}:
   };
 
   const handleHomeClick = () => {
-    navigate("/home");
+    navigate("/hjem");
   };
 
   const handleAdminClick = () => {

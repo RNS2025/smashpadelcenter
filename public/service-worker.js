@@ -9,8 +9,8 @@ const preferenceUrlMap = {
   makkerbors: "/makkerbors", // Partner Board
   rangliste: "/rangliste", // Rankings
   nyheder: "/news", // News
-  turneringer: "/check-in", // Tournaments
-  general: "/home", // Fallback for unspecified categories
+  turneringer: "/turneringer", // Tournaments
+  general: "/hjem", // Fallback for unspecified categories
 };
 
 self.addEventListener("push", (event) => {

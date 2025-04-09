@@ -1,5 +1,5 @@
 import "./App.css";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import {BrowserRouter, Navigate, Route, Routes} from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/(logged-in)/HomePage.tsx";
 import AdminPage from "./pages/(logged-in)/AdminPage.tsx";
@@ -13,7 +13,7 @@ import CommunityPage from "./pages/(logged-in)/CommunityPage.tsx";
 import RanglistePage from "./pages/(logged-in)/RanglistePage.tsx";
 import NewsPage from "./pages/(logged-in)/NewsPage.tsx";
 import CouponPage from "./pages/(logged-in)/CuponPage.tsx";
-import LunarLigaPage from "./pages/(logged-in)/LunarLigaPage.tsx";
+import LunarLigaPage from "./pages/(logged-in)/lunar/LunarLigaPage.tsx";
 import PartnerPage from "./pages/(logged-in)/PartnerPage.tsx";
 import ArrangementPage from "./pages/(logged-in)/ArrangementPage.tsx";
 import ProfilePage from "./pages/(logged-in)/ProfilePage.tsx";
@@ -23,6 +23,8 @@ import CourtTimes from "./pages/court-times.tsx";
 import TournamentTabs from "./pages/(logged-in)/tournament/TournamentTabs.tsx";
 import CourtMapPage from "./pages/(logged-in)/tournament/CourtMapPage.tsx";
 import TournamentsResultsPage from "./pages/(logged-in)/tournament/TournamentsResultsPage.tsx";
+import LunarLigaPageTest from "./pages/(logged-in)/lunar/test.tsx";
+import LunarHorsensTab from "./components/lunar/LunarHorsensTab.tsx";
 
 function App() {
   return (
@@ -43,7 +45,7 @@ function App() {
             {/* Protected Routes */}
             <Route path="/" element={<LoginPage />} />
             <Route path="/profile" element={<ProfilePage />} />
-            <Route path="/home" element={<HomePage />} />
+            <Route path="/hjem" element={<HomePage />} />
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/book-court" element={<BookCourtPage />} />
             <Route path="/book-training" element={<BookTrainingPage />} />
@@ -53,11 +55,17 @@ function App() {
             <Route path="/turneringer" element={<TournamentTabs />} />
             <Route path="/turneringer/resultater" element={<TournamentsResultsPage />} />
 
+            <Route path="/holdligaer" element={<LunarLigaPage />}>
+              <Route index element={<Navigate to="lunarliga" replace />} />
+              <Route path="lunarliga" element={<LunarHorsensTab />} />
+            </Route>
+            {/* Testside */}
+            <Route path="/lunar-liga/test" element={<LunarLigaPageTest />} />
+
 
             <Route path="/rangliste" element={<RanglistePage />} />
             <Route path="/news" element={<NewsPage />} />
             <Route path="/coupon" element={<CouponPage />} />
-            <Route path="/lunar-liga" element={<LunarLigaPage />} />
             <Route path="/partner" element={<PartnerPage />} />
             <Route path="/arrangement" element={<ArrangementPage />} />
             <Route path="/login" element={<LoginPage />} />
