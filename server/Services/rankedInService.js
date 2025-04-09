@@ -1,6 +1,8 @@
 const axios = require("axios");
 
 const API_BASE_URL = "https://api.rankedin.com/v1/";
+const OrganisationIdSmashHorsens = "4310";
+const OrganisationIdSmashStensballe = "9492";
 
 const getAvailableTournaments = async (
   organisationId = "4310",
@@ -326,4 +328,7 @@ module.exports = {
   getAvailableTournaments,
   getPlayersMatches,
   getPlayerDetails,
+  API_BASE_URL,
+  OrganisationIdSmashHorsens,
+  OrganisationIdSmashStensballe,
 };
