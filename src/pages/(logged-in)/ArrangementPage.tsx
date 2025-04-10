@@ -1,77 +1,45 @@
-import React, { useEffect, useState } from "react";
-import { getAllEvents } from "../../services/smashEventService"; // Adjust the path as needed
+import React from "react";
 
 const ArrangementPage: React.FC = () => {
-  const [events, setEvents] = useState<any[]>([]); // State to hold events
-  const [loading, setLoading] = useState<boolean>(true); // State to track loading status
-  const [error, setError] = useState<string | null>(null); // State to track error message
-
-  useEffect(() => {
-    // Fetch events when the component mounts
-    const fetchEvents = async () => {
-      try {
-        const fetchedEvents = await getAllEvents();
-
-        // Ensure fetchedEvents is always an array
-        if (Array.isArray(fetchedEvents)) {
-          setEvents(fetchedEvents);
-        } else {
-          setEvents([]); // Set empty array if not an array
-        }
-        setLoading(false);
-      } catch {
-        setError("Failed to load events.");
-        setLoading(false);
-      }
-    };
-
-    fetchEvents();
-  }, []); // Empty dependency array ensures this runs once when the component mounts
-
-  if (loading) {
-    return <div>Loading events...</div>;
-  }
-
-  if (error) {
-    return <div>{error}</div>;
-  }
-
   return (
-    <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Arrangement Page</h1>
-      <p className="mb-4">Below is the list of upcoming Smash Padel events:</p>
-      <ul className="space-y-4">
-        {/* Ensure events is an array before calling map */}
-        {Array.isArray(events) &&
-          events.map((event, index) => (
-            <li key={index} className="border p-4 rounded-lg shadow-md">
-              <h2 className="text-xl font-semibold">{event.titel}</h2>
-              <p>
-                <strong>Date:</strong> {event.dato} at {event.tidspunkt}
-              </p>
-              <p>
-                <strong>Venue:</strong> {event.sted}
-              </p>
-              <p>
-                <strong>Instructor:</strong> {event.instruktør}
-              </p>
-              <p>
-                <strong>Status:</strong> {event.status}
-              </p>
-              {event.billede && (
-                <img
-                  src={event.billede}
-                  alt={event.titel}
-                  className="mt-2 max-w-full h-auto rounded-lg"
-                />
-              )}
-            </li>
-          ))}
-      </ul>
+    <div
+      className="p-4"
+      style={{
+        height: "100vh", // Locks the outer container to viewport height
+        overflow: "hidden", // Prevents page scrolling
+        background: "rgb(37, 44, 54)", // Added background color
+      }}
+    >
+      <h1 className="text-2xl font-bold mb-4">Upcoming Events</h1>
+      <div
+        style={{
+          position: "relative",
+          width: "100%",
+          height: "calc(100vh - 4rem - 1rem)", // Adjusts for header and padding
+          overflowY: "auto", // Allows scrolling within this container
+          overflowX: "hidden", // Prevents horizontal overflow
+          border: "none", // No border on container
+          margin: 0, // No extra spacing
+          padding: 0, // No padding
+        }}
+      >
+        <iframe
+          src="https://book.smash.dk/newlook/proc_liste.asp"
+          title="Smash Padel Events"
+          style={{
+            width: "100%",
+            height: "20000px", // Ensures all events load
+            border: "none", // No border on iframe
+            position: "absolute",
+            top: "-160px", // Hides navbar/header (adjust as needed)
+            left: "0",
+            background: "rgb(37, 44, 54)", // Matches outer background
+          }}
+          scrolling="no" // Scrolling handled by container
+        />
+      </div>
     </div>
   );
 };
 
 export default ArrangementPage;
-
-// Todo Make sure events are shown correctly with date and time
