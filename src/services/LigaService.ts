@@ -44,5 +44,5 @@ export const fetchTeamMatches = async (teamId: number) => {
 
 export const fetchMatchDetails = async (matchId: number) => {
   const response = await api.get(`/liga/match/${matchId}/details`);
-  return response.data;
+  return response.data[0];
 };

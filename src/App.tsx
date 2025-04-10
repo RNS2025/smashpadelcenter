@@ -23,8 +23,14 @@ import CourtTimes from "./pages/court-times.tsx";
 import TournamentTabs from "./pages/(logged-in)/tournament/TournamentTabs.tsx";
 import CourtMapPage from "./pages/(logged-in)/tournament/CourtMapPage.tsx";
 import TournamentsResultsPage from "./pages/(logged-in)/tournament/TournamentsResultsPage.tsx";
-import LunarLigaPageTest from "./pages/(logged-in)/lunar/test.tsx";
-import LunarHorsensTab from "./components/lunar/LunarHorsensTab.tsx";
+import LunarTeamsTab from "./components/lunar/LunarTeamsTab.tsx";
+import LunarTeamsWomenTab from "./components/lunar/LunarTeamsWomenTab.tsx";
+import HHTeamsTab from "./components/lunar/HHTeamsTab.tsx";
+import LeagueTeamProfilePage from "./pages/(logged-in)/lunar/LeagueTeamProfilePage.tsx";
+import TeamProfilePlayersTab from "./components/lunar/teamProfile/TeamProfilePlayersTab.tsx";
+import TeamProfileStandingsTab from "./components/lunar/teamProfile/TeamProfileStandingsTab.tsx";
+import TeamProfileMatchesTab from "./components/lunar/teamProfile/TeamProfileMatchesTab.tsx";
+import TeamProfileMatchDetailsTab from "./components/lunar/teamProfile/TeamProfileMatchDetailsTab.tsx";
 
 function App() {
   return (
@@ -56,11 +62,20 @@ function App() {
             <Route path="/turneringer/resultater" element={<TournamentsResultsPage />} />
 
             <Route path="/holdligaer" element={<LunarLigaPage />}>
-              <Route index element={<Navigate to="lunarliga" replace />} />
-              <Route path="lunarliga" element={<LunarHorsensTab />} />
+              <Route index element={<Navigate to="lunarligaherrer" replace />} />
+              <Route path="lunarligaherrer" element={<LunarTeamsTab />} />
+              <Route path="lunarliga4p" element={<LunarTeamsWomenTab />} />
+              <Route path="hh-listen" element={<HHTeamsTab />} />
             </Route>
-            {/* Testside */}
-            <Route path="/lunar-liga/test" element={<LunarLigaPageTest />} />
+
+            <Route path="/holdligaer/:teamId" element={<LeagueTeamProfilePage />}>
+              <Route index element={<Navigate to="spillere" replace />} />
+              <Route path="spillere" element={<TeamProfilePlayersTab />} />
+              <Route path="tabeloversigt" element={<TeamProfileStandingsTab />} />
+              <Route path="kampe" element={<TeamProfileMatchesTab />} />
+              <Route path="kampe/:matchId" element={<TeamProfileMatchDetailsTab />} />
+            </Route>
+
 
 
             <Route path="/rangliste" element={<RanglistePage />} />

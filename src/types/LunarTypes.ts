@@ -28,7 +28,11 @@ export interface TeamDetails {
     IsTournamentAdmin: boolean;
     IsTeamAdmin: boolean;
     IsTeamParticipant: boolean;
-    Initiator: Player[];
+    Initiator: {
+        Id: number;
+        Name: string;
+        PlayerUrl: string;
+    }[];
     Players: Player[];
     HomeClub: Club;
     HomeClubImageUrl: string;

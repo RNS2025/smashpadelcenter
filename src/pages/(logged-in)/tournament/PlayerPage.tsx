@@ -77,6 +77,7 @@ const PlayerPage = () => {
             )}
             <div>
               <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                {/*Todo: Navnet bliver ikke vist ved mig?*/}
                 {playerData.Header.FullName}
               </h1>
               <div className="space-y-1 text-gray-600">
