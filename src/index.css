@@ -4,4 +4,22 @@
 
 html {
   @apply font-sans;
+
+  /* Hide scrollbars in all modern browsers */
+  -ms-overflow-style: none;     /* IE and Edge */
+  scrollbar-width: none;        /* Firefox */
+}
+
+html::-webkit-scrollbar {
+  display: none;                /* Chrome, Safari, Opera */
+}
+
+body {
+  /* Optional: also apply to body if needed */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+body::-webkit-scrollbar {
+  display: none;
 }
