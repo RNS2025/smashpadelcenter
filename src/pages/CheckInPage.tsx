@@ -1,23 +1,21 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import rankedInService from "../services/rankedIn";
 import Player from "../types/Player";
-import Tournament from "../types/Tournament";
 import Row from "../types/Row";
-import TournamentSelector from "../components/tournaments/check-in/TournamentSelector.tsx";
+import Tournament from "../types/Tournament";
 import RowSelector from "../components/tournaments/check-in/RowSelector.tsx";
 import PlayerCheckInList from "../components/tournaments/check-in/PlayerCheckInList.tsx";
 import AlertMessage from "../components/tournaments/check-in/AlertMessage.tsx";
 import { useUser } from "../context/UserContext";
 import Animation from "../components/misc/Animation.tsx";
 import HomeBar from "../components/misc/HomeBar.tsx";
+import useTournaments from "../hooks/useTournaments";
+import rankedInService from "../services/rankedIn";
+import TournamentSelector from "../components/tournaments/check-in/TournamentSelector.tsx";
 
 const CheckInPage = () => {
   const { role, error: authError, refreshUser, username } = useUser();
   const navigate = useNavigate(); // For programmatic navigation
-  const [tournaments, setTournaments] = useState<Tournament[]>([]);
-  const [selectedTournament, setSelectedTournament] =
-    useState<Tournament | null>(null);
   const [rows, setRows] = useState<Row[]>([]);
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
@@ -25,14 +23,28 @@ const CheckInPage = () => {
     new Set()
   );
   const [loading, setLoading] = useState({
-    tournaments: false,
     rows: false,
     players: false,
     checkIn: false,
   });
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [successType, setSuccessType] = useState<"success" | "error">("success");
+  const [successType, setSuccessType] = useState<"success" | "error">(
+    "success"
+  );
+
+  const {
+    tournaments,
+    selectedTournament,
+    selectTournament,
+    loading: tournamentLoading,
+  } = useTournaments();
+
+  const handleTournamentSelect = (tournament: Tournament) => {
+    selectTournament(tournament);
+    setSuccessMessage(null);
+    setError(null);
+  };
 
   useEffect(() => {
     if (authError) {
@@ -40,28 +52,7 @@ const CheckInPage = () => {
     }
   }, [authError, refreshUser]);
 
-  // TODO: Måske lave dette om til et hook?
-  useEffect(() => {
-    const fetchTournaments = async () => {
-      try {
-        setLoading((prev) => ({ ...prev, tournaments: true }));
-        const fetchedTournaments =
-          await rankedInService.getAvailableTournaments();
-        setTournaments(fetchedTournaments);
-        if (fetchedTournaments.length > 0) {
-          setSelectedTournament(fetchedTournaments[0]);
-        }
-      } catch (err) {
-        setError("Error fetching tournaments.");
-        console.error(err);
-      } finally {
-        setLoading((prev) => ({ ...prev, tournaments: false }));
-      }
-    };
-
-    fetchTournaments().then();
-  }, []);
-
+  // Fetch rows when a tournament is selected
   useEffect(() => {
     const fetchRows = async () => {
       if (!selectedTournament) return;
@@ -83,9 +74,10 @@ const CheckInPage = () => {
       }
     };
 
-    fetchRows().then();
+    fetchRows();
   }, [selectedTournament]);
 
+  // Fetch players when a row is selected
   useEffect(() => {
     const fetchPlayersWithCheckInStatus = async () => {
       if (!selectedTournament || !selectedRowId) return;
@@ -120,14 +112,8 @@ const CheckInPage = () => {
       }
     };
 
-    fetchPlayersWithCheckInStatus().then();
+    fetchPlayersWithCheckInStatus();
   }, [selectedTournament, selectedRowId]);
-
-  const handleTournamentSelect = (tournament: Tournament) => {
-    setSelectedTournament(tournament);
-    setSuccessMessage(null);
-    setError(null);
-  };
 
   const handleRowSelect = (rowId: string) => {
     setSelectedRowId(rowId);
@@ -135,37 +121,44 @@ const CheckInPage = () => {
     setError(null);
   };
 
-  const handleCheckInToggle = async (playerIds: string[], playerNames: string[]) => {
+  const handleCheckInToggle = async (
+    playerIds: string[],
+    playerNames: string[]
+  ) => {
     if (!selectedTournament || !selectedRowId) return;
 
     try {
       setLoading((prev) => ({ ...prev, checkIn: true }));
 
-      const newCheckInStatus = !checkedInPlayers.has(playerIds[0]); // Antag begge har samme status
+      const newCheckInStatus = !checkedInPlayers.has(playerIds[0]);
 
       await Promise.all(
-          playerIds.map((id, i) =>
-              rankedInService.updateCheckInStatus({
-                tournamentId: selectedTournament.eventId.toString(),
-                rowId: selectedRowId,
-                playerId: id,
-                playerName: playerNames[i],
-                checkedIn: newCheckInStatus,
-                userId: username || "Unknown",
-              })
-          )
+        playerIds.map((id, i) =>
+          rankedInService.updateCheckInStatus({
+            tournamentId: selectedTournament.eventId.toString(),
+            rowId: selectedRowId,
+            playerId: id,
+            playerName: playerNames[i],
+            checkedIn: newCheckInStatus,
+            userId: username || "Unknown",
+          })
+        )
       );
 
       setCheckedInPlayers((prev) => {
         const updated = new Set(prev);
         playerIds.forEach((id) =>
-            newCheckInStatus ? updated.add(id) : updated.delete(id)
+          newCheckInStatus ? updated.add(id) : updated.delete(id)
         );
         return updated;
       });
 
       setSuccessType(newCheckInStatus ? "success" : "error");
-      setSuccessMessage(`${playerNames.join(" & ")} ${newCheckInStatus ? "er nu tjekket ind" : "er nu tjekket ud"}`);
+      setSuccessMessage(
+        `${playerNames.join(" & ")} ${
+          newCheckInStatus ? "er nu tjekket ind" : "er nu tjekket ud"
+        }`
+      );
       setTimeout(() => setSuccessMessage(null), 5000);
     } catch (err) {
       setError(`Failed to update check-in for ${playerNames.join(" & ")}.`);
@@ -174,7 +167,6 @@ const CheckInPage = () => {
       setLoading((prev) => ({ ...prev, checkIn: false }));
     }
   };
-
 
   const handleBulkCheckIn = async (checkIn: boolean) => {
     if (
@@ -188,7 +180,6 @@ const CheckInPage = () => {
     try {
       setLoading((prev) => ({ ...prev, checkIn: true }));
 
-      //TODO: Metoden virker ikke efter at have sat makkerparrets indtjekning sammen
       await rankedInService.bulkUpdateCheckInStatus({
         tournamentId: selectedTournament.eventId.toString(),
         rowId: selectedRowId,
@@ -218,7 +209,6 @@ const CheckInPage = () => {
     }
   };
 
-  // Navigate to PlayerPage with playerId and tournamentClassId
   const handlePlayerClick = (playerId: string) => {
     if (selectedRowId) {
       navigate(`/player/${playerId}/${selectedRowId}`);
@@ -228,7 +218,7 @@ const CheckInPage = () => {
   return (
     <>
       <Animation>
-        <HomeBar/>
+        <HomeBar />
 
         <div className="container mx-auto p-4">
           <h1 className="text-2xl font-bold mb-6">
@@ -254,7 +244,7 @@ const CheckInPage = () => {
           <TournamentSelector
             tournaments={tournaments}
             selectedTournament={selectedTournament}
-            loading={loading.tournaments}
+            loading={tournamentLoading.tournaments}
             onSelect={handleTournamentSelect}
           />
 
@@ -274,10 +264,12 @@ const CheckInPage = () => {
               loading={loading.players}
               isCheckingIn={loading.checkIn}
               userRole={role!}
-              tournamentNotToday={selectedTournament?.startDate !== new Date().toISOString()}
+              tournamentNotToday={
+                selectedTournament?.startDate !== new Date().toISOString()
+              }
               onCheckInToggle={handleCheckInToggle}
               onBulkCheckIn={handleBulkCheckIn}
-              onPlayerClick={handlePlayerClick} // Pass the new handler
+              onPlayerClick={handlePlayerClick}
             />
           )}
         </div>
