@@ -644,4 +644,76 @@ router.get("/match/:matchId/details", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/v1/liga/teams/batch:
+ *   post:
+ *     summary: Get detailed information for multiple teams
+ *     tags: [Liga]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               teamIds:
+ *                 type: array
+ *                 items:
+ *                   type: integer
+ *                 example: [1805762, 1812983]
+ *     responses:
+ *       200:
+ *         description: Detailed information for the specified teams
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   name:
+ *                     type: string
+ *                   playersCount:
+ *                     type: integer
+ *                   division:
+ *                     type: string
+ *                   region:
+ *                     type: string
+ *                   rating:
+ *                     type: number
+ *       500:
+ *         description: Server error
+ */
+router.post("/teams/batch", async (req, res) => {
+  try {
+    const { teamIds } = req.body;
+    if (!Array.isArray(teamIds) || teamIds.length === 0) {
+      return res
+        .status(400)
+        .json({ error: "teamIds must be a non-empty array" });
+    }
+
+    const teamInfos = await Promise.all(
+      teamIds.map(async (teamId) => {
+        try {
+          return await getTeamInfo(teamId);
+        } catch (error) {
+          console.error(`Failed to fetch team ${teamId}:`, error);
+          return null;
+        }
+      })
+    );
+
+    // Filter out any failed requests
+    const validTeamInfos = teamInfos.filter((info) => info !== null);
+    res.json(validTeamInfos);
+  } catch (error) {
+    console.error("Failed to fetch batch team info:", error);
+    res.status(500).json({ error: "Failed to fetch team information" });
+  }
+});
+
 module.exports = router;

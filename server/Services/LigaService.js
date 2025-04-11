@@ -5,12 +5,26 @@ const {
   OrganisationIdSmashStensballe,
 } = require("./rankedInService");
 
+const NodeCache = require("node-cache");
+const cache = new NodeCache({ stdTTL: 3600 });
+const orgCache = new NodeCache({ stdTTL: 3600 });
+
 const fetchOrganisationData = async (organisationId) => {
+  const cacheKey = `orgData_${organisationId}`;
+  const cachedData = orgCache.get(cacheKey);
+
+  if (cachedData) {
+    console.log(`Cache hit for org ${organisationId}`);
+    return cachedData;
+  }
+
   try {
     const response = await axios.get(
       `${API_BASE_URL}/Organization/GetOrganisationTeamLeaguesAsync?organisationId=${organisationId}&isFinished=false&skip=0&take=10&language=en`
     );
-    return response.data;
+    const data = response.data;
+    orgCache.set(cacheKey, data);
+    return data;
   } catch (error) {
     console.error("Error fetching organisation data:", error);
     throw error;
@@ -59,10 +73,20 @@ const getTeamByTeamId = async (leagueId, teamId) => {
 };
 
 const getTeamInfo = async (teamId) => {
+  const cacheKey = `teamInfo_${teamId}`;
+  const cachedData = cache.get(cacheKey);
+
+  if (cachedData) {
+    console.log(`Cache hit for team ${teamId}`);
+    return cachedData;
+  }
+
   const response = await axios.get(
     `https://rankedin.com/team/tlhomepage/${teamId}`
   );
   const data = response.data;
+
+  cache.set(cacheKey, data);
   return data;
 };
 
