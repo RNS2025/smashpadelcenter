@@ -55,7 +55,7 @@ function App() {
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/book-court" element={<BookCourtPage />} />
             <Route path="/book-training" element={<BookTrainingPage />} />
-            <Route path="/community" element={<CommunityPage />} />
+            <Route path="/makkerbørs" element={<CommunityPage />} />
 
 
             <Route path="/turneringer" element={<TournamentTabs />} />

@@ -10,11 +10,13 @@ import {
 } from "../../services/LigaService.ts";
 import LoadingSpinner from "../misc/LoadingSpinner.tsx";
 import {ChevronDownIcon, ChevronUpIcon} from "@heroicons/react/24/outline";
+import {useNavigate} from "react-router-dom";
 
 type SortableFields = "Name" | "HomeClub.Name";
 
 
 export const LunarTeamsWomenTab = () => {
+    const navigate = useNavigate();
 
     const [horsensLeagues, setHorsensLeagues] = useState<League[]>([]);
     const [stensballeLeagues, setStensballeLeagues] = useState<League[]>([]);
@@ -179,6 +181,9 @@ export const LunarTeamsWomenTab = () => {
                                 <tr
                                     key={team.Team.Id}
                                     className="hover:bg-cyan-500 transition-colors duration-500 cursor-pointer"
+                                    onClick={() =>
+                                        navigate(`/holdligaer/${team.Team.Id}`)
+                                    }
                                 >
                                     <td className="cursor-pointer px-4 py-2 font-medium text-gray-900">
                                         {team.Team.Name}

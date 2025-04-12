@@ -1,4 +1,3 @@
-import {Helmet} from "react-helmet-async";
 import {useEffect, useState} from "react";
 import {TeamInfo} from "../../../types/LunarTypes.ts";
 import {Outlet, useParams} from "react-router-dom";
@@ -9,7 +8,7 @@ import TeamProfileTabMenu from "../../../components/lunar/teamProfile/TeamProfil
 
 export const LeagueTeamProfilePage = () => {
     const { teamId } = useParams<{ teamId: string }>();
-
+    const cachedName = teamId ? sessionStorage.getItem(`teamName_${teamId}`) : null;
     const [team, setTeam] = useState<TeamInfo>();
 
     //TODO: Kunne også blive et hook?
@@ -19,17 +18,13 @@ export const LeagueTeamProfilePage = () => {
                 const response = await fetchTeamInfo(parseInt(teamId, 10));
                 setTeam(response);
             }
-        }
+        };
         fetchData().then();
     }, [teamId]);
 
-
+    //TODO: Har cachet holdnavnet for at få det fulde vist, men er ikke sikker på at det er holdbart på sigt
     return (
         <>
-            <Helmet>
-                <title>{team?.Team.Name ?? "Hold utilgængeligt"}</title>
-            </Helmet>
-
             <Animation>
                 <HomeBar backPage={"/holdligaer"} />
 
@@ -46,7 +41,7 @@ export const LeagueTeamProfilePage = () => {
                             )}
                             <div className="w-full">
                                 <h1 className="text-3xl font-bold text-gray-800 mb-2">
-                                    {team.Team.Name}
+                                    {cachedName}
                                 </h1>
                                 <div className="space-y-1 text-gray-600">
 

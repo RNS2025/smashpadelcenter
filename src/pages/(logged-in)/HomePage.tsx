@@ -74,16 +74,30 @@ export const HomePage = () => {
               link="/book-training"
             />
             <HomeScreenCard
-              icon={<UsersIcon className="h-10 w-10" aria-hidden="true" />}
-              title="Fællesskab"
-              description="Forbind med andre spillere"
-              link="/community"
+                icon={<ChartBarIcon className="h-10 w-10" aria-hidden="true" />}
+                title="Arrangementer"
+                description="Organisér og se arrangementer"
+                link="/arrangement"
             />
             <HomeScreenCard
+              icon={<UsersIcon className="h-10 w-10" aria-hidden="true" />}
+              title="Makkerbørs"
+              description="Find kampe"
+              link="/makkerbørs"
+            />
+
+
+            <HomeScreenCard
               icon={<TrophyIcon className="h-10 w-10" aria-hidden="true" />}
-              title="Turneringer"
+              title="DPF-turneringer"
               description="Deltag i spændende turneringer"
               link="/turneringer"
+            />
+            <HomeScreenCard
+                icon={<MoonIcon className="h-10 w-10" aria-hidden="true" />}
+                title="Holdligaer"
+                description="Overblik over ligaholdene tilknyttet SMASH"
+                link="/holdligaer"
             />
             <HomeScreenCard
               icon={<ListBulletIcon className="h-10 w-10" aria-hidden="true" />}
@@ -97,17 +111,14 @@ export const HomePage = () => {
               description="Hold dig opdateret med seneste nyt"
               link="/news"
             />
+
+
+
             <HomeScreenCard
-              icon={<TicketIcon className="h-10 w-10" aria-hidden="true" />}
-              title="Kuponer"
-              description="Udløs dine kuponer og tilbud"
-              link="/coupon"
-            />
-            <HomeScreenCard
-              icon={<MoonIcon className="h-10 w-10" aria-hidden="true" />}
-              title="Holdligaer"
-              description="Overblik over ligaholdene tilknyttet SMASH"
-              link="/holdligaer"
+                icon={<TicketIcon className="h-10 w-10" aria-hidden="true" />}
+                title="Kuponer"
+                description="Udløs dine kuponer og tilbud"
+                link="/coupon"
             />
             <HomeScreenCard
               icon={
@@ -123,12 +134,6 @@ export const HomePage = () => {
               description="Administrer platformen"
               link="/admin"
               disabled={role !== "admin"}
-            />
-            <HomeScreenCard
-              icon={<ChartBarIcon className="h-10 w-10" aria-hidden="true" />}
-              title="Arrangementer"
-              description="Organisér og se arrangementer"
-              link="/arrangement"
             />
           </div>
         </div>

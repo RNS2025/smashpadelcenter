@@ -11,7 +11,7 @@ const LunarLigaPage = () => {
         <title>Lunar Ligaen</title>
       </Helmet>
 
-        <HomeBar />
+        <HomeBar backPage={"/hjem"}/>
 
         <div className="justify-self-center mt-10">
         <LunarTabMenu/>

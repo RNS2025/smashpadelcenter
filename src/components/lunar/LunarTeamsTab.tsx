@@ -174,7 +174,12 @@ export const LunarTeamsTab = () => {
                             <tr
                                 key={team.Team.Id}
                                 className="hover:bg-cyan-500 transition-colors duration-500 cursor-pointer"
-                                onClick={() => navigate(`/holdligaer/${team.Team.Id}`)}
+                                onClick={() => {
+                                    sessionStorage.setItem(`teamName_${team.Team.Id}`, team.Team.Name);
+                                    navigate(`/holdligaer/${team.Team.Id}`);
+                                }}
+
+
                             >
                                 <td className="cursor-pointer px-4 py-2 font-medium text-gray-900">
                                     {team.Team.Name}

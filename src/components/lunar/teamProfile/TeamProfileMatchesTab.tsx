@@ -74,14 +74,20 @@ export const TeamProfileMatchesTab = () => {
                                         {match.Team2.Name}
                                     </td>
                                     <td className="px-4 py-4 font-medium text-gray-900 text-center">
-                                        <p className={`${match.ShowResults ? "font-semibold" : ""}`}>{!match.ShowResults ? "Ikke afviklet" : `${match.Team1.Result} - ${match.Team2.Result}`}</p>
+                                        {!match.ShowPlayerEnterResultButton && (
+                                            <p className={`${match.ShowPlayerEnterResultButton ? "font-semibold" : ""}`}>
+                                                {match.ShowResults
+                                                    ? `${match.Team1.Result} - ${match.Team2.Result}`
+                                                    : "Ikke afviklet"}
+                                            </p>
+                                        )}
                                         <button
                                             onClick={() => navigate(`${match.MatchId}`)}
-                                            className={`bg-sky-900 hover:bg-sky-950 rounded text-white p-1 ${!match.ShowResults ? "hidden" : ""}`}>Se kampdetaljer</button>
+                                            className={`bg-sky-900 hover:bg-sky-950 rounded text-white p-1 ${match.ShowUpcomingInfoText ? "hidden" : ""}`}>Se kampdetaljer</button>
                                     </td>
                                 </tr>
 
-                                {!match.ShowResults && match.Date !== "00:00" && (
+                                {!match.ShowResults && match.Date !== "00:00" && !match.ShowPlayerEnterResultButton && (
                                     <tr key={`${match.MatchId}-extra`}>
                                         <td colSpan={5} className="px-4 py-2 text-sm text-gray-600 border-t-2 border-white">
                                             <div className="flex justify-center items-center gap-1 text-gray-600">

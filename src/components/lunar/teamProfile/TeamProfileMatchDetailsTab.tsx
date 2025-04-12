@@ -67,6 +67,7 @@ export const TeamProfileMatchDetailsTab = () => {
                         <tbody className="divide-y divide-gray-200">
                         {matchDetails?.Matches.Matches.map((match) => (
                             <>
+                            {match.MatchResult?.HasDetailedScore && (
                                 <tr key={match.Id} className="hover:bg-cyan-500 transition-colors duration-500">
                                     <td className={`px-4 py-4 font-medium text-gray-900 ${match.MatchResult?.IsFirstParticipantWinner ? "font-semibold" : ""}`}>
                                         <p>{match.Challenger.Name}</p>
@@ -91,6 +92,7 @@ export const TeamProfileMatchDetailsTab = () => {
                                         )}
                                     </td>
                                 </tr>
+                            )}
                             </>
                         ))}
                         </tbody>

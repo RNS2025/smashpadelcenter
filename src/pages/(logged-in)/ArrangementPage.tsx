@@ -49,6 +49,7 @@ const ArrangementPage: React.FC = () => {
           padding: 0,
         }}
       >
+        {/* TODO: Linkets default overskriver linket */}
         <iframe
           src="https://book.smash.dk/newlook/proc_liste.asp"
           title="Smash Padel Events"
