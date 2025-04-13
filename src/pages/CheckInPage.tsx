@@ -222,7 +222,7 @@ const CheckInPage = () => {
 
         <div className="container mx-auto p-4">
           <h1 className="text-2xl font-bold mb-6">
-            Indtjekning for kommende turneringer
+            Indtjekning
           </h1>
 
           {error && (

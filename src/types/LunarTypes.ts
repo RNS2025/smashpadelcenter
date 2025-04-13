@@ -11,6 +11,15 @@ export interface Team {
 }
 
 export interface TeamInfo {
+    id: number;
+    name: string;
+    playersCount: number;
+    division: string;
+    region: string;
+    rating: number;
+}
+
+export interface TeamDetailsResponse {
     Team: TeamDetails;
     PoolId: number;
     SportId: number;
@@ -19,6 +28,7 @@ export interface TeamInfo {
     TeamLeagueId: number;
     TeamLeagueName: string;
 }
+
 
 export interface TeamDetails {
     Id: number;

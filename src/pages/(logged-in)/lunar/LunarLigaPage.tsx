@@ -13,12 +13,11 @@ const LunarLigaPage = () => {
 
         <HomeBar backPage={"/hjem"}/>
 
-        <div className="justify-self-center mt-10">
+        <div className="flex justify-center my-10">
         <LunarTabMenu/>
         </div>
 
-        <Outlet />
-
+              <Outlet />
       </>
   );
 };

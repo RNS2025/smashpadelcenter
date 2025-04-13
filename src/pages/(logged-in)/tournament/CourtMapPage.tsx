@@ -2,7 +2,7 @@ import {Helmet} from "react-helmet-async";
 import CourtsMap from "../../../components/tournaments/map/CourtsMap.tsx";
 import Animation from "../../../components/misc/Animation.tsx";
 import {useState} from "react";
-import BackArrow from "../../../components/misc/BackArrow.tsx";
+import HomeBar from "../../../components/misc/HomeBar.tsx";
 
 
 export const CourtMapPage = () => {
@@ -16,21 +16,21 @@ export const CourtMapPage = () => {
             </Helmet>
 
             <Animation>
-                <BackArrow/>
-                <div className="flex justify-between px-20">
-                    <div className="bg-white text-black rounded-xl w-1/2 h-fit p-4">
-                        <p className="text-3xl font-bold text-center">{selectedCourtLabel ?? "Vælg en bane"}</p>
+                <HomeBar/>
+                <div className="mt-5 flex max-lg:flex-col sm:space-y-10 space-y-0 lg:justify-between lg:px-20 max-lg:px-5">
+                    <div className="bg-white text-black rounded-xl lg:w-1/2 h-fit p-4">
+                        <p className="sm:text-3xl font-semibold text-center">{selectedCourtLabel ?? "Vælg en bane"}</p>
 
                         {selectedCourtLabel && (
                             <>
-                                <div className="border-2 border-black rounded-lg p-2">
-                                <p className="text-lg font-bold">DPF25 Herrer (FTM)</p>
-                                <div className="flex items-center mt-4 gap-4 text-lg">
-                                    <p className="font-semibold">Kl. 17:00</p>
-                                    <div className="flex gap-2 font-semibold">
-                                        <p>Hans Hansen & Hans Hansen</p>
+                                <div className="rounded-lg p-2">
+                                <p className="font-semibold max-sm:text-sm">DPF25 Herrer (FTM)</p>
+                                <div className="flex flex-col border border-black rounded-xl items-center mt-1 gap-2">
+                                    <p className="font-semibold max-sm:text-sm">17:00</p>
+                                    <div className="flex max-sm:flex-col max-sm:items-center gap-2 font-semibold max-sm:text-sm">
+                                        <p>H. Hansen / J. Hansen</p>
                                         <p>vs</p>
-                                        <p>Jens Jensen & Jens Jensen</p>
+                                        <p>J. Jensen / H. Jensen</p>
                                     </div>
                                 </div>
                                 </div>

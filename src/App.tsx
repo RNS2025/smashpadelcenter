@@ -9,7 +9,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { UserProvider } from "./context/UserContext";
 import BookCourtPage from "./pages/(logged-in)/BookingOfCourt.tsx";
 import BookTrainingPage from "./pages/(logged-in)/BookTraining.tsx";
-import CommunityPage from "./pages/(logged-in)/CommunityPage.tsx";
+import MatchFinderPage from "./pages/(logged-in)/matchFinder/MatchFinderPage.tsx";
 import RanglistePage from "./pages/(logged-in)/RanglistePage.tsx";
 import NewsPage from "./pages/(logged-in)/NewsPage.tsx";
 import CouponPage from "./pages/(logged-in)/CuponPage.tsx";
@@ -31,6 +31,12 @@ import TeamProfilePlayersTab from "./components/lunar/teamProfile/TeamProfilePla
 import TeamProfileStandingsTab from "./components/lunar/teamProfile/TeamProfileStandingsTab.tsx";
 import TeamProfileMatchesTab from "./components/lunar/teamProfile/TeamProfileMatchesTab.tsx";
 import TeamProfileMatchDetailsTab from "./components/lunar/teamProfile/TeamProfileMatchDetailsTab.tsx";
+import CreateMatchPage from "./pages/(logged-in)/matchFinder/CreateMatchPage.tsx";
+import MatchFinderAllMatchesTab from "./components/matchFinder/MatchFinderAllMatchesTab.tsx";
+import MatchFinderJoinedTab from "./components/matchFinder/MatchFinderJoinedTab.tsx";
+import MatchFinderAwaitingTab from "./components/matchFinder/MatchFinderAwaitingTab.tsx";
+import MatchFinderConfirmedTab from "./components/matchFinder/MatchFinderConfirmedTab.tsx";
+import ViewMatchPage from "./pages/(logged-in)/matchFinder/ViewMatchPage.tsx";
 
 function App() {
   return (
@@ -55,7 +61,17 @@ function App() {
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/book-court" element={<BookCourtPage />} />
             <Route path="/book-training" element={<BookTrainingPage />} />
-            <Route path="/makkerbørs" element={<CommunityPage />} />
+
+
+            <Route path="/makkerbørs" element={<MatchFinderPage />}>
+              <Route index element={<Navigate to="allekampe" replace />} />
+                <Route path="allekampe" element={<MatchFinderAllMatchesTab />} />
+                <Route path="tilmeldt" element={<MatchFinderJoinedTab />} />
+                <Route path="afventer" element={<MatchFinderAwaitingTab />} />
+                <Route path="bekraeftet" element={<MatchFinderConfirmedTab />} />
+            </Route>
+            <Route path="/makkerbørs/:matchId" element={<ViewMatchPage />} />
+            <Route path="/makkerbørs/opretkamp" element={<CreateMatchPage />} />
 
 
             <Route path="/turneringer" element={<TournamentTabs />} />

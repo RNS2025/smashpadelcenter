@@ -5,6 +5,8 @@ import Match from "../../../types/Match";
 import PlayerData from "../../../types/PlayerData";
 import { format } from "date-fns";
 import { da } from "date-fns/locale";
+import Animation from "../../../components/misc/Animation";
+import HomeBar from "../../../components/misc/HomeBar";
 
 const PlayerPage = () => {
   const { playerId, rowId: rowId } = useParams<{
@@ -63,11 +65,14 @@ const PlayerPage = () => {
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
+      <>
+        <Animation>
+          <HomeBar />
+    <div className="mx-auto p-6 max-w-4xl">
       {/* Player Profile Section */}
       {playerData?.Header && (
         <div className="bg-white shadow-md rounded-lg p-6 mb-6 border border-gray-200">
-          <div className="flex flex-col md:flex-row items-center gap-6">
+          <div className="flex flex-col md:flex-row md:items-center gap-6">
             {playerData.Header.ImageThumbnailUrl && (
               <img
                 src={playerData.Header.ImageThumbnailUrl}
@@ -134,7 +139,7 @@ const PlayerPage = () => {
 
           {/* Statistics Section */}
           {playerData.Statistics && (
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="mt-6 flex max-sm:flex-col md:justify-center md:space-x-44 gap-6">
               <div>
                 <h3 className="text-lg font-semibold text-gray-800 mb-2">
                   Statistik for {new Date().getFullYear()}
@@ -255,6 +260,8 @@ const PlayerPage = () => {
         </div>
       )}
     </div>
+        </Animation>
+      </>
   );
 };
 

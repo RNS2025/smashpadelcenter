@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import HomeBar from "../../components/misc/HomeBar";
 
 const ArrangementPage: React.FC = () => {
   const [topOffset, setTopOffset] = useState<number>(160);
@@ -11,7 +12,7 @@ const ArrangementPage: React.FC = () => {
       // Adjust offset based on screen size
       if (width <= 768) {
         // iPad Mini / iPad Air (portrait or small screens)
-        setTopOffset(130);
+        setTopOffset(0);
       } else {
         // PC and larger screens
         setTopOffset(155);
@@ -29,15 +30,15 @@ const ArrangementPage: React.FC = () => {
   }, []);
 
   return (
+      <>
+      <HomeBar/>
     <div
-      className="p-4"
       style={{
         height: "100vh", // Locks the outer container to viewport height
         overflow: "hidden", // Prevents page scrolling
         background: "rgb(37, 44, 54)", // Page background
       }}
     >
-      <h1 className="text-2xl font-bold mb-4 text-white">Upcoming Events</h1>
       <div
         style={{
           position: "relative",
@@ -66,6 +67,7 @@ const ArrangementPage: React.FC = () => {
         />
       </div>
     </div>
+      </>
   );
 };
 

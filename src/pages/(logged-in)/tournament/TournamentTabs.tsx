@@ -20,7 +20,7 @@ export const TournamentTabs = () => {
             <HomeBar backPage="/hjem" />
 
             <div className="flex items-center justify-center min-h-screen -mt-20 overflow-y-hidden">
-                <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                <div className={`grid grid-cols-1 gap-8 sm:grid-cols-2 ${role === "admin" ? "lg:grid-cols-3" : "lg:grid-cols-2"}`}>
                     <HomeScreenCard
                         icon={<CheckCircleIcon className="h-10 w-10" aria-hidden="true" />}
                         title="Indtjekning"

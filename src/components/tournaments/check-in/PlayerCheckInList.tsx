@@ -31,10 +31,10 @@ const PlayerCheckInList: FC<PlayerCheckInListProps> = ({
 
   return (
     <div className="mt-6">
-      <div className="flex justify-between">
+      <div className="flex justify-between max-sm:mb-5">
       <h2 className="text-xl font-semibold mb-4">Spillere</h2>
         {tournamentNotToday && (
-          <p className="text-gray-500 italic">
+          <p className="text-gray-500 italic max-sm:text-right">
             Indtjekning åbner først på turneringsdagen.
           </p>
         )}

@@ -1,4 +1,6 @@
 import { useRef, useState, useEffect } from "react";
+import LoadingSpinner from "../../components/misc/LoadingSpinner";
+import HomeBar from "../../components/misc/HomeBar.tsx";
 
 const BookCourtPage = () => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -12,7 +14,7 @@ const BookCourtPage = () => {
       // Adjust top offset based on screen width (in rem)
       if (width <= 768) {
         // iPad Mini / iPad Air (portrait or smaller screens)
-        setTopOffset(3.2); // Adjust offset for smaller devices
+        setTopOffset(0); // Adjust offset for smaller devices
       } else {
         // Larger screens (PC, etc.)
         setTopOffset(4.8); // Adjust offset for larger screens
@@ -47,6 +49,8 @@ const BookCourtPage = () => {
   };
 
   return (
+      <>
+          <HomeBar/>
     <div
       className="iframe-container"
       style={{
@@ -76,7 +80,7 @@ const BookCourtPage = () => {
             color: "white",
           }}
         >
-          <p>Loading booking system...</p>
+            <LoadingSpinner />
         </div>
       )}
 
@@ -96,6 +100,7 @@ const BookCourtPage = () => {
         }}
       />
     </div>
+      </>
   );
 };
 

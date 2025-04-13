@@ -82,7 +82,7 @@ export const HomePage = () => {
             <HomeScreenCard
               icon={<UsersIcon className="h-10 w-10" aria-hidden="true" />}
               title="Makkerbørs"
-              description="Find kampe"
+              description="Søg med- og modspillere"
               link="/makkerbørs"
             />
 
@@ -128,6 +128,7 @@ export const HomePage = () => {
               description="Udforsk vores partnere"
               link="/partner"
             />
+            {/*TODO: Måske skal den bare skjules helt i stedet for disabled*/}
             <HomeScreenCard
               icon={<CogIcon className="h-10 w-10" aria-hidden="true" />}
               title="Admin Panel"

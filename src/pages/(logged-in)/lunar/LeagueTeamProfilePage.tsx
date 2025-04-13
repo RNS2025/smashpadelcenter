@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import {TeamInfo} from "../../../types/LunarTypes.ts";
+import {TeamDetails, TeamDetailsResponse} from "../../../types/LunarTypes.ts";
 import {Outlet, useParams} from "react-router-dom";
 import { fetchTeamInfo } from "../../../services/LigaService.ts";
 import Animation from "../../../components/misc/Animation.tsx";
@@ -9,14 +9,14 @@ import TeamProfileTabMenu from "../../../components/lunar/teamProfile/TeamProfil
 export const LeagueTeamProfilePage = () => {
     const { teamId } = useParams<{ teamId: string }>();
     const cachedName = teamId ? sessionStorage.getItem(`teamName_${teamId}`) : null;
-    const [team, setTeam] = useState<TeamInfo>();
+    const [team, setTeam] = useState<TeamDetails>();
 
     //TODO: Kunne også blive et hook?
     useEffect(() => {
         const fetchData = async () => {
             if (typeof teamId === "string") {
-                const response = await fetchTeamInfo(parseInt(teamId, 10));
-                setTeam(response);
+                const response: TeamDetailsResponse = await fetchTeamInfo(parseInt(teamId, 10));
+                setTeam(response.Team);
             }
         };
         fetchData().then();
@@ -30,17 +30,17 @@ export const LeagueTeamProfilePage = () => {
 
                 {team && (
 
-                    <div className="container mx-auto p-6 bg-white mt-10 shadow-md rounded-lg">
+                    <div className="mx-auto p-6 bg-white mt-10 shadow-md rounded-lg">
                         <dl className="flex gap-5 divide-y divide-gray-100 px-2">
-                            {team.Team.HomeClubImageUrl && (
+                            {team && (
                                 <img
-                                    src={team.Team.HomeClubImageUrl}
-                                    alt={`${team.Team.Name}'s profil`}
+                                    src={team.HomeClubImageUrl}
+                                    alt={`${team.HomeClub.Name}'s profil`}
                                     className="w-32 h-32 rounded-full object-cover"
                                 />
                             )}
                             <div className="w-full">
-                                <h1 className="text-3xl font-bold text-gray-800 mb-2">
+                                <h1 className="sm:text-3xl font-bold text-gray-800 mb-2">
                                     {cachedName}
                                 </h1>
                                 <div className="space-y-1 text-gray-600">
@@ -49,7 +49,7 @@ export const LeagueTeamProfilePage = () => {
                                         <dt className="font-semibold">Klub:</dt>
 
                                         <dl>
-                                            <a href={team.Team.HomeClub.Name || "#"} className="text-cyan-500 hover:underline">{team.Team.HomeClub.Name}</a>
+                                            <a href={team.HomeClub.Name|| "#"} className="text-cyan-500 hover:underline">{team.HomeClub.Name}</a>
                                         </dl>
                                     </div>
 
@@ -57,7 +57,7 @@ export const LeagueTeamProfilePage = () => {
                                     <div className="flex gap-2">
                                         <dt className="font-semibold">Admin:</dt>
 
-                                        <dl>{team.Team.Initiator.map((initiator) => initiator.Name).join(" | ")}</dl>
+                                        <dl>{team.Initiator.map((initiator) => initiator.Name).join(" | ")}</dl>
                                     </div>
                                 </div>
                             </div>
