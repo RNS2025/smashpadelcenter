@@ -17,7 +17,9 @@ const { swaggerUi, specs } = require("./config/swagger");
 const mongoose = require("./config/database");
 const createAdmin = require("./scripts/createAdmin");
 const createTenUsers = require("./scripts/createTenUsers");
+const { Server } = require("socket.io");
 const path = require("path");
+const http = require("http");
 require("dotenv").config();
 
 const app = express();
@@ -25,6 +27,19 @@ const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(express.json());
+
+// Create HTTP server
+const server = http.createServer(app);
+
+// Initialize Socket.IO with the HTTP server
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173", // Frontend URL
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+  path: "/socket.io/", // Explicitly set path
+});
 
 // CORS configuration
 app.use(
@@ -83,6 +98,28 @@ app.use((err, req, res, next) => {
   res.status(500).send({ error: "Something went wrong!" });
 });
 
+// Socket.io setup
+io.on("connection", (socket) => {
+  console.log("Client connected:", socket.id);
+
+  socket.on("joinMatchRoom", (matchId) => {
+    socket.join(matchId);
+    console.log(`Client ${socket.id} joined room ${matchId}`);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Client disconnected:", socket.id);
+  });
+});
+
+// Make io available to routes
+app.set("socketio", io);
+
+// Health check endpoint for debugging
+app.get("/health", (req, res) => {
+  res.status(200).json({ status: "Server is running", socketIo: !!io });
+});
+
 // Wait for MongoDB to connect before starting the server
 mongoose.connection.once("open", async () => {
   console.log("✅ Connected to MongoDB");
@@ -93,8 +130,8 @@ mongoose.connection.once("open", async () => {
   // Ensure the ten users exist
   await createTenUsers();
 
-  // Start the server
-  app.listen(PORT, () => {
+  // Start the server using the HTTP server instance, not the Express app
+  server.listen(PORT, () => {
     console.log(`🚀 Server is running on http://localhost:${PORT}`);
   });
 });

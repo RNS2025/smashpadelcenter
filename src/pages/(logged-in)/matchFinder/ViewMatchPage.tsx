@@ -11,10 +11,11 @@ import { useUser } from "../../../context/UserContext";
 import { useEffect, useState } from "react";
 import { PadelMatch } from "../../../types/PadelMatch";
 import communityApi from "../../../services/makkerborsService";
-import { useParams } from "react-router-dom";
+import { Navigate, useParams } from "react-router-dom";
 import LoadingSpinner from "../../../components/misc/LoadingSpinner";
 import { format } from "date-fns";
 import da from "date-fns/locale/da";
+import { io, Socket } from "socket.io-client";
 
 export const ViewMatchPage = () => {
   const { username } = useUser();
@@ -22,7 +23,77 @@ export const ViewMatchPage = () => {
   const [match, setMatch] = useState<PadelMatch | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [socketConnected, setSocketConnected] = useState(false);
 
+  // Initialize Socket.IO
+  useEffect(() => {
+    if (!matchId) return;
+
+    // Create socket connection
+    const socket = io("http://localhost:3001", {
+      path: "/socket.io/",
+      transports: ["websocket", "polling"],
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+      timeout: 10000, // Increase timeout
+    });
+
+    // Connection event handlers
+    socket.on("connect", () => {
+      console.log("Connected to Socket.IO server");
+      setSocketConnected(true);
+      socket.emit("joinMatchRoom", matchId);
+    });
+
+    socket.on("matchUpdated", (updatedMatch: PadelMatch) => {
+      console.log("Received match update:", updatedMatch);
+      if (
+        updatedMatch &&
+        Array.isArray(updatedMatch.participants) &&
+        Array.isArray(updatedMatch.joinRequests) &&
+        Array.isArray(updatedMatch.reservedSpots)
+      ) {
+        setMatch(updatedMatch);
+      } else {
+        console.error("Invalid match update:", updatedMatch);
+        setError("Ugyldig kampopdatering modtaget");
+      }
+    });
+
+    socket.on("connect_error", (err) => {
+      console.error("Socket.IO connection error:", err.message);
+      setSocketConnected(false);
+      setError(`Realtidsopdateringer ikke tilgængelige: ${err.message}`);
+    });
+
+    socket.on("disconnect", (reason) => {
+      console.log(`Disconnected: ${reason}`);
+      setSocketConnected(false);
+    });
+
+    socket.on("reconnect", (attemptNumber) => {
+      console.log(`Reconnected after ${attemptNumber} attempts`);
+      setSocketConnected(true);
+      // Re-join the room after reconnection
+      socket.emit("joinMatchRoom", matchId);
+    });
+
+    // Clean up
+    return () => {
+      if (socket) {
+        socket.off("connect");
+        socket.off("disconnect");
+        socket.off("matchUpdated");
+        socket.off("connect_error");
+        socket.off("reconnect");
+        socket.disconnect();
+        console.log("Disconnected from Socket.IO server");
+      }
+    };
+  }, [matchId]);
+
+  // Fetch initial match data
   useEffect(() => {
     const fetchMatch = async () => {
       try {
@@ -32,6 +103,14 @@ export const ViewMatchPage = () => {
           return;
         }
         const matchData = await communityApi.getMatchById(matchId);
+        console.log("Fetched match:", matchData);
+        if (
+          !matchData ||
+          !Array.isArray(matchData.participants) ||
+          !Array.isArray(matchData.joinRequests)
+        ) {
+          throw new Error("Invalid match data");
+        }
         setMatch(matchData);
         setLoading(false);
       } catch (err: any) {
@@ -63,11 +142,16 @@ export const ViewMatchPage = () => {
     if (!match || !username || match.participants.includes(username)) return;
     try {
       const updatedMatch = await communityApi.joinMatch(match.id, username);
+      console.log("Updated match after join:", updatedMatch);
+      if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
+        throw new Error("Invalid match data returned");
+      }
       alert("Tilmelding sendt!");
       setMatch(updatedMatch);
     } catch (error: any) {
       console.error("Error joining match:", error);
       alert(error.response?.data?.message || "Fejl ved tilmelding");
+      setError("Fejl ved tilmelding");
     }
   };
 
@@ -78,11 +162,16 @@ export const ViewMatchPage = () => {
         match.id,
         participant
       );
+      console.log("Updated match after confirm:", updatedMatch);
+      if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
+        throw new Error("Invalid match data returned");
+      }
       alert("Tilmelding bekræftet!");
       setMatch(updatedMatch);
     } catch (error: any) {
       console.error("Error confirming join:", error);
       alert(error.response?.data?.message || "Fejl ved bekræftelse");
+      setError("Fejl ved bekræftelse");
     }
   };
 
@@ -95,8 +184,13 @@ export const ViewMatchPage = () => {
     } catch (error: any) {
       console.error("Error deleting match:", error);
       alert(error.response?.data?.message || "Fejl ved sletning af kamp");
+      setError("Fejl ved sletning af kamp");
     }
   };
+
+  if (!matchId) {
+    return <Navigate to="/makkerbørs" replace />;
+  }
 
   if (loading) {
     return <LoadingSpinner />;
@@ -116,6 +210,14 @@ export const ViewMatchPage = () => {
     );
   }
 
+  // Calculate non-owner participants
+  const nonOwnerParticipants = Array.isArray(match.participants)
+    ? match.participants.filter((p) => p !== match.username)
+    : [];
+
+  // Determine if match is full (3 non-owner participants)
+  const isMatchFull = nonOwnerParticipants.length >= 3;
+
   return (
     <>
       <Helmet>
@@ -134,6 +236,13 @@ export const ViewMatchPage = () => {
             - {safeFormatDate(match.endTime, "HH:mm")}
           </h1>
 
+          {!socketConnected && (
+            <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-2 mb-4">
+              Realtidsopdateringer er ikke tilgængelige. Opdater siden for at se
+              de seneste ændringer.
+            </div>
+          )}
+
           {/* Match creator */}
           <div className="border rounded flex items-center px-1">
             <UserCircleIcon className="h-20" />
@@ -146,45 +255,60 @@ export const ViewMatchPage = () => {
             </div>
           </div>
 
-          {/* Participants */}
-          {match.participants.map((participant, index) => (
-            <div key={index} className="border rounded flex items-center px-1">
-              <UserCircleIcon className="h-20" />
-              <div className="w-full pr-1 truncate">
-                <h1>{participant}</h1>
-              </div>
-              <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-20 h-12">
-                {match.level}
-              </div>
-            </div>
-          ))}
-
-          {/* Join requests (visible to creator) */}
-          {match.username === username &&
-            match.joinRequests.map((requester, index) => (
+          {/* Non-owner participants */}
+          {nonOwnerParticipants.length > 0 ? (
+            nonOwnerParticipants.map((participant, index) => (
               <div
                 key={index}
                 className="border rounded flex items-center px-1"
               >
                 <UserCircleIcon className="h-20" />
                 <div className="w-full pr-1 truncate">
-                  <h1>{requester}</h1>
-                  <h1 className="text-gray-500">Afventer bekræftelse</h1>
+                  <h1>{participant}</h1>
                 </div>
-                <button
-                  onClick={() => handleConfirmJoin(requester)}
-                  className="bg-cyan-500 text-white rounded-lg px-2 py-1"
-                >
-                  Bekræft
-                </button>
+                <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-20 h-12">
+                  {match.level}
+                </div>
               </div>
-            ))}
+            ))
+          ) : (
+            <p>Ingen deltagere endnu.</p>
+          )}
+
+          {/* Join requests (visible to creator) */}
+          {match.username === username &&
+            Array.isArray(match.joinRequests) &&
+            match.joinRequests.length > 0 && (
+              <>
+                <h2 className="font-semibold">Tilmeldingsanmodninger</h2>
+                {match.joinRequests.map((requester, index) => (
+                  <div
+                    key={index}
+                    className="border rounded flex items-center px-1"
+                  >
+                    <UserCircleIcon className="h-20" />
+                    <div className="w-full pr-1 truncate">
+                      <h1>{requester}</h1>
+                      <h1 className="text-gray-500">Afventer bekræftelse</h1>
+                    </div>
+                    <button
+                      onClick={() => handleConfirmJoin(requester)}
+                      className="bg-cyan-500 text-white rounded-lg px-2 py-1"
+                      disabled={isMatchFull}
+                    >
+                      Bekræft
+                    </button>
+                  </div>
+                ))}
+              </>
+            )}
 
           {/* Empty spots */}
           {[
             ...Array(
-              match.totalSpots -
-                (match.participants.length + match.reservedSpots.length)
+              3 - // Max 3 non-owner spots
+                (nonOwnerParticipants.length +
+                  (match.reservedSpots?.length || 0))
             ),
           ].map((_, index) => (
             <div
@@ -231,7 +355,8 @@ export const ViewMatchPage = () => {
           {match.username !== username &&
             username &&
             !match.participants.includes(username) &&
-            !match.joinRequests.includes(username) && (
+            !match.joinRequests.includes(username) &&
+            !isMatchFull && (
               <button
                 onClick={handleJoinMatch}
                 className="bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white"

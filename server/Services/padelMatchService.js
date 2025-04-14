@@ -10,11 +10,6 @@ const padelMatchService = {
     }));
   },
 
-  createMatch: async (matchData) => {
-    const newMatch = new PadelMatch(matchData);
-    return await newMatch.save();
-  },
-
   joinMatch: async (matchId, username) => {
     const match = await PadelMatch.findById(matchId);
     if (!match) throw new Error("Match not found");
@@ -24,21 +19,24 @@ const padelMatchService = {
     ) {
       throw new Error("User already in participants or join requests");
     }
-    if (
-      match.participants.length + match.reservedSpots.length >=
-      match.totalSpots
-    ) {
+    const nonOwnerParticipants = match.participants.filter(
+      (p) => p !== match.username
+    );
+    if (nonOwnerParticipants.length + match.reservedSpots.length >= 3) {
       throw new Error("Match is full");
     }
     match.joinRequests.push(username);
     await match.save();
-    return {
+    const updatedMatch = {
       ...match.toObject(),
       id: match._id.toString(),
       participants: match.participants || [],
       joinRequests: match.joinRequests || [],
       reservedSpots: match.reservedSpots || [],
+      totalSpots: match.totalSpots || 4,
     };
+    console.log("joinMatch updated match:", updatedMatch);
+    return updatedMatch;
   },
 
   confirmJoin: async (matchId, username) => {
@@ -47,24 +45,62 @@ const padelMatchService = {
     if (!match.joinRequests.includes(username)) {
       throw new Error("No join request found for this user");
     }
-    if (
-      match.participants.length + match.reservedSpots.length >=
-      match.totalSpots
-    ) {
+    const nonOwnerParticipants = match.participants.filter(
+      (p) => p !== match.username
+    );
+    if (nonOwnerParticipants.length + match.reservedSpots.length >= 3) {
       throw new Error("Match is full");
     }
     match.joinRequests = match.joinRequests.filter((req) => req !== username);
     match.participants.push(username);
     await match.save();
-    return {
+    const updatedMatch = {
       ...match.toObject(),
       id: match._id.toString(),
       participants: match.participants || [],
       joinRequests: match.joinRequests || [],
       reservedSpots: match.reservedSpots || [],
+      totalSpots: match.totalSpots || 4,
     };
+    console.log("confirmJoin updated match:", updatedMatch);
+    return updatedMatch;
   },
 
+  createMatch: async (matchData) => {
+    const newMatch = new PadelMatch({
+      ...matchData,
+      participants: [matchData.username], // Owner is the first participant
+      joinRequests: [],
+      reservedSpots: [],
+      totalSpots: 4,
+    });
+    const savedMatch = await newMatch.save();
+    const updatedMatch = {
+      ...savedMatch.toObject(),
+      id: savedMatch._id.toString(),
+      participants: savedMatch.participants || [],
+      joinRequests: savedMatch.joinRequests || [],
+      reservedSpots: savedMatch.reservedSpots || [],
+      totalSpots: savedMatch.totalSpots || 4,
+    };
+    console.log("createMatch saved match:", updatedMatch);
+    return updatedMatch;
+  },
+
+  getMatchById: async (matchId) => {
+    const match = await PadelMatch.findById(matchId);
+    if (!match) throw new Error("Match not found");
+    const updatedMatch = {
+      ...match.toObject(),
+      id: match._id.toString(),
+      participants: match.participants || [],
+      joinRequests: match.joinRequests || [],
+      reservedSpots: match.reservedSpots || [],
+      totalSpots: match.totalSpots || 4,
+    };
+    console.log("getMatchById match:", updatedMatch);
+    return updatedMatch;
+  },
   reserveSpots: async (matchId, spotIndex, reserve) => {
     const match = await PadelMatch.findById(matchId);
     if (!match) throw new Error("Match not found");
@@ -88,15 +124,6 @@ const padelMatchService = {
     const match = await PadelMatch.findByIdAndDelete(matchId);
     if (!match) throw new Error("Match not found");
     return await PadelMatch.find(); // Return updated list
-  },
-
-  getMatchById: async (matchId) => {
-    const match = await PadelMatch.findById(matchId);
-    if (!match) throw new Error("Match not found");
-    return {
-      ...match.toObject(),
-      id: match._id,
-    };
   },
 };
 

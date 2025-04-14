@@ -23,27 +23,30 @@ router.post("/", async (req, res) => {
   }
 });
 
-// POST /api/v1/matches/:id/join - Request to join a match
 router.post("/:id/join", async (req, res) => {
   try {
     const { username } = req.body;
-    const matches = await padelMatchService.joinMatch(req.params.id, username);
-    res.json(matches);
+    const match = await padelMatchService.joinMatch(req.params.id, username);
+    const io = req.app.get("socketio");
+    console.log("Emitting matchUpdated for match:", match.id);
+    io.to(req.params.id).emit("matchUpdated", match);
+    res.json(match);
   } catch (error) {
+    console.error("joinMatch error:", error);
     res.status(400).json({ message: error.message });
   }
 });
 
-// POST /api/v1/matches/:id/confirm - Confirm a join request
 router.post("/:id/confirm", async (req, res) => {
   try {
     const { username } = req.body;
-    const matches = await padelMatchService.confirmJoin(
-      req.params.id,
-      username
-    );
-    res.json(matches);
+    const match = await padelMatchService.confirmJoin(req.params.id, username);
+    const io = req.app.get("socketio");
+    console.log("Emitting matchUpdated for match:", match.id);
+    io.to(req.params.id).emit("matchUpdated", match);
+    res.json(match);
   } catch (error) {
+    console.error("confirmJoin error:", error);
     res.status(400).json({ message: error.message });
   }
 });
