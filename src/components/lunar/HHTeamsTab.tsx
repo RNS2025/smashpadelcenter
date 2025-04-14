@@ -75,7 +75,7 @@ export const HHTeamsTab = () => {
             <div className="sm:mx-20 mx-2">
                 <TeamListTable  teams={hhTeams} onRowClick={(team) => {
                     sessionStorage.setItem(`teamName_${team.id}`, team.name);
-                    navigate(`/holdligaer/hh-listen/${team.id}`);
+                    navigate(`/holdligaer/${team.id}`);
                 }}/>
             </div>
         </>

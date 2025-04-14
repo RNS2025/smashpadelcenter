@@ -65,7 +65,7 @@ const TeamListTable = ({ teams, onRowClick }: {
 
             <div className="overflow-auto max-h-[600px] rounded-lg border border-gray-200 shadow-lg my-5">
 
-                <table className="min-w-full divide-y-2 divide-gray-200 bg-white text-gray-900 text-sm max-lg:text-xs">
+                <table className="min-w-full divide-y-2 divide-gray-200 bg-white text-gray-900 text-sm">
                     <thead className="text-left bg-gray-300 font-bold">
                     <tr>
                         <th className="px-4 py-2 cursor-pointer w-[70%]">
@@ -93,8 +93,8 @@ const TeamListTable = ({ teams, onRowClick }: {
                                 className="hover:bg-cyan-500 cursor-pointer transition-colors duration-500"
                                 onClick={() => onRowClick?.(team)}
                             >
-                                <td className="sm:px-4 max-sm:px-2 sm:py-4 max-sm:py-1">{team.name}</td>
-                                <td className="sm:px-4 max-sm:px-2 sm:py-4 max-sm:py-1">{team.division}</td>
+                                <td className="sm:px-4 max-sm:px-2 py-4">{team.name}</td>
+                                <td className="sm:px-4 max-sm:px-2 py-4">{team.division}</td>
                             </tr>
                         ))
                     ) : (

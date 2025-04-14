@@ -1,5 +1,5 @@
 import {Helmet} from "react-helmet-async";
-import {Player, TeamInfo} from "../../../types/LunarTypes.ts";
+import {Player, TeamDetails} from "../../../types/LunarTypes.ts";
 import {useParams} from "react-router-dom";
 import {useEffect, useState} from "react";
 import {fetchTeamInfo} from "../../../services/LigaService.ts";
@@ -8,13 +8,13 @@ export const TeamProfilePlayersTab = () => {
 
     const { teamId } = useParams<{ teamId: string }>();
 
-    const [team, setTeam] = useState<TeamInfo>();
+    const [team, setTeam] = useState<TeamDetails>();
 
     useEffect(() => {
         const fetchData = async () => {
             if (typeof teamId === "string") {
                 const response = await fetchTeamInfo(parseInt(teamId, 10));
-                setTeam(response);
+                setTeam(response.Team);
             }
         }
         fetchData().then();
@@ -28,7 +28,7 @@ export const TeamProfilePlayersTab = () => {
             </Helmet>
 
             {team && (
-            <div className="overflow-auto rounded-lg border border-gray-200 shadow-lg my-5 text-sm">
+            <div className="overflow-auto xl:max-h-[550px] max-xl:max-h-[470px] rounded-lg border border-gray-200 shadow-lg my-5 text-sm">
                 <table className="min-w-full divide-y-2 divide-gray-200 bg-white">
                     <thead className="text-left bg-gray-300 font-bold">
                     <tr>
@@ -51,10 +51,13 @@ export const TeamProfilePlayersTab = () => {
                     </thead>
 
                     <tbody className="divide-y divide-gray-200">
-                    {team.Team.Players.map((player: Player) => (
+                    {team.Players.map((player: Player) => (
                         <tr key={player.Id} className="hover:bg-cyan-500 transition-colors duration-500">
-                            <td className="px-4 py-4 font-medium text-gray-900">
-                                {player.FirstName} {player.TeamParticipantType === "Captain" && <span className="ml-5 p-1.5 bg-sky-900 rounded text-white select-none">Kaptajn</span>}
+                            <td className="flex max-md:flex-col gap-2 px-4 py-4 font-medium text-gray-900">
+                                {player.FirstName}
+                                <div>
+                                    {player.TeamParticipantType === "Captain" && <span className="p-1.5 bg-sky-900 rounded text-white select-none">Kaptajn</span>}
+                                </div>
                             </td>
                             <td className="px-4 py-2 font-medium text-gray-900">
                                 {player.HomeClub.Name}

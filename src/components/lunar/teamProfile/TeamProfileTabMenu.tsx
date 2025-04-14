@@ -11,7 +11,7 @@ export const TeamProfileTabMenu = () => {
                         {/* Spillere Tab */}
                         <NavLink
                             to={`spillere`}
-                            className={`inline-flex shrink-0 items-center gap-2 border-b-2 px-1 pb-4
+                            className={`inline-flex shrink-0 items-center gap-2 border-b-2 px-1 pb-4 max-sm:text-sm
                                 ${location.pathname.includes("spillere")
                                 ? "border-cyan-500 text-cyan-500"
                                 : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 transition duration-300"}
@@ -23,7 +23,7 @@ export const TeamProfileTabMenu = () => {
                         {/* Tabeloversigt Tab */}
                         <NavLink
                             to={`tabeloversigt`}
-                            className={`inline-flex shrink-0 items-center gap-2 border-b-2 px-1 pb-4
+                            className={`inline-flex shrink-0 items-center gap-2 border-b-2 px-1 pb-4 max-sm:text-sm
                                 ${location.pathname.includes("tabeloversigt")
                                 ? "border-cyan-500 text-cyan-500"
                                 : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 transition duration-300"}
@@ -35,7 +35,7 @@ export const TeamProfileTabMenu = () => {
                         {/* Kampe Tab */}
                         <NavLink
                             to={`kampe`}
-                            className={`inline-flex shrink-0 items-center gap-2 border-b-2 px-1 pb-4
+                            className={`inline-flex shrink-0 items-center gap-2 border-b-2 px-1 pb-4 max-sm:text-sm
                                 ${location.pathname.includes("kampe")
                                 ? "border-cyan-500 text-cyan-500"
                                 : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 transition duration-300"}

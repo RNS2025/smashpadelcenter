@@ -43,8 +43,8 @@ export const TeamProfileMatchDetailsTab = () => {
 
             {matchDetails && currentMatch && (
                 <div className="overflow-auto rounded-lg border border-gray-200 shadow-lg my-5 text-sm">
-                    <table className="min-w-full divide-y-2 divide-gray-200 bg-white">
-                        <thead className="text-left bg-gray-300 font-bold">
+                    <table className="min-w-[700px] w-full divide-y-2 divide-gray-200 bg-white">
+                    <thead className="text-left bg-gray-300 font-bold">
                         <tr>
                             <th className="px-4 py-2 text-gray-900 select-none">
                                 <div className="flex items-center gap-2">
@@ -56,7 +56,7 @@ export const TeamProfileMatchDetailsTab = () => {
                                     {currentMatch.Team2.Name}
                                 </div>
                             </th>
-                            <th className="px-4 py-2 text-gray-900 select-none w-[20%]">
+                            <th className="px-4 py-2 text-gray-900 select-none w-[30%]">
                                 <div className="flex items-center gap-2">
                                     Resultat
                                 </div>

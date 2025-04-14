@@ -30,40 +30,44 @@ export const LeagueTeamProfilePage = () => {
 
                 {team && (
 
-                    <div className="mx-auto p-6 bg-white mt-10 shadow-md rounded-lg">
+                    <div className="mx-2 sm:mx-10 h-[calc(100vh-120px)] p-6 bg-white mt-10 shadow-md rounded-lg">
                         <dl className="flex gap-5 divide-y divide-gray-100 px-2">
                             {team && (
                                 <img
                                     src={team.HomeClubImageUrl}
                                     alt={`${team.HomeClub.Name}'s profil`}
-                                    className="w-32 h-32 rounded-full object-cover"
+                                    className="w-16 h-16 sm:w-32 sm:h-32 rounded-full object-cover"
                                 />
                             )}
                             <div className="w-full">
-                                <h1 className="sm:text-3xl font-bold text-gray-800 mb-2">
+                                <h1 className="sm:text-xl md:text-3xl font-bold text-gray-800 mb-2">
                                     {cachedName}
                                 </h1>
-                                <div className="space-y-1 text-gray-600">
 
-                                    <div className="flex gap-2">
-                                        <dt className="font-semibold">Klub:</dt>
+                                <div className="flex flex-col gap-2 max-sm:text-sm">
+                                    {team.Initiator.map(initiator => (
+                                        <div className="flex gap-2" key={initiator.Id}>
+                                            <dt className="font-semibold text-gray-600">Admin:</dt>
+                                            <dl>
+                                                <a href={initiator.PlayerUrl} className="text-cyan-500 hover:underline">{initiator.Name}</a>
+                                            </dl>
+                                        </div>
+                                    ))}
 
-                                        <dl>
-                                            <a href={team.HomeClub.Name|| "#"} className="text-cyan-500 hover:underline">{team.HomeClub.Name}</a>
-                                        </dl>
-                                    </div>
+                                    <div className="text-gray-600">
+                                        <div className="flex gap-2">
+                                            <dt className="font-semibold">Klub:</dt>
 
-                                    {/*//TODO: Jeg kan ikke få division og region ligesom i API-eksemplet */}
-                                    <div className="flex gap-2">
-                                        <dt className="font-semibold">Admin:</dt>
-
-                                        <dl>{team.Initiator.map((initiator) => initiator.Name).join(" | ")}</dl>
+                                            <dl>
+                                                <a href={team.HomeClub.Name|| "#"} className="text-cyan-500 hover:underline">{team.HomeClub.Name}</a>
+                                            </dl>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </dl>
 
-                        <div className="justify-self-center">
+                        <div className="justify-self-center max-xl:mt-5">
                             <TeamProfileTabMenu/>
                         </div>
 
