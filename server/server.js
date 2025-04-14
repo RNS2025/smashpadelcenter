@@ -17,6 +17,7 @@ const { swaggerUi, specs } = require("./config/swagger");
 const mongoose = require("./config/database");
 const createAdmin = require("./scripts/createAdmin");
 const createTenUsers = require("./scripts/createTenUsers");
+const { updateAllData } = require("./scripts/dataScheduler");
 const { Server } = require("socket.io");
 const path = require("path");
 const http = require("http");
@@ -120,18 +121,13 @@ app.get("/health", (req, res) => {
   res.status(200).json({ status: "Server is running", socketIo: !!io });
 });
 
-// Wait for MongoDB to connect before starting the server
 mongoose.connection.once("open", async () => {
   console.log("✅ Connected to MongoDB");
-
-  // Ensure the admin user exists
   await createAdmin();
-
-  // Ensure the ten users exist
   await createTenUsers();
-
-  // Start the server using the HTTP server instance, not the Express app
   server.listen(PORT, () => {
     console.log(`🚀 Server is running on http://localhost:${PORT}`);
+    // Start the scheduler
+    updateAllData(); // Optional: Run immediately on startup
   });
 });

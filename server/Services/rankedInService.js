@@ -1,8 +1,16 @@
 const axios = require("axios");
-
+const { Tournament, Player } = require("../models/rankedInModels");
 const API_BASE_URL = "https://api.rankedin.com/v1/";
 const OrganisationIdSmashHorsens = "4310";
 const OrganisationIdSmashStensballe = "9492";
+
+// Debug: Verify model import
+console.log(
+  "Tournament model:",
+  typeof Tournament,
+  "Player model:",
+  typeof Player
+);
 
 const getAvailableTournaments = async (
   organisationId = "4310",
@@ -11,26 +19,99 @@ const getAvailableTournaments = async (
   skip = 0,
   take = 10
 ) => {
+  // Check MongoDB first
+  console.log(
+    `Checking MongoDB for tournaments: org ${organisationId}, isFinished ${isFinished}`
+  );
+  const tournaments = await Tournament.find({
+    organisationId,
+    isFinished,
+  }).lean();
+  if (tournaments.length > 0) {
+    console.log(`Using DB tournaments for org ${organisationId}`);
+    return {
+      payload: tournaments.map((t) => ({
+        eventId: t.eventId,
+        eventName: t.eventName,
+        eventUrl: t.eventUrl,
+        club: t.club,
+        city: t.city,
+        isPremium: t.isPremium,
+        startDate: t.startDate,
+        endDate: t.endDate,
+        eventState: t.eventState,
+        joinUrl: t.joinUrl,
+      })),
+    };
+  }
+
+  // Fetch from API
   try {
     const response = await axios.get(
       `${API_BASE_URL}Organization/GetOrganisationEventsAsync`,
       {
         params: {
-          organisationId: organisationId,
+          organisationId,
           IsFinished: isFinished,
           Language: language,
-          skip: skip,
-          take: take,
-          _: Date.now(), // Add a timestamp to avoid caching issues
+          skip,
+          take,
+          _: Date.now(),
         },
       }
     );
-    const tournaments = response.data;
+    const data = response.data;
+    console.log(`API response for org ${organisationId}:`, {
+      payloadLength: data.payload?.length || 0,
+    });
 
-    return tournaments;
+    // Handle empty or invalid response
+    if (!data.payload || data.payload.length === 0) {
+      console.log(`No tournaments returned from API for org ${organisationId}`);
+      return { payload: [] };
+    }
+
+    // Save to MongoDB
+    await Tournament.deleteMany({ organisationId, isFinished });
+    const tournamentDocs = data.payload.map((tournament) => ({
+      organisationId,
+      eventId: tournament.id,
+      eventName: tournament.name,
+      eventUrl: tournament.eventUrl || "",
+      club: tournament.club || "",
+      city: tournament.city || "",
+      isPremium: tournament.isPremium || false,
+      startDate: tournament.startDate,
+      endDate: tournament.endDate,
+      eventState: tournament.eventState || 0,
+      joinUrl: tournament.joinUrl || "",
+      updatedAt: new Date(),
+    }));
+    await Tournament.insertMany(tournamentDocs);
+
+    console.log(
+      `Saved ${tournamentDocs.length} tournaments for org ${organisationId}`
+    );
+    return {
+      payload: tournamentDocs.map((t) => ({
+        eventId: t.eventId,
+        eventName: t.eventName,
+        eventUrl: t.eventUrl,
+        club: t.club,
+        city: t.city,
+        isPremium: t.isPremium,
+        startDate: t.startDate,
+        endDate: t.endDate,
+        eventState: t.eventState,
+        joinUrl: t.joinUrl,
+      })),
+    };
   } catch (error) {
-    console.error("Error fetching tournaments:", error.message);
-    throw new Error("Failed to fetch tournaments");
+    console.error(
+      `Error fetching tournaments for org ${organisationId}:`,
+      error.message
+    );
+    return { payload: [] };
   }
 };
 
@@ -43,7 +124,6 @@ const getUpcomingTournament = async (
       organisationId,
       language,
     });
-
     const tournaments = await getAvailableTournaments(
       organisationId,
       false,
@@ -54,50 +134,93 @@ const getUpcomingTournament = async (
     return tournaments;
   } catch (error) {
     console.error("Error fetching upcoming tournament:", error.message);
-    throw new Error("Failed to fetch upcoming tournament");
+    return { payload: [] };
   }
 };
 
 const getAllTournamentPlayers = async (tournamentId, language = "en") => {
+  // Validate tournamentId
+  if (!tournamentId) {
+    console.warn("Skipping getAllTournamentPlayers: tournamentId is undefined");
+    return [];
+  }
+
+  // Check MongoDB first
+  const players = await Player.find({ tournamentId }).lean();
+  if (players.length > 0) {
+    console.log(`Using DB players for tournament ${tournamentId}`);
+    return players.map((p) => ({
+      id: p.rankedInId,
+      firstName: p.name.split(" ")[0] || "",
+      lastName: p.name.split(" ").slice(1).join(" ") || "",
+      rankedInId: p.rankedInId,
+      // Add other Player fields as needed
+    }));
+  }
+
+  // Fetch from API
   try {
+    console.log(`Fetching players for tournamentId ${tournamentId}`);
     const response = await axios.get(
       `${API_BASE_URL}tournament/GetAllSeedsAsync`,
       {
-        params: {
-          tournamentid: tournamentId,
-          language: language,
-        },
+        params: { tournamentid: tournamentId, language },
       }
     );
-    const players = response.data;
+    const playersData = response.data;
 
-    const mappedPlayers = players.map((player) => ({
-      Name: player.Name,
-      RankedInId: player.RankedinId,
+    // Save to MongoDB
+    await Player.deleteMany({ tournamentId });
+    const playerDocs = playersData.map((player) => ({
+      tournamentId,
+      rankedInId: player.RankedinId,
+      name: player.Name,
+      updatedAt: new Date(),
     }));
+    await Player.insertMany(playerDocs);
 
-    return mappedPlayers;
+    console.log(
+      `Saved ${playerDocs.length} players for tournament ${tournamentId}`
+    );
+    return playerDocs.map((p) => ({
+      id: p.rankedInId,
+      firstName: p.name.split(" ")[0] || "",
+      lastName: p.name.split(" ").slice(1).join(" ") || "",
+      rankedInId: p.rankedInId,
+    }));
   } catch (error) {
-    console.error("Error fetching tournament players:", error.message);
-    throw new Error("Failed to fetch tournament players");
+    console.error(
+      `Error fetching tournament players for tournamentId ${tournamentId}:`,
+      {
+        message: error.message,
+        status: error.response?.status,
+        data: error.response?.data,
+      }
+    );
+    return [];
   }
 };
+
 const getAllRows = async (tournamentId) => {
+  if (!tournamentId) {
+    console.warn("Skipping getAllRows: tournamentId is undefined");
+    return [];
+  }
   try {
     const response = await axios.get(
       `${API_BASE_URL}tournament/GetPlayersTabAsync`,
       {
-        params: {
-          id: tournamentId,
-        },
+        params: { id: tournamentId },
       }
     );
     const rows = response.data;
-
-    return rows;
+    return rows; // Adjust based on Row interface if needed
   } catch (error) {
-    console.error("Error fetching rows:", error.message);
-    throw new Error("Failed to fetch rows");
+    console.error(
+      `Error fetching rows for tournamentId ${tournamentId}:`,
+      error.message
+    );
+    return [];
   }
 };
 
@@ -106,35 +229,39 @@ const getPlayersInRow = async (
   tournamentClassId,
   language = "en"
 ) => {
+  if (!tournamentId || !tournamentClassId) {
+    console.warn(
+      "Skipping getPlayersInRow: invalid tournamentId or tournamentClassId"
+    );
+    return [];
+  }
   try {
     const response = await axios.get(
       `${API_BASE_URL}tournament/GetPlayersForClassAsync`,
       {
-        params: {
-          tournamentId: tournamentId,
-          tournamentClassId: tournamentClassId,
-          language: language,
-        },
+        params: { tournamentId, tournamentClassId, language },
       }
     );
     const data = response.data;
 
-    // Extract players from the nested structure
     const players = data.Participants.flatMap((participant) => [
       participant.Participant.FirstPlayer,
       participant.Participant.SecondPlayer,
-    ]);
+    ]).filter((player) => player);
 
-    // Map the players to a simpler format Name and RankedinId
-    const mappedPlayers = players.map((player) => ({
-      Name: player.Name,
-      RankedInId: player.RankedinId,
+    return players.map((player) => ({
+      id: player.RankedinId,
+      firstName: player.Name.split(" ")[0] || "",
+      lastName: player.Name.split(" ").slice(1).join(" ") || "",
+      rankedInId: player.RankedinId,
+      // Add other Player fields as needed
     }));
-
-    return mappedPlayers;
   } catch (error) {
-    console.error("Error fetching players in row:", error.message);
-    throw new Error("Failed to fetch players in row");
+    console.error(
+      `Error fetching players in row for tournamentId ${tournamentId}:`,
+      error.message
+    );
+    return [];
   }
 };
 
@@ -145,8 +272,13 @@ const getPlayersMatches = async (
   drawStage = 0,
   language = "en"
 ) => {
+  if (!playerId || !tournamentClassId) {
+    console.warn(
+      "Skipping getPlayersMatches: invalid playerId or tournamentClassId"
+    );
+    return [];
+  }
   try {
-    // Fetch all matches from the tournament
     const response = await axios.get(
       `${API_BASE_URL}tournament/GetDrawsForStageAndStrengthAsync`,
       {
@@ -163,7 +295,6 @@ const getPlayersMatches = async (
     const allMatches = response.data;
     let playerMatches = [];
 
-    // Process matches based on BaseType
     allMatches.forEach((tournamentData) => {
       switch (tournamentData.BaseType) {
         case "Elimination":
@@ -187,21 +318,79 @@ const getPlayersMatches = async (
             .map((match) => ({
               matchId: match.MatchId,
               round: match.Round,
-              date: match.Date,
-              courtName: match.CourtName,
+              date: match.Date || null,
+              courtName: match.CourtName || null,
               durationMinutes:
                 match.MatchViewModel?.TotalDurationInMinutes || null,
               challenger: {
-                firstPlayer: match.ChallengerParticipant.FirstPlayer,
-                secondPlayer: match.ChallengerParticipant.SecondPlayer || null,
+                id: match.ChallengerParticipant?.RankedinId || "",
+                firstPlayer: {
+                  id: match.ChallengerParticipant?.FirstPlayer?.RankedinId,
+                  firstName:
+                    match.ChallengerParticipant?.FirstPlayer?.Name.split(
+                      " "
+                    )[0] || "",
+                  lastName:
+                    match.ChallengerParticipant?.FirstPlayer?.Name.split(" ")
+                      .slice(1)
+                      .join(" ") || "",
+                  rankedInId:
+                    match.ChallengerParticipant?.FirstPlayer?.RankedinId,
+                },
+                secondPlayer: match.ChallengerParticipant?.SecondPlayer
+                  ? {
+                      id: match.ChallengerParticipant?.SecondPlayer?.RankedinId,
+                      firstName:
+                        match.ChallengerParticipant?.SecondPlayer?.Name.split(
+                          " "
+                        )[0] || "",
+                      lastName:
+                        match.ChallengerParticipant?.SecondPlayer?.Name.split(
+                          " "
+                        )
+                          .slice(1)
+                          .join(" ") || "",
+                      rankedInId:
+                        match.ChallengerParticipant?.SecondPlayer?.RankedinId,
+                    }
+                  : null,
               },
               challenged: {
-                firstPlayer: match.ChallengedParticipant.FirstPlayer,
-                secondPlayer: match.ChallengedParticipant.SecondPlayer || null,
+                id: match.ChallengedParticipant?.RankedinId || "",
+                firstPlayer: {
+                  id: match.ChallengedParticipant?.FirstPlayer?.RankedinId,
+                  firstName:
+                    match.ChallengedParticipant?.FirstPlayer?.Name.split(
+                      " "
+                    )[0] || "",
+                  lastName:
+                    match.ChallengedParticipant?.FirstPlayer?.Name.split(" ")
+                      .slice(1)
+                      .join(" ") || "",
+                  rankedInId:
+                    match.ChallengedParticipant?.FirstPlayer?.RankedinId,
+                },
+                secondPlayer: match.ChallengedParticipant?.SecondPlayer
+                  ? {
+                      id: match.ChallengedParticipant?.SecondPlayer?.RankedinId,
+                      firstName:
+                        match.ChallengedParticipant?.SecondPlayer?.Name.split(
+                          " "
+                        )[0] || "",
+                      lastName:
+                        match.ChallengedParticipant?.SecondPlayer?.Name.split(
+                          " "
+                        )
+                          .slice(1)
+                          .join(" ") || "",
+                      rankedInId:
+                        match.ChallengedParticipant?.SecondPlayer?.RankedinId,
+                    }
+                  : null,
               },
-              score: match.MatchViewModel.Score,
-              isPlayed: match.MatchViewModel.IsPlayed,
-              winnerParticipantId: match.WinnerParticipantId,
+              score: match.MatchViewModel?.Score || null,
+              isPlayed: match.MatchViewModel?.IsPlayed || false,
+              winnerParticipantId: match.WinnerParticipantId || null,
               matchType: "Elimination",
             }));
 
@@ -213,7 +402,6 @@ const getPlayersMatches = async (
           const participants = [];
           const matchesById = new Map();
 
-          // Step 1: Collect all participants and their indices
           poolData.flat().forEach((cell) => {
             if (
               cell.CellType === "ParticipantCell" &&
@@ -226,7 +414,6 @@ const getPlayersMatches = async (
             }
           });
 
-          // Step 2: Collect all matches and store them by MatchId
           poolData.forEach((row) => {
             row.forEach((cell) => {
               if (cell.CellType === "MatchCell" && cell.MatchCell?.MatchId) {
@@ -235,7 +422,6 @@ const getPlayersMatches = async (
             });
           });
 
-          // Step 3: Determine matches for the player
           const playerParticipant = participants.find((p) =>
             p.players.some((player) => player.RankedinId === playerId)
           );
@@ -245,13 +431,13 @@ const getPlayersMatches = async (
             const roundRobinMatches = [];
 
             poolData.forEach((row, rowIndex) => {
-              if (rowIndex === 0) return; // Skip header row
+              if (rowIndex === 0) return;
 
               const rowParticipant = row[0]?.ParticipantCell;
               if (!rowParticipant) return;
 
               const rowIndexParticipant = rowParticipant.Index;
-              if (rowIndexParticipant === playerIndex) return; // Skip player's own row
+              if (rowIndexParticipant === playerIndex) return;
 
               row.forEach((cell, colIndex) => {
                 if (cell.CellType === "MatchCell" && cell.MatchCell?.MatchId) {
@@ -275,25 +461,69 @@ const getPlayersMatches = async (
 
                     roundRobinMatches.push({
                       matchId: match.MatchId,
-                      round: rowIndex, // Using row index as a proxy for round
+                      round: rowIndex,
                       date: match.Date || null,
                       courtName: match.Court || null,
                       durationMinutes:
                         match.MatchResults?.TotalDurationInMinutes || null,
                       challenger: {
-                        firstPlayer: challenger.players[0],
-                        secondPlayer: challenger.players[1] || null,
+                        id: challenger?.players[0]?.RankedinId || "",
+                        firstPlayer: {
+                          id: challenger?.players[0]?.RankedinId,
+                          firstName:
+                            challenger?.players[0]?.Name.split(" ")[0] || "",
+                          lastName:
+                            challenger?.players[0]?.Name.split(" ")
+                              .slice(1)
+                              .join(" ") || "",
+                          rankedInId: challenger?.players[0]?.RankedinId,
+                        },
+                        secondPlayer: challenger?.players[1]
+                          ? {
+                              id: challenger?.players[1]?.RankedinId,
+                              firstName:
+                                challenger?.players[1]?.Name.split(" ")[0] ||
+                                "",
+                              lastName:
+                                challenger?.players[1]?.Name.split(" ")
+                                  .slice(1)
+                                  .join(" ") || "",
+                              rankedInId: challenger?.players[1]?.RankedinId,
+                            }
+                          : null,
                       },
                       challenged: {
-                        firstPlayer: challenged.players[0],
-                        secondPlayer: challenged.players[1] || null,
+                        id: challenged?.players[0]?.RankedinId || "",
+                        firstPlayer: {
+                          id: challenged?.players[0]?.RankedinId,
+                          firstName:
+                            challenged?.players[0]?.Name.split(" ")[0] || "",
+                          lastName:
+                            challenged?.players[0]?.Name.split(" ")
+                              .slice(1)
+                              .join(" ") || "",
+                          rankedInId: challenged?.players[0]?.RankedinId,
+                        },
+                        secondPlayer: challenged?.players[1]
+                          ? {
+                              id: challenged?.players[1]?.RankedinId,
+                              firstName:
+                                challenged?.players[1]?.Name.split(" ")[0] ||
+                                "",
+                              lastName:
+                                challenged?.players[1]?.Name.split(" ")
+                                  .slice(1)
+                                  .join(" ") || "",
+                              rankedInId: challenged?.players[1]?.RankedinId,
+                            }
+                          : null,
                       },
                       score: match.MatchResults?.Score || null,
                       isPlayed: match.MatchResults?.IsPlayed || false,
                       winnerParticipantId: match.MatchResults
                         ?.IsFirstParticipantWinner
                         ? rowIndexParticipant
-                        : null, // Simplified winner logic
+                        : null,
                       matchType: "RoundRobin",
                     });
                   }
@@ -311,7 +541,6 @@ const getPlayersMatches = async (
       }
     });
 
-    // Sort matches by date if available
     playerMatches.sort((a, b) => {
       if (!a.date || !b.date) return 0;
       return new Date(a.date) - new Date(b.date);
@@ -319,41 +548,67 @@ const getPlayersMatches = async (
 
     return playerMatches;
   } catch (error) {
-    console.error("Error fetching matches for player:", error.message);
-    throw new Error("Failed to fetch matches for player");
+    console.error(
+      `Error fetching matches for playerId ${playerId}:`,
+      error.message
+    );
+    return [];
   }
 };
 
 const getPlayerDetails = async (playerId, language = "en") => {
+  if (!playerId) {
+    console.warn("Skipping getPlayerDetails: playerId is undefined");
+    return null;
+  }
   try {
     const response = await axios.get(
       `${API_BASE_URL}player/playerprofileinfoasync`,
       {
-        params: {
-          rankedinId: playerId,
-          language: language,
-        },
+        params: { rankedInId: playerId, language },
       }
     );
-
     const playerData = response.data;
-
-    return playerData;
+    return {
+      Header: {
+        PlayerId: playerData.PlayerId,
+        ImageThumbnailUrl: playerData.ImageThumbnailUrl || "",
+        FullName: playerData.FullName,
+        RankedinId: playerData.RankedinId,
+        HomeClubName: playerData.HomeClubName || "",
+        HomeClubUrl: playerData.HomeClubUrl || "",
+        CountryShort: playerData.CountryShort || "",
+        Age: playerData.Age || "",
+        Form: playerData.Form || [],
+        IsProPlayer: playerData.IsProPlayer || false,
+      },
+      Statistics: {
+        WinLossDoublesCurrentYear: playerData.WinLossDoublesCurrentYear || "",
+        EventsParticipatedDoublesCurrentYear:
+          playerData.EventsParticipatedDoublesCurrentYear || "",
+        CareerWinLossDoubles: playerData.CareerWinLossDoubles || "",
+        CareerEventsParticipatedDoubles:
+          playerData.CareerEventsParticipatedDoubles || "",
+      },
+    };
   } catch (error) {
-    console.error("Error fetching player details:", error.message);
-    throw new Error("Failed to fetch player details");
+    console.error(
+      `Error fetching player details for playerId ${playerId}:`,
+      error.message
+    );
+    return null;
   }
 };
 
 module.exports = {
+  getAvailableTournaments,
+  getUpcomingTournament,
   getAllTournamentPlayers,
   getAllRows,
   getPlayersInRow,
-  getAvailableTournaments,
   getPlayersMatches,
   getPlayerDetails,
   API_BASE_URL,
   OrganisationIdSmashHorsens,
   OrganisationIdSmashStensballe,
-  getUpcomingTournament,
 };
