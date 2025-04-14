@@ -4,10 +4,15 @@ import { ChangeEvent, FormEvent, useState } from "react";
 import { da } from "date-fns/locale";
 import "react-datepicker/dist/react-datepicker.css";
 import { useNavigate } from "react-router-dom";
+import communityApi from "../../../services/makkerborsService";
+import { PadelMatch } from "../../../types/PadelMatch";
+import { useUser } from "../../../context/UserContext";
+
 registerLocale("da", da);
 
 export const CreateMatchForm = () => {
   const navigate = useNavigate();
+  const { username } = useUser();
 
   const getNextHalfHour = () => {
     const now = new Date();
@@ -32,8 +37,10 @@ export const CreateMatchForm = () => {
   const [selectedPlayingTime, setSelectedPlayingTime] = useState<number>(90);
   const [levelRange, setLevelRange] = useState<[number, number]>([2.0, 3.0]);
   const [selectedMatchType, setSelectedMatchType] = useState<string>("Herre");
+  const [location, setLocation] = useState<string>("SMASH Padelcenter Horsens");
+  const [description, setDescription] = useState<string>("");
 
-  const filterPassedTime = (time: any) => {
+  const filterPassedTime = (time: Date) => {
     const hour = time.getHours();
     const minutes = time.getMinutes();
     const totalMinutes = hour * 60 + minutes;
@@ -44,8 +51,32 @@ export const CreateMatchForm = () => {
   const handleCreateMatch = async (event: FormEvent) => {
     event.preventDefault();
 
-    alert("Kamp oprettet!");
-    navigate("/makkerbørs");
+    try {
+      const matchData: Omit<PadelMatch, "id"> = {
+        username: username ?? "Unknown",
+        description: description || "Ingen bemærkninger",
+        level: `${levelRange[0].toFixed(1)} - ${levelRange[1].toFixed(1)}`,
+        participants: [],
+        joinRequests: [],
+        reservedSpots: Array(selectedReserved).fill(0),
+        totalSpots: 4,
+        createdAt: new Date().toISOString(),
+        matchDateTime: selectedDate.toISOString(),
+        startTime: selectedDate.toISOString(),
+        endTime: new Date(
+          selectedDate.getTime() + selectedPlayingTime * 60 * 1000
+        ).toISOString(),
+        courtBooked,
+        location,
+      };
+
+      await communityApi.createMatch(matchData);
+      alert("Kamp oprettet!");
+      navigate("/makkerbørs");
+    } catch (error) {
+      console.error("Error creating match:", error);
+      alert("Fejl ved oprettelse af kamp");
+    }
   };
 
   const handleHiddenTimes = (time: Date) => {
@@ -76,7 +107,7 @@ export const CreateMatchForm = () => {
 
   return (
     <div className="w-full bg-white rounded-xl p-4 text-gray-900 mt-10">
-      <form className="space-y-10">
+      <form className="space-y-10" onSubmit={handleCreateMatch}>
         <div className="grid grid-cols-4 gap-4">
           <div>
             <label className="font-semibold" htmlFor="center">
@@ -85,6 +116,8 @@ export const CreateMatchForm = () => {
             <select
               className="w-full rounded-lg border-gray-900 h-12 pr-1 text-sm"
               id="center"
+              value={location}
+              onChange={(e) => setLocation(e.target.value)}
             >
               <option value="SMASH Padelcenter Horsens">
                 SMASH Padelcenter Horsens
@@ -225,7 +258,7 @@ export const CreateMatchForm = () => {
               Kamptype
             </label>
             <div className="flex h-12">
-              <div className="flex justify-between w-full items-center rounded-lg gap-6 pr-1">
+              <div className="flex justify-between w-full items-center rounded-lg gap-6 pr-1 mb-5">
                 {matchTypeArray.map((option) => (
                   <button
                     type="button"
@@ -249,13 +282,17 @@ export const CreateMatchForm = () => {
               Bemærkninger
             </label>
             <div className="pr-1">
-              <textarea className="w-full rounded-lg h-12 resize-none" />
+              <textarea
+                className="w-full rounded-lg h-12 resize-none"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
             </div>
           </div>
         </div>
 
         <button
-          onClick={handleCreateMatch}
+          type="submit"
           className="bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white"
         >
           Opret kamp

@@ -73,4 +73,14 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
+// GET /api/v1/matches/:id - Get a single match by ID
+router.get("/:id", async (req, res) => {
+  try {
+    const match = await padelMatchService.getMatchById(req.params.id);
+    res.json(match);
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+});
+
 module.exports = router;

@@ -1,8 +1,8 @@
 import { Helmet } from "react-helmet-async";
 import { useEffect, useState } from "react";
-import { PadelMatch } from "../../types/PadelMatch.ts";
-import communityApi from "../../services/makkerborsService.ts";
-import LoadingSpinner from "../misc/LoadingSpinner.tsx";
+import { PadelMatch } from "../../types/PadelMatch";
+import communityApi from "../../services/makkerborsService";
+import LoadingSpinner from "../misc/LoadingSpinner";
 import { format } from "date-fns";
 import da from "date-fns/locale/da";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
@@ -12,7 +12,6 @@ export const MatchFinderAllMatchesTab = () => {
   const navigate = useNavigate();
 
   const [matches, setMatches] = useState<PadelMatch[]>([]);
-  const allMatches = matches;
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -28,8 +27,21 @@ export const MatchFinderAllMatchesTab = () => {
         setLoading(false);
       }
     };
-    fetchMatches().then();
+    fetchMatches();
   }, []);
+
+  // Helper function to safely format dates
+  const safeFormatDate = (dateString: string, formatString: string): string => {
+    try {
+      const date = new Date(dateString);
+      if (isNaN(date.getTime())) {
+        return "Ugyldig dato";
+      }
+      return format(date, formatString, { locale: da });
+    } catch {
+      return "Ugyldig dato";
+    }
+  };
 
   if (loading) {
     return <LoadingSpinner />;
@@ -45,27 +57,30 @@ export const MatchFinderAllMatchesTab = () => {
         <title>Alle Kampe</title>
       </Helmet>
 
-      <div className="text-sm hover:bg-gray-700 cursor-pointer">
-        {allMatches.map((match) => (
+      <div className="text-sm cursor-pointer">
+        {matches.map((match) => (
           <div
             onClick={() => navigate(`/makkerbørs/${match.id}`)}
             key={match.id}
-            className="border p-4 rounded-lg space-y-1.5"
+            className="border p-4 rounded-lg space-y-1.5 hover:bg-gray-700 mb-5"
           >
             <h1 className="font-semibold">
-              {format(
-                new Date(match.matchDateTime),
-                "EEEE | dd. MMMM | HH:MM",
-                { locale: da }
+              {safeFormatDate(
+                match.matchDateTime,
+                "EEEE | dd. MMMM | HH:mm"
               ).toUpperCase()}{" "}
-              - 21:00
+              - {safeFormatDate(match.endTime, "HH:mm")}
             </h1>
             <div className="flex justify-between border-b border-gray-600">
-              <p>SMASH Padelcenter Horsens</p>
-              <p>Herre</p>
+              <p>{match.location}</p>
+              <p>
+                {match.description.includes("Herre")
+                  ? "Herre"
+                  : match.description}
+              </p>
             </div>
             <div className="flex justify-between">
-              <p>Niveau {match.level} - 3.5</p>
+              <p>Niveau {match.level}</p>
               <div className="flex">
                 {[
                   ...Array(
@@ -80,7 +95,8 @@ export const MatchFinderAllMatchesTab = () => {
 
                 {[
                   ...Array(
-                    4 - (match.participants.length + match.reservedSpots.length)
+                    match.totalSpots -
+                      (match.participants.length + match.reservedSpots.length)
                   ),
                 ].map((_, i) => (
                   <UserCircleIcon

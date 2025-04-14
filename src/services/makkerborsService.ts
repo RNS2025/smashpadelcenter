@@ -12,18 +12,15 @@ const communityApi = {
     return response.data;
   },
 
-  joinMatch: async (
-    matchId: number,
-    username: string
-  ): Promise<PadelMatch[]> => {
+  joinMatch: async (matchId: string, username: string): Promise<PadelMatch> => {
     const response = await api.post(`/matches/${matchId}/join`, { username });
     return response.data;
   },
 
   confirmJoin: async (
-    matchId: number,
+    matchId: string,
     username: string
-  ): Promise<PadelMatch[]> => {
+  ): Promise<PadelMatch> => {
     const response = await api.post(`/matches/${matchId}/confirm`, {
       username,
     });
@@ -31,7 +28,7 @@ const communityApi = {
   },
 
   reserveSpots: async (
-    matchId: number,
+    matchId: string,
     spotIndex: number,
     reserve: boolean
   ): Promise<PadelMatch[]> => {
@@ -42,8 +39,14 @@ const communityApi = {
     return response.data;
   },
 
-  deleteMatch: async (matchId: number): Promise<PadelMatch[]> => {
+  deleteMatch: async (matchId: string): Promise<PadelMatch[]> => {
     const response = await api.delete(`/matches/${matchId}`);
+    return response.data;
+  },
+
+  getMatchById: async (matchId: string): Promise<PadelMatch> => {
+    const response = await api.get(`/matches/${matchId}`);
+    console.log(matchId);
     return response.data;
   },
 };

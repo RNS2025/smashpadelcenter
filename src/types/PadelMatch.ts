@@ -1,5 +1,5 @@
 interface PadelMatch {
-  id: number;
+  id: string;
   username: string;
   description: string;
   level: string;

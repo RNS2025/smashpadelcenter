@@ -32,7 +32,13 @@ const padelMatchService = {
     }
     match.joinRequests.push(username);
     await match.save();
-    return await PadelMatch.find(); // Return updated list
+    return {
+      ...match.toObject(),
+      id: match._id.toString(),
+      participants: match.participants || [],
+      joinRequests: match.joinRequests || [],
+      reservedSpots: match.reservedSpots || [],
+    };
   },
 
   confirmJoin: async (matchId, username) => {
@@ -50,7 +56,13 @@ const padelMatchService = {
     match.joinRequests = match.joinRequests.filter((req) => req !== username);
     match.participants.push(username);
     await match.save();
-    return await PadelMatch.find(); // Return updated list
+    return {
+      ...match.toObject(),
+      id: match._id.toString(),
+      participants: match.participants || [],
+      joinRequests: match.joinRequests || [],
+      reservedSpots: match.reservedSpots || [],
+    };
   },
 
   reserveSpots: async (matchId, spotIndex, reserve) => {
@@ -76,6 +88,15 @@ const padelMatchService = {
     const match = await PadelMatch.findByIdAndDelete(matchId);
     if (!match) throw new Error("Match not found");
     return await PadelMatch.find(); // Return updated list
+  },
+
+  getMatchById: async (matchId) => {
+    const match = await PadelMatch.findById(matchId);
+    if (!match) throw new Error("Match not found");
+    return {
+      ...match.toObject(),
+      id: match._id,
+    };
   },
 };
 
