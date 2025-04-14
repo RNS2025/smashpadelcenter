@@ -2,7 +2,9 @@ import {FC} from "react";
 import Tournament from "../../../types/Tournament.ts";
 import LoadingSpinner from "../../misc/LoadingSpinner.tsx";
 import { format } from "date-fns";
-import da from "date-fns/locale/da";
+import {registerLocale} from "react-datepicker";
+import {da} from "date-fns/locale";
+registerLocale("da", da);
 
 type TournamentSelectorProps = {
   tournaments: Tournament[];

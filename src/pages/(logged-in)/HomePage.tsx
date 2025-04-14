@@ -57,7 +57,7 @@ export const HomePage = () => {
       <Animation>
         <HomeBar />
 
-        <div className="flex mt-10 items-center justify-center">
+        <div className="flex mt-5 items-center justify-center">
           <div className="grid gap-8 grid-cols-4 max-lg:grid-cols-3 max-md:grid-cols-2">
 
             <HomeScreenCard

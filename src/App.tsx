@@ -45,6 +45,7 @@ function App() {
         <UserProvider>
           <Routes>
             {/* Whitelisted Routes */}
+            <Route path="/" element={<LoginPage />} />
             <Route path="/turneringer/check-in" element={<CheckInPage />} />
             <Route
               path="/turneringer/baneoversigt"
@@ -55,7 +56,6 @@ function App() {
             <Route path="/register" element={<RegisterPage />} />
 
             {/* Protected Routes */}
-            <Route path="/" element={<LoginPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/hjem" element={<HomePage />} />
             <Route path="/admin" element={<AdminPage />} />

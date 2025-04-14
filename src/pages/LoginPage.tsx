@@ -67,7 +67,7 @@ export const LoginPage = () => {
               </a>
 
               <h2 className="mt-6 text-2xl font-bold sm:text-3xl md:text-4xl">
-                SMASH Padelcenter
+                SMASH Padelcenter 🎾
               </h2>
 
               <p className="mt-4 leading-relaxed">Din nye klubapp.</p>
@@ -89,11 +89,11 @@ export const LoginPage = () => {
                 </a>
 
                 <h1 className="mt-2 text-2xl font-bold sm:text-3xl md:text-4xl">
-                  SMASH Medarbejderportal 🎾
+                  SMASH Padelcenter 🎾
                 </h1>
 
                 <p className="mt-4 leading-relaxed text-gray-400">
-                  Vagtplansystem, nyheder, beskeder - og meget mere.
+                  Din nye klubapp.
                 </p>
               </div>
 
@@ -151,7 +151,7 @@ export const LoginPage = () => {
                   </div>
                 )}
 
-                <div className="col-span-6 sm:flex sm:items-center sm:gap-4">
+                <div className="flex items-center gap-4">
                   <button
                     onClick={handleLogin}
                     className="inline-block shrink-0 rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium transition-all duration-300 hover:bg-transparent hover:text-blue-600 focus:outline-none focus:ring active:text-blue-500"

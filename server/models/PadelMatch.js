@@ -24,7 +24,7 @@ const padelMatchSchema = new mongoose.Schema({
   },
   reservedSpots: {
     type: [Number],
-    default: [0], // Spot 0 is reserved for the creator by default
+    default: [0],
   },
   totalSpots: {
     type: Number,
@@ -54,6 +54,10 @@ const padelMatchSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  matchType: {
+    type: String,
+    required: true,
+  }
 });
 
 const PadelMatch = mongoose.model("PadelMatch", padelMatchSchema);

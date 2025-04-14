@@ -14,8 +14,9 @@ import communityApi from "../../../services/makkerborsService";
 import { Navigate, useParams } from "react-router-dom";
 import LoadingSpinner from "../../../components/misc/LoadingSpinner";
 import { format } from "date-fns";
-import da from "date-fns/locale/da";
-import { io, Socket } from "socket.io-client";
+import { io } from "socket.io-client";
+import {toZonedTime} from "date-fns-tz";
+import {da} from "date-fns/locale";
 
 export const ViewMatchPage = () => {
   const { username } = useUser();
@@ -109,7 +110,7 @@ export const ViewMatchPage = () => {
           !Array.isArray(matchData.participants) ||
           !Array.isArray(matchData.joinRequests)
         ) {
-          throw new Error("Invalid match data");
+          setError("Fejl ved indlæsning af kampe");
         }
         setMatch(matchData);
         setLoading(false);
@@ -119,20 +120,15 @@ export const ViewMatchPage = () => {
         setLoading(false);
       }
     };
-    fetchMatch();
+    fetchMatch().then();
   }, [matchId]);
 
-  const safeFormatDate = (
-    dateString: string | null,
-    formatString: string
-  ): string => {
-    if (!dateString) return "Ugyldig dato";
+  const safeFormatDate = (dateString: string, formatString: string): string => {
     try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) {
-        return "Ugyldig dato";
-      }
-      return format(date, formatString, { locale: da });
+      const utcDate = new Date(dateString);
+      const zoned = toZonedTime(utcDate, "UTC");
+
+      return format(zoned, formatString, { locale: da });
     } catch {
       return "Ugyldig dato";
     }
@@ -144,7 +140,8 @@ export const ViewMatchPage = () => {
       const updatedMatch = await communityApi.joinMatch(match.id, username);
       console.log("Updated match after join:", updatedMatch);
       if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
-        throw new Error("Invalid match data returned");
+        setError("Invalid match data returned");
+        alert("Der opstod en fejl – prøv igen.");
       }
       alert("Tilmelding sendt!");
       setMatch(updatedMatch);
@@ -164,7 +161,8 @@ export const ViewMatchPage = () => {
       );
       console.log("Updated match after confirm:", updatedMatch);
       if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
-        throw new Error("Invalid match data returned");
+        setError("Invalid match data returned");
+        alert("Der opstod en fejl – prøv igen.");
       }
       alert("Tilmelding bekræftet!");
       setMatch(updatedMatch);
@@ -229,11 +227,7 @@ export const ViewMatchPage = () => {
 
         <div className="mx-4 my-10 space-y-4 text-sm">
           <h1 className="text-xl justify-self-center font-semibold">
-            {safeFormatDate(
-              match.matchDateTime,
-              "EEEE | dd. MMMM | HH:mm"
-            ).toUpperCase()}{" "}
-            - {safeFormatDate(match.endTime, "HH:mm")}
+            {safeFormatDate(match.matchDateTime, "EEEE | dd. MMMM | HH:mm").toUpperCase()} - {match.endTime}
           </h1>
 
           {!socketConnected && (
@@ -251,29 +245,9 @@ export const ViewMatchPage = () => {
               <h1 className="text-gray-500">Kampejer</h1>
             </div>
             <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-20 h-12">
-              {match.level}
+              2.5
             </div>
           </div>
-
-          {/* Non-owner participants */}
-          {nonOwnerParticipants.length > 0 ? (
-            nonOwnerParticipants.map((participant, index) => (
-              <div
-                key={index}
-                className="border rounded flex items-center px-1"
-              >
-                <UserCircleIcon className="h-20" />
-                <div className="w-full pr-1 truncate">
-                  <h1>{participant}</h1>
-                </div>
-                <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-20 h-12">
-                  {match.level}
-                </div>
-              </div>
-            ))
-          ) : (
-            <p>Ingen deltagere endnu.</p>
-          )}
 
           {/* Join requests (visible to creator) */}
           {match.username === username &&
@@ -303,14 +277,28 @@ export const ViewMatchPage = () => {
               </>
             )}
 
+          {/* Non-owner participants */}
+          {nonOwnerParticipants.length > 0 ? (
+              nonOwnerParticipants.map((participant, index) => (
+                  <div
+                      key={index}
+                      className="border rounded flex items-center px-1"
+                  >
+                    <UserCircleIcon className="h-20" />
+                    <div className="w-full pr-1 truncate">
+                      <h1>{participant}</h1>
+                    </div>
+                    <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-20 h-12">
+                      3.0
+                    </div>
+                  </div>
+              ))
+          ) : (
+              <p>Ingen deltagere endnu.</p>
+          )}
+
           {/* Empty spots */}
-          {[
-            ...Array(
-              3 - // Max 3 non-owner spots
-                (nonOwnerParticipants.length +
-                  (match.reservedSpots?.length || 0))
-            ),
-          ].map((_, index) => (
+          {[...Array(4 - (nonOwnerParticipants.length + (match.reservedSpots?.length || 0))),].map((_, index) => (
             <div
               key={`empty-${index}`}
               className="border border-gray-500 rounded flex items-center px-1"
@@ -333,15 +321,13 @@ export const ViewMatchPage = () => {
 
             <div className="bg-white rounded flex justify-center items-center gap-1">
               <MapPinIcon className="h-6 text-red-500" />
-              <h1>{match.location}</h1>
+              <h1>{match.location.split(" ")[2]}</h1>
             </div>
 
             <div className="bg-white rounded h-16 flex justify-center items-center gap-1">
               <UserGroupIcon className="h-6 rounded-lg text-white bg-gradient-to-b from-sky-400 to-pink-400" />
               <h1>
-                {match.description.includes("Herre")
-                  ? "Herre"
-                  : match.description}
+                {match.matchType}
               </h1>
             </div>
           </div>

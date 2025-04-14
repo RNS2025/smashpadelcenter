@@ -4,10 +4,12 @@ import { PadelMatch } from "../../types/PadelMatch";
 import communityApi from "../../services/makkerborsService";
 import LoadingSpinner from "../misc/LoadingSpinner";
 import { format } from "date-fns";
-import da from "date-fns/locale/da";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../../context/UserContext";
+import {registerLocale} from "react-datepicker";
+import {da} from "date-fns/locale";
+registerLocale("da", da);
 
 export const MatchFinderAwaitingTab = () => {
   const navigate = useNavigate();
@@ -60,12 +62,7 @@ export const MatchFinderAwaitingTab = () => {
               className="border p-4 rounded-lg space-y-1.5 cursor-pointer hover:bg-gray-700 mb-5"
             >
               <h1 className="font-semibold">
-                {format(
-                  new Date(match.matchDateTime),
-                  "EEEE | dd. MMMM | HH:mm",
-                  { locale: da }
-                ).toUpperCase()}{" "}
-                - {format(new Date(match.endTime), "HH:mm")}
+                {format(new Date(match.startTime), "EEEE | dd. MMMM | HH:mm", { locale: da }).toUpperCase()} - {format(new Date(match.endTime), "HH:mm")}
               </h1>
               <div className="flex justify-between border-b border-gray-600">
                 <p>{match.location}</p>

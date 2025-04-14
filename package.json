@@ -1,5 +1,5 @@
 {
-  "name": "smash-ranglisten",
+  "name": "smash-app",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@date-fns/tz": "^1.2.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@headlessui/react": "^2.2.0",
@@ -20,7 +21,8 @@
     "@shadcn/ui": "^0.0.4",
     "@tailwindcss/forms": "^0.5.9",
     "axios": "^1.8.3",
-    "date-fns": "^2.30.0",
+    "date-fns": "^4.1.0",
+    "date-fns-tz": "^3.2.0",
     "lucide-react": "^0.487.0",
     "react": "^18.3.1",
     "react-datepicker": "^8.3.0",

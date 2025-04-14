@@ -4,9 +4,12 @@ import { PadelMatch } from "../../types/PadelMatch";
 import communityApi from "../../services/makkerborsService";
 import LoadingSpinner from "../misc/LoadingSpinner";
 import { format } from "date-fns";
-import da from "date-fns/locale/da";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
+import {toZonedTime} from "date-fns-tz";
+import {registerLocale} from "react-datepicker";
+import {da} from "date-fns/locale";
+registerLocale("da", da);
 
 export const MatchFinderAllMatchesTab = () => {
   const navigate = useNavigate();
@@ -27,17 +30,16 @@ export const MatchFinderAllMatchesTab = () => {
         setLoading(false);
       }
     };
-    fetchMatches();
+    fetchMatches().then();
   }, []);
 
-  // Helper function to safely format dates
+
   const safeFormatDate = (dateString: string, formatString: string): string => {
     try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) {
-        return "Ugyldig dato";
-      }
-      return format(date, formatString, { locale: da });
+      const utcDate = new Date(dateString);
+      const zoned = toZonedTime(utcDate, "UTC");
+
+      return format(zoned, formatString, { locale: da });
     } catch {
       return "Ugyldig dato";
     }
@@ -65,40 +67,27 @@ export const MatchFinderAllMatchesTab = () => {
             className="border p-4 rounded-lg space-y-1.5 hover:bg-gray-700 mb-5"
           >
             <h1 className="font-semibold">
-              {safeFormatDate(
-                match.matchDateTime,
-                "EEEE | dd. MMMM | HH:mm"
-              ).toUpperCase()}{" "}
-              - {safeFormatDate(match.endTime, "HH:mm")}
+              {safeFormatDate(match.matchDateTime, "EEEE | dd. MMMM | HH:mm").toUpperCase()} - {match.endTime}
             </h1>
             <div className="flex justify-between border-b border-gray-600">
               <p>{match.location}</p>
               <p>
-                {match.description.includes("Herre")
-                  ? "Herre"
-                  : match.description}
+                Herre
               </p>
             </div>
             <div className="flex justify-between">
               <p>Niveau {match.level}</p>
+
+              {/*//TODO: Forklar mig hvad reservedSpots skal bruges til*/}
               <div className="flex">
-                {[
-                  ...Array(
-                    match.participants.length + match.reservedSpots.length
-                  ),
-                ].map((_, i) => (
+                {[...Array(match.participants.length + match.reservedSpots.length),].map((_, i) => (
                   <UserCircleIcon
                     key={`participant-${i}`}
                     className="h-5 text-cyan-500"
                   />
                 ))}
 
-                {[
-                  ...Array(
-                    match.totalSpots -
-                      (match.participants.length + match.reservedSpots.length)
-                  ),
-                ].map((_, i) => (
+                {[...Array(match.totalSpots - (match.participants.length + match.reservedSpots.length)),].map((_, i) => (
                   <UserCircleIcon
                     key={`empty-${i}`}
                     className="h-5 text-gray-500"

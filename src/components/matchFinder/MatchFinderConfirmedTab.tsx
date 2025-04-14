@@ -4,10 +4,12 @@ import { PadelMatch } from "../../types/PadelMatch";
 import communityApi from "../../services/makkerborsService";
 import LoadingSpinner from "../misc/LoadingSpinner";
 import { format } from "date-fns";
-import da from "date-fns/locale/da";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../../context/UserContext";
+import {registerLocale} from "react-datepicker";
+import {da} from "date-fns/locale";
+registerLocale("da", da);
 
 export const MatchFinderConfirmedTab = () => {
   const navigate = useNavigate();

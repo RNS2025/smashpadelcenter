@@ -10,6 +10,7 @@ import UserContextType from "../types/UserContextType";
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
+//TODO: Labelet vises også på loginsiden
 // Utility function to check if a path matches a route pattern
 const isRouteWhitelisted = (pathname: string, whitelist: string[]): boolean => {
   return whitelist.some((route) => {
@@ -44,9 +45,9 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
       // Only redirect if the route is NOT whitelisted
       if (!isRouteWhitelisted(location.pathname, WHITELIST_ROUTES)) {
-        setError("Permission denied - Login to view this page");
+        setError("Adgang nægtet - Log ind for at se denne side");
         navigate("/", {
-          state: { message: "Please login to access this page" },
+          state: { message: "Log venligst ind for at få adgang til denne side" },
         });
       }
     }
@@ -71,7 +72,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
-    fetchRole();
+    fetchRole().then();
   }, [location.pathname]);
 
   return (
@@ -83,6 +84,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
+// eslint-disable-next-line react-refresh/only-export-components
 export const useUser = (): UserContextType => {
   const context = useContext(UserContext);
   if (!context) {

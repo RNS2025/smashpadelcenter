@@ -13,6 +13,8 @@ interface PadelMatch {
   endTime: string;
   courtBooked: boolean;
   location: string;
+  //Mangler denne attribut (Herre, Dame, Mix, Blandet)
+  matchType: string;
 }
 
 export type { PadelMatch };

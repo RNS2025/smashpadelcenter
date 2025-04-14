@@ -69,23 +69,21 @@ const padelMatchService = {
   createMatch: async (matchData) => {
     const newMatch = new PadelMatch({
       ...matchData,
-      participants: [matchData.username], // Owner is the first participant
-      joinRequests: [],
-      reservedSpots: [],
-      totalSpots: 4,
+      participants: [matchData.username, ...(matchData.participants || []).filter(p => p !== matchData.username)],
+
+      joinRequests: matchData.joinRequests || [],
+      reservedSpots: matchData.reservedSpots || [],
+      totalSpots: matchData.totalSpots || 4,
     });
+
     const savedMatch = await newMatch.save();
-    const updatedMatch = {
+
+    return {
       ...savedMatch.toObject(),
       id: savedMatch._id.toString(),
-      participants: savedMatch.participants || [],
-      joinRequests: savedMatch.joinRequests || [],
-      reservedSpots: savedMatch.reservedSpots || [],
-      totalSpots: savedMatch.totalSpots || 4,
     };
-    console.log("createMatch saved match:", updatedMatch);
-    return updatedMatch;
   },
+
 
   getMatchById: async (matchId) => {
     const match = await PadelMatch.findById(matchId);
