@@ -6,16 +6,12 @@ const padelMatchSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  title: {
-    type: String,
-    required: true,
-  },
   description: {
     type: String,
     required: true,
   },
   level: {
-    type: Number,
+    type: String,
     required: true,
   },
   participants: {
@@ -42,9 +38,21 @@ const padelMatchSchema = new mongoose.Schema({
     type: Date,
     required: true,
   },
+  startTime: {
+    type: String,
+    required: true,
+  },
+  endTime: {
+    type: String,
+    required: true,
+  },
   courtBooked: {
     type: Boolean,
     default: false,
+  },
+  location: {
+    type: String,
+    required: true,
   },
 });
 

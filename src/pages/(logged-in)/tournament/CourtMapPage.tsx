@@ -1,47 +1,51 @@
-import {Helmet} from "react-helmet-async";
+import { Helmet } from "react-helmet-async";
 import CourtsMap from "../../../components/tournaments/map/CourtsMap.tsx";
 import Animation from "../../../components/misc/Animation.tsx";
-import {useState} from "react";
+import { useState } from "react";
 import HomeBar from "../../../components/misc/HomeBar.tsx";
 
-
 export const CourtMapPage = () => {
+  const [selectedCourtLabel, setSelectedCourtLabel] = useState<string | null>(
+    null
+  );
+  // TODO: Implement a function to fetch matches for the selected court
+  return (
+    <>
+      <Helmet>
+        <title>Baneoversigt</title>
+      </Helmet>
 
-    const [selectedCourtLabel, setSelectedCourtLabel] = useState<string | null>(null);
-    // TODO
-    return (
-        <>
-            <Helmet>
-                <title>Baneoversigt</title>
-            </Helmet>
+      <Animation>
+        <HomeBar />
+        <div className="mt-5 flex max-lg:flex-col sm:space-y-10 space-y-0 lg:justify-between lg:px-20 max-lg:px-5">
+          <div className="bg-white text-black rounded-xl lg:w-1/2 h-fit p-4">
+            <p className="sm:text-3xl font-semibold text-center">
+              {selectedCourtLabel ?? "Vælg en bane"}
+            </p>
 
-            <Animation>
-                <HomeBar/>
-                <div className="mt-5 flex max-lg:flex-col sm:space-y-10 space-y-0 lg:justify-between lg:px-20 max-lg:px-5">
-                    <div className="bg-white text-black rounded-xl lg:w-1/2 h-fit p-4">
-                        <p className="sm:text-3xl font-semibold text-center">{selectedCourtLabel ?? "Vælg en bane"}</p>
-
-                        {selectedCourtLabel && (
-                            <>
-                                <div className="rounded-lg p-2">
-                                <p className="font-semibold max-sm:text-sm">DPF25 Herrer (FTM)</p>
-                                <div className="flex flex-col border border-black rounded-xl items-center mt-1 gap-2">
-                                    <p className="font-semibold max-sm:text-sm">17:00</p>
-                                    <div className="flex max-sm:flex-col max-sm:items-center gap-2 font-semibold max-sm:text-sm">
-                                        <p>H. Hansen / J. Hansen</p>
-                                        <p>vs</p>
-                                        <p>J. Jensen / H. Jensen</p>
-                                    </div>
-                                </div>
-                                </div>
-                            </>
-                        )}
+            {selectedCourtLabel && (
+              <>
+                <div className="rounded-lg p-2">
+                  <p className="font-semibold max-sm:text-sm">
+                    DPF25 Herrer (FTM)
+                  </p>
+                  <div className="flex flex-col border border-black rounded-xl items-center mt-1 gap-2">
+                    <p className="font-semibold max-sm:text-sm">17:00</p>
+                    <div className="flex max-sm:flex-col max-sm:items-center gap-2 font-semibold max-sm:text-sm">
+                      <p>H. Hansen / J. Hansen</p>
+                      <p>vs</p>
+                      <p>J. Jensen / H. Jensen</p>
                     </div>
-                <CourtsMap onSelect={(label) => setSelectedCourtLabel(label)}/>
+                  </div>
                 </div>
-            </Animation>
-        </>
-    );
+              </>
+            )}
+          </div>
+          <CourtsMap onSelect={(label) => setSelectedCourtLabel(label)} />
+        </div>
+      </Animation>
+    </>
+  );
 };
 
 export default CourtMapPage;

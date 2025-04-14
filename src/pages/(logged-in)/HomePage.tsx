@@ -74,10 +74,10 @@ export const HomePage = () => {
               link="/book-training"
             />
             <HomeScreenCard
-                icon={<ChartBarIcon className="h-10 w-10" aria-hidden="true" />}
-                title="Arrangementer"
-                description="Organisér og se arrangementer"
-                link="/arrangement"
+              icon={<ChartBarIcon className="h-10 w-10" aria-hidden="true" />}
+              title="Arrangementer"
+              description="Organisér og se arrangementer"
+              link="/arrangement"
             />
             <HomeScreenCard
               icon={<UsersIcon className="h-10 w-10" aria-hidden="true" />}
@@ -86,7 +86,6 @@ export const HomePage = () => {
               link="/makkerbørs"
             />
 
-
             <HomeScreenCard
               icon={<TrophyIcon className="h-10 w-10" aria-hidden="true" />}
               title="DPF-turneringer"
@@ -94,10 +93,10 @@ export const HomePage = () => {
               link="/turneringer"
             />
             <HomeScreenCard
-                icon={<MoonIcon className="h-10 w-10" aria-hidden="true" />}
-                title="Holdligaer"
-                description="Overblik over ligaholdene tilknyttet SMASH"
-                link="/holdligaer"
+              icon={<MoonIcon className="h-10 w-10" aria-hidden="true" />}
+              title="Holdligaer"
+              description="Overblik over ligaholdene tilknyttet SMASH"
+              link="/holdligaer"
             />
             <HomeScreenCard
               icon={<ListBulletIcon className="h-10 w-10" aria-hidden="true" />}
@@ -112,13 +111,11 @@ export const HomePage = () => {
               link="/news"
             />
 
-
-
             <HomeScreenCard
-                icon={<TicketIcon className="h-10 w-10" aria-hidden="true" />}
-                title="Kuponer"
-                description="Udløs dine kuponer og tilbud"
-                link="/coupon"
+              icon={<TicketIcon className="h-10 w-10" aria-hidden="true" />}
+              title="Kuponer"
+              description="Udløs dine kuponer og tilbud"
+              link="/coupon"
             />
             <HomeScreenCard
               icon={
@@ -128,14 +125,14 @@ export const HomePage = () => {
               description="Udforsk vores partnere"
               link="/partner"
             />
-            {/*TODO: Måske skal den bare skjules helt i stedet for disabled*/}
-            <HomeScreenCard
-              icon={<CogIcon className="h-10 w-10" aria-hidden="true" />}
-              title="Admin Panel"
-              description="Administrer platformen"
-              link="/admin"
-              disabled={role !== "admin"}
-            />
+            {role == "admin" && (
+              <HomeScreenCard
+                icon={<CogIcon className="h-10 w-10" aria-hidden="true" />}
+                title="Admin Panel"
+                description="Administrer platformen"
+                link="/admin"
+              />
+            )}
           </div>
         </div>
       </Animation>
