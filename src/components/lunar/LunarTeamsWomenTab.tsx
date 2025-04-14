@@ -77,7 +77,7 @@ export const LunarTeamsWomenTab = () => {
             <div className="sm:mx-20 mx-2">
                 <TeamListTable teams ={lunarTeams} onRowClick={(team) => {
                     sessionStorage.setItem(`teamName_${team.id}`, team.name);
-                    navigate(`/holdligaer/lunarliga4p/${team.id}`);
+                    navigate(`/holdligaer/${team.id}`);
                 }}/>
             </div>
         </>

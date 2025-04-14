@@ -58,7 +58,8 @@ export const HomePage = () => {
         <HomeBar />
 
         <div className="flex mt-10 items-center justify-center">
-          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-8 grid-cols-4 max-lg:grid-cols-3 max-md:grid-cols-2">
+
             <HomeScreenCard
               icon={<CalendarIcon className="h-10 w-10" aria-hidden="true" />}
               title="Book Bane"
