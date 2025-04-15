@@ -68,6 +68,7 @@ export const CreateMatchForm = () => {
         ).toISOString(),
         courtBooked,
         location,
+        matchType: selectedMatchType,
       };
 
       await communityApi.createMatch(matchData);
