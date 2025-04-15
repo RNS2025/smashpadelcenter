@@ -1,6 +1,8 @@
 import { NavLink, useLocation } from "react-router-dom";
 
-export const MatchFinderTabMenu = () => {
+export const MatchFinderTabMenu = ({joinRequestsCount}: {
+    joinRequestsCount: number;
+}) => {
   const location = useLocation();
 
   return (
@@ -22,16 +24,17 @@ export const MatchFinderTabMenu = () => {
             </NavLink>
 
             <NavLink
-              to={`/makkerbørs/tilmeldt`}
+              to={`/makkerbørs/minekampe`}
               className={`inline-flex shrink-0 items-center gap-2 border-b-2 px-1 pb-4 text-sm font-medium
                                 ${
-                                  location.pathname.includes("tilmeldt")
+                                  location.pathname.includes("minekampe")
                                     ? "border-cyan-500 text-cyan-500"
-                                    : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 transition duration-300"
-                                }
-                            `}
+                                    : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 transition duration-300"}`}
             >
-              Tilmeldt
+                Mine kampe
+                {joinRequestsCount > 0 && (
+                <h1 className="bg-red-500 text-white rounded-full px-2 py-1 text-xs">{joinRequestsCount}</h1>
+                )}
             </NavLink>
 
             <NavLink
@@ -45,19 +48,6 @@ export const MatchFinderTabMenu = () => {
                             `}
             >
               Afventer
-            </NavLink>
-
-            <NavLink
-              to={`/makkerbørs/bekraeftet`}
-              className={`inline-flex shrink-0 items-center gap-2 border-b-2 px-1 pb-4 text-sm font-medium
-                                ${
-                                  location.pathname.includes("bekraeftet")
-                                    ? "border-cyan-500 text-cyan-500"
-                                    : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 transition duration-300"
-                                }
-                            `}
-            >
-              Bekræftet
             </NavLink>
           </nav>
         </div>

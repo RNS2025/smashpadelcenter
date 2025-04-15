@@ -73,7 +73,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   useEffect(() => {
     fetchRole().then();
-  }, [location.pathname]);
+  }, [fetchRole, location.pathname]);
 
   return (
     <UserContext.Provider

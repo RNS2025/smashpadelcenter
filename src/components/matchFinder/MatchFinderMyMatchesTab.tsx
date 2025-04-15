@@ -9,9 +9,10 @@ import { useNavigate } from "react-router-dom";
 import { useUser } from "../../context/UserContext";
 import {registerLocale} from "react-datepicker";
 import {da} from "date-fns/locale";
-registerLocale("da", da);
+import {toZonedTime} from "date-fns-tz";
+registerLocale("da", da)
 
-export const MatchFinderConfirmedTab = () => {
+export const MatchFinderMyMatchesTab = () => {
   const navigate = useNavigate();
   const { username } = useUser();
 
@@ -23,11 +24,9 @@ export const MatchFinderConfirmedTab = () => {
     const fetchMatches = async () => {
       try {
         const data = await communityApi.getMatches();
-        const confirmedMatches = data.filter(
-          (match) =>
-            match.username === username && match.participants.length > 0
-        );
-        setMatches(confirmedMatches);
+        const myMatches = data.filter(
+          (match) => username && match.username.includes(username));
+        setMatches(myMatches);
         setLoading(false);
       } catch (err) {
         console.error("Error fetching matches:", err);
@@ -35,7 +34,7 @@ export const MatchFinderConfirmedTab = () => {
         setLoading(false);
       }
     };
-    fetchMatches();
+    fetchMatches().then();
   }, [username]);
 
   if (loading) {
@@ -46,71 +45,70 @@ export const MatchFinderConfirmedTab = () => {
     return <div>{error}</div>;
   }
 
+  const safeFormatDate = (dateString: string, formatString: string): string => {
+    try {
+      const utcDate = new Date(dateString);
+      const zoned = toZonedTime(utcDate, "UTC");
+
+      return format(zoned, formatString, { locale: da });
+    } catch {
+      return "Ugyldig dato";
+    }
+  };
+
   return (
     <>
       <Helmet>
-        <title>Bekræftet</title>
+        <title>Tilmeldt</title>
       </Helmet>
 
       <div className="text-sm">
-        {matches.length === 0 ? (
-          <p>Ingen bekræftede kampe fundet.</p>
-        ) : (
-          matches.map((match) => (
+        {matches.map((match) => (
             <div
-              onClick={() => navigate(`/makkerbørs/${match.id}`)}
-              key={match.id}
-              className="border p-4 rounded-lg space-y-1.5 cursor-pointer hover:bg-gray-700 mb-5"
+                onClick={() => navigate(`/makkerbørs/${match.id}`)}
+                key={match.id}
+                className="border p-4 rounded-lg space-y-1.5 hover:bg-gray-700 mb-5"
             >
+
+              <div className="flex justify-between">
               <h1 className="font-semibold">
-                {format(
-                  new Date(match.matchDateTime),
-                  "EEEE | dd. MMMM | HH:mm",
-                  { locale: da }
-                ).toUpperCase()}{" "}
-                - {format(new Date(match.endTime), "HH:mm")}
+                {safeFormatDate(match.matchDateTime, "EEEE | dd. MMMM | HH:mm").toUpperCase()} - {match.endTime}
               </h1>
+              <h1 className="bg-red-500 text-white rounded-full px-1.5 py-0.5 text-xs animate-pulse">{match.joinRequests.length}</h1>
+              </div>
+
+
               <div className="flex justify-between border-b border-gray-600">
                 <p>{match.location}</p>
                 <p>
-                  {match.description.includes("Herre")
-                    ? "Herre"
-                    : match.description}
+                  Herre
                 </p>
               </div>
               <div className="flex justify-between">
                 <p>Niveau {match.level}</p>
+
                 <div className="flex">
-                  {[
-                    ...Array(
-                      match.participants.length + match.reservedSpots.length
-                    ),
-                  ].map((_, i) => (
-                    <UserCircleIcon
-                      key={`participant-${i}`}
-                      className="h-5 text-cyan-500"
-                    />
+                  {[...Array(match.participants.length + match.reservedSpots.length + match.joinRequests.length),].map((_, i) => (
+                      <UserCircleIcon
+                          key={`participant-${i}`}
+                          className="h-5 text-cyan-500"
+                      />
                   ))}
-                  {[
-                    ...Array(
-                      match.totalSpots -
-                        (match.participants.length + match.reservedSpots.length)
-                    ),
-                  ].map((_, i) => (
-                    <UserCircleIcon
-                      key={`empty-${i}`}
-                      className="h-5 text-gray-500"
-                    />
+
+                  {[...Array(match.totalSpots - (match.participants.length + match.reservedSpots.length + match.joinRequests.length)),].map((_, i) => (
+                      <UserCircleIcon
+                          key={`empty-${i}`}
+                          className="h-5 text-gray-500"
+                      />
                   ))}
                 </div>
               </div>
               <p className="text-gray-500">Oprettet af {match.username}</p>
             </div>
-          ))
-        )}
+        ))}
       </div>
     </>
   );
 };
 
-export default MatchFinderConfirmedTab;
+export default MatchFinderMyMatchesTab;

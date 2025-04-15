@@ -104,7 +104,6 @@ export const ViewMatchPage = () => {
           return;
         }
         const matchData = await communityApi.getMatchById(matchId);
-        console.log("Fetched match:", matchData);
         if (
           !matchData ||
           !Array.isArray(matchData.participants) ||
@@ -208,13 +207,8 @@ export const ViewMatchPage = () => {
     );
   }
 
-  // Calculate non-owner participants
-  const nonOwnerParticipants = Array.isArray(match.participants)
-    ? match.participants.filter((p) => p !== match.username)
-    : [];
-
   // Determine if match is full (3 non-owner participants)
-  const isMatchFull = nonOwnerParticipants.length >= 3;
+  const isMatchFull = match.participants.length + match.reservedSpots.length + match.joinRequests.length >= 3;
 
   return (
     <>
@@ -242,54 +236,23 @@ export const ViewMatchPage = () => {
             <UserCircleIcon className="h-20" />
             <div className="w-full pr-1 truncate">
               <h1>{match.username}</h1>
-              <h1 className="text-gray-500">Kampejer</h1>
             </div>
             <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-20 h-12">
               2.5
             </div>
           </div>
 
-          {/* Join requests (visible to creator) */}
-          {match.username === username &&
-            Array.isArray(match.joinRequests) &&
-            match.joinRequests.length > 0 && (
-              <>
-                <h2 className="font-semibold">Tilmeldingsanmodninger</h2>
-                {match.joinRequests.map((requester, index) => (
+          {match.reservedSpots.length > 0 ? (match.reservedSpots.map((reserved) => (
                   <div
-                    key={index}
-                    className="border rounded flex items-center px-1"
-                  >
-                    <UserCircleIcon className="h-20" />
-                    <div className="w-full pr-1 truncate">
-                      <h1>{requester}</h1>
-                      <h1 className="text-gray-500">Afventer bekræftelse</h1>
-                    </div>
-                    <button
-                      onClick={() => handleConfirmJoin(requester)}
-                      className="bg-cyan-500 text-white rounded-lg px-2 py-1"
-                      disabled={isMatchFull}
-                    >
-                      Bekræft
-                    </button>
-                  </div>
-                ))}
-              </>
-            )}
-
-          {/* Non-owner participants */}
-          {nonOwnerParticipants.length > 0 ? (
-              nonOwnerParticipants.map((participant, index) => (
-                  <div
-                      key={index}
+                      key={reserved.name}
                       className="border rounded flex items-center px-1"
                   >
                     <UserCircleIcon className="h-20" />
                     <div className="w-full pr-1 truncate">
-                      <h1>{participant}</h1>
+                      <h1>{reserved.name}</h1>
                     </div>
                     <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-20 h-12">
-                      3.0
+                      {reserved.level}
                     </div>
                   </div>
               ))
@@ -298,7 +261,7 @@ export const ViewMatchPage = () => {
           )}
 
           {/* Empty spots */}
-          {[...Array(4 - (nonOwnerParticipants.length + (match.reservedSpots?.length || 0))),].map((_, index) => (
+          {[...Array(4 - (match.participants.length + (match.reservedSpots.length || 0))),].map((_, index) => (
             <div
               key={`empty-${index}`}
               className="border border-gray-500 rounded flex items-center px-1"
@@ -312,6 +275,34 @@ export const ViewMatchPage = () => {
               </div>
             </div>
           ))}
+
+          {/* Join requests (visible to creator) */}
+          {match.username === username &&
+              Array.isArray(match.joinRequests) &&
+              match.joinRequests.length > 0 && (
+                  <>
+                    <h2 className="font-semibold">Tilmeldingsanmodninger</h2>
+                    {match.joinRequests.map((requester, index) => (
+                        <div
+                            key={index}
+                            className="border rounded flex items-center px-1"
+                        >
+                          <UserCircleIcon className="h-20" />
+                          <div className="w-full pr-1 truncate">
+                            <h1>{requester}</h1>
+                            <h1 className="text-gray-500">Afventer bekræftelse</h1>
+                          </div>
+                          <button
+                              onClick={() => handleConfirmJoin(requester)}
+                              className="bg-cyan-500 text-white rounded-lg px-2 py-1"
+                              disabled={isMatchFull}
+                          >
+                            Bekræft
+                          </button>
+                        </div>
+                    ))}
+                  </>
+              )}
 
           <div className="grid grid-cols-3 text-center text-black gap-3">
             <div className="bg-white rounded h-16 flex justify-center items-center gap-1">

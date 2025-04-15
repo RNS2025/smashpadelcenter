@@ -33,9 +33,8 @@ import TeamProfileMatchesTab from "./components/lunar/teamProfile/TeamProfileMat
 import TeamProfileMatchDetailsTab from "./components/lunar/teamProfile/TeamProfileMatchDetailsTab.tsx";
 import CreateMatchPage from "./pages/(logged-in)/matchFinder/CreateMatchPage.tsx";
 import MatchFinderAllMatchesTab from "./components/matchFinder/MatchFinderAllMatchesTab.tsx";
-import MatchFinderJoinedTab from "./components/matchFinder/MatchFinderJoinedTab.tsx";
+import MatchFinderMyMatchesTab from "./components/matchFinder/MatchFinderMyMatchesTab.tsx";
 import MatchFinderAwaitingTab from "./components/matchFinder/MatchFinderAwaitingTab.tsx";
-import MatchFinderConfirmedTab from "./components/matchFinder/MatchFinderConfirmedTab.tsx";
 import ViewMatchPage from "./pages/(logged-in)/matchFinder/ViewMatchPage.tsx";
 
 function App() {
@@ -66,9 +65,8 @@ function App() {
             <Route path="/makkerbørs" element={<MatchFinderPage />}>
               <Route index element={<Navigate to="allekampe" replace />} />
                 <Route path="allekampe" element={<MatchFinderAllMatchesTab />} />
-                <Route path="tilmeldt" element={<MatchFinderJoinedTab />} />
+                <Route path="minekampe" element={<MatchFinderMyMatchesTab />} />
                 <Route path="afventer" element={<MatchFinderAwaitingTab />} />
-                <Route path="bekraeftet" element={<MatchFinderConfirmedTab />} />
             </Route>
             <Route path="/makkerbørs/:matchId" element={<ViewMatchPage />} />
             <Route path="/makkerbørs/opretkamp" element={<CreateMatchPage />} />

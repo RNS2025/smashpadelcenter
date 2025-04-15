@@ -5,7 +5,11 @@ interface PadelMatch {
   level: string;
   participants: string[];
   joinRequests: string[];
-  reservedSpots: number[];
+  reservedSpots: {
+    id?: string
+    name: string;
+    level: string
+  }[];
   totalSpots: number;
   createdAt: string;
   matchDateTime: string;
@@ -13,7 +17,6 @@ interface PadelMatch {
   endTime: string;
   courtBooked: boolean;
   location: string;
-  //Mangler denne attribut (Herre, Dame, Mix, Blandet)
   matchType: string;
 }
 
