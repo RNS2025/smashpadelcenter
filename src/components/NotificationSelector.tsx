@@ -10,8 +10,7 @@ import {
   Typography,
 } from "@mui/material";
 import api from "../api/api";
-import { Bell } from "lucide-react";
-import { Preferences, preferenceConfig } from "../types/Preferences"; // Import the preference configuration
+import { Preferences, preferenceConfig } from "../types/Preferences";
 
 type SaveStatus = "success" | "error" | null;
 
@@ -22,11 +21,16 @@ interface NotificationSelectorProps {
 const NotificationSelector: React.FC<NotificationSelectorProps> = ({
   userId,
 }) => {
-  const [preferences, setPreferences] = useState<Preferences>(() => {
-    return Object.fromEntries(
-      Object.keys(preferenceConfig).map((key) => [key, false])
-    ) as Preferences;
-  });
+  const [preferences, setPreferences] = useState<Preferences>(() => ({
+    updates: false,
+    messages: false,
+    events: false,
+    promotions: false,
+    makkerbors: false,
+    rangliste: false,
+    nyheder: false,
+    turneringer: false,
+  }));
   const [loading, setLoading] = useState<boolean>(false);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>(null);
 
@@ -34,17 +38,32 @@ const NotificationSelector: React.FC<NotificationSelectorProps> = ({
     const fetchPreferences = async () => {
       try {
         setLoading(true);
-        const response = await api.get(`/preferences/${userId}`);
-        setPreferences(response.data.preferences);
+        const response = await api.get<{ preferences: Partial<Preferences> }>(
+          `/preferences/${userId}`
+        );
+        // Normalize API response to ensure all preference keys are present and boolean
+        const fetchedPreferences = response.data.preferences || {};
+        const normalizedPreferences: Preferences = {
+          updates: fetchedPreferences.updates ?? false,
+          messages: fetchedPreferences.messages ?? false,
+          events: fetchedPreferences.events ?? false,
+          promotions: fetchedPreferences.promotions ?? false,
+          makkerbors: fetchedPreferences.makkerbors ?? false,
+          rangliste: fetchedPreferences.rangliste ?? false,
+          nyheder: fetchedPreferences.nyheder ?? false,
+          turneringer: fetchedPreferences.turneringer ?? false,
+        };
+        setPreferences(normalizedPreferences);
       } catch (error) {
         console.error("Failed to fetch notification preferences:", error);
+        setSaveStatus("error");
       } finally {
         setLoading(false);
       }
     };
 
     if (userId) {
-      fetchPreferences().then();
+      fetchPreferences();
     }
   }, [userId]);
 
@@ -86,7 +105,7 @@ const NotificationSelector: React.FC<NotificationSelectorProps> = ({
             component="div"
             sx={{ display: "flex", alignItems: "center", gap: 1 }}
           >
-            <Bell size={20} />
+            <preferenceConfig.updates.icon size={20} />
             Notifikationer
           </Typography>
         }
@@ -94,31 +113,31 @@ const NotificationSelector: React.FC<NotificationSelectorProps> = ({
       <Divider />
 
       <CardContent>
-        {Object.keys(preferenceConfig).map((key) => {
-          const preferenceKey = key as keyof Preferences;
-          const { label, icon: Icon } = preferenceConfig[preferenceKey]; // Retrieve from config
+        {(Object.keys(preferenceConfig) as Array<keyof Preferences>).map(
+          (key) => {
+            const { label, icon: Icon } = preferenceConfig[key];
 
-          return (
-            <Box
-              key={preferenceKey}
-              display="flex"
-              alignItems="center"
-              justifyContent="space-between"
-              my={2}
-            >
-              <Box display="flex" alignItems="center" gap={1}>
-                {/* Here, call the icon component to render it */}
-                <Icon color="#3B82F6" />
-                <Typography>{label}</Typography>
+            return (
+              <Box
+                key={key}
+                display="flex"
+                alignItems="center"
+                justifyContent="space-between"
+                my={2}
+              >
+                <Box display="flex" alignItems="center" gap={1}>
+                  <Icon color="#3B82F6" />
+                  <Typography>{label}</Typography>
+                </Box>
+                <Switch
+                  checked={preferences[key]}
+                  onChange={() => handleToggle(key)}
+                  color="primary"
+                />
               </Box>
-              <Switch
-                checked={preferences[preferenceKey]}
-                onChange={() => handleToggle(preferenceKey)}
-                color="primary"
-              />
-            </Box>
-          );
-        })}
+            );
+          }
+        )}
 
         <Box mt={3}>
           <Button

@@ -5,6 +5,7 @@ interface UserContextType {
   refreshUser: () => Promise<void>;
   logout: () => void;
   username: string | null;
+  loading: boolean;
 }
 
 export default UserContextType;

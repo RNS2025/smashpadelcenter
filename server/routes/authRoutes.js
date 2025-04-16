@@ -81,10 +81,29 @@ router.post("/login", (req, res, next) => {
 router.post("/register", async (req, res) => {
   const { username, password } = req.body;
   try {
+    // Check if the username already exists
+    const existingUser = await databaseService.findUserByUsername(username);
+    if (existingUser) {
+      return res.status(400).json({ error: "Username already exists" });
+    }
+
+    // Create a new user
     const newUser = await databaseService.createUser({ username, password });
     res.status(201).json(newUser);
   } catch (err) {
     res.status(400).json({ error: err.message });
+  }
+});
+
+router.get("/by-username/:username", async (req, res) => {
+  try {
+    const user = await User.findOne({ username: req.params.username });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 });
 

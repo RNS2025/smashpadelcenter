@@ -30,44 +30,44 @@ const ArrangementPage: React.FC = () => {
   }, []);
 
   return (
-      <>
-      <HomeBar/>
-    <div
-      style={{
-        height: "100vh", // Locks the outer container to viewport height
-        overflow: "hidden", // Prevents page scrolling
-        background: "rgb(37, 44, 54)", // Page background
-      }}
-    >
+    <>
+      <HomeBar />
       <div
         style={{
-          position: "relative",
-          width: "100%",
-          overflowY: "auto", // Allows scrolling inside container
-          overflowX: "hidden", // Prevents horizontal scroll
-          border: "none",
-          margin: 0,
-          padding: 0,
+          height: "100vh", // Locks the outer container to viewport height
+          overflow: "hidden", // Prevents page scrolling
+          background: "rgb(37, 44, 54)", // Page background
         }}
       >
-        {/* TODO: Linkets default overskriver linket */}
-        <iframe
-          src="https://book.smash.dk/newlook/proc_liste.asp"
-          title="Smash Padel Events"
+        <div
           style={{
-            width: "calc(100% + 20px)", // Widen iframe to hide right scrollbar visually
-            height: "100vh",
-            border: "none",
             position: "relative",
-            top: `-${topOffset}px`, // Dynamically set the top offset
-            left: "-0rem", // Shift left to center visible content
-            background: "rgb(37, 44, 54)",
-            overflow: "hidden", // Hide outer overflow (not inner iframe)
+            width: "100%",
+            overflowY: "auto", // Allows scrolling inside container
+            overflowX: "hidden", // Prevents horizontal scroll
+            border: "none",
+            margin: 0,
+            padding: 0,
           }}
-        />
+        >
+          {/* TODO: Linkets default overskriver linket - EDIT: Du må uddybe her */}
+          <iframe
+            src="https://book.smash.dk/newlook/proc_liste.asp"
+            title="Smash Padel Events"
+            style={{
+              width: "calc(100% + 20px)", // Widen iframe to hide right scrollbar visually
+              height: "100vh",
+              border: "none",
+              position: "relative",
+              top: `-${topOffset}px`, // Dynamically set the top offset
+              left: "-0rem", // Shift left to center visible content
+              background: "rgb(37, 44, 54)",
+              overflow: "hidden", // Hide outer overflow (not inner iframe)
+            }}
+          />
+        </div>
       </div>
-    </div>
-      </>
+    </>
   );
 };
 

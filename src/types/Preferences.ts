@@ -7,6 +7,7 @@ import {
   BarChart,
   FileText,
   Star,
+  LucideIcon,
 } from "lucide-react";
 
 // Define the Preferences type
@@ -21,8 +22,15 @@ export type Preferences = {
   turneringer: boolean;
 };
 
-// Centralized configuration for preference labels and icons
-export const preferenceConfig = {
+// Type for preference configuration
+export type PreferenceConfig = {
+  [K in keyof Preferences]: {
+    label: string;
+    icon: LucideIcon;
+  };
+};
+
+export const preferenceConfig: PreferenceConfig = {
   updates: { label: "Baneopdateringer", icon: Bell },
   messages: { label: "Nye beskeder", icon: MessageSquare },
   events: { label: "Begivenheder", icon: Calendar },

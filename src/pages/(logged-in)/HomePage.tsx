@@ -32,20 +32,17 @@ export const HomePage = () => {
         .catch(() => setIsRefreshing(false));
     }
 
-    // Setup notifications when the homepage loads
+    if (!username) return;
+
     const initializeNotifications = async () => {
       try {
-        if (username) {
-          await setupNotifications(username);
-        } else {
-          console.error("Username is null. Notifications setup skipped.");
-        }
+        await setupNotifications(username);
       } catch (error) {
         console.error("Failed to initialize notifications:", error);
       }
     };
 
-    initializeNotifications().then();
+    initializeNotifications();
   }, [role, isRefreshing, refreshUser, username]); // Dependencies ensure it runs on mount and role change
 
   return (
@@ -59,7 +56,6 @@ export const HomePage = () => {
 
         <div className="flex mt-5 items-center justify-center">
           <div className="grid gap-8 grid-cols-4 max-lg:grid-cols-3 max-md:grid-cols-2">
-
             <HomeScreenCard
               icon={<CalendarIcon className="h-10 w-10" aria-hidden="true" />}
               title="Book Bane"

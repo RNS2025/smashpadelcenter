@@ -3,4 +3,6 @@ export const WHITELIST_ROUTES = [
   "/turneringer/check-in",
   "/player/:playerId/:rowId, /court-times",
   "/register",
+  "/login",
+  "/",
 ];

@@ -16,10 +16,7 @@ import {
 } from "@mui/material";
 import BackArrow from "./BackArrow";
 
-const HomeBar = ({backPage}:
-{
-    backPage?: string
-                 }) => {
+const HomeBar = ({ backPage }: { backPage?: string }) => {
   const { role, logout, username } = useUser();
   const navigate = useNavigate();
 
@@ -47,6 +44,10 @@ const HomeBar = ({backPage}:
     navigate("/admin");
   };
 
+  const handleProfileClick = () => {
+    navigate("/profile");
+  };
+
   return (
     <AppBar position="static" color="default" elevation={1}>
       <Toolbar
@@ -55,9 +56,8 @@ const HomeBar = ({backPage}:
           justifyContent: "space-between",
         }}
       >
-        {/* Left side: Navigation buttons */}
         <Stack direction="row" spacing={2} alignItems="center">
-          <BackArrow backPage={backPage}/>
+          <BackArrow backPage={backPage} />
           <Button variant="text" onClick={handleHomeClick}>
             Hjem
           </Button>
@@ -68,12 +68,16 @@ const HomeBar = ({backPage}:
           )}
         </Stack>
 
-        {/* Right side: Username and bell icon */}
         <Stack direction="row" spacing={2} alignItems="center">
           {username && (
             <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
               {username}
             </Typography>
+          )}
+          {username && (
+            <Button variant="text" onClick={handleProfileClick}>
+              Profile
+            </Button>
           )}
           <IconButton onClick={handleToggle} size="large">
             <Bell />
@@ -84,7 +88,6 @@ const HomeBar = ({backPage}:
         </Stack>
       </Toolbar>
 
-      {/* Notification dropdown */}
       <Popper
         open={open}
         anchorEl={anchorEl}

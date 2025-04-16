@@ -12,6 +12,7 @@ const trainerRoutes = require("./routes/bookTrainersRoutes");
 const smashEventRoutes = require("./routes/smashEventRoutes");
 const newsRoutes = require("./routes/newsRoutes");
 const padelMatchesRoutes = require("./routes/padelMatchesRoutes");
+const userProfileRoutes = require("./routes/userProfileRoutes");
 const LigaRoutes = require("./routes/LigaRoutes");
 const { swaggerUi, specs } = require("./config/swagger");
 const mongoose = require("./config/database");
@@ -92,6 +93,7 @@ app.use("/api/v1", smashEventRoutes);
 app.use("/api/v1", newsRoutes);
 app.use("/api/v1/matches", padelMatchesRoutes);
 app.use("/api/v1/liga", LigaRoutes);
+app.use("/api/v1/user-profiles", userProfileRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

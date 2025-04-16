@@ -1,5 +1,5 @@
 import "./App.css";
-import {BrowserRouter, Navigate, Route, Routes} from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/(logged-in)/HomePage.tsx";
 import AdminPage from "./pages/(logged-in)/AdminPage.tsx";
@@ -61,36 +61,47 @@ function App() {
             <Route path="/book-court" element={<BookCourtPage />} />
             <Route path="/book-training" element={<BookTrainingPage />} />
 
-
             <Route path="/makkerbørs" element={<MatchFinderPage />}>
               <Route index element={<Navigate to="allekampe" replace />} />
-                <Route path="allekampe" element={<MatchFinderAllMatchesTab />} />
-                <Route path="minekampe" element={<MatchFinderMyMatchesTab />} />
-                <Route path="afventer" element={<MatchFinderAwaitingTab />} />
+              <Route path="allekampe" element={<MatchFinderAllMatchesTab />} />
+              <Route path="minekampe" element={<MatchFinderMyMatchesTab />} />
+              <Route path="afventer" element={<MatchFinderAwaitingTab />} />
             </Route>
             <Route path="/makkerbørs/:matchId" element={<ViewMatchPage />} />
             <Route path="/makkerbørs/opretkamp" element={<CreateMatchPage />} />
 
-
             <Route path="/turneringer" element={<TournamentTabs />} />
-            <Route path="/turneringer/resultater" element={<TournamentsResultsPage />} />
+            <Route
+              path="/turneringer/resultater"
+              element={<TournamentsResultsPage />}
+            />
 
             <Route path="/holdligaer" element={<LunarLigaPage />}>
-              <Route index element={<Navigate to="lunarligaherrer" replace />} />
+              <Route
+                index
+                element={<Navigate to="lunarligaherrer" replace />}
+              />
               <Route path="lunarligaherrer" element={<LunarTeamsTab />} />
               <Route path="lunarliga4p" element={<LunarTeamsWomenTab />} />
               <Route path="hh-listen" element={<HHTeamsTab />} />
             </Route>
 
-            <Route path="/holdligaer/:teamId" element={<LeagueTeamProfilePage />}>
+            <Route
+              path="/holdligaer/:teamId"
+              element={<LeagueTeamProfilePage />}
+            >
               <Route index element={<Navigate to="spillere" replace />} />
               <Route path="spillere" element={<TeamProfilePlayersTab />} />
-              <Route path="tabeloversigt" element={<TeamProfileStandingsTab />} />
+              <Route
+                path="tabeloversigt"
+                element={<TeamProfileStandingsTab />}
+              />
               <Route path="kampe" element={<TeamProfileMatchesTab />} />
-              <Route path="kampe/:matchId" element={<TeamProfileMatchDetailsTab />} />
+              <Route
+                path="kampe/:matchId"
+                element={<TeamProfileMatchDetailsTab />}
+              />
             </Route>
-
-
 
             <Route path="/rangliste" element={<RanglistePage />} />
             <Route path="/news" element={<NewsPage />} />

@@ -1,5 +1,5 @@
 import api from "../api/api";
-import { News } from "../types/news";
+import { News } from "../types/News";
 
 // Fetch all news articles
 const getNews = async (): Promise<News[]> => {

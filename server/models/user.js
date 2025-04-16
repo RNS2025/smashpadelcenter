@@ -16,11 +16,11 @@ const UserSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["user", "admin"], // Limits roles
+      enum: ["user", "admin"],
       default: "user",
     },
   },
-  { timestamps: true } // Adds createdAt and updatedAt fields
+  { timestamps: true }
 );
 
 // Hash password before saving
@@ -38,7 +38,7 @@ UserSchema.pre("save", async function (next) {
 // Compare entered password with stored hashed password
 UserSchema.methods.comparePassword = async function (password) {
   try {
-    return await argon2.verify(this.password, password); // Verifies password
+    return await argon2.verify(this.password, password);
   } catch (error) {
     throw new Error("Password comparison failed");
   }
