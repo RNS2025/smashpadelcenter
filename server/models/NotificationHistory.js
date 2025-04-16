@@ -1,16 +1,33 @@
 const mongoose = require("mongoose");
 
-const notificationHistorySchema = new mongoose.Schema({
+const NotificationHistorySchema = new mongoose.Schema({
   userId: {
     type: String,
     required: true,
+    index: true,
   },
   notificationId: {
     type: String,
     required: true,
     unique: true,
   },
-  sentAt: {
+  title: {
+    type: String,
+    required: true,
+  },
+  body: {
+    type: String,
+    required: true,
+  },
+  category: {
+    type: String,
+    default: "",
+  },
+  isRead: {
+    type: Boolean,
+    default: false,
+  },
+  createdAt: {
     type: Date,
     default: Date.now,
   },
@@ -18,5 +35,5 @@ const notificationHistorySchema = new mongoose.Schema({
 
 module.exports = mongoose.model(
   "NotificationHistory",
-  notificationHistorySchema
+  NotificationHistorySchema
 );

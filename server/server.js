@@ -14,6 +14,8 @@ const newsRoutes = require("./routes/newsRoutes");
 const padelMatchesRoutes = require("./routes/padelMatchesRoutes");
 const userProfileRoutes = require("./routes/userProfileRoutes");
 const LigaRoutes = require("./routes/LigaRoutes");
+const friendRoutes = require("./routes/friendRoutes");
+const messageRoutes = require("./routes/messageRoutes");
 const { swaggerUi, specs } = require("./config/swagger");
 const mongoose = require("./config/database");
 const createAdmin = require("./scripts/createAdmin");
@@ -40,8 +42,151 @@ const io = new Server(server, {
     methods: ["GET", "POST"],
     credentials: true,
   },
-  path: "/socket.io/", // Explicitly set path
+  path: "/socket.io/",
 });
+
+// Track online users
+const onlineUsers = new Map();
+
+io.on("connection", (socket) => {
+  console.log("Client connected:", socket.id);
+
+  socket.on("join", async (username) => {
+    try {
+      if (!username || typeof username !== "string") {
+        console.error(`Invalid username received in join event: ${username}`);
+        return;
+      }
+
+      // Fetch user by username
+      const User = require("./models/user");
+      const user = await User.findOne({ username });
+      if (!user) {
+        console.error(`User not found for username: ${username}`);
+        return;
+      }
+      const userId = user._id.toString();
+
+      socket.join(userId);
+      onlineUsers.set(username, socket.id);
+
+      // Notify friends of online status
+      const friends = await require("./models/Friend").find({
+        $or: [{ userId }, { friendId: userId }],
+        status: "accepted",
+      });
+
+      friends.forEach((friend) => {
+        const friendId =
+          friend.userId.toString() === userId
+            ? friend.friendId.toString()
+            : friend.userId.toString();
+        io.to(friendId).emit("userStatus", { userId, status: "online" });
+      });
+    } catch (error) {
+      console.error("Error in join event:", error);
+    }
+  });
+
+  socket.on(
+    "sendMessage",
+    async ({ senderUsername, receiverUsername, content }) => {
+      try {
+        if (
+          !senderUsername ||
+          !receiverUsername ||
+          typeof senderUsername !== "string" ||
+          typeof receiverUsername !== "string"
+        ) {
+          console.error(
+            `Invalid usernames in sendMessage: senderUsername=${senderUsername}, receiverUsername=${receiverUsername}`
+          );
+          return;
+        }
+
+        // Fetch sender and receiver by username
+        const User = require("./models/user");
+        const sender = await User.findOne({ username: senderUsername });
+        const receiver = await User.findOne({ username: receiverUsername });
+        if (!sender || !receiver) {
+          console.error(
+            `User not found: senderUsername=${senderUsername}, receiverUsername=${receiverUsername}`
+          );
+          return;
+        }
+        const senderId = sender._id.toString();
+        const receiverId = receiver._id.toString();
+
+        const message = await require("./models/Message").create({
+          senderId,
+          receiverId,
+          content,
+          isRead: false,
+        });
+
+        const populatedMessage = await require("./models/Message")
+          .findById(message._id)
+          .populate("senderId", "username")
+          .populate("receiverId", "username");
+
+        io.to(senderId).to(receiverId).emit("newMessage", populatedMessage);
+      } catch (error) {
+        console.error("Fejl ved afsendelse af besked:", error);
+      }
+    }
+  );
+
+  socket.on("joinMatchRoom", (matchId) => {
+    socket.join(matchId);
+    console.log(`Client ${socket.id} joined room ${matchId}`);
+  });
+
+  socket.on("disconnect", async () => {
+    console.log("Client disconnected:", socket.id);
+    let disconnectedUsername;
+    for (let [username, socketId] of onlineUsers.entries()) {
+      if (socketId === socket.id) {
+        disconnectedUsername = username;
+        onlineUsers.delete(username);
+        break;
+      }
+    }
+
+    if (disconnectedUsername) {
+      try {
+        // Fetch user by username
+        const User = require("./models/user");
+        const user = await User.findOne({ username: disconnectedUsername });
+        if (!user) {
+          console.error(`User not found for username: ${disconnectedUsername}`);
+          return;
+        }
+        const userId = user._id.toString();
+
+        const friends = await require("./models/Friend").find({
+          $or: [{ userId }, { friendId: userId }],
+          status: "accepted",
+        });
+
+        friends.forEach((friend) => {
+          const friendId =
+            friend.userId.toString() === userId
+              ? friend.friendId.toString()
+              : friend.userId.toString();
+          io.to(friendId).emit("userStatus", {
+            userId,
+            status: "offline",
+          });
+        });
+      } catch (error) {
+        console.error("Error in disconnect event:", error);
+      }
+    }
+  });
+});
+
+// Middleware
+app.use(express.json());
 
 // CORS configuration
 app.use(
@@ -94,35 +239,24 @@ app.use("/api/v1", newsRoutes);
 app.use("/api/v1/matches", padelMatchesRoutes);
 app.use("/api/v1/liga", LigaRoutes);
 app.use("/api/v1/user-profiles", userProfileRoutes);
+app.use("/api/v1/friends", friendRoutes);
+app.use("/api/v1/messages", messageRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).send({ error: "Something went wrong!" });
+  res.status(500).json({ error: "Internal Server Error" });
 });
 
-// Socket.io setup
-io.on("connection", (socket) => {
-  console.log("Client connected:", socket.id);
-
-  socket.on("joinMatchRoom", (matchId) => {
-    socket.join(matchId);
-    console.log(`Client ${socket.id} joined room ${matchId}`);
-  });
-
-  socket.on("disconnect", () => {
-    console.log("Client disconnected:", socket.id);
-  });
-});
-
-// Make io available to routes
+// Make io available
 app.set("socketio", io);
 
-// Health check endpoint for debugging
+// Health check
 app.get("/health", (req, res) => {
   res.status(200).json({ status: "Server is running", socketIo: !!io });
 });
 
+// MongoDB connection setup
 mongoose.connection.once("open", async () => {
   console.log("✅ Connected to MongoDB");
   await createAdmin();

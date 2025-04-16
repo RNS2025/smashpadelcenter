@@ -1,5 +1,5 @@
 import api from "../api/api";
-import { UserProfile } from "../types/userProfile";
+import { UserProfile } from "../types/UserProfile";
 
 const getOrCreateUserProfile = async (
   username: string

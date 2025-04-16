@@ -80,23 +80,13 @@ const sendNotification = async (userId, title, body, category) => {
 
     const notificationId = uuidv4(); // Generate unique notification ID
 
-    // Check if the notification was already sent to this user
-    const existingNotification = await NotificationHistory.findOne({
-      userId,
-      notificationId,
-    });
-
-    if (existingNotification) {
-      console.log(
-        `Notification with ID ${notificationId} already sent to user ${userId}.`
-      );
-      return; // Skip sending if already sent
-    }
-
-    // Add to history to mark this notification as sent
+    // Save notification to history
     await NotificationHistory.create({
       userId,
       notificationId,
+      title,
+      body,
+      category,
     });
 
     for (const subscription of subscriptions) {

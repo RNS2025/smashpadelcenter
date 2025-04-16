@@ -4,6 +4,8 @@ const {
   sendNotification,
 } = require("../Services/subscriptionService");
 const SubscriptionPreference = require("../models/subscriptionPreferenceSchema");
+const NotificationHistory = require("../models/NotificationHistory");
+const UserProfile = require("../models/UserProfile");
 
 const router = express.Router();
 
@@ -82,6 +84,103 @@ router.post("/notify", async (req, res) => {
   } catch (error) {
     console.error("Error sending notification:", error);
     res.status(500).json({ error: "Failed to send notification." });
+  }
+});
+
+/**
+ * @swagger
+ * /api/v1/notifications/{username}:
+ *   get:
+ *     summary: Get notification history for a user by username
+ *     tags: [Notifications]
+ *     parameters:
+ *       - in: path
+ *         name: username
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The username of the user
+ *     responses:
+ *       200:
+ *         description: Notification history retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   notificationId:
+ *                     type: string
+ *                   title:
+ *                     type: string
+ *                   body:
+ *                     type: string
+ *                   category:
+ *                     type: string
+ *                   isRead:
+ *                     type: boolean
+ *                   createdAt:
+ *                     type: string
+ *                     format: date-time
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Failed to fetch notification history
+ */
+router.get("/notifications/:username", async (req, res) => {
+  try {
+    const { username } = req.params;
+    console.log(`Fetching notifications for username: ${username}`);
+    const notifications = await NotificationHistory.find({
+      userId: username,
+    }).sort({
+      createdAt: -1,
+    });
+    console.log(`Found ${notifications.length} notifications`);
+    res.status(200).json(notifications);
+  } catch (error) {
+    console.error("Error fetching notification history:", error);
+    res.status(500).json({ error: "Failed to fetch notification history." });
+  }
+});
+
+/**
+ * @swagger
+ * /api/v1/notifications/{notificationId}/read:
+ *   put:
+ *     summary: Mark a notification as read
+ *     tags: [Notifications]
+ *     parameters:
+ *       - in: path
+ *         name: notificationId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the notification to mark as read
+ *     responses:
+ *       200:
+ *         description: Notification marked as read
+ *       404:
+ *         description: Notification not found
+ *       500:
+ *         description: Failed to mark notification as read
+ */
+router.put("/notifications/:notificationId/read", async (req, res) => {
+  try {
+    const { notificationId } = req.params;
+    const notification = await NotificationHistory.findOneAndUpdate(
+      { notificationId },
+      { isRead: true },
+      { new: true }
+    );
+    if (!notification) {
+      return res.status(404).json({ error: "Notification not found." });
+    }
+    res.status(200).json({ message: "Notification marked as read." });
+  } catch (error) {
+    console.error("Error marking notification as read:", error);
+    res.status(500).json({ error: "Failed to mark notification as read." });
   }
 });
 

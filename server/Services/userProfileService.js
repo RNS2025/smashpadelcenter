@@ -14,7 +14,7 @@ const userProfileService = {
     if (!profile) {
       // Create a default profile if none exists
       profile = await userProfileService.createUserProfile(user.username, {
-        email: "placeholder@example.com",
+        email: "",
         fullName: "",
         phoneNumber: "",
         profilePictureUrl: "/api/placeholder/150/150",
@@ -113,7 +113,7 @@ const userProfileService = {
       id: profile._id.toString(),
       fullName: profile.fullName || "",
       username: user.username,
-      email: profile.email,
+      email: profile.email || "",
       phoneNumber: profile.phoneNumber || "",
       profilePictureUrl:
         profile.profilePictureUrl || "/api/placeholder/150/150",
