@@ -6,6 +6,13 @@ import { useNavigate } from "react-router-dom";
 import HomeBar from "../../components/misc/HomeBar";
 import Animation from "../../components/misc/Animation";
 
+interface Notification {
+  id: string;
+  message: string;
+  createdAt: string;
+  isRead: boolean;
+}
+
 const ProfilePage: React.FC = () => {
   const { username, loading: authLoading } = useUser();
   const [activeTab, setActiveTab] = useState<string>("overview");
@@ -16,6 +23,23 @@ const ProfilePage: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState<string>("");
   const [errorMessage, setErrorMessage] = useState<string>("");
   const navigate = useNavigate();
+
+  // Placeholder notifications data
+  const [notifications, setNotifications] = useState<Notification[]>([
+    // TODO: Replace with actual data fetching
+    {
+      id: "1",
+      message: "Din profil blev opdateret med succes!",
+      createdAt: new Date().toISOString(),
+      isRead: false,
+    },
+    {
+      id: "2",
+      message: "Ny kamp tilgængelig i nærheden af dig.",
+      createdAt: new Date(Date.now() - 86400000).toISOString(), // Yesterday
+      isRead: true,
+    },
+  ]);
 
   useEffect(() => {
     if (authLoading) return; // Wait for session restoration
@@ -54,6 +78,10 @@ const ProfilePage: React.FC = () => {
           playingStyle: profileData.playingStyle,
           equipment: profileData.equipment,
         });
+
+        // TODO: Fetch notifications for the user
+        // Example: const notificationData = await notificationApi.getUserNotifications(username);
+        // setNotifications(notificationData);
       } catch (error: any) {
         console.error("Error fetching profile data:", error);
         setErrorMessage(
@@ -133,6 +161,14 @@ const ProfilePage: React.FC = () => {
     });
   };
 
+  const handleMarkAsRead = (notificationId: string) => {
+    // TODO: Implement marking notification as read
+    // Example: await notificationApi.markNotificationAsRead(notificationId);
+    setNotifications((prev) =>
+      prev.map((n) => (n.id === notificationId ? { ...n, isRead: true } : n))
+    );
+  };
+
   if (authLoading || loading) {
     return (
       <Animation>
@@ -174,7 +210,7 @@ const ProfilePage: React.FC = () => {
     : 0;
 
   const isAdmin = profile.role === "admin";
-  const tabs = ["overview", "matches", "edit", "settings"];
+  const tabs = ["overview", "matches", "edit", "settings", "notifications"];
   if (isAdmin) tabs.push("admin");
 
   return (
@@ -592,6 +628,62 @@ const ProfilePage: React.FC = () => {
                   Administrer notifikationer
                 </button>
               </div>
+            </div>
+          )}
+
+          {activeTab === "notifications" && (
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-4">
+                Notifikationer
+              </h2>
+              <p className="text-gray-600 mb-4">
+                Se dine notifikationer her. Klik på en notifikation for at
+                markere den som læst.
+              </p>
+              {notifications.length > 0 ? (
+                <div className="space-y-4">
+                  {notifications.map((notification) => (
+                    <div
+                      key={notification.id}
+                      className={`bg-gray-50 rounded-lg p-4 border ${
+                        notification.isRead
+                          ? "border-gray-200"
+                          : "border-cyan-500"
+                      } hover:shadow-md transition duration-300`}
+                      onClick={() => handleMarkAsRead(notification.id)}
+                    >
+                      <div className="flex justify-between items-center">
+                        <p
+                          className={`text-sm ${
+                            notification.isRead
+                              ? "text-gray-600"
+                              : "text-gray-800 font-medium"
+                          }`}
+                        >
+                          {notification.message}
+                        </p>
+                        <span
+                          className={`text-xs ${
+                            notification.isRead
+                              ? "text-gray-500"
+                              : "text-cyan-500"
+                          }`}
+                        >
+                          {new Date(notification.createdAt).toLocaleDateString(
+                            "da-DK"
+                          )}{" "}
+                          {new Date(notification.createdAt).toLocaleTimeString(
+                            "da-DK",
+                            { hour: "2-digit", minute: "2-digit" }
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-600">Ingen notifikationer at vise.</p>
+              )}
             </div>
           )}
 
