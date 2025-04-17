@@ -1034,6 +1034,9 @@ const ProfilePage: React.FC = () => {
                           ? friend.friendId.username
                           : friend.userId.username;
                       const lastMessage = messages[friendId]?.slice(-1)[0];
+                      if (friendUsername === profile.username) {
+                        return null;
+                      }
                       return (
                         <div
                           key={friend._id}
@@ -1081,9 +1084,7 @@ const ProfilePage: React.FC = () => {
                           Chat med{" "}
                           {(() => {
                             const friend = friends.find(
-                              (f) =>
-                                f.userId._id.toString() === selectedFriend ||
-                                f.friendId._id.toString() === selectedFriend
+                              (f) => f.userId._id.toString() === selectedFriend
                             );
                             if (!friend) return "";
                             return friend.userId._id.toString() === profile.id
