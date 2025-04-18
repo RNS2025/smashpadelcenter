@@ -4,11 +4,11 @@ import { PadelMatch } from "../../types/PadelMatch";
 import communityApi from "../../services/makkerborsService";
 import LoadingSpinner from "../misc/LoadingSpinner";
 import { format } from "date-fns";
+import { UserCircleIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
-import {toZonedTime} from "date-fns-tz";
-import {registerLocale} from "react-datepicker";
-import {da} from "date-fns/locale";
-import MatchTextInfo from "./misc/MatchTextInfo";
+import { toZonedTime } from "date-fns-tz";
+import { registerLocale } from "react-datepicker";
+import { da } from "date-fns/locale";
 registerLocale("da", da);
 
 export const MatchFinderAllMatchesTab = () => {
@@ -33,7 +33,6 @@ export const MatchFinderAllMatchesTab = () => {
     fetchMatches().then();
   }, []);
 
-
   const safeFormatDate = (dateString: string, formatString: string): string => {
     try {
       const utcDate = new Date(dateString);
@@ -53,12 +52,6 @@ export const MatchFinderAllMatchesTab = () => {
     return <div>{error}</div>;
   }
 
-  const getSpotCounts = (match: PadelMatch) => {
-    const takenSpots = match.participants.length + match.reservedSpots.length + match.joinRequests.length;
-    const availableSpots = match.totalSpots - takenSpots;
-    return { takenSpots, availableSpots };
-  };
-
   return (
     <>
       <Helmet>
@@ -66,34 +59,55 @@ export const MatchFinderAllMatchesTab = () => {
       </Helmet>
 
       <div className="text-sm cursor-pointer">
-        {matches.map((match) => {
-          const { takenSpots, availableSpots } = getSpotCounts(match);
+        {matches.map((match) => (
+          <div
+            onClick={() => navigate(`/makkerbørs/${match.id}`)}
+            key={match.id}
+            className="border p-4 rounded-lg space-y-1.5 hover:bg-gray-700 mb-5"
+          >
+            <h1 className="font-semibold">
+              {safeFormatDate(
+                match.matchDateTime,
+                "EEEE | dd. MMMM | HH:mm"
+              ).toUpperCase()}{" "}
+              - {match.endTime}
+            </h1>
+            <div className="flex justify-between border-b border-gray-600">
+              <p>{match.location}</p>
+              <p>Herre</p>
+            </div>
+            <div className="flex justify-between">
+              <p>Niveau {match.level}</p>
 
-          return (
-              <div
-                  onClick={() => navigate(`/makkerbørs/${match.id}`)}
-                  key={match.id}
-                  className="border p-4 rounded-lg space-y-1.5 hover:bg-gray-700 mb-5"
-              >
-                <h1 className="font-semibold">
-                  {safeFormatDate(match.matchDateTime, "EEEE | dd. MMMM | HH:mm").toUpperCase()} - {match.endTime}
-                </h1>
-                <div className="flex justify-between border-b border-gray-600">
-                  <p>{match.location}</p>
-                  <p>{match.matchType}</p>
-                </div>
-
-
-                  <MatchTextInfo
-                      level={match.level}
-                      takenSpots={takenSpots}
-                      availableSpots={availableSpots}
-                      matchHost={match.username}
+              {/*//TODO: Forklar mig hvad reservedSpots skal bruges til*/}
+              <div className="flex">
+                {[
+                  ...Array(
+                    match.participants.length + match.reservedSpots.length
+                  ),
+                ].map((_, i) => (
+                  <UserCircleIcon
+                    key={`participant-${i}`}
+                    className="h-5 text-cyan-500"
                   />
-              </div>
-          );
-        })}
+                ))}
 
+                {[
+                  ...Array(
+                    match.totalSpots -
+                      (match.participants.length + match.reservedSpots.length)
+                  ),
+                ].map((_, i) => (
+                  <UserCircleIcon
+                    key={`empty-${i}`}
+                    className="h-5 text-gray-500"
+                  />
+                ))}
+              </div>
+            </div>
+            <p className="text-gray-500">Oprettet af {match.username}</p>
+          </div>
+        ))}
       </div>
     </>
   );

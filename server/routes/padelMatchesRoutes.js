@@ -86,4 +86,16 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+// GET /api/v1/matches/:username - Get matches for a player by username
+router.get("/player/:username", async (req, res) => {
+  try {
+    const matches = await padelMatchService.getMatchesByPlayer(
+      req.params.username
+    );
+    res.json(matches);
+  } catch (error) {
+    res.status(404).json({ message: error.message });
+  }
+});
+
 module.exports = router;

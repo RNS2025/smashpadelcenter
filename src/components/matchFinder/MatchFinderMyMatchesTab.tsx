@@ -7,10 +7,10 @@ import { format } from "date-fns";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../../context/UserContext";
-import {registerLocale} from "react-datepicker";
-import {da} from "date-fns/locale";
-import {toZonedTime} from "date-fns-tz";
-registerLocale("da", da)
+import { registerLocale } from "react-datepicker";
+import { da } from "date-fns/locale";
+import { toZonedTime } from "date-fns-tz";
+registerLocale("da", da);
 
 export const MatchFinderMyMatchesTab = () => {
   const navigate = useNavigate();
@@ -23,10 +23,11 @@ export const MatchFinderMyMatchesTab = () => {
   useEffect(() => {
     const fetchMatches = async () => {
       try {
-        const data = await communityApi.getMatches();
-        const myMatches = data.filter(
-          (match) => username && match.username.includes(username));
-        setMatches(myMatches);
+        if (username) {
+          // Use getMatchesByUser to directly fetch user-specific matches from the server
+          const data = await communityApi.getMatchesByUser(username);
+          setMatches(data);
+        }
         setLoading(false);
       } catch (err) {
         console.error("Error fetching matches:", err);
@@ -64,47 +65,62 @@ export const MatchFinderMyMatchesTab = () => {
 
       <div className="text-sm">
         {matches.map((match) => (
-            <div
-                onClick={() => navigate(`/makkerbørs/${match.id}`)}
-                key={match.id}
-                className="border p-4 rounded-lg space-y-1.5 hover:bg-gray-700 mb-5"
-            >
-
-              <div className="flex justify-between">
+          <div
+            onClick={() => navigate(`/makkerbørs/${match.id}`)}
+            key={match.id}
+            className="border p-4 rounded-lg space-y-1.5 hover:bg-gray-700 mb-5"
+          >
+            <div className="flex justify-between">
               <h1 className="font-semibold">
-                {safeFormatDate(match.matchDateTime, "EEEE | dd. MMMM | HH:mm").toUpperCase()} - {match.endTime}
+                {safeFormatDate(
+                  match.matchDateTime,
+                  "EEEE | dd. MMMM | HH:mm"
+                ).toUpperCase()}{" "}
+                - {match.endTime}
               </h1>
-              <h1 className="bg-red-500 text-white rounded-full px-1.5 py-0.5 text-xs animate-pulse">{match.joinRequests.length}</h1>
-              </div>
-
-
-              <div className="flex justify-between border-b border-gray-600">
-                <p>{match.location}</p>
-                <p>
-                  Herre
-                </p>
-              </div>
-              <div className="flex justify-between">
-                <p>Niveau {match.level}</p>
-
-                <div className="flex">
-                  {[...Array(match.participants.length + match.reservedSpots.length + match.joinRequests.length),].map((_, i) => (
-                      <UserCircleIcon
-                          key={`participant-${i}`}
-                          className="h-5 text-cyan-500"
-                      />
-                  ))}
-
-                  {[...Array(match.totalSpots - (match.participants.length + match.reservedSpots.length + match.joinRequests.length)),].map((_, i) => (
-                      <UserCircleIcon
-                          key={`empty-${i}`}
-                          className="h-5 text-gray-500"
-                      />
-                  ))}
-                </div>
-              </div>
-              <p className="text-gray-500">Oprettet af {match.username}</p>
+              <h1 className="bg-red-500 text-white rounded-full px-1.5 py-0.5 text-xs animate-pulse">
+                {match.joinRequests.length}
+              </h1>
             </div>
+
+            <div className="flex justify-between border-b border-gray-600">
+              <p>{match.location}</p>
+              <p>Herre</p>
+            </div>
+            <div className="flex justify-between">
+              <p>Niveau {match.level}</p>
+
+              <div className="flex">
+                {[
+                  ...Array(
+                    match.participants.length +
+                      match.reservedSpots.length +
+                      match.joinRequests.length
+                  ),
+                ].map((_, i) => (
+                  <UserCircleIcon
+                    key={`participant-${i}`}
+                    className="h-5 text-cyan-500"
+                  />
+                ))}
+
+                {[
+                  ...Array(
+                    match.totalSpots -
+                      (match.participants.length +
+                        match.reservedSpots.length +
+                        match.joinRequests.length)
+                  ),
+                ].map((_, i) => (
+                  <UserCircleIcon
+                    key={`empty-${i}`}
+                    className="h-5 text-gray-500"
+                  />
+                ))}
+              </div>
+            </div>
+            <p className="text-gray-500">Oprettet af {match.username}</p>
+          </div>
         ))}
       </div>
     </>

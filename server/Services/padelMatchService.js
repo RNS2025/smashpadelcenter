@@ -69,7 +69,12 @@ const padelMatchService = {
   createMatch: async (matchData) => {
     const newMatch = new PadelMatch({
       ...matchData,
-      participants: [matchData.username, ...(matchData.participants || []).filter(p => p !== matchData.username)],
+      participants: [
+        matchData.username,
+        ...(matchData.participants || []).filter(
+          (p) => p !== matchData.username
+        ),
+      ],
 
       joinRequests: matchData.joinRequests || [],
       reservedSpots: matchData.reservedSpots || [],
@@ -83,7 +88,6 @@ const padelMatchService = {
       id: savedMatch._id.toString(),
     };
   },
-
 
   getMatchById: async (matchId) => {
     const match = await PadelMatch.findById(matchId);
@@ -122,6 +126,15 @@ const padelMatchService = {
     const match = await PadelMatch.findByIdAndDelete(matchId);
     if (!match) throw new Error("Match not found");
     return await PadelMatch.find(); // Return updated list
+  },
+  getMatchesByPlayer: async (username) => {
+    const matches = await PadelMatch.find({
+      $or: [{ participants: username }, { joinRequests: username }],
+    });
+    return matches.map((match) => ({
+      ...match.toObject(),
+      id: match._id,
+    }));
   },
 };
 
