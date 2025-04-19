@@ -600,14 +600,94 @@ const getPlayerDetails = async (playerId, language = "en") => {
   }
 };
 
+const getAllMatches = async (tournamentId, language = "en") => {
+  if (!tournamentId) {
+    console.warn("Skipping getAllMatches: tournamentId is undefined");
+    return [];
+  }
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}tournament/GetMatchesAsync`,
+      {
+        params: { tournamentId, language },
+      }
+    );
+    const matches = response.data;
+    return matches;
+  } catch (error) {
+    console.error(
+      `Error fetching matches for tournamentId ${tournamentId}:`,
+      error.message
+    );
+    return [];
+  }
+};
+const getNextMatchAndUpcommingOnCourt = async (
+  tournamentId,
+  courtName,
+  language = "en"
+) => {
+  if (!tournamentId || !courtName) {
+    console.warn(
+      "Skipping getNextMatchOnCourt: invalid tournamentId or courtName"
+    );
+    return { ongoingMatch: null, upcomingMatch: null };
+  }
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}tournament/GetMatchesSectionAsync`,
+      {
+        params: {
+          Id: tournamentId,
+          LanguageCode: language,
+          IsReadonly: true,
+        },
+      }
+    );
+    const matches = response.data.Matches || [];
+    if (!matches || matches.length === 0) {
+      console.log(`No matches found for tournamentId ${tournamentId}`);
+      return { ongoingMatch: null, upcomingMatch: null };
+    }
+    const now = new Date();
+    const courtNameLower = courtName.toLowerCase();
+    // Filter matches for the specified court (case insensitive)
+    const courtMatches = matches.filter(
+      (match) => match.Court && match.Court.toLowerCase() === courtNameLower
+    );
+    // Since we don't have EndTime, we'll estimate each match takes 1 hour
+    const MATCH_DURATION_MS = 60 * 60 * 1000; // 1 hour in milliseconds
+    // Find ongoing match
+    const ongoingMatch = courtMatches.find((match) => {
+      if (!match.Date) return false;
+      const startTime = new Date(match.Date);
+      const endTime = new Date(startTime.getTime() + MATCH_DURATION_MS);
+      return startTime <= now && endTime >= now;
+    });
+    // Find upcoming match
+    const upcomingMatch = courtMatches
+      .filter((match) => match.Date && new Date(match.Date) > now)
+      .sort((a, b) => new Date(a.Date) - new Date(b.Date))[0];
+    return { ongoingMatch, upcomingMatch };
+  } catch (error) {
+    console.error(
+      `Error fetching next match on court for tournamentId ${tournamentId}:`,
+      error.message
+    );
+    return { ongoingMatch: null, upcomingMatch: null };
+  }
+};
+
 module.exports = {
   getAvailableTournaments,
+  getAllMatches,
   getUpcomingTournament,
   getAllTournamentPlayers,
   getAllRows,
   getPlayersInRow,
   getPlayersMatches,
   getPlayerDetails,
+  getNextMatchAndUpcommingOnCourt,
   API_BASE_URL,
   OrganisationIdSmashHorsens,
   OrganisationIdSmashStensballe,

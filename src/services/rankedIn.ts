@@ -8,6 +8,7 @@ import CheckInStatus from "../types/CheckInStatus";
 import CheckInUpdateRequest from "../types/CheckInUpdateRequest";
 import BulkCheckInUpdateRequest from "../types/BulkCheckInUpdateRequest";
 import PlayerData from "../types/PlayerData.ts";
+import DpfMatch from "../types/DpfMatch.ts";
 
 const rankedInService = {
   // Fetch all available tournaments
@@ -239,6 +240,79 @@ const rankedInService = {
       return response.data.payload[0];
     } catch (error) {
       console.error("Error fetching upcoming tournaments:", error);
+      throw error;
+    }
+  },
+  getOnGoingMatchAndUpcommingMatch: async (
+    tournamentId: string = "45804",
+    courtName: string = "maxus"
+  ): Promise<{
+    ongoingMatch: DpfMatch | null;
+    upcomingMatch: DpfMatch | null;
+  }> => {
+    try {
+      const response = await api.get("/GetOnGoingMatchAndUpcommingMatch", {
+        params: {
+          tournamentId: tournamentId,
+          courtName: courtName,
+        },
+      });
+
+      console.log(
+        "RankedInService Frontend - Response from API:",
+        response.data
+      );
+
+      // Extract the matches from the response
+      const matches = response.data.Matches || [];
+
+      // Find matches for the specified court
+      const courtMatches = matches.filter(
+        (match: any) =>
+          match.Court && match.Court.toLowerCase() === courtName.toLowerCase()
+      );
+
+      // Determine current match and next match
+      const now = new Date();
+      const MATCH_DURATION_MS = 60 * 60 * 1000; // 1 hour in milliseconds
+
+      // Find current match (ongoing)
+      const ongoingMatch =
+        courtMatches.find((match: any) => {
+          if (!match.Date) return false;
+          const startTime = new Date(match.Date);
+          const endTime = new Date(startTime.getTime() + MATCH_DURATION_MS);
+          return startTime <= now && endTime >= now;
+        }) || null;
+
+      // Find next match (upcoming)
+      const upcomingMatch =
+        courtMatches
+          .filter((match: any) => match.Date && new Date(match.Date) > now)
+          .sort(
+            (a: any, b: any) =>
+              new Date(a.Date).getTime() - new Date(b.Date).getTime()
+          )[0] || null;
+
+      // If no current match is found but there's an upcoming match in the API response
+      // and it matches our court, use it as the upcomingMatch
+      if (
+        !ongoingMatch &&
+        !upcomingMatch &&
+        response.data.upcomingMatch &&
+        response.data.upcomingMatch.Court &&
+        response.data.upcomingMatch.Court.toLowerCase() ===
+          courtName.toLowerCase()
+      ) {
+        return {
+          ongoingMatch: null,
+          upcomingMatch: response.data.upcomingMatch,
+        };
+      }
+
+      return { ongoingMatch, upcomingMatch };
+    } catch (error) {
+      console.error("Error fetching current and next match:", error);
       throw error;
     }
   },

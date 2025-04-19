@@ -260,4 +260,30 @@ router.get("/GetPlayerDetails", async (req, res) => {
   }
 });
 
+// Get all matches for a turnmament
+router.get("/GetAllMatches", async (req, res) => {
+  try {
+    const { tournamentId } = req.query;
+    const matches = await rankedInService.getAllMatches(tournamentId);
+    res.status(200).json(matches);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get Current Match and Next Match for a Courtname
+router.get("/GetOnGoingMatchAndUpcommingMatch", async (req, res) => {
+  try {
+    const { courtName } = req.query;
+    const { tournamentId } = req.query;
+    const matches = await rankedInService.getNextMatchAndUpcommingOnCourt(
+      tournamentId,
+      courtName
+    );
+    res.status(200).json(matches);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
