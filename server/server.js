@@ -24,6 +24,7 @@ const { updateAllData } = require("./scripts/dataScheduler");
 const { Server } = require("socket.io");
 const path = require("path");
 const http = require("http");
+const trainerService = require("./Services/trainerService");
 require("dotenv").config();
 
 const app = express();
@@ -141,6 +142,81 @@ io.on("connection", (socket) => {
     console.log(`Client ${socket.id} joined room ${matchId}`);
   });
 
+  socket.on("joinTrainerRoom", async ({ username, trainerUsername }) => {
+    try {
+      const trainer = await trainerService.getTrainerByUsername(
+        trainerUsername
+      );
+      if (!trainer) {
+        socket.emit("error", { message: "Trainer not found" });
+        return;
+      }
+      socket.join(`trainer_${trainerUsername}`);
+      if (trainer.username === username) {
+        socket.join(`trainer_${trainerUsername}_user`);
+      }
+    } catch (error) {
+      console.error("Error joining trainer room:", error);
+      socket.emit("error", { message: "Failed to join trainer room" });
+    }
+  });
+
+  socket.on(
+    "sendTrainerMessage",
+    async ({ senderUsername, trainerUsername, content }) => {
+      try {
+        const trainer = await trainerService.getTrainerByUsername(
+          trainerUsername
+        );
+        if (!trainer) {
+          socket.emit("error", { message: "Trainer not found" });
+          return;
+        }
+        const message = await trainerService.sendTrainerMessage(
+          senderUsername,
+          trainerUsername,
+          content
+        );
+        io.to(`trainer_${trainerUsername}`).emit("newTrainerMessage", message);
+        io.to(`trainer_${trainerUsername}_user`).emit(
+          "newTrainerMessage",
+          message
+        );
+      } catch (error) {
+        console.error("Error sending message:", error);
+        socket.emit("error", { message: "Failed to send message" });
+      }
+    }
+  );
+
+  socket.on(
+    "bookTrainer",
+    async ({ username, trainerUsername, date, timeSlot }) => {
+      try {
+        const trainer = await trainerService.getTrainerByUsername(
+          trainerUsername
+        );
+        if (!trainer) {
+          socket.emit("error", { message: "Trainer not found" });
+          return;
+        }
+        const booking = await trainerService.bookTrainer(
+          username,
+          trainerUsername,
+          date,
+          timeSlot
+        );
+        io.to(`trainer_${trainerUsername}`).emit("newBooking", booking);
+        if (trainer.username) {
+          io.to(`trainer_${trainerUsername}_user`).emit("newBooking", booking);
+        }
+      } catch (error) {
+        console.error("Error booking trainer:", error);
+        socket.emit("error", { message: "Failed to book trainer" });
+      }
+    }
+  );
+
   socket.on("disconnect", async () => {
     console.log("Client disconnected:", socket.id);
     let disconnectedUsername;
@@ -221,8 +297,8 @@ app.use(passport.session());
 // Connect-Roles setup
 app.use(user.middleware());
 
-// Serve static files from the 'uploads' folder
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+// Serve static files from the 'Uploads' folder
+app.use("/uploads", express.static(path.join(__dirname, "Uploads")));
 
 // Swagger setup
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
@@ -256,11 +332,30 @@ app.get("/health", (req, res) => {
   res.status(200).json({ status: "Server is running", socketIo: !!io });
 });
 
+// Clean database function
+const cleanDatabase = async () => {
+  try {
+    const collections = await mongoose.connection.db.collections();
+    for (let collection of collections) {
+      await collection.drop();
+      console.log(`🗑️ Dropped collection: ${collection.collectionName}`);
+    }
+    console.log("✅ Database wiped successfully");
+  } catch (error) {
+    console.error("Error wiping database:", error);
+  }
+};
+
 // MongoDB connection setup
 mongoose.connection.once("open", async () => {
   console.log("✅ Connected to MongoDB");
+
+  //await cleanDatabase();
+
+  // Recreate admin and test users after potential wipe
   await createAdmin();
   await createTenUsers();
+
   server.listen(PORT, () => {
     console.log(`🚀 Server is running on http://localhost:${PORT}`);
     // Start the scheduler

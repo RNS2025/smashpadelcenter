@@ -49,58 +49,58 @@ const BookCourtPage = () => {
   };
 
   return (
-      <>
-          <HomeBar/>
-    <div
-      className="iframe-container"
-      style={{
-        backgroundColor: "#252c36",
-        overflow: "hidden",
-        width: "100%",
-        height: "100vh", // Full viewport height
-        maxHeight: "100%",
-        left: "-0rem", // Shift left to center visible content
-        display: "flex",
-        flexDirection: "column",
-        position: "relative",
-      }}
-    >
-      {!showIframe && (
-        <div
-          className="loading-container"
-          style={{
-            width: "95%",
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            position: "absolute",
-            inset: 0,
-            backgroundColor: "#252c36",
-            zIndex: 1,
-            color: "white",
-          }}
-        >
-            <LoadingSpinner />
-        </div>
-      )}
-
-      <iframe
-        ref={iframeRef}
-        src="https://book.smash.dk/newlook/default.asp?topmenu=12"
-        onLoad={handleLoad}
-        title="External booking system"
+    <>
+      <HomeBar />
+      <div
+        className="iframe-container"
         style={{
-          flex: 1,
+          backgroundColor: "#252c36",
+          overflow: "hidden",
           width: "100%",
-          height: "100%",
-          border: "none",
-          opacity: showIframe ? 1 : 0,
-          transition: "opacity 1s ease-in",
-          zIndex: 0,
+          height: "100vh", // Full viewport height
+          maxHeight: "100%",
+          left: "-0rem", // Shift left to center visible content
+          display: "flex",
+          flexDirection: "column",
+          position: "relative",
         }}
-      />
-    </div>
-      </>
+      >
+        {!showIframe && (
+          <div
+            className="loading-container"
+            style={{
+              width: "95%",
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              position: "absolute",
+              inset: 0,
+              backgroundColor: "#252c36",
+              zIndex: 1,
+              color: "white",
+            }}
+          >
+            <LoadingSpinner />
+          </div>
+        )}
+
+        <iframe
+          ref={iframeRef}
+          src="https://book.smash.dk/newlook/default.asp?topmenu=12"
+          onLoad={handleLoad}
+          title="External booking system"
+          style={{
+            flex: 1,
+            width: "100%",
+            height: "100%",
+            border: "none",
+            opacity: showIframe ? 1 : 0,
+            transition: "opacity 1s ease-in",
+            zIndex: 0,
+          }}
+        />
+      </div>
+    </>
   );
 };
 

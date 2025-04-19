@@ -8,6 +8,7 @@ import HomeBar from "../../components/misc/HomeBar";
 import Animation from "../../components/misc/Animation";
 import { friendService, Friend } from "../../services/friendService";
 import { MessageService, Message } from "../../services/messageService";
+import { getUserBookings } from "../../services/trainingService";
 
 interface Notification {
   notificationId: string;
@@ -20,6 +21,7 @@ interface Notification {
 
 const ProfilePage: React.FC = () => {
   const { username, loading: authLoading } = useUser();
+  const [bookings, setBookings] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<string>("overview");
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [formData, setFormData] = useState<Partial<UserProfile>>({});
@@ -105,9 +107,20 @@ const ProfilePage: React.FC = () => {
           setTimeout(() => setSuccessMessage(""), 5000);
         }
       });
-
       return () => service.disconnect();
     }
+    const fetchBookings = async () => {
+      try {
+        if (username) {
+          const userBookings = await getUserBookings(username);
+          setBookings(userBookings);
+        }
+      } catch (error) {
+        console.error("Error fetching bookings:", error);
+      }
+    };
+
+    fetchBookings();
   }, [username, profile]);
 
   useEffect(() => {
@@ -467,15 +480,40 @@ const ProfilePage: React.FC = () => {
                 Spilleroversigt
               </h2>
               <p className="text-gray-600 mb-4">
-                Velkommen til din spillerprofil, {profile.fullName}! Her kan du
+                Velkommen til din spillerprofil, {profile?.fullName}! Her kan du
                 se din kamphistorik, statistik og administrere dine
                 spilleroplysninger.
               </p>
-              <div className="bg-cyan-50 border-l-4 border-cyan-400 p-4 mb-6 rounded-lg">
-                <p className="text-sm text-gray-600">
-                  Tip: Klik på "Rediger" fanen for at opdatere dine
-                  profiloplysninger.
-                </p>
+
+              <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                Træner Bookinger
+              </h3>
+              <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                {bookings.length ? (
+                  <div className="space-y-2">
+                    {bookings.map((booking) => (
+                      <div
+                        key={booking._id}
+                        className="p-3 bg-white rounded border border-gray-200"
+                      >
+                        <p className="text-gray-600">
+                          Træner: {booking.trainerId.name} (
+                          {booking.trainerId.specialty})
+                        </p>
+                        <p className="text-gray-600">
+                          Dato:{" "}
+                          {new Date(booking.date).toLocaleDateString("da-DK")}
+                        </p>
+                        <p className="text-gray-600">Tid: {booking.timeSlot}</p>
+                        <p className="text-gray-600">
+                          Status: {booking.status}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-600">Ingen bookinger endnu.</p>
+                )}
               </div>
               <h3 className="text-lg font-semibold text-gray-800 mb-2">
                 Seneste aktivitet

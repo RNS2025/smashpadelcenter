@@ -1,25 +1,40 @@
-const Trainer = require("../models/Trainer");
+const { Trainer, Booking, TrainerMessage } = require("../models/Trainer");
+const User = require("../models/user");
 
-/**
- * Get all trainers
- * @returns {Promise<Array>} - List of all trainers
- */
 const getAllTrainers = async () => {
   try {
-    return await Trainer.find().lean();
+    const trainers = await Trainer.find().lean();
+    // Check for duplicate _id values
+    const idSet = new Set(trainers.map((t) => t._id.toString()));
+    if (idSet.size !== trainers.length) {
+      console.warn(
+        "Duplicate trainer _id values detected:",
+        trainers.map((t) => t._id)
+      );
+    }
+    return trainers;
   } catch (error) {
     console.error("Error fetching trainers:", error);
     throw new Error("Failed to fetch trainers");
   }
 };
 
-/**
- * Create a new trainer
- * @param {Object} trainerData - Trainer fields
- * @returns {Promise<Object>} - Created trainer
- */
 const createTrainer = async (trainerData) => {
   try {
+    const user = await User.findOne({ username: trainerData.username });
+    if (!user) {
+      throw new Error("User with provided username does not exist");
+    }
+    // Check for existing trainer with the same username
+    const existingTrainer = await Trainer.findOne({
+      username: trainerData.username,
+    });
+    if (existingTrainer) {
+      throw new Error("Trainer with this username already exists");
+    }
+    trainerData.availability = Array.isArray(trainerData.availability)
+      ? trainerData.availability
+      : [];
     const trainer = new Trainer(trainerData);
     return await trainer.save();
   } catch (error) {
@@ -28,38 +43,103 @@ const createTrainer = async (trainerData) => {
   }
 };
 
-/**
- * Update a trainer by ID
- * @param {string} id - Trainer ID
- * @param {Object} updates - Updated fields
- * @returns {Promise<Object>} - Updated trainer
- */
-const updateTrainer = async (id, updates) => {
+const bookTrainer = async (username, trainerUsername, date, timeSlot) => {
   try {
-    return await Trainer.findByIdAndUpdate(id, updates, { new: true });
+    const trainer = await Trainer.findOne({ username: trainerUsername });
+    if (!trainer) throw new Error("Trainer not found");
+    const availability = trainer.availability.find(
+      (avail) => avail.date.toISOString().split("T")[0] === date
+    );
+    if (!availability) throw new Error("No availability for selected date");
+    const slot = availability.timeSlots.find(
+      (slot) => slot.startTime === timeSlot && !slot.isBooked
+    );
+    if (!slot) throw new Error("Time slot not available");
+    slot.isBooked = true;
+    slot.bookedBy = username;
+    await trainer.save();
+    const booking = new Booking({
+      username,
+      trainerId: trainer._id,
+      date: new Date(date),
+      timeSlot,
+      status: "pending",
+    });
+    return await booking.save();
   } catch (error) {
-    console.error("Error updating trainer:", error);
-    throw new Error("Failed to update trainer");
+    console.error("Error booking trainer:", error);
+    throw new Error("Failed to book trainer");
   }
 };
 
-/**
- * Delete a trainer by ID
- * @param {string} id - Trainer ID
- * @returns {Promise<Object>} - Deletion result
- */
-const deleteTrainer = async (id) => {
+const getUserBookings = async (username) => {
   try {
-    return await Trainer.findByIdAndDelete(id);
+    return await Booking.find({ username })
+      .populate("trainerId", "name specialty")
+      .lean();
   } catch (error) {
-    console.error("Error deleting trainer:", error);
-    throw new Error("Failed to delete trainer");
+    console.error("Error fetching bookings:", error);
+    throw new Error("Failed to fetch bookings");
+  }
+};
+
+const sendTrainerMessage = async (senderUsername, trainerUsername, content) => {
+  try {
+    const trainer = await Trainer.findOne({ username: trainerUsername });
+    if (!trainer) throw new Error("Trainer not found");
+    const message = new TrainerMessage({
+      senderUsername,
+      trainerUsername,
+      content,
+    });
+    return await message.save();
+  } catch (error) {
+    console.error("Error sending message:", error);
+    throw new Error("Failed to send message");
+  }
+};
+
+const getTrainerMessages = async (username, trainerUsername) => {
+  try {
+    const trainer = await Trainer.findOne({ username: trainerUsername });
+    if (!trainer) throw new Error("Trainer not found");
+
+    const messages = await TrainerMessage.find({
+      $or: [
+        { senderUsername: username, trainerUsername },
+        { senderUsername: trainerUsername, trainerUsername: username },
+      ],
+    }).lean();
+
+    // Ensure uniqueness by creating a Map with message IDs as keys
+    const uniqueMessages = Array.from(
+      new Map(messages.map((msg) => [msg._id.toString(), msg])).values()
+    );
+
+    return uniqueMessages;
+  } catch (error) {
+    console.error("Error fetching messages:", error);
+    throw new Error("Failed to fetch messages");
+  }
+};
+
+const getTrainerByUsername = async (username) => {
+  try {
+    const trainer = await Trainer.findOne({ username });
+    if (!trainer) throw new Error("Trainer not found");
+    return trainer;
+  } catch (error) {
+    console.error("Error fetching trainer:", error);
+    throw new Error("Failed to fetch trainer");
   }
 };
 
 module.exports = {
   getAllTrainers,
   createTrainer,
-  updateTrainer,
-  deleteTrainer,
+  bookTrainer,
+  getUserBookings,
+  sendTrainerMessage,
+  getTrainerMessages,
+  getTrainerByUsername,
 };
