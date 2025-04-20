@@ -9,6 +9,7 @@ import { useNavigate } from "react-router-dom";
 import { useUser } from "../../context/UserContext";
 import {registerLocale} from "react-datepicker";
 import {da} from "date-fns/locale";
+import { toZonedTime } from "date-fns-tz";
 registerLocale("da", da);
 
 export const MatchFinderAwaitingTab = () => {
@@ -34,7 +35,7 @@ export const MatchFinderAwaitingTab = () => {
         setLoading(false);
       }
     };
-    fetchMatches();
+    fetchMatches().then();
   }, [username]);
 
   if (loading) {
@@ -45,13 +46,24 @@ export const MatchFinderAwaitingTab = () => {
     return <div>{error}</div>;
   }
 
+  const safeFormatDate = (dateString: string, formatString: string): string => {
+    try {
+      const utcDate = new Date(dateString);
+      const zoned = toZonedTime(utcDate, "Europe/Copenhagen");
+
+      return format(zoned, formatString, { locale: da });
+    } catch {
+      return "Ugyldig dato";
+    }
+  };
+
   return (
     <>
       <Helmet>
         <title>Afventer</title>
       </Helmet>
 
-      <div className="text-sm">
+      <div className="text-sm ">
         {matches.length === 0 ? (
           <p>Ingen kampe afventer din bekræftelse.</p>
         ) : (
@@ -59,38 +71,33 @@ export const MatchFinderAwaitingTab = () => {
             <div
               onClick={() => navigate(`/makkerbørs/${match.id}`)}
               key={match.id}
-              className="border p-4 rounded-lg space-y-1.5 cursor-pointer hover:bg-gray-700 mb-5"
+              className="border border-yellow-500 rounded-lg p-4 space-y-1.5 cursor-pointer hover:bg-gray-700 mb-5"
             >
               <h1 className="font-semibold">
-                {format(new Date(match.startTime), "EEEE | dd. MMMM | HH:mm", { locale: da }).toUpperCase()} - {format(new Date(match.endTime), "HH:mm")}
+                {safeFormatDate(match.matchDateTime, "EEEE | dd. MMMM | HH:mm").toUpperCase()} - {safeFormatDate(match.endTime, "HH:mm")}
               </h1>
+
               <div className="flex justify-between border-b border-gray-600">
                 <p>{match.location}</p>
-                <p>
-                  {match.description.includes("Herre")
-                    ? "Herre"
-                    : match.description}
-                </p>
+                <p>{match.matchType}</p>
               </div>
+
               <div className="flex justify-between">
                 <p>Niveau {match.level}</p>
                 <div className="flex">
-                  {[
-                    ...Array(
-                      match.participants.length + match.reservedSpots.length
-                    ),
-                  ].map((_, i) => (
+                  {[...Array(match.participants.length + match.reservedSpots.length),].map((_, i) => (
                     <UserCircleIcon
                       key={`participant-${i}`}
                       className="h-5 text-cyan-500"
                     />
                   ))}
-                  {[
-                    ...Array(
-                      match.totalSpots -
-                        (match.participants.length + match.reservedSpots.length)
-                    ),
-                  ].map((_, i) => (
+                  {[...Array(match.joinRequests.length),].map((_, i) => (
+                      <UserCircleIcon
+                          key={`empty-${i}`}
+                          className="h-5 text-yellow-500"
+                      />
+                  ))}
+                  {[...Array(match.totalSpots - (match.participants.length + match.reservedSpots.length + match.joinRequests.length)),].map((_, i) => (
                     <UserCircleIcon
                       key={`empty-${i}`}
                       className="h-5 text-gray-500"

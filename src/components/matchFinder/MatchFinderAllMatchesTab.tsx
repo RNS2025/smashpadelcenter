@@ -36,7 +36,7 @@ export const MatchFinderAllMatchesTab = () => {
   const safeFormatDate = (dateString: string, formatString: string): string => {
     try {
       const utcDate = new Date(dateString);
-      const zoned = toZonedTime(utcDate, "UTC");
+      const zoned = toZonedTime(utcDate, "Europe/Copenhagen");
 
       return format(zoned, formatString, { locale: da });
     } catch {
@@ -66,11 +66,7 @@ export const MatchFinderAllMatchesTab = () => {
             className="border p-4 rounded-lg space-y-1.5 hover:bg-gray-700 mb-5"
           >
             <h1 className="font-semibold">
-              {safeFormatDate(
-                match.matchDateTime,
-                "EEEE | dd. MMMM | HH:mm"
-              ).toUpperCase()}{" "}
-              - {match.endTime}
+              {safeFormatDate(match.matchDateTime, "EEEE | dd. MMMM | HH:mm").toUpperCase()} - {safeFormatDate(match.endTime, "HH:mm")}
             </h1>
             <div className="flex justify-between border-b border-gray-600">
               <p>{match.location}</p>
@@ -78,30 +74,24 @@ export const MatchFinderAllMatchesTab = () => {
             </div>
             <div className="flex justify-between">
               <p>Niveau {match.level}</p>
-
-              {/*//TODO: Forklar mig hvad reservedSpots skal bruges til*/}
               <div className="flex">
-                {[
-                  ...Array(
-                    match.participants.length + match.reservedSpots.length
-                  ),
-                ].map((_, i) => (
-                  <UserCircleIcon
-                    key={`participant-${i}`}
-                    className="h-5 text-cyan-500"
-                  />
+                {[...Array(match.participants.length + match.reservedSpots.length),].map((_, i) => (
+                    <UserCircleIcon
+                        key={`participant-${i}`}
+                        className="h-5 text-cyan-500"
+                    />
                 ))}
-
-                {[
-                  ...Array(
-                    match.totalSpots -
-                      (match.participants.length + match.reservedSpots.length)
-                  ),
-                ].map((_, i) => (
-                  <UserCircleIcon
-                    key={`empty-${i}`}
-                    className="h-5 text-gray-500"
-                  />
+                {[...Array(match.joinRequests.length),].map((_, i) => (
+                    <UserCircleIcon
+                        key={`empty-${i}`}
+                        className="h-5 text-yellow-500"
+                    />
+                ))}
+                {[...Array(match.totalSpots - (match.participants.length + match.reservedSpots.length + match.joinRequests.length)),].map((_, i) => (
+                    <UserCircleIcon
+                        key={`empty-${i}`}
+                        className="h-5 text-gray-500"
+                    />
                 ))}
               </div>
             </div>

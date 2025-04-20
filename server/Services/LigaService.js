@@ -46,10 +46,8 @@ const getLeaguesBasicInfo = async (organisationId) => {
 // Method to get teams for a specific league by ID
 const getTeamsByLeagueId = async (organisationId, leagueId) => {
   const data = await fetchOrganisationData(organisationId);
-  console.log("Fetched data:", data);
 
   const league = data.payload.find((league) => league.id === Number(leagueId));
-  console.log("Matched league:", league);
 
   if (!league) {
     return [];
@@ -100,24 +98,21 @@ const getTeamStandings = async (teamId) => {
     `https://rankedin.com/team/teamsstandingsjson?poolid=${poolId}&language=en`
   );
 
-  const data = response.data;
-  return data;
+  return response.data;
 };
 
 const getTeamMatches = async (teamId) => {
   const response = await axios.get(
     `${API_BASE_URL}/teamleague/GetTeamMatchesAsync?teamid=${teamId}&language=en`
   );
-  const data = response.data;
-  return data;
+  return response.data;
 };
 
 const getMatchDetails = async (matchId) => {
   const response = await axios.get(
     `${API_BASE_URL}/teamleague/GetTeamLeagueTeamsMatchesAsync?teamMatchId=${matchId}&language=en`
   );
-  const data = response.data;
-  return data;
+  return response.data;
 };
 
 module.exports = {

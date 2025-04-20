@@ -127,9 +127,11 @@ const padelMatchService = {
     if (!match) throw new Error("Match not found");
     return await PadelMatch.find(); // Return updated list
   },
+
+
   getMatchesByPlayer: async (username) => {
     const matches = await PadelMatch.find({
-      $or: [{ participants: username }, { joinRequests: username }],
+      $or: [{ participants: username }],
     });
     return matches.map((match) => ({
       ...match.toObject(),

@@ -10,7 +10,7 @@ export const CreateMatchPage = () => {
       </Helmet>
 
       <Animation>
-        <div className="mx-20">
+        <div className="mx-10 max-sm:mx-2 my-10 max-sm:my-2">
           <CreateMatchForm />
         </div>
       </Animation>

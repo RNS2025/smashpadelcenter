@@ -24,7 +24,6 @@ export const MatchFinderMyMatchesTab = () => {
     const fetchMatches = async () => {
       try {
         if (username) {
-          // Use getMatchesByUser to directly fetch user-specific matches from the server
           const data = await communityApi.getMatchesByUser(username);
           setMatches(data);
         }
@@ -49,7 +48,7 @@ export const MatchFinderMyMatchesTab = () => {
   const safeFormatDate = (dateString: string, formatString: string): string => {
     try {
       const utcDate = new Date(dateString);
-      const zoned = toZonedTime(utcDate, "UTC");
+      const zoned = toZonedTime(utcDate, "Europe/Copenhagen");
 
       return format(zoned, formatString, { locale: da });
     } catch {
@@ -68,19 +67,17 @@ export const MatchFinderMyMatchesTab = () => {
           <div
             onClick={() => navigate(`/makkerbørs/${match.id}`)}
             key={match.id}
-            className="border p-4 rounded-lg space-y-1.5 hover:bg-gray-700 mb-5"
+            className="border border-green-500 p-4 rounded-lg space-y-1.5 hover:bg-gray-700 mb-5"
           >
             <div className="flex justify-between">
               <h1 className="font-semibold">
-                {safeFormatDate(
-                  match.matchDateTime,
-                  "EEEE | dd. MMMM | HH:mm"
-                ).toUpperCase()}{" "}
-                - {match.endTime}
+                {safeFormatDate(match.matchDateTime, "EEEE | dd. MMMM | HH:mm").toUpperCase()} - {safeFormatDate(match.endTime, "HH:mm")}
               </h1>
+              {match.joinRequests.length > 0 && username === match.username && (
               <h1 className="bg-red-500 text-white rounded-full px-1.5 py-0.5 text-xs animate-pulse">
                 {match.joinRequests.length}
               </h1>
+                )}
             </div>
 
             <div className="flex justify-between border-b border-gray-600">
@@ -91,31 +88,23 @@ export const MatchFinderMyMatchesTab = () => {
               <p>Niveau {match.level}</p>
 
               <div className="flex">
-                {[
-                  ...Array(
-                    match.participants.length +
-                      match.reservedSpots.length +
-                      match.joinRequests.length
-                  ),
-                ].map((_, i) => (
-                  <UserCircleIcon
-                    key={`participant-${i}`}
-                    className="h-5 text-cyan-500"
-                  />
+                {[...Array(match.participants.length + match.reservedSpots.length),].map((_, i) => (
+                    <UserCircleIcon
+                        key={`participant-${i}`}
+                        className="h-5 text-cyan-500"
+                    />
                 ))}
-
-                {[
-                  ...Array(
-                    match.totalSpots -
-                      (match.participants.length +
-                        match.reservedSpots.length +
-                        match.joinRequests.length)
-                  ),
-                ].map((_, i) => (
-                  <UserCircleIcon
-                    key={`empty-${i}`}
-                    className="h-5 text-gray-500"
-                  />
+                {[...Array(match.joinRequests.length),].map((_, i) => (
+                    <UserCircleIcon
+                        key={`empty-${i}`}
+                        className="h-5 text-yellow-500"
+                    />
+                ))}
+                {[...Array(match.totalSpots - (match.participants.length + match.reservedSpots.length + match.joinRequests.length)),].map((_, i) => (
+                    <UserCircleIcon
+                        key={`empty-${i}`}
+                        className="h-5 text-gray-500"
+                    />
                 ))}
               </div>
             </div>

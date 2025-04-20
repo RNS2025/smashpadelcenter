@@ -214,6 +214,8 @@ export const ViewMatchPage = () => {
       match.joinRequests.length >=
     3;
 
+  const totalLength = safeFormatDate(match.matchDateTime, "EEEE | dd. MMMM | HH:mm").length + safeFormatDate(match.endTime, "HH:mm").length;
+
   return (
     <>
       <Helmet>
@@ -224,12 +226,8 @@ export const ViewMatchPage = () => {
         <HomeBar />
 
         <div className="mx-4 my-10 space-y-4 text-sm">
-          <h1 className="text-xl justify-self-center font-semibold">
-            {safeFormatDate(
-              match.matchDateTime,
-              "EEEE | dd. MMMM | HH:mm"
-            ).toUpperCase()}{" "}
-            - {match.endTime}
+          <h1 className={`justify-self-center font-semibold ${totalLength > 31 ? "text-lg" : totalLength > 37 ? "text-md" : "text-xl"}`}>
+            {safeFormatDate(match.matchDateTime, "EEEE | dd. MMMM | HH:mm").toUpperCase()} - {safeFormatDate(match.endTime, "HH:mm")}
           </h1>
 
           {!socketConnected && (

@@ -46,7 +46,6 @@ const communityApi = {
 
   getMatchById: async (matchId: string): Promise<PadelMatch> => {
     const response = await api.get(`/matches/${matchId}`);
-    console.log(matchId);
     return response.data;
   },
   getMatchesByUser: async (username: string): Promise<PadelMatch[]> => {
