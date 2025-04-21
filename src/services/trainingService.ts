@@ -1,5 +1,10 @@
 import api from "../api/api";
 import { Trainer } from "../types/Trainer";
+import { io } from "socket.io-client";
+
+const socket = io("http://localhost:3001", {
+  path: "/socket.io/",
+});
 
 export const getAllTrainers = async (): Promise<Trainer[]> => {
   const response = await api.get<Trainer[]>("/trainers");
@@ -11,43 +16,60 @@ export const createTrainer = async (trainer: Trainer): Promise<Trainer> => {
   return response.data;
 };
 
-export const bookTrainer = async (
+export const bookTrainer = (
   username: string,
-  trainerId: string,
+  trainerUsername: string,
   date: string,
   timeSlot: string
 ): Promise<any> => {
-  const response = await api.post("/book", {
-    username,
-    trainerId,
-    date,
-    timeSlot,
+  return new Promise((resolve, reject) => {
+    socket.emit("bookTrainer", { username, trainerUsername, date, timeSlot });
+    socket.on("newBooking", (booking) => resolve(booking));
+    socket.on("error", ({ message }) => reject(new Error(message)));
   });
-  return response.data;
 };
 
-export const getUserBookings = async (username: string): Promise<any[]> => {
-  const response = await api.get(`/bookings/${username}`);
-  return response.data;
-};
-
-export const sendTrainerMessage = async (
+export const sendTrainerMessage = (
   senderUsername: string,
-  trainerId: string,
+  trainerUsername: string,
   content: string
 ): Promise<any> => {
-  const response = await api.post("/trainer/message", {
-    senderUsername,
-    trainerId,
-    content,
+  return new Promise((resolve, reject) => {
+    socket.emit("sendTrainerMessage", {
+      senderUsername,
+      trainerUsername,
+      content,
+    });
+    socket.on("newTrainerMessage", (message) => resolve(message));
+    socket.on("error", ({ message }) => reject(new Error(message)));
   });
-  return response.data;
 };
 
-export const getTrainerMessages = async (
+export const getUserBookings = (username: string): Promise<any[]> => {
+  return new Promise((resolve, reject) => {
+    socket.emit("fetchTrainerData", { username });
+    socket.on("trainerData", ({ bookings }) => resolve(bookings));
+    socket.on("error", ({ message }) => reject(new Error(message)));
+  });
+};
+
+export const getTrainerMessages = (
   username: string,
-  trainerId: string
+  trainerUsername: string
 ): Promise<any[]> => {
-  const response = await api.get(`/messages/${username}/${trainerId}`);
-  return response.data;
+  return new Promise((resolve, reject) => {
+    socket.emit("fetchTrainerData", { username });
+    socket.on("trainerData", ({ messages }) =>
+      resolve(
+        messages.filter(
+          (msg: any) =>
+            (msg.senderUsername === username &&
+              msg.trainerUsername === trainerUsername) ||
+            (msg.senderUsername === trainerUsername &&
+              msg.trainerUsername === username)
+        )
+      )
+    );
+    socket.on("error", ({ message }) => reject(new Error(message)));
+  });
 };

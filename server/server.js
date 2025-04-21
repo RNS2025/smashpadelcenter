@@ -21,10 +21,10 @@ const mongoose = require("./config/database");
 const createAdmin = require("./scripts/createAdmin");
 const createTenUsers = require("./scripts/createTenUsers");
 const { updateAllData } = require("./scripts/dataScheduler");
-const { Server } = require("socket.io");
 const path = require("path");
 const http = require("http");
-const trainerService = require("./Services/trainerService");
+const { setupSocketIO } = require("./WebSockets");
+const { setIO } = require("./Services/trainerService");
 require("dotenv").config();
 
 const app = express();
@@ -36,233 +36,9 @@ app.use(express.json());
 // Create HTTP server
 const server = http.createServer(app);
 
-// Initialize Socket.IO with the HTTP server
-const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:5173", // Frontend URL
-    methods: ["GET", "POST"],
-    credentials: true,
-  },
-  path: "/socket.io/",
-});
-
-// Track online users
-const onlineUsers = new Map();
-
-io.on("connection", (socket) => {
-  console.log("Client connected:", socket.id);
-
-  socket.on("join", async (username) => {
-    try {
-      if (!username || typeof username !== "string") {
-        console.error(`Invalid username received in join event: ${username}`);
-        return;
-      }
-
-      // Fetch user by username
-      const User = require("./models/user");
-      const user = await User.findOne({ username });
-      if (!user) {
-        console.error(`User not found for username: ${username}`);
-        return;
-      }
-      const userId = user._id.toString();
-
-      socket.join(userId);
-      onlineUsers.set(username, socket.id);
-
-      // Notify friends of online status
-      const friends = await require("./models/Friend").find({
-        $or: [{ userId }, { friendId: userId }],
-        status: "accepted",
-      });
-
-      friends.forEach((friend) => {
-        const friendId =
-          friend.userId.toString() === userId
-            ? friend.friendId.toString()
-            : friend.userId.toString();
-        io.to(friendId).emit("userStatus", { userId, status: "online" });
-      });
-    } catch (error) {
-      console.error("Error in join event:", error);
-    }
-  });
-
-  socket.on(
-    "sendMessage",
-    async ({ senderUsername, receiverUsername, content }) => {
-      try {
-        if (
-          !senderUsername ||
-          !receiverUsername ||
-          typeof senderUsername !== "string" ||
-          typeof receiverUsername !== "string"
-        ) {
-          console.error(
-            `Invalid usernames in sendMessage: senderUsername=${senderUsername}, receiverUsername=${receiverUsername}`
-          );
-          return;
-        }
-
-        // Fetch sender and receiver by username
-        const User = require("./models/user");
-        const sender = await User.findOne({ username: senderUsername });
-        const receiver = await User.findOne({ username: receiverUsername });
-        if (!sender || !receiver) {
-          console.error(
-            `User not found: senderUsername=${senderUsername}, receiverUsername=${receiverUsername}`
-          );
-          return;
-        }
-        const senderId = sender._id.toString();
-        const receiverId = receiver._id.toString();
-
-        const message = await require("./models/Message").create({
-          senderId,
-          receiverId,
-          content,
-          isRead: false,
-        });
-
-        const populatedMessage = await require("./models/Message")
-          .findById(message._id)
-          .populate("senderId", "username")
-          .populate("receiverId", "username");
-
-        io.to(senderId).to(receiverId).emit("newMessage", populatedMessage);
-      } catch (error) {
-        console.error("Fejl ved afsendelse af besked:", error);
-      }
-    }
-  );
-
-  socket.on("joinMatchRoom", (matchId) => {
-    socket.join(matchId);
-    console.log(`Client ${socket.id} joined room ${matchId}`);
-  });
-
-  socket.on("joinTrainerRoom", async ({ username, trainerUsername }) => {
-    try {
-      const trainer = await trainerService.getTrainerByUsername(
-        trainerUsername
-      );
-      if (!trainer) {
-        socket.emit("error", { message: "Trainer not found" });
-        return;
-      }
-      socket.join(`trainer_${trainerUsername}`);
-      if (trainer.username === username) {
-        socket.join(`trainer_${trainerUsername}_user`);
-      }
-    } catch (error) {
-      console.error("Error joining trainer room:", error);
-      socket.emit("error", { message: "Failed to join trainer room" });
-    }
-  });
-
-  socket.on(
-    "sendTrainerMessage",
-    async ({ senderUsername, trainerUsername, content }) => {
-      try {
-        const trainer = await trainerService.getTrainerByUsername(
-          trainerUsername
-        );
-        if (!trainer) {
-          socket.emit("error", { message: "Trainer not found" });
-          return;
-        }
-        const message = await trainerService.sendTrainerMessage(
-          senderUsername,
-          trainerUsername,
-          content
-        );
-        io.to(`trainer_${trainerUsername}`).emit("newTrainerMessage", message);
-        io.to(`trainer_${trainerUsername}_user`).emit(
-          "newTrainerMessage",
-          message
-        );
-      } catch (error) {
-        console.error("Error sending message:", error);
-        socket.emit("error", { message: "Failed to send message" });
-      }
-    }
-  );
-
-  socket.on(
-    "bookTrainer",
-    async ({ username, trainerUsername, date, timeSlot }) => {
-      try {
-        const trainer = await trainerService.getTrainerByUsername(
-          trainerUsername
-        );
-        if (!trainer) {
-          socket.emit("error", { message: "Trainer not found" });
-          return;
-        }
-        const booking = await trainerService.bookTrainer(
-          username,
-          trainerUsername,
-          date,
-          timeSlot
-        );
-        io.to(`trainer_${trainerUsername}`).emit("newBooking", booking);
-        if (trainer.username) {
-          io.to(`trainer_${trainerUsername}_user`).emit("newBooking", booking);
-        }
-      } catch (error) {
-        console.error("Error booking trainer:", error);
-        socket.emit("error", { message: "Failed to book trainer" });
-      }
-    }
-  );
-
-  socket.on("disconnect", async () => {
-    console.log("Client disconnected:", socket.id);
-    let disconnectedUsername;
-    for (let [username, socketId] of onlineUsers.entries()) {
-      if (socketId === socket.id) {
-        disconnectedUsername = username;
-        onlineUsers.delete(username);
-        break;
-      }
-    }
-
-    if (disconnectedUsername) {
-      try {
-        // Fetch user by username
-        const User = require("./models/user");
-        const user = await User.findOne({ username: disconnectedUsername });
-        if (!user) {
-          console.error(`User not found for username: ${disconnectedUsername}`);
-          return;
-        }
-        const userId = user._id.toString();
-
-        const friends = await require("./models/Friend").find({
-          $or: [{ userId }, { friendId: userId }],
-          status: "accepted",
-        });
-
-        friends.forEach((friend) => {
-          const friendId =
-            friend.userId.toString() === userId
-              ? friend.friendId.toString()
-              : friend.userId.toString();
-          io.to(friendId).emit("userStatus", {
-            userId,
-            status: "offline",
-          });
-        });
-      } catch (error) {
-        console.error("Error in disconnect event:", error);
-      }
-    }
-  });
-});
-
-// Middleware
-app.use(express.json());
+// Setup Socket.IO with the HTTP server
+const io = setupSocketIO(server);
+setIO(io);
 
 // CORS configuration
 app.use(
@@ -326,7 +102,7 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Internal Server Error" });
 });
 
-// Make io available
+// Make io available to routes
 app.set("socketio", io);
 
 // Health check

@@ -1,14 +1,13 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Helmet } from "react-helmet-async";
 import { Trainer } from "../../types/Trainer";
-import { getAllTrainers, createTrainer } from "../../services/trainingService";
 import { useUser } from "../../context/UserContext";
 import HomeBar from "../../components/misc/HomeBar";
 import Animation from "../../components/misc/Animation";
 import HomeScreenCard from "../../components/HomeScreen/HomeScreenCard";
 import { UserIcon, AcademicCapIcon } from "@heroicons/react/24/outline";
-import io from "socket.io-client";
-import api from "../../api/api";
+import io, { Socket } from "socket.io-client";
+import { createTrainer } from "../../services/trainingService";
 
 const BookTraining: React.FC = () => {
   const [trainers, setTrainers] = useState<Trainer[]>([]);
@@ -20,7 +19,9 @@ const BookTraining: React.FC = () => {
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const socketRef = useRef<any>(null);
+  const socketRef = useRef<Socket | null>(null);
+  const messageContainerRef = useRef<HTMLDivElement>(null);
+  const processedMessageIds = useRef<Set<string>>(new Set());
 
   const [newTrainer, setNewTrainer] = useState<Partial<Trainer>>({
     username: "",
@@ -34,144 +35,139 @@ const BookTraining: React.FC = () => {
   useEffect(() => {
     const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3001";
     socketRef.current = io(apiUrl, {
-      withCredentials: true,
+      path: "/socket.io/",
+      auth: { username },
     });
 
-    if (selectedTrainer && username) {
-      // Clear existing messages when changing trainers
-      setMessages([]);
+    socketRef.current.on("connect", () => {
+      console.log("Connected to Socket.IO server");
+      socketRef.current?.emit("fetchTrainers");
+    });
 
-      // Join room only once with a unique identifier
+    socketRef.current.on("trainersData", (trainers: Trainer[]) => {
+      const uniqueTrainers = Array.from(
+        new Map(trainers.map((trainer) => [trainer._id, trainer])).values()
+      );
+      setTrainers(uniqueTrainers);
+    });
+
+    socketRef.current.on("trainerMessagesData", (messages: any[]) => {
+      setMessages((prev) => {
+        const newMessages = messages
+          .filter((msg) => !processedMessageIds.current.has(msg._id))
+          .sort(
+            (a, b) =>
+              new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          );
+        newMessages.forEach((msg) => processedMessageIds.current.add(msg._id));
+        return [...prev, ...newMessages];
+      });
+    });
+
+    socketRef.current.on("newTrainerMessage", (message: any) => {
+      if (!processedMessageIds.current.has(message._id)) {
+        processedMessageIds.current.add(message._id);
+        setMessages((prev) => {
+          const newMessages = [...prev, message].sort(
+            (a, b) =>
+              new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+          );
+          return newMessages;
+        });
+      }
+    });
+
+    socketRef.current.on("trainerUpdated", (updatedTrainer: Trainer) => {
+      setTrainers((prev) =>
+        prev.map((trainer) =>
+          trainer._id === updatedTrainer._id ? updatedTrainer : trainer
+        )
+      );
+      if (selectedTrainer && selectedTrainer._id === updatedTrainer._id) {
+        setSelectedTrainer(updatedTrainer);
+      }
+    });
+
+    socketRef.current.on("error", (error: { message: string }) => {
+      setError(error.message);
+    });
+
+    socketRef.current.emit("fetchTrainers");
+
+    return () => {
+      socketRef.current?.disconnect();
+    };
+  }, [username]);
+
+  useEffect(() => {
+    if (selectedTrainer && username && socketRef.current) {
+      processedMessageIds.current.clear();
+      setMessages([]);
       socketRef.current.emit("joinTrainerRoom", {
         username,
         trainerUsername: selectedTrainer.username,
       });
-
-      // Clean up ALL previous event listeners
-      socketRef.current.off("newTrainerMessage");
-
-      // Use a messageIds Set to track already shown messages
-      const processedMessageIds = new Set();
-
-      socketRef.current.on("newTrainerMessage", (message: any) => {
-        // Skip if we've already processed this message ID
-        if (processedMessageIds.has(message._id)) return;
-
-        // Mark as processed
-        processedMessageIds.add(message._id);
-
-        setMessages((prev) => {
-          // Also check if message already exists in current state
-          if (prev.some((msg) => msg._id === message._id)) return prev;
-
-          return [...prev, message];
-        });
+      socketRef.current.emit("fetchTrainerMessages", {
+        username,
+        trainerUsername: selectedTrainer.username,
       });
-
-      socketRef.current.on("error", (error: { message: string }) => {
-        setError(error.message);
-      });
-
-      fetchMessages();
     }
-
-    return () => {
-      if (socketRef.current) {
-        socketRef.current.off("newTrainerMessage");
-        socketRef.current.disconnect();
-      }
-    };
   }, [selectedTrainer, username]);
 
-  const fetchTrainers = async () => {
-    try {
-      const data = await getAllTrainers();
-      console.log("Fetched trainers:", data);
-      const uniqueTrainers = Array.from(
-        new Map(data.map((trainer) => [trainer._id, trainer])).values()
-      );
-      setTrainers(uniqueTrainers);
-    } catch (error) {
-      console.error("Failed to fetch trainers:", error);
-      setError("Failed to load trainers. Please try again.");
-    }
-  };
-
-  const fetchMessages = async () => {
-    if (!selectedTrainer || !username) return;
-    try {
-      const response = await api.get(
-        `/messages/${username}/${selectedTrainer.username}`
-      );
-      console.log("Fetched messages:", response.data);
-      setMessages(response.data);
-    } catch (error: any) {
-      console.error("Failed to fetch messages:", error);
-      const errorMessage =
-        error.response?.data?.error ||
-        "Failed to load messages. Please try again.";
-      setError(errorMessage);
-      console.log("Error details:", errorMessage);
-    }
-  };
-
   useEffect(() => {
-    fetchTrainers();
-  }, []);
+    if (messageContainerRef.current) {
+      messageContainerRef.current.scrollTop =
+        messageContainerRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   const handleCardClick = (trainer: Trainer) => {
     if (!Array.isArray(trainer.availability)) {
       trainer.availability = [];
     }
     setSelectedTrainer(trainer);
+    setSelectedDate("");
+    setSelectedTimeSlot("");
     setError(null);
   };
 
-  const handleBookTrainer = async () => {
+  const handleBookTrainer = () => {
     if (!selectedDate || !selectedTimeSlot || !selectedTrainer || !username) {
       setError("Please select a date and time slot.");
       return;
     }
 
-    try {
-      socketRef.current.emit("bookTrainer", {
-        username,
-        trainerUsername: selectedTrainer.username,
-        date: selectedDate,
-        timeSlot: selectedTimeSlot,
-      });
+    socketRef.current?.emit("bookTrainer", {
+      username,
+      trainerUsername: selectedTrainer.username,
+      date: selectedDate,
+      timeSlot: selectedTimeSlot,
+    });
+
+    socketRef.current?.once("newBooking", () => {
       alert("Booking successful!");
       setSelectedDate("");
       setSelectedTimeSlot("");
-    } catch (error) {
-      console.error("Failed to book trainer:", error);
-      setError("Failed to book trainer. Please try again.");
-    }
+    });
+
+    socketRef.current?.once("error", (error: { message: string }) => {
+      setError(error.message);
+    });
   };
 
-  const handleSendMessage = async () => {
+  const handleSendMessage = () => {
     if (!newMessage.trim() || !selectedTrainer || !username) {
       setError("Please enter a message.");
       return;
     }
 
-    try {
-      // Don't add messages locally, only emit to server and let the socket event add it
-      // This prevents any possibility of duplication
+    socketRef.current?.emit("sendTrainerMessage", {
+      senderUsername: username,
+      trainerUsername: selectedTrainer.username,
+      content: newMessage,
+    });
 
-      // Emit the message to the socket
-      socketRef.current.emit("sendTrainerMessage", {
-        senderUsername: username,
-        trainerUsername: selectedTrainer.username,
-        content: newMessage,
-      });
-
-      // Clear input field
-      setNewMessage("");
-    } catch (error) {
-      console.error("Failed to send message:", error);
-      setError("Failed to send message. Please try again.");
-    }
+    setNewMessage("");
   };
 
   const handleInputChange = (
@@ -197,7 +193,7 @@ const BookTraining: React.FC = () => {
         availability: [],
       });
       setShowAdminForm(false);
-      await fetchTrainers();
+      socketRef.current?.emit("fetchTrainers");
     } catch (err: any) {
       console.error("Failed to create trainer:", err);
       setError(err.message || "Failed to create trainer. Please try again.");
@@ -212,7 +208,7 @@ const BookTraining: React.FC = () => {
       <Animation>
         <HomeBar backPage="/hjem" />
         <div className="flex flex-col items-center justify-center min-h-screen -mt-20 overflow-y-hidden">
-          <h1 className="text-3xl font-bold text-center mb-8">
+          <h1 className="text-3xl font-bold text-black text-center mb-8">
             Book a Training Session
           </h1>
 
@@ -277,24 +273,24 @@ const BookTraining: React.FC = () => {
                   className="w-24 h-24 rounded-full object-cover mr-4"
                 />
                 <div>
-                  <h2 className="text-2xl font-semibold">
+                  <h2 className="text-2xl font-semibold text-black">
                     {selectedTrainer.name}
                   </h2>
-                  <p className="text-gray-600">{selectedTrainer.specialty}</p>
+                  <p className="text-black">{selectedTrainer.specialty}</p>
                 </div>
               </div>
 
               <div className="mt-4">
-                <p className="text-gray-700">
+                <p className="text-black">
                   {selectedTrainer.bio || "No bio available."}
                 </p>
 
                 <div className="mt-4">
-                  <h3 className="font-medium">Book a Session</h3>
+                  <h3 className="font-medium text-black">Book a Session</h3>
                   <select
                     value={selectedDate}
                     onChange={(e) => setSelectedDate(e.target.value)}
-                    className="border p-2 rounded mt-2 w-full"
+                    className="border p-2 rounded mt-2 w-full text-black"
                   >
                     <option value="">Select Date</option>
                     {Array.isArray(selectedTrainer.availability) &&
@@ -316,7 +312,7 @@ const BookTraining: React.FC = () => {
                     <select
                       value={selectedTimeSlot}
                       onChange={(e) => setSelectedTimeSlot(e.target.value)}
-                      className="border p-2 rounded mt-2 w-full"
+                      className="border p-2 rounded mt-2 w-full text-black"
                     >
                       <option value="">Select Time Slot</option>
                       {(() => {
@@ -357,28 +353,38 @@ const BookTraining: React.FC = () => {
 
                 <div className="mt-4">
                   <h3 className="font-medium text-black">Messages</h3>
-                  <div className="h-40 overflow-y-auto border p-2 rounded mt-2">
-                    {messages.map((msg, index) => (
-                      <div
-                        key={`${msg._id || "msg"}-${index}`} // Add index as fallback to ensure uniqueness
-                        className={`mb-2 ${
-                          msg.senderUsername === username
-                            ? "text-right"
-                            : "text-left"
-                        }`}
-                      >
-                        <p className="inline-block bg-gray-100 px-2 py-1 rounded">
-                          {msg.content}
-                        </p>
-                      </div>
-                    ))}
+                  <div
+                    className="h-40 overflow-y-auto border p-2 rounded mt-2"
+                    ref={messageContainerRef}
+                  >
+                    {messages.length > 0 ? (
+                      messages.map((msg) => (
+                        <div
+                          key={msg._id}
+                          className={`mb-2 ${
+                            msg.senderUsername === username
+                              ? "text-right"
+                              : "text-left"
+                          }`}
+                        >
+                          <p className="inline-block bg-gray-100 px-2 py-1 rounded text-black">
+                            {msg.content}
+                          </p>
+                          <p className="text-xs text-black">
+                            {new Date(msg.createdAt).toLocaleString()}
+                          </p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-black">No messages yet.</p>
+                    )}
                   </div>
-                  <div className="flex mt-2 text-black">
+                  <div className="flex mt-2">
                     <input
                       type="text"
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
-                      className="border p-2 rounded flex-1"
+                      className="border p-2 rounded flex-1 text-black"
                       placeholder="Type a message..."
                     />
                     <button
@@ -392,7 +398,7 @@ const BookTraining: React.FC = () => {
                 </div>
 
                 <button
-                  className="bg-gray-300 text-gray-800 px-4 py-2 rounded mt-4 hover:bg-gray-400"
+                  className="bg-gray-300 text-black px-4 py-2 rounded mt-4 hover:bg-gray-400"
                   onClick={() => setSelectedTrainer(null)}
                 >
                   Back to Trainers
@@ -403,7 +409,7 @@ const BookTraining: React.FC = () => {
 
           {role === "admin" && showAdminForm && (
             <div className="w-full max-w-2xl bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-2xl font-semibold mb-4 text-black">
+              <h2 className="text-2xl font-semibold text-black mb-4">
                 Add New Trainer
               </h2>
               <div className="grid grid-cols-1 gap-4">
@@ -447,7 +453,7 @@ const BookTraining: React.FC = () => {
                 <div className="flex justify-between mt-2">
                   <button
                     onClick={() => setShowAdminForm(false)}
-                    className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400"
+                    className="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400"
                   >
                     Cancel
                   </button>

@@ -8,8 +8,7 @@ import HomeBar from "../../../components/misc/HomeBar";
 import Animation from "../../../components/misc/Animation";
 import { friendService, Friend } from "../../../services/friendService";
 import { MessageService, Message } from "../../../services/messageService";
-import { getUserBookings } from "../../../services/trainingService";
-import api from "../../../api/api";
+import io, { Socket } from "socket.io-client";
 
 // Import tab components
 import OverviewTab from "./tabs/OverviewTab";
@@ -48,6 +47,7 @@ const ProfilePage: React.FC = () => {
   );
   const [newTimeSlot, setNewTimeSlot] = useState<string>("");
   const [trainerBookings, setTrainerBookings] = useState<any[]>([]);
+  const [trainerAvailability, setTrainerAvailability] = useState<any[]>([]);
   const [loadingTrainerData, setLoadingTrainerData] = useState<boolean>(false);
   const navigate = useNavigate();
 
@@ -69,31 +69,67 @@ const ProfilePage: React.FC = () => {
   const [onlineStatus, setOnlineStatus] = useState<{
     [userId: string]: "online" | "offline";
   }>({});
+  const [socket, setSocket] = useState<Socket | null>(null);
 
+  // Initialize Socket.IO client
   useEffect(() => {
-    if (profile?.role === "trainer" && activeTab === "trainer" && username) {
-      const fetchTrainerData = async () => {
-        try {
-          setLoadingTrainerData(true);
-          const response = await api.get(`/trainer-messages/${username}`);
-          setTrainerMessages(response.data);
-          const trainerResponse = await api.get(
-            `/trainers/by-username/${username}`
-          );
-          const trainerData = trainerResponse.data;
-          const bookingsResponse = await api.get(`/bookings/${username}`);
-          setTrainerBookings(bookingsResponse.data);
-        } catch (error) {
-          console.error("Error fetching trainer data:", error);
-          setErrorMessage("Could not load trainer data");
-        } finally {
+    if (username) {
+      const socketInstance = io("http://localhost:3001", {
+        path: "/socket.io/",
+        auth: { username },
+      });
+
+      socketInstance.on("connect", () => {
+        console.log("Connected to Socket.IO server");
+        socketInstance.emit("join", username);
+      });
+
+      socketInstance.on("newTrainerMessage", (message) => {
+        setTrainerMessages((prev) => [...prev, message]);
+      });
+
+      socketInstance.on("newBooking", (booking) => {
+        setTrainerBookings((prev) => [...prev, booking]);
+        setBookings((prev) => [...prev, booking]);
+      });
+
+      socketInstance.on("updatedAvailability", (availability) => {
+        setTrainerAvailability(availability);
+      });
+
+      socketInstance.on(
+        "trainerData",
+        ({ messages, bookings, availability }) => {
+          setTrainerMessages(messages);
+          setTrainerBookings(bookings);
+          setTrainerAvailability(availability);
           setLoadingTrainerData(false);
         }
-      };
+      );
 
-      fetchTrainerData();
+      socketInstance.on("error", ({ message }) => {
+        setErrorMessage(message);
+      });
+
+      setSocket(socketInstance);
+
+      return () => {
+        socketInstance.disconnect();
+      };
     }
-  }, [username, profile, activeTab]);
+  }, [username]);
+
+  useEffect(() => {
+    if (
+      profile?.role === "trainer" &&
+      activeTab === "trainer" &&
+      username &&
+      socket
+    ) {
+      setLoadingTrainerData(true);
+      socket.emit("fetchTrainerData", { username });
+    }
+  }, [username, profile, activeTab, socket]);
 
   useEffect(() => {
     if (username) {
@@ -151,33 +187,17 @@ const ProfilePage: React.FC = () => {
 
       return () => service.disconnect();
     }
-
-    const fetchBookings = async () => {
-      try {
-        if (username) {
-          const userBookings = await getUserBookings(username);
-          setBookings(userBookings);
-        }
-      } catch (error) {
-        console.error("Error fetching bookings:", error);
-      }
-    };
-
-    fetchBookings();
   }, [username, profile]);
 
   useEffect(() => {
-    // Don't do anything while auth is loading
     if (authLoading) return;
 
     const fetchData = async () => {
       try {
         setLoading(true);
 
-        // Add a small delay to ensure auth state is properly initialized
         await new Promise((resolve) => setTimeout(resolve, 100));
 
-        // Only proceed with data fetching if we have a username
         if (!username) {
           console.log("No username available, waiting...");
           return;
@@ -218,7 +238,6 @@ const ProfilePage: React.FC = () => {
         setPendingRequests(pendingRequests);
       } catch (error: any) {
         console.error("Fejl ved hentning af data:", error);
-        // Only navigate away if we're certain there's no authentication
         if (!username && !authLoading) {
           navigate("/", {
             state: {
@@ -251,60 +270,52 @@ const ProfilePage: React.FC = () => {
     setAvailabilityTimeSlots((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleSaveAvailability = async () => {
+  const handleSaveAvailability = () => {
     if (!availabilityDate || availabilityTimeSlots.length === 0 || !username) {
       setErrorMessage("Please select a date and add at least one time slot");
       return;
     }
 
-    try {
-      setIsSubmitting(true);
-      const timeSlots = availabilityTimeSlots.map((startTime) => ({
-        startTime,
-        isBooked: false,
-      }));
-
-      await api.post(`/trainers/availability/${username}`, {
-        availability: {
-          date: availabilityDate,
-          timeSlots,
-        },
-      });
-
-      setSuccessMessage("Availability saved successfully!");
-      setAvailabilityDate("");
-      setAvailabilityTimeSlots([]);
-      setTimeout(() => setSuccessMessage(""), 5000);
-    } catch (error) {
-      console.error("Error saving availability:", error);
-      setErrorMessage("Failed to save availability");
-    } finally {
-      setIsSubmitting(false);
+    if (!socket) {
+      setErrorMessage("Socket connection not established");
+      return;
     }
+
+    setIsSubmitting(true);
+    const timeSlots = availabilityTimeSlots.map((startTime) => ({
+      startTime,
+      isBooked: false,
+    }));
+
+    socket.emit("addTrainerAvailability", {
+      username,
+      availability: {
+        date: availabilityDate,
+        timeSlots,
+      },
+    });
+
+    setSuccessMessage("Availability saved successfully!");
+    setAvailabilityDate("");
+    setAvailabilityTimeSlots([]);
+    setTimeout(() => setSuccessMessage(""), 5000);
+    setIsSubmitting(false);
   };
 
-  const handleReplyToMessage = async (messageId: string, content: string) => {
-    if (!content.trim() || !username) return;
+  const handleReplyToMessage = (messageId: string, content: string) => {
+    if (!content.trim() || !username || !socket) return;
 
-    try {
-      const message = trainerMessages.find((msg) => msg._id === messageId);
-      if (!message) return;
+    const message = trainerMessages.find((msg) => msg._id === messageId);
+    if (!message) return;
 
-      await api.post("trainer/message", {
-        senderUsername: message.senderUsername,
-        trainerUsername: username,
-        content,
-      });
+    socket.emit("sendTrainerMessage", {
+      senderUsername: username,
+      trainerUsername: message.trainerUsername,
+      content,
+    });
 
-      const response = await api.get(`/messages/${username}`);
-      setTrainerMessages(response.data);
-
-      setSuccessMessage("Reply sent!");
-      setTimeout(() => setSuccessMessage(""), 5000);
-    } catch (error) {
-      console.error("Error sending reply:", error);
-      setErrorMessage("Failed to send reply");
-    }
+    setSuccessMessage("Reply sent!");
+    setTimeout(() => setSuccessMessage(""), 5000);
   };
 
   const handleMarkAsRead = async (notificationId: string) => {
@@ -661,6 +672,7 @@ const ProfilePage: React.FC = () => {
               isSubmitting={isSubmitting}
               successMessage={successMessage}
               errorMessage={errorMessage}
+              loggedInUsername={username || ""} // Add this prop
               setAvailabilityDate={setAvailabilityDate}
               setNewTimeSlot={setNewTimeSlot}
               handleAddTimeSlot={handleAddTimeSlot}

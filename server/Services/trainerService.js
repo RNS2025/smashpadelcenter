@@ -2,10 +2,14 @@ const { Trainer, Booking, TrainerMessage } = require("../models/Trainer");
 const User = require("../models/user");
 const { updateUserRole } = require("./databaseService");
 
+let io; // Socket.IO instance
+function setIO(socketIO) {
+  io = socketIO;
+}
+
 const getAllTrainers = async () => {
   try {
     const trainers = await Trainer.find().lean();
-    // Check for duplicate _id values
     const idSet = new Set(trainers.map((t) => t._id.toString()));
     if (idSet.size !== trainers.length) {
       console.warn(
@@ -26,7 +30,6 @@ const createTrainer = async (trainerData) => {
     if (!user) {
       throw new Error("User with provided username does not exist");
     }
-    // Check for existing trainer with the same username
     const existingTrainer = await Trainer.findOne({
       username: trainerData.username,
     });
@@ -34,14 +37,23 @@ const createTrainer = async (trainerData) => {
       throw new Error("Trainer with this username already exists");
     }
 
-    // // Update the user's role to trainer´
     await updateUserRole(trainerData.username, "trainer");
 
     trainerData.availability = Array.isArray(trainerData.availability)
       ? trainerData.availability
       : [];
     const trainer = new Trainer(trainerData);
-    return await trainer.save();
+    const savedTrainer = await trainer.save();
+
+    // Emit trainer creation event
+    if (io) {
+      io.to(`user_${trainerData.username}`).emit(
+        "trainerCreated",
+        savedTrainer
+      );
+    }
+
+    return savedTrainer;
   } catch (error) {
     console.error("Error creating trainer:", error);
     throw new Error("Failed to create trainer");
@@ -70,7 +82,16 @@ const bookTrainer = async (username, trainerUsername, date, timeSlot) => {
       timeSlot,
       status: "pending",
     });
-    return await booking.save();
+    const savedBooking = await booking.save();
+
+    // Emit booking event
+    if (io) {
+      io.to(`trainer_${trainerUsername}`)
+        .to(`user_${username}`)
+        .emit("newBooking", savedBooking);
+    }
+
+    return savedBooking;
   } catch (error) {
     console.error("Error booking trainer:", error);
     throw new Error("Failed to book trainer");
@@ -79,9 +100,10 @@ const bookTrainer = async (username, trainerUsername, date, timeSlot) => {
 
 const getUserBookings = async (username) => {
   try {
-    return await Booking.find({ username })
+    const bookings = await Booking.find({ username })
       .populate("trainerId", "name specialty")
       .lean();
+    return bookings;
   } catch (error) {
     console.error("Error fetching bookings:", error);
     throw new Error("Failed to fetch bookings");
@@ -97,7 +119,16 @@ const sendTrainerMessage = async (senderUsername, trainerUsername, content) => {
       trainerUsername,
       content,
     });
-    return await message.save();
+    const savedMessage = await message.save();
+
+    // Emit message event
+    if (io) {
+      io.to(`trainer_${trainerUsername}`)
+        .to(`user_${senderUsername}`)
+        .emit("newTrainerMessage", savedMessage);
+    }
+
+    return savedMessage;
   } catch (error) {
     console.error("Error sending message:", error);
     throw new Error("Failed to send message");
@@ -116,7 +147,6 @@ const getTrainerMessages = async (username, trainerUsername) => {
       ],
     }).lean();
 
-    // Ensure uniqueness by creating a Map with message IDs as keys
     const uniqueMessages = Array.from(
       new Map(messages.map((msg) => [msg._id.toString(), msg])).values()
     );
@@ -144,11 +174,9 @@ const addTrainerAvailability = async (username, availabilityData) => {
     const trainer = await Trainer.findOne({ username });
     if (!trainer) throw new Error("Trainer not found");
 
-    // Format date to avoid timezone issues
     const formattedDate = new Date(availabilityData.date);
-    formattedDate.setHours(12, 0, 0, 0); // Set to noon to avoid timezone issues
+    formattedDate.setHours(12, 0, 0, 0);
 
-    // Check if this date already exists
     const existingAvailability = trainer.availability.find(
       (avail) =>
         new Date(avail.date).toISOString().split("T")[0] ===
@@ -156,7 +184,6 @@ const addTrainerAvailability = async (username, availabilityData) => {
     );
 
     if (existingAvailability) {
-      // Update existing availability with new time slots
       existingAvailability.timeSlots = [
         ...existingAvailability.timeSlots,
         ...availabilityData.timeSlots.filter(
@@ -167,15 +194,23 @@ const addTrainerAvailability = async (username, availabilityData) => {
         ),
       ];
     } else {
-      // Add new availability
       trainer.availability.push({
         date: formattedDate,
         timeSlots: availabilityData.timeSlots,
       });
     }
 
-    await trainer.save();
-    return trainer;
+    const updatedTrainer = await trainer.save();
+
+    // Emit availability update
+    if (io) {
+      io.to(`trainer_${username}`).emit(
+        "updatedAvailability",
+        updatedTrainer.availability
+      );
+    }
+
+    return updatedTrainer;
   } catch (error) {
     console.error("Error adding trainer availability:", error);
     throw new Error("Failed to add trainer availability");
@@ -187,13 +222,21 @@ const removeTrainerAvailability = async (username, date) => {
     const trainer = await Trainer.findOne({ username });
     if (!trainer) throw new Error("Trainer not found");
 
-    // Remove the availability for the specific date
     trainer.availability = trainer.availability.filter(
       (avail) => new Date(avail.date).toISOString().split("T")[0] !== date
     );
 
-    await trainer.save();
-    return trainer;
+    const updatedTrainer = await trainer.save();
+
+    // Emit availability update
+    if (io) {
+      io.to(`trainer_${username}`).emit(
+        "updatedAvailability",
+        updatedTrainer.availability
+      );
+    }
+
+    return updatedTrainer;
   } catch (error) {
     console.error("Error removing trainer availability:", error);
     throw new Error("Failed to remove trainer availability");
@@ -205,7 +248,6 @@ const getAllTrainerMessages = async (trainerUsername) => {
     const messages = await TrainerMessage.find({ trainerUsername })
       .sort({ createdAt: -1 })
       .lean();
-
     return messages;
   } catch (error) {
     console.error("Error fetching trainer messages:", error);
@@ -214,6 +256,7 @@ const getAllTrainerMessages = async (trainerUsername) => {
 };
 
 module.exports = {
+  setIO,
   getAllTrainers,
   createTrainer,
   bookTrainer,

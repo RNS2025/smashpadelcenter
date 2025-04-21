@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useMemo } from "react";
 
 interface TrainerTabProps {
   loadingTrainerData: boolean;
@@ -10,12 +10,17 @@ interface TrainerTabProps {
   isSubmitting: boolean;
   successMessage: string;
   errorMessage: string;
+  loggedInUsername: string; // Add this prop to know who's logged in
   setAvailabilityDate: (value: string) => void;
   setNewTimeSlot: (value: string) => void;
   handleAddTimeSlot: () => void;
   handleRemoveTimeSlot: (index: number) => void;
   handleSaveAvailability: () => void;
-  handleReplyToMessage: (messageId: string, content: string) => void;
+  handleReplyToMessage: (
+    messageId: string,
+    content: string,
+    trainerUsername: string
+  ) => void;
 }
 
 const TrainerTab: React.FC<TrainerTabProps> = ({
@@ -28,6 +33,7 @@ const TrainerTab: React.FC<TrainerTabProps> = ({
   isSubmitting,
   successMessage,
   errorMessage,
+  loggedInUsername, // The logged-in trainer's username
   setAvailabilityDate,
   setNewTimeSlot,
   handleAddTimeSlot,
@@ -35,8 +41,73 @@ const TrainerTab: React.FC<TrainerTabProps> = ({
   handleSaveAvailability,
   handleReplyToMessage,
 }) => {
+  const [selectedUser, setSelectedUser] = useState<string | null>(null);
+
+  // Compute unique users with their latest message timestamp
+  // Only include users that have sent messages to this trainer (not the trainer themselves)
+  const uniqueUsers = useMemo(() => {
+    const userMap = new Map<
+      string,
+      { username: string; latestMessage: Date }
+    >();
+
+    trainerMessages.forEach((message) => {
+      // Find the username of the other person in the conversation
+      const otherUsername =
+        message.senderUsername === loggedInUsername
+          ? message.trainerUsername
+          : message.senderUsername;
+
+      // Skip if this is a message from the trainer to themselves (shouldn't happen normally)
+      if (otherUsername === loggedInUsername) return;
+
+      const messageDate = new Date(message.createdAt);
+
+      if (
+        !userMap.has(otherUsername) ||
+        messageDate > userMap.get(otherUsername)!.latestMessage
+      ) {
+        userMap.set(otherUsername, {
+          username: otherUsername,
+          latestMessage: messageDate,
+        });
+      }
+    });
+
+    return Array.from(userMap.values()).sort(
+      (a, b) => b.latestMessage.getTime() - a.latestMessage.getTime()
+    );
+  }, [trainerMessages, loggedInUsername]);
+
+  // Filter messages for the selected user, but ensure we only show each message once
+  const selectedMessages = useMemo(() => {
+    if (!selectedUser) return [];
+
+    // Use a Map to track unique messages by ID
+    const uniqueMessages = new Map();
+
+    trainerMessages.forEach((msg) => {
+      // Only include messages between the selected user and logged-in trainer
+      const isRelevantConversation =
+        (msg.senderUsername === selectedUser &&
+          msg.trainerUsername === loggedInUsername) ||
+        (msg.senderUsername === loggedInUsername &&
+          msg.trainerUsername === selectedUser);
+
+      if (isRelevantConversation && !uniqueMessages.has(msg._id)) {
+        uniqueMessages.set(msg._id, msg);
+      }
+    });
+
+    // Convert back to array and sort by timestamp
+    return Array.from(uniqueMessages.values()).sort(
+      (a, b) =>
+        new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    );
+  }, [selectedUser, trainerMessages, loggedInUsername]);
+
   return (
-    <div>
+    <div className="text-black">
       {successMessage && (
         <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 rounded-lg">
           <p className="text-sm">{successMessage}</p>
@@ -198,55 +269,111 @@ const TrainerTab: React.FC<TrainerTabProps> = ({
             <h3 className="text-xl font-semibold text-gray-800 mb-4">
               Beskeder fra Brugere
             </h3>
-            {trainerMessages.length > 0 ? (
-              <div className="space-y-4">
-                {trainerMessages.map((message) => (
-                  <div
-                    key={message._id}
-                    className="border rounded-lg p-4 bg-white"
-                  >
-                    <div className="flex justify-between items-start mb-2">
-                      <span className="font-medium">
-                        {message.senderUsername}
-                      </span>
-                      <span className="text-xs text-gray-500">
-                        {new Date(message.createdAt).toLocaleString()}
-                      </span>
-                    </div>
-                    <p className="text-gray-700 mb-4">{message.content}</p>
-                    <details className="mt-2">
-                      <summary className="text-blue-600 cursor-pointer">
-                        Svar
-                      </summary>
-                      <div className="mt-2">
-                        <textarea
-                          className="w-full border rounded p-2"
-                          rows={2}
-                          placeholder="Skriv dit svar her..."
-                          id={`reply-${message._id}`}
-                        ></textarea>
-                        <button
-                          onClick={() => {
-                            const replyEl = document.getElementById(
-                              `reply-${message._id}`
-                            ) as HTMLTextAreaElement;
-                            if (replyEl) {
-                              handleReplyToMessage(message._id, replyEl.value);
-                              replyEl.value = "";
-                            }
-                          }}
-                          className="mt-2 px-4 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600"
-                        >
-                          Send svar
-                        </button>
-                      </div>
-                    </details>
-                  </div>
-                ))}
+            <div className="flex">
+              {/* User List */}
+              <div className="w-1/3 border-r pr-4">
+                <h4 className="text-lg font-medium mb-2">Brugere</h4>
+                {uniqueUsers.length > 0 ? (
+                  <ul className="space-y-2">
+                    {uniqueUsers.map((user) => (
+                      <li
+                        key={user.username}
+                        className={`p-2 rounded cursor-pointer ${
+                          selectedUser === user.username
+                            ? "bg-blue-100 text-blue-800"
+                            : "hover:bg-gray-100"
+                        }`}
+                        onClick={() => setSelectedUser(user.username)}
+                      >
+                        <div className="flex justify-between">
+                          <span>{user.username}</span>
+                          <span className="text-xs text-gray-500">
+                            {new Date(user.latestMessage).toLocaleString()}
+                          </span>
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-gray-600">
+                    Ingen brugere har skrevet endnu.
+                  </p>
+                )}
               </div>
-            ) : (
-              <p className="text-gray-600">Du har ingen beskeder endnu.</p>
-            )}
+
+              {/* Messages for Selected User */}
+              <div className="w-2/3 pl-4">
+                {selectedUser ? (
+                  <div>
+                    <h4 className="text-lg font-medium mb-2">
+                      Beskeder med {selectedUser}
+                    </h4>
+                    <div className="h-64 overflow-y-auto border p-2 rounded mb-4">
+                      {selectedMessages.length > 0 ? (
+                        selectedMessages.map((message) => (
+                          <div
+                            key={message._id}
+                            className={`mb-2 ${
+                              message.senderUsername === loggedInUsername
+                                ? "text-right"
+                                : "text-left"
+                            }`}
+                          >
+                            <div
+                              className={`inline-block px-3 py-2 rounded-lg ${
+                                message.senderUsername === loggedInUsername
+                                  ? "bg-blue-500 text-white"
+                                  : "bg-gray-200 text-gray-800"
+                              }`}
+                            >
+                              {message.content}
+                            </div>
+                            <p className="text-xs text-gray-500 mt-1">
+                              {new Date(message.createdAt).toLocaleString()}
+                            </p>
+                          </div>
+                        ))
+                      ) : (
+                        <p className="text-gray-600">
+                          Ingen beskeder med denne bruger.
+                        </p>
+                      )}
+                    </div>
+                    <div>
+                      <textarea
+                        className="w-full border rounded p-2"
+                        rows={2}
+                        placeholder="Skriv dit svar her..."
+                        id={`reply-${selectedUser}`}
+                      ></textarea>
+                      <button
+                        onClick={() => {
+                          const replyEl = document.getElementById(
+                            `reply-${selectedUser}`
+                          ) as HTMLTextAreaElement;
+                          if (replyEl && replyEl.value.trim()) {
+                            handleReplyToMessage(
+                              selectedMessages[selectedMessages.length - 1]
+                                ?._id || "",
+                              replyEl.value,
+                              selectedUser
+                            );
+                            replyEl.value = "";
+                          }
+                        }}
+                        className="mt-2 px-4 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                      >
+                        Send svar
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-gray-600">
+                    Vælg en bruger for at se beskeder.
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
