@@ -8,15 +8,27 @@ const user = new ConnectRoles({
   },
 });
 
-// Define roles
-user.use("access protected", (req) => {
-  if (req.user && (req.user.role === "user" || req.user.role === "admin")) {
+user.use("access admin page", (req) => {
+  if (req.user && req.user.role === "admin") {
     return true;
   }
 });
 
-user.use("access admin page", (req) => {
-  if (req.user && req.user.role === "admin") {
+// Define a new role for trainers
+user.use("access trainer page", (req) => {
+  if (req.user && req.user.role === "trainer") {
+    return true;
+  }
+});
+
+// Update the "access protected" role to include trainers as well
+user.use("access protected", (req) => {
+  if (
+    req.user &&
+    (req.user.role === "user" ||
+      req.user.role === "admin" ||
+      req.user.role === "trainer")
+  ) {
     return true;
   }
 });

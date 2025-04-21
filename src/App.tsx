@@ -16,7 +16,7 @@ import CouponPage from "./pages/(logged-in)/CuponPage.tsx";
 import LunarLigaPage from "./pages/(logged-in)/lunar/LunarLigaPage.tsx";
 import PartnerPage from "./pages/(logged-in)/PartnerPage.tsx";
 import ArrangementPage from "./pages/(logged-in)/ArrangementPage.tsx";
-import ProfilePage from "./pages/(logged-in)/ProfilePage.tsx";
+import ProfilePage from "./pages/(logged-in)/ProfilePage/ProfilePage.tsx";
 import FeedbackPage from "./pages/(logged-in)/FeedbackPage.tsx";
 import RegisterPage from "./pages/RegisterUserPage.tsx";
 import CourtTimes from "./pages/court-times.tsx";

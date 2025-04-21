@@ -44,7 +44,7 @@ router.get("/bookings/:username", async (req, res) => {
   }
 });
 
-router.post("/message", async (req, res) => {
+router.post("trainer/message", async (req, res) => {
   try {
     const { senderUsername, trainerUsername, content } = req.body;
     const message = await trainerService.sendTrainerMessage(
@@ -65,6 +65,58 @@ router.get("/messages/:username/:trainerUsername", async (req, res) => {
       username,
       trainerUsername
     );
+    res.json(messages);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Get trainer by username
+router.get("/trainers/by-username/:username", async (req, res) => {
+  try {
+    const trainer = await trainerService.getTrainerByUsername(
+      req.params.username
+    );
+    res.json(trainer);
+  } catch (err) {
+    res.status(404).json({ error: err.message });
+  }
+});
+
+// Add availability for a trainer
+router.post("/trainers/availability/:username", async (req, res) => {
+  try {
+    const { username } = req.params;
+    const { availability } = req.body;
+    const updatedTrainer = await trainerService.addTrainerAvailability(
+      username,
+      availability
+    );
+    res.json(updatedTrainer);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Remove availability for a trainer
+router.delete("/trainers/availability/:username/:date", async (req, res) => {
+  try {
+    const { username, date } = req.params;
+    const updatedTrainer = await trainerService.removeTrainerAvailability(
+      username,
+      date
+    );
+    res.json(updatedTrainer);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Get trainer messages
+router.get("/trainer-messages/:username", async (req, res) => {
+  try {
+    const { username } = req.params;
+    const messages = await trainerService.getAllTrainerMessages(username);
     res.json(messages);
   } catch (err) {
     res.status(500).json({ error: err.message });

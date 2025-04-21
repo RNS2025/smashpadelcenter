@@ -1,5 +1,6 @@
 const { Trainer, Booking, TrainerMessage } = require("../models/Trainer");
 const User = require("../models/user");
+const { updateUserRole } = require("./databaseService");
 
 const getAllTrainers = async () => {
   try {
@@ -32,6 +33,10 @@ const createTrainer = async (trainerData) => {
     if (existingTrainer) {
       throw new Error("Trainer with this username already exists");
     }
+
+    // // Update the user's role to trainer´
+    await updateUserRole(trainerData.username, "trainer");
+
     trainerData.availability = Array.isArray(trainerData.availability)
       ? trainerData.availability
       : [];
@@ -134,6 +139,80 @@ const getTrainerByUsername = async (username) => {
   }
 };
 
+const addTrainerAvailability = async (username, availabilityData) => {
+  try {
+    const trainer = await Trainer.findOne({ username });
+    if (!trainer) throw new Error("Trainer not found");
+
+    // Format date to avoid timezone issues
+    const formattedDate = new Date(availabilityData.date);
+    formattedDate.setHours(12, 0, 0, 0); // Set to noon to avoid timezone issues
+
+    // Check if this date already exists
+    const existingAvailability = trainer.availability.find(
+      (avail) =>
+        new Date(avail.date).toISOString().split("T")[0] ===
+        formattedDate.toISOString().split("T")[0]
+    );
+
+    if (existingAvailability) {
+      // Update existing availability with new time slots
+      existingAvailability.timeSlots = [
+        ...existingAvailability.timeSlots,
+        ...availabilityData.timeSlots.filter(
+          (newSlot) =>
+            !existingAvailability.timeSlots.some(
+              (existingSlot) => existingSlot.startTime === newSlot.startTime
+            )
+        ),
+      ];
+    } else {
+      // Add new availability
+      trainer.availability.push({
+        date: formattedDate,
+        timeSlots: availabilityData.timeSlots,
+      });
+    }
+
+    await trainer.save();
+    return trainer;
+  } catch (error) {
+    console.error("Error adding trainer availability:", error);
+    throw new Error("Failed to add trainer availability");
+  }
+};
+
+const removeTrainerAvailability = async (username, date) => {
+  try {
+    const trainer = await Trainer.findOne({ username });
+    if (!trainer) throw new Error("Trainer not found");
+
+    // Remove the availability for the specific date
+    trainer.availability = trainer.availability.filter(
+      (avail) => new Date(avail.date).toISOString().split("T")[0] !== date
+    );
+
+    await trainer.save();
+    return trainer;
+  } catch (error) {
+    console.error("Error removing trainer availability:", error);
+    throw new Error("Failed to remove trainer availability");
+  }
+};
+
+const getAllTrainerMessages = async (trainerUsername) => {
+  try {
+    const messages = await TrainerMessage.find({ trainerUsername })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    return messages;
+  } catch (error) {
+    console.error("Error fetching trainer messages:", error);
+    throw new Error("Failed to fetch trainer messages");
+  }
+};
+
 module.exports = {
   getAllTrainers,
   createTrainer,
@@ -142,4 +221,7 @@ module.exports = {
   sendTrainerMessage,
   getTrainerMessages,
   getTrainerByUsername,
+  addTrainerAvailability,
+  removeTrainerAvailability,
+  getAllTrainerMessages,
 };

@@ -36,7 +36,7 @@ export const sendTrainerMessage = async (
   trainerId: string,
   content: string
 ): Promise<any> => {
-  const response = await api.post("/message", {
+  const response = await api.post("/trainer/message", {
     senderUsername,
     trainerId,
     content,

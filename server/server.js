@@ -280,12 +280,14 @@ app.use(
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "your_secret_key",
-    resave: false,
-    saveUninitialized: false,
+    resave: true, // Changed to true to ensure session is saved
+    saveUninitialized: true, // Changed to true to save uninitialized sessions
+    rolling: true, // Resets the cookie maxAge on every response
     cookie: {
       secure: process.env.NODE_ENV === "production",
       httpOnly: true,
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      maxAge: 24 * 60 * 60 * 1000, // Session valid for 24 hours
     },
   })
 );
@@ -350,7 +352,7 @@ const cleanDatabase = async () => {
 mongoose.connection.once("open", async () => {
   console.log("✅ Connected to MongoDB");
 
-  //await cleanDatabase();
+  await cleanDatabase();
 
   // Recreate admin and test users after potential wipe
   await createAdmin();

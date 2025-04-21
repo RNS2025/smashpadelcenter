@@ -17,7 +17,7 @@ export interface UserProfile {
   position: "left" | "right" | "both";
   playingStyle: string;
   equipment: string;
-  role: "user" | "admin";
+  role: "user" | "admin" | "trainer";
   pastMatches: Match[];
   stats: {
     matches: number;

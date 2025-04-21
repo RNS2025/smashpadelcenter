@@ -4,10 +4,17 @@ const User = require("../models/user");
  * Create a new user and hash the password using Argon2.
  * @param {Object} userData - The user data (username and password)
  * @returns {Promise<Object>} The newly created user object
+ * @throws {Error} If username already exists
  */
 async function createUser(userData) {
   const { username, password } = userData;
   try {
+    // Check if username already exists
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
+      throw new Error("Username already exists");
+    }
+
     const newUser = new User({
       username,
       password, // The password will be hashed by Mongoose pre-save hook
