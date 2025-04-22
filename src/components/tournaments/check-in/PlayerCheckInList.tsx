@@ -29,6 +29,7 @@ const PlayerCheckInList: FC<PlayerCheckInListProps> = ({
   }
 
 
+
   return (
     <div className="mt-6">
       <div className="flex justify-between max-sm:mb-5">
@@ -38,6 +39,11 @@ const PlayerCheckInList: FC<PlayerCheckInListProps> = ({
             Indtjekning åbner først på turneringsdagen.
           </p>
         )}
+      </div>
+      <div>
+        <p className="text-gray-500 italic max-sm:text-center max-sm:text-sm">
+          Klik på et spillernavn for at se mere information.
+        </p>
       </div>
       {players.length === 0 ? (
         <p>Ingen spillere fundet i denne række.</p>

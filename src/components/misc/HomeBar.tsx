@@ -57,7 +57,7 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
             <div className="flex items-center">
               <div className="flex gap-4">
                 <HomeIcon onClick={() => navigate("/hjem")} className="h-8 text-black cursor-pointer"/>
-                <BellIcon onClick={() => setNotificationsVisible(prev => !prev)} className={`h-8 cursor-pointer ${notificationsVisible ? "text-cyan-500" : "text-black"}`}/>
+                <BellIcon onClick={() => setNotificationsVisible(prev => !prev)} className={`hidden h-8 cursor-pointer ${notificationsVisible ? "text-cyan-500" : "text-black"}`}/>
                 <Bars3Icon onClick={() => setDropdownVisible(prev => !prev)} className={`sm:hidden h-8 cursor-pointer ${dropdownVisible ? "text-cyan-500" : "text-black"}`}/>
               </div>
             </div>

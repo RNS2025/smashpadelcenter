@@ -6,6 +6,8 @@ import {
   MapPinIcon,
   UserCircleIcon,
   UserGroupIcon,
+    CheckCircleIcon,
+    XCircleIcon
 } from "@heroicons/react/24/outline";
 import { useUser } from "../../../context/UserContext";
 import { useEffect, useState } from "react";
@@ -17,6 +19,9 @@ import { format } from "date-fns";
 import { io } from "socket.io-client";
 import { toZonedTime } from "date-fns-tz";
 import { da } from "date-fns/locale";
+import { UserProfile } from "../../../types/UserProfile";
+import userProfileService from "../../../services/userProfileService.ts";
+import PlayerInfoDialog from "../../../components/matchFinder/misc/PlayerInfoDialog.tsx";
 
 export const ViewMatchPage = () => {
   const { username } = useUser();
@@ -25,6 +30,29 @@ export const ViewMatchPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [socketConnected, setSocketConnected] = useState(false);
+  const [participantProfiles, setParticipantProfiles] = useState<UserProfile[]>([]);
+  const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
+
+  const [infoDialogVisible, setInfoDialogVisible] = useState(false);
+
+  useEffect(() => {
+    const fetchParticipants = async () => {
+      if (!match || match.participants.length === 0) return;
+
+      try {
+        const profiles = await Promise.all(
+            match.participants.map((username) => userProfileService.getOrCreateUserProfile(username)
+            )
+        );
+        setParticipantProfiles(profiles);
+      } catch (err) {
+        console.error("Fejl ved hentning af deltagerprofiler:", err);
+      }
+    };
+
+    fetchParticipants().then();
+  }, [match]);
+
 
   // Initialize Socket.IO
   useEffect(() => {
@@ -207,20 +235,18 @@ export const ViewMatchPage = () => {
     );
   }
 
-  // Determine if match is full (3 non-owner participants)
-  const isMatchFull =
-    match.participants.length +
-      match.reservedSpots.length +
-      match.joinRequests.length >=
-    3;
-
   const totalLength = safeFormatDate(match.matchDateTime, "EEEE | dd. MMMM | HH:mm").length + safeFormatDate(match.endTime, "HH:mm").length;
+  const isMatchFull = match.participants.length === 4;
 
   return (
     <>
       <Helmet>
         <title>Kampdetaljer</title>
       </Helmet>
+
+      <div onClick={() => setInfoDialogVisible(false)} className={`min-h-screen fixed inset-0 z-50 bg-gray-500 bg-opacity-90 flex items-center justify-center ${!infoDialogVisible ? "hidden" : ""}`}>
+      <PlayerInfoDialog user={selectedUser!}/>
+      </div>
 
       <Animation>
         <HomeBar />
@@ -249,26 +275,23 @@ export const ViewMatchPage = () => {
           </div>
 
           {/* Participants */}
-          {match.participants.length > 0 ? (
-            match.participants
-              .filter((participant) => participant !== match.username)
-              .map((participant) => (
-                <div
-                  key={participant}
-                  className="border rounded flex items-center px-1"
-                >
-                  <UserCircleIcon className="h-20" />
-                  <div className="w-full pr-1 truncate">
-                    <h1>{participant}</h1>
+          {participantProfiles
+              .filter((p) => p.username !== match.username)
+              .map((profile) => (
+                  <div onClick={() => {
+                    setSelectedUser(profile);
+                    setInfoDialogVisible(true)
+                  }} key={profile.username} className="border rounded flex items-center px-1">
+                    <UserCircleIcon className="h-20" />
+                    <div className="w-full pr-1 truncate">
+                      <h1>{profile.username}</h1>
+                    </div>
+                    <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-20 h-12">
+                      {parseFloat(profile.skillLevel).toFixed(1)}
+                    </div>
                   </div>
-                  <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-20 h-12">
-                    {/* Placeholder for participant level or other info */}?
-                  </div>
-                </div>
-              ))
-          ) : (
-            <p>Ingen deltagere endnu.</p>
-          )}
+              ))}
+
 
           {match.reservedSpots.length > 0 ? (
             match.reservedSpots.map((reserved) => (
@@ -338,20 +361,33 @@ export const ViewMatchPage = () => {
               </>
             )}
 
-          <div className="grid grid-cols-3 text-center text-black gap-3">
-            <div className="bg-white rounded h-16 flex justify-center items-center gap-1">
+          <div className="grid grid-cols-2 text-center text-black gap-3">
+
+            <div className="bg-white rounded flex justify-center items-center gap-1 py-4">
               <BoltIcon className="h-6 text-yellow-500" />
-              <h1>{match.level}</h1>
+              <h1 className="h-4">{match.level}</h1>
             </div>
 
-            <div className="bg-white rounded flex justify-center items-center gap-1">
+            <div className="bg-white rounded flex justify-center items-center gap-1 py-4">
               <MapPinIcon className="h-6 text-red-500" />
-              <h1>{match.location.split(" ")[2]}</h1>
+              <h1 className="h-4">{match.location.split(" ")[2]}</h1>
             </div>
 
-            <div className="bg-white rounded h-16 flex justify-center items-center gap-1">
+            {match.courtBooked ? (
+                <div className="bg-white rounded flex justify-center items-center gap-1 py-4">
+                  <CheckCircleIcon className="h-6 rounded-lg text-green-500" />
+                  <h1 className="h-4">Bane er booket</h1>
+                </div>
+            ) : (
+                <div className="bg-white rounded flex justify-center items-center gap-1 py-4">
+                  <XCircleIcon className="h-6 rounded-lg text-red-500" />
+                  <h1 className="h-4">Bane ikke booket</h1>
+                </div>
+            )}
+
+            <div className="bg-white rounded flex justify-center items-center gap-1 py-4">
               <UserGroupIcon className="h-6 rounded-lg text-white bg-gradient-to-b from-sky-400 to-pink-400" />
-              <h1>{match.matchType}</h1>
+              <h1 className="h-4">{match.matchType}</h1>
             </div>
           </div>
 
@@ -361,10 +397,7 @@ export const ViewMatchPage = () => {
           </div>
 
           {/* Action buttons */}
-          {match.username !== username &&
-            username &&
-            !match.participants.includes(username) &&
-            !match.joinRequests.includes(username) &&
+          {match.username !== username && username && !match.participants.includes(username) && !match.joinRequests.includes(username) &&
             !isMatchFull && (
               <button
                 onClick={handleJoinMatch}

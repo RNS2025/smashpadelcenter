@@ -61,7 +61,7 @@ export const HomePage = () => {
                 icon={<CalendarIcon className="h-10 w-10" aria-hidden="true" />}
                 title="Book Bane"
                 description="Reservér en bane til din næste kamp"
-                link="/book-court"
+                link="book-court"
               />
             )}
             {role == "admin" && (
@@ -71,7 +71,7 @@ export const HomePage = () => {
                 }
                 title="Book Træning"
                 description="Tilmeld dig træningssessioner"
-                link="/book-training"
+                link="book-training"
               />
             )}
             {role == "admin" && (
@@ -79,27 +79,27 @@ export const HomePage = () => {
                 icon={<ChartBarIcon className="h-10 w-10" aria-hidden="true" />}
                 title="Arrangementer"
                 description="Organisér og se arrangementer"
-                link="/arrangement"
+                link="arrangement"
               />
             )}
             <HomeScreenCard
               icon={<UsersIcon className="h-10 w-10" aria-hidden="true" />}
               title="Makkerbørs"
               description="Søg med- og modspillere"
-              link="/makkerbørs"
+              link="makkerbørs"
             />
 
             <HomeScreenCard
               icon={<TrophyIcon className="h-10 w-10" aria-hidden="true" />}
               title="DPF-turneringer"
               description="Deltag i spændende turneringer"
-              link="/turneringer"
+              link="turneringer"
             />
             <HomeScreenCard
               icon={<MoonIcon className="h-10 w-10" aria-hidden="true" />}
               title="Holdligaer"
               description="Overblik over ligaholdene tilknyttet SMASH"
-              link="/holdligaer"
+              link="holdligaer"
             />
             {role == "admin" && (
               <HomeScreenCard
@@ -108,7 +108,7 @@ export const HomePage = () => {
                 }
                 title="Rangliste"
                 description="Stryg hele vejen til tops i ranglisten"
-                link="/rangliste"
+                link="rangliste"
               />
             )}
             {role == "admin" && (
@@ -118,7 +118,7 @@ export const HomePage = () => {
                 }
                 title="Nyheder"
                 description="Hold dig opdateret med seneste nyt"
-                link="/news"
+                link="news"
               />
             )}
             {role == "admin" && (
@@ -126,7 +126,7 @@ export const HomePage = () => {
                 icon={<TicketIcon className="h-10 w-10" aria-hidden="true" />}
                 title="Kuponer"
                 description="Udløs dine kuponer og tilbud"
-                link="/coupon"
+                link="coupon"
               />
             )}
             {role == "admin" && (
@@ -139,7 +139,7 @@ export const HomePage = () => {
                 }
                 title="Partnere"
                 description="Udforsk vores partnere"
-                link="/partner"
+                link="partner"
               />
             )}
             {role == "admin" && (
@@ -147,7 +147,7 @@ export const HomePage = () => {
                 icon={<CogIcon className="h-10 w-10" aria-hidden="true" />}
                 title="Admin Panel"
                 description="Administrer platformen"
-                link="/admin"
+                link="admin"
               />
             )}
           </div>

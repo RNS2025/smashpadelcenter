@@ -27,7 +27,7 @@ const useTournaments = () => {
       }
     };
 
-    fetchTournaments();
+    fetchTournaments().then();
   }, []);
 
   // Expose a function to update selectedTournament
