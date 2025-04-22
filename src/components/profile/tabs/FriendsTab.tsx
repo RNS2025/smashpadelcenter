@@ -1,6 +1,6 @@
 import React from "react";
-import { Friend } from "../../../../services/friendService";
-import { UserProfile } from "../../../../types/UserProfile";
+import { Friend } from "../../../services/friendService.ts";
+import { UserProfile } from "../../../types/UserProfile.ts";
 
 interface FriendsTabProps {
   friends: Friend[];
@@ -18,7 +18,7 @@ interface FriendsTabProps {
   errorMessage: string;
 }
 
-const FriendsTab: React.FC<FriendsTabProps> = ({
+const FriendsTab = ({
   friends,
   pendingRequests,
   newFriendUsername,

@@ -14,10 +14,10 @@ export interface UserProfile {
   phoneNumber: string;
   profilePictureUrl: string;
   skillLevel: number;
-  position: "left" | "right" | "both";
+  position: string;
   playingStyle: string;
   equipment: string;
-  role: "user" | "admin" | "trainer";
+  role: string;
   pastMatches: Match[];
   stats: {
     matches: number;

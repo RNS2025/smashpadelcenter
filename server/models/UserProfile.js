@@ -35,8 +35,7 @@ const UserProfileSchema = new mongoose.Schema(
     },
     position: {
       type: String,
-      enum: ["left", "right", "both"],
-      default: "both",
+      default: "Begge",
     },
     playingStyle: {
       type: String,

@@ -97,7 +97,7 @@ export const LoginPage = () => {
                 </p>
               </div>
 
-              <form action="#" className="mt-8 grid grid-cols-6 gap-6">
+              <form action="#" className="mt-8 flex flex-col gap-6">
                 <div className="col-span-6">
                   <h2 className="text-2xl font-bold">Log ind</h2>
                 </div>

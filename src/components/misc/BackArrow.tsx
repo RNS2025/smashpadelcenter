@@ -24,7 +24,7 @@ const BackArrow = ({backPage}: {
     return (
             <div
                 onClick={handleNavigateBack}
-                className="ml-3 mt-5 h-8 w-8 shrink-0 rounded-full p-1 border bg-[#4e4e4e] cursor-pointer flex items-center justify-center"
+                className="h-8 w-8 shrink-0 rounded-full p-1 border bg-[#4e4e4e] cursor-pointer flex items-center justify-center"
             >
                 <ArrowLongLeftIcon className="h-full w-full text-white" />
             </div>

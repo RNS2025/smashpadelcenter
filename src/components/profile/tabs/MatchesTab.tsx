@@ -1,11 +1,11 @@
-import React from "react";
-import { UserProfile } from "../../../../types/UserProfile";
+import {useProfileContext} from "../../../context/ProfileContext.tsx";
+import LoadingSpinner from "../../misc/LoadingSpinner.tsx";
 
-interface MatchesTabProps {
-  profile: UserProfile;
-}
+const MatchesTab = () => {
+    const { profile } = useProfileContext();
 
-const MatchesTab: React.FC<MatchesTabProps> = ({ profile }) => {
+
+    if (!profile) return <LoadingSpinner />;
   return (
     <div>
       <h2 className="text-2xl font-bold text-gray-800 mb-4">Kamphistorik</h2>

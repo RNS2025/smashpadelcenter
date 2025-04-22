@@ -2,7 +2,7 @@ import "./App.css";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/(logged-in)/HomePage.tsx";
-import AdminPage from "./pages/(logged-in)/AdminPage.tsx";
+import AdminPage from "./pages/(logged-in)/misc/AdminPage.tsx";
 import CheckInPage from "./pages/CheckInPage.tsx";
 import PlayerPage from "./pages/(logged-in)/tournament/PlayerPage.tsx";
 import { HelmetProvider } from "react-helmet-async";
@@ -36,6 +36,10 @@ import MatchFinderAllMatchesTab from "./components/matchFinder/MatchFinderAllMat
 import MatchFinderMyMatchesTab from "./components/matchFinder/MatchFinderMyMatchesTab.tsx";
 import MatchFinderAwaitingTab from "./components/matchFinder/MatchFinderAwaitingTab.tsx";
 import ViewMatchPage from "./pages/(logged-in)/matchFinder/ViewMatchPage.tsx";
+import OverviewTab from "./components/profile/tabs/OverviewTab.tsx";
+import { ProfileProvider } from "./context/ProfileContext.tsx";
+import MatchesTab from "./components/profile/tabs/MatchesTab.tsx";
+import EditTab from "./components/profile/tabs/EditTab.tsx";
 
 function App() {
   return (
@@ -55,7 +59,20 @@ function App() {
             <Route path="/register" element={<RegisterPage />} />
 
             {/* Protected Routes */}
-            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/profil" element={
+              <ProfileProvider>
+                <ProfilePage />
+              </ProfileProvider>
+            }>
+              <Route index element={<Navigate to="overblik" replace />} />
+              <Route path="overblik" element={<OverviewTab />} />
+              <Route path="rediger" element={<EditTab />} />
+              <Route path="kampe" element={<MatchesTab />} />
+            </Route>
+
+
+
+
             <Route path="/hjem" element={<HomePage />} />
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/book-court" element={<BookCourtPage />} />
