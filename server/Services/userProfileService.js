@@ -19,7 +19,7 @@ const userProfileService = {
         phoneNumber: "",
         profilePictureUrl: "/api/placeholder/150/150",
         skillLevel: 1,
-        position: "both",
+        position: "Begge",
         playingStyle: "",
         equipment: "",
       });
@@ -53,7 +53,7 @@ const userProfileService = {
       profilePictureUrl:
         profile.profilePictureUrl || "/api/placeholder/150/150",
       skillLevel: profile.skillLevel || 1,
-      position: profile.position || "both",
+      position: profile.position || "Begge",
       playingStyle: profile.playingStyle || "",
       equipment: profile.equipment || "",
       role: user.role || "user",
@@ -118,7 +118,7 @@ const userProfileService = {
       profilePictureUrl:
         profile.profilePictureUrl || "/api/placeholder/150/150",
       skillLevel: profile.skillLevel || 1,
-      position: profile.position || "both",
+      position: profile.position || "Begge",
       playingStyle: profile.playingStyle || "",
       equipment: profile.equipment || "",
       role: user.role || "user",

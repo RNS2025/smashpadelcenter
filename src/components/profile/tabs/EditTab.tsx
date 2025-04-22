@@ -1,39 +1,11 @@
-import React from "react";
-import { UserProfile } from "../../../../types/UserProfile";
+import {useProfileContext} from "../../../context/ProfileContext.tsx";
 
-interface EditTabProps {
-  formData: Partial<UserProfile>;
-  isSubmitting: boolean;
-  handleSubmit: (e: React.FormEvent) => void;
-  handleInputChange: (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
-  ) => void;
-  successMessage: string;
-  errorMessage: string;
-}
+const EditTab = () => {
 
-const EditTab: React.FC<EditTabProps> = ({
-  formData,
-  isSubmitting,
-  handleSubmit,
-  handleInputChange,
-  successMessage,
-  errorMessage,
-}) => {
+  const {formData, isSubmitting, handleSubmit, handleInputChange} = useProfileContext();
+
   return (
     <div>
-      {successMessage && (
-        <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4 rounded-lg">
-          <p className="text-sm">{successMessage}</p>
-        </div>
-      )}
-      {errorMessage && (
-        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4 rounded-lg">
-          <p className="text-sm">{errorMessage}</p>
-        </div>
-      )}
       <h2 className="text-2xl font-bold text-gray-800 mb-4">Rediger Profil</h2>
       <form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -135,9 +107,9 @@ const EditTab: React.FC<EditTabProps> = ({
               onChange={handleInputChange}
               className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm text-gray-800"
             >
-              <option value="left">Venstre</option>
-              <option value="right">Højre</option>
-              <option value="both">Begge</option>
+              <option value="Venstre">Venstre</option>
+              <option value="Højre">Højre</option>
+              <option value="Begge">Begge</option>
             </select>
           </div>
           <div className="col-span-1 md:col-span-2">
