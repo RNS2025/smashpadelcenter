@@ -56,26 +56,32 @@ export const HomePage = () => {
 
         <div className="flex mt-5 items-center justify-center">
           <div className="grid gap-8 grid-cols-4 max-lg:grid-cols-3 max-md:grid-cols-2">
-            <HomeScreenCard
-              icon={<CalendarIcon className="h-10 w-10" aria-hidden="true" />}
-              title="Book Bane"
-              description="Reservér en bane til din næste kamp"
-              link="/book-court"
-            />
-            <HomeScreenCard
-              icon={
-                <AcademicCapIcon className="h-10 w-10" aria-hidden="true" />
-              }
-              title="Book Træning"
-              description="Tilmeld dig træningssessioner"
-              link="/book-training"
-            />
-            <HomeScreenCard
-              icon={<ChartBarIcon className="h-10 w-10" aria-hidden="true" />}
-              title="Arrangementer"
-              description="Organisér og se arrangementer"
-              link="/arrangement"
-            />
+            {role == "admin" && (
+              <HomeScreenCard
+                icon={<CalendarIcon className="h-10 w-10" aria-hidden="true" />}
+                title="Book Bane"
+                description="Reservér en bane til din næste kamp"
+                link="/book-court"
+              />
+            )}
+            {role == "admin" && (
+              <HomeScreenCard
+                icon={
+                  <AcademicCapIcon className="h-10 w-10" aria-hidden="true" />
+                }
+                title="Book Træning"
+                description="Tilmeld dig træningssessioner"
+                link="/book-training"
+              />
+            )}
+            {role == "admin" && (
+              <HomeScreenCard
+                icon={<ChartBarIcon className="h-10 w-10" aria-hidden="true" />}
+                title="Arrangementer"
+                description="Organisér og se arrangementer"
+                link="/arrangement"
+              />
+            )}
             <HomeScreenCard
               icon={<UsersIcon className="h-10 w-10" aria-hidden="true" />}
               title="Makkerbørs"
@@ -95,33 +101,47 @@ export const HomePage = () => {
               description="Overblik over ligaholdene tilknyttet SMASH"
               link="/holdligaer"
             />
-            <HomeScreenCard
-              icon={<ListBulletIcon className="h-10 w-10" aria-hidden="true" />}
-              title="Rangliste"
-              description="Stryg hele vejen til tops i ranglisten"
-              link="/rangliste"
-            />
-            <HomeScreenCard
-              icon={<NewspaperIcon className="h-10 w-10" aria-hidden="true" />}
-              title="Nyheder"
-              description="Hold dig opdateret med seneste nyt"
-              link="/news"
-            />
-
-            <HomeScreenCard
-              icon={<TicketIcon className="h-10 w-10" aria-hidden="true" />}
-              title="Kuponer"
-              description="Udløs dine kuponer og tilbud"
-              link="/coupon"
-            />
-            <HomeScreenCard
-              icon={
-                <BuildingOfficeIcon className="h-10 w-10" aria-hidden="true" />
-              }
-              title="Partnere"
-              description="Udforsk vores partnere"
-              link="/partner"
-            />
+            {role == "admin" && (
+              <HomeScreenCard
+                icon={
+                  <ListBulletIcon className="h-10 w-10" aria-hidden="true" />
+                }
+                title="Rangliste"
+                description="Stryg hele vejen til tops i ranglisten"
+                link="/rangliste"
+              />
+            )}
+            {role == "admin" && (
+              <HomeScreenCard
+                icon={
+                  <NewspaperIcon className="h-10 w-10" aria-hidden="true" />
+                }
+                title="Nyheder"
+                description="Hold dig opdateret med seneste nyt"
+                link="/news"
+              />
+            )}
+            {role == "admin" && (
+              <HomeScreenCard
+                icon={<TicketIcon className="h-10 w-10" aria-hidden="true" />}
+                title="Kuponer"
+                description="Udløs dine kuponer og tilbud"
+                link="/coupon"
+              />
+            )}
+            {role == "admin" && (
+              <HomeScreenCard
+                icon={
+                  <BuildingOfficeIcon
+                    className="h-10 w-10"
+                    aria-hidden="true"
+                  />
+                }
+                title="Partnere"
+                description="Udforsk vores partnere"
+                link="/partner"
+              />
+            )}
             {role == "admin" && (
               <HomeScreenCard
                 icon={<CogIcon className="h-10 w-10" aria-hidden="true" />}
