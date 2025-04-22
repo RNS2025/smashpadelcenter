@@ -40,7 +40,7 @@ import ViewMatchPage from "./pages/(logged-in)/matchFinder/ViewMatchPage.tsx";
 function App() {
   return (
     <HelmetProvider>
-      <BrowserRouter>
+      <BrowserRouter basename="/smashpadelcenter">
         <UserProvider>
           <Routes>
             {/* Whitelisted Routes */}
