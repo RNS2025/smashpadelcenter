@@ -9,13 +9,23 @@ import {
 } from "react";
 import { User } from "../types/user";
 import userProfileService from "../services/userProfileService";
+import communityApi from "../services/makkerborsService"; // Changed to use your existing API service
 import { useUser } from "./UserContext";
+import { PadelMatch } from "../types/PadelMatch"; // Using your existing PadelMatch type
+
+interface MatchesData {
+  upcoming: PadelMatch[];
+  former: PadelMatch[];
+}
 
 interface ProfileContextValue {
   profile: User | null;
   loading: boolean;
   error: string;
   formData: Partial<User>;
+  matches: MatchesData;
+  matchesLoading: boolean;
+  refreshMatches: () => Promise<void>;
   handleInputChange: (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => void;
@@ -34,6 +44,11 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const [error, setError] = useState("");
   const [formData, setFormData] = useState<Partial<User>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [matches, setMatches] = useState<MatchesData>({
+    upcoming: [],
+    former: [],
+  });
+  const [matchesLoading, setMatchesLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -54,6 +69,50 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     };
     fetchData();
   }, [user?.username]);
+
+  useEffect(() => {
+    fetchMatches();
+  }, [user?.username]);
+
+  const fetchMatches = async () => {
+    if (!user?.username) return;
+    try {
+      setMatchesLoading(true);
+      // Using your existing communityApi.getMatchesByUser method
+      const userMatches = await communityApi.getMatchesByUser(user.username);
+
+      const now = new Date();
+      const upcomingMatches = userMatches
+        .filter((match) => new Date(match.matchDateTime) > now)
+        .sort(
+          (a, b) =>
+            new Date(a.matchDateTime).getTime() -
+            new Date(b.matchDateTime).getTime()
+        );
+
+      const formerMatches = userMatches
+        .filter((match) => new Date(match.matchDateTime) <= now)
+        .sort(
+          (a, b) =>
+            new Date(b.matchDateTime).getTime() -
+            new Date(a.matchDateTime).getTime()
+        );
+
+      setMatches({
+        upcoming: upcomingMatches,
+        former: formerMatches,
+      });
+    } catch (err: any) {
+      console.error("Error fetching match data:", err);
+      // Don't set error here as it would override profile errors
+    } finally {
+      setMatchesLoading(false);
+    }
+  };
+
+  const refreshMatches = async () => {
+    await fetchMatches();
+  };
 
   const handleInputChange = (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
@@ -76,7 +135,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       setIsSubmitting(false);
       return;
     }
-    console.log("Submitting formData:", formData); // Debug log
+    console.log("Submitting formData:", formData);
     try {
       if (user?.username) {
         console.log("Updating profile for username:", user.username);
@@ -105,6 +164,9 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         loading,
         error,
         formData,
+        matches,
+        matchesLoading,
+        refreshMatches,
         handleInputChange,
         handleSubmit,
         isSubmitting,

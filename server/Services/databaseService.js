@@ -177,41 +177,97 @@ module.exports = {
       losses,
     };
   },
+  createPadelMatch: async (matchData) => {
+    const {
+      matchDateTime,
+      participants,
+      score = "TBD",
+      result = "unknown",
+    } = matchData;
+    try {
+      // Validate participants
+      if (!participants || participants.length < 2) {
+        throw new Error("At least two participants are required");
+      }
 
+      // Verify all participants exist
+      const users = await User.find({ username: { $in: participants } });
+      if (users.length !== participants.length) {
+        throw new Error("One or more participants not found");
+      }
+
+      // Create the match
+      const newMatch = new PadelMatch({
+        matchDateTime,
+        participants,
+        score,
+        result,
+      });
+      await newMatch.save();
+      console.log("Created match:", newMatch);
+
+      // Update each participant's matchHistory
+      await User.updateMany(
+        { username: { $in: participants } },
+        { $push: { matchHistory: newMatch._id } }
+      );
+      console.log("Updated matchHistory for participants:", participants);
+
+      // Fetch the match with populated data
+      const populatedMatch = await PadelMatch.findById(newMatch._id);
+      return {
+        id: populatedMatch._id.toString(),
+        date: populatedMatch.matchDateTime.toISOString(),
+        participants: populatedMatch.participants,
+        score: populatedMatch.score,
+        result: populatedMatch.result,
+      };
+    } catch (err) {
+      console.error("Error creating match:", err.message);
+      throw new Error("Error creating match: " + err.message);
+    }
+  },
+
+  // Update existing getProfileWithMatches to ensure matches are returned
   getProfileWithMatches: async (userId) => {
-    const user = await User.findById(userId).populate("matchHistory");
-    if (!user) throw new Error("User not found");
-    const matches = await PadelMatch.find({
-      participants: user.username,
-    });
-    const now = new Date();
-    const pastMatches = matches
-      .filter((m) => new Date(m.matchDateTime) <= now)
-      .map((m) => ({
-        id: m._id.toString(),
-        date: m.matchDateTime.toISOString(),
-        opponent:
-          m.participants.filter((p) => p !== user.username).join(", ") ||
-          "Unknown",
-        score: m.score || "TBD",
-        result: m.result || "unknown",
-      }));
-    const stats = await module.exports.getUserStats(userId);
-    return {
-      id: user._id.toString(),
-      username: user.username,
-      email: user.email || "",
-      fullName: user.fullName || "",
-      phoneNumber: user.phoneNumber || "",
-      profilePictureUrl: user.profilePictureUrl || "/api/placeholder/150/150",
-      skillLevel: user.skillLevel || 1,
-      position: user.position || "Begge",
-      playingStyle: user.playingStyle || "",
-      equipment: user.equipment || "",
-      role: user.role || "user",
-      pastMatches,
-      stats,
-    };
+    try {
+      const user = await User.findById(userId).populate("matchHistory");
+      if (!user) throw new Error("User not found");
+      const matches = await PadelMatch.find({
+        participants: user.username,
+      });
+      const now = new Date();
+      const pastMatches = matches
+        .filter((m) => new Date(m.matchDateTime) <= now)
+        .map((m) => ({
+          id: m._id.toString(),
+          date: m.matchDateTime.toISOString(),
+          opponent:
+            m.participants.filter((p) => p !== user.username).join(", ") ||
+            "Unknown",
+          score: m.score || "TBD",
+          result: m.result || "unknown",
+        }));
+      const stats = await module.exports.getUserStats(userId);
+      return {
+        id: user._id.toString(),
+        username: user.username,
+        email: user.email || "",
+        fullName: user.fullName || "",
+        phoneNumber: user.phoneNumber || "",
+        profilePictureUrl: user.profilePictureUrl || "/api/placeholder/150/150",
+        skillLevel: user.skillLevel || 1,
+        position: user.position || "Begge",
+        playingStyle: user.playingStyle || "",
+        equipment: user.equipment || "",
+        role: user.role || "user",
+        pastMatches,
+        stats,
+      };
+    } catch (err) {
+      console.error("Error fetching profile with matches:", err.message);
+      throw new Error("Error fetching profile: " + err.message);
+    }
   },
 
   getProfileByUsername: async (username) => {
