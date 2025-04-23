@@ -76,7 +76,7 @@ const ProfilePageOld: React.FC = () => {
     // Initialize Socket.IO client
     useEffect(() => {
         if (username) {
-            const socketInstance = io("http://localhost:3001", {
+            const socketInstance = io("https://localhost:3001", {
                 path: "/socket.io/",
                 auth: { username },
             });

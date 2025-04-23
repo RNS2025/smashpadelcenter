@@ -1,7 +1,7 @@
 import { io, Socket } from "socket.io-client";
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:3001/api/v1";
+const API_BASE_URL = "https://localhost:3001/api/v1";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -39,7 +39,7 @@ export class MessageService {
 
   constructor(userId: string) {
     this.userId = userId;
-    this.socket = io("http://localhost:3001", {
+    this.socket = io("https://localhost:3001", {
       withCredentials: true,
       path: "/socket.io/",
     });

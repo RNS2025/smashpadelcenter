@@ -2,7 +2,7 @@ import api from "../api/api";
 import { Trainer } from "../types/Trainer";
 import { io } from "socket.io-client";
 
-const socket = io("http://localhost:3001", {
+const socket = io("https://localhost:3001", {
   path: "/socket.io/",
 });
 

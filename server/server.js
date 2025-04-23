@@ -22,21 +22,38 @@ const createAdmin = require("./scripts/createAdmin");
 const createTenUsers = require("./scripts/createTenUsers");
 const { updateAllData } = require("./scripts/dataScheduler");
 const path = require("path");
-const http = require("http");
+const https = require("https");
+const fs = require("fs");
 const { setupSocketIO } = require("./WebSockets");
 const { setIO } = require("./Services/trainerService");
 require("dotenv").config();
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const ENV = "development";
 
 // Middleware
 app.use(express.json());
 
-// Create HTTP server
-const server = http.createServer(app);
+// Load SSL certificates (for local development or production with self-managed certs)
+let server;
+if (ENV === "production") {
+  // In production, rely on hosting platform (e.g., Heroku, AWS) or load certs
+  // Example for self-managed certificates:
+  const privateKey = fs.readFileSync("/path/to/privkey.pem", "utf8");
+  const certificate = fs.readFileSync("/path/to/cert.pem", "utf8");
+  const ca = fs.readFileSync("/path/to/chain.pem", "utf8"); // Optional: CA bundle
+  const credentials = { key: privateKey, cert: certificate, ca: ca };
+  server = https.createServer(credentials, app);
+} else {
+  // Local development with self-signed certificates
+  const privateKey = fs.readFileSync("certs/server.key", "utf8");
+  const certificate = fs.readFileSync("certs/server.cert", "utf8");
+  const credentials = { key: privateKey, cert: certificate };
+  server = https.createServer(credentials, app);
+}
 
-// Setup Socket.IO with the HTTP server
+// Setup Socket.IO with the HTTPS server
 const io = setupSocketIO(server);
 setIO(io);
 
@@ -45,8 +62,10 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
+      "https://localhost:5173",
       "http://192.168.1.124:5173",
       "http://frontend:5173",
+      "https://rns2025.github.io", // Ensure HTTPS for GitHub Pages
     ],
     credentials: true,
   })
@@ -56,14 +75,14 @@ app.use(
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "your_secret_key",
-    resave: true, // Changed to true to ensure session is saved
-    saveUninitialized: true, // Changed to true to save uninitialized sessions
-    rolling: true, // Resets the cookie maxAge on every response
+    resave: true,
+    saveUninitialized: true,
+    rolling: true,
     cookie: {
-      secure: process.env.NODE_ENV === "production",
+      secure: true, // Must be true for HTTPS to ensure cookies are sent
       httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      maxAge: 24 * 60 * 60 * 1000, // Session valid for 24 hours
+      sameSite: "none", // Required for cross-origin requests with HTTPS
+      maxAge: 24 * 60 * 60 * 1000,
     },
   })
 );
@@ -128,14 +147,14 @@ const cleanDatabase = async () => {
 mongoose.connection.once("open", async () => {
   console.log("✅ Connected to MongoDB");
 
-  await cleanDatabase();
+  // await cleanDatabase();
 
   // Recreate admin and test users after potential wipe
   await createAdmin();
   await createTenUsers();
 
   server.listen(PORT, () => {
-    console.log(`🚀 Server is running on http://localhost:${PORT}`);
+    console.log(`🚀 Server is running on https://localhost:${PORT}`);
     // Start the scheduler
     updateAllData(); // Optional: Run immediately on startup
   });

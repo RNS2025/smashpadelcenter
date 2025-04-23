@@ -21,7 +21,11 @@ const onlineUsers = new Map();
 function setupSocketIO(server) {
   const io = new Server(server, {
     cors: {
-      origin: "http://localhost:5173", // Frontend URL
+      origin: [
+        "http://localhost:5173",
+        "https://localhost:5173",
+        "https://rns2025.github.io",
+      ], // Frontend URL
       methods: ["GET", "POST"],
       credentials: true,
     },

@@ -33,7 +33,7 @@ const BookTraining: React.FC = () => {
   });
 
   useEffect(() => {
-    const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:3001";
+    const apiUrl = import.meta.env.VITE_API_URL || "https://localhost:3001";
     socketRef.current = io(apiUrl, {
       path: "/socket.io/",
       auth: { username },

@@ -31,7 +31,7 @@ services:
   frontend:
     build: ./
     environment:
-      - REACT_APP_API_BASE_URL=http://localhost:3001/api/v1
+      - REACT_APP_API_BASE_URL=https://localhost:3001/api/v1
       - VAPID_PUBLIC_KEY=BNs6vAoTALj4B4HwsVW3Kz6y3EYGc6XK5ZjM9V3QH42XDolvBKNQNmMBkThCu6TualLn5ZMzpydHp74wrk7aqXY
     restart: always
     networks:
