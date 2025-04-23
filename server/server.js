@@ -82,7 +82,7 @@ app.use(
       secure: true, // Must be true for HTTPS to ensure cookies are sent
       httpOnly: true,
       sameSite: "none", // Required for cross-origin requests with HTTPS
-      maxAge: 24 * 60 * 60 * 1000,
+      maxAge: 365 * 24 * 60 * 60 * 1000,
     },
   })
 );
