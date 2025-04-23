@@ -22,7 +22,7 @@ import { sendNotification } from "../utils/notifications";
 import { useUser } from "../context/UserContext";
 
 const CourtSchedule: React.FC = () => {
-  const { username, role } = useUser(); // Get username from user context
+  const { user } = useUser(); // Get user from user context
   const [courtTimes, setCourtTimes] = useState<CourtData[] | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -115,15 +115,8 @@ const CourtSchedule: React.FC = () => {
           }
         });
 
-        console.log("About to send notification:", {
-          username,
-          title: "Available Court Times",
-          message: notificationMessage,
-          type: "updates",
-        });
-
         sendNotification(
-          username,
+          user?.username || "Unknown",
           "Available Court Times",
           notificationMessage,
           "updates"

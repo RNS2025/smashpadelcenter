@@ -1,26 +1,29 @@
-const User = require("../models/user");
-const argon2 = require("argon2");
+const { mongoose } = require("../config/database");
+const databaseService = require("../Services/databaseService");
 
 async function createAdmin() {
   try {
-    // Check if the user already exists
-    const user = await User.findOne({ username: "admin" });
-
-    if (user) {
-      console.log("Admin user already exists:", user.username);
-      return;
+    // Ensure MongoDB connection is active
+    if (mongoose.connection.readyState !== 1) {
+      throw new Error("No active MongoDB connection. Run server.js first.");
     }
 
-    // If user doesn't exist, create a new user
-    const newAdmin = await User.create({
-      username: "admin",
-      password: "admin",
-      role: "admin",
-    });
-
-    console.log("Admin user created:", newAdmin.username);
+    const admin = await databaseService.findUserByUsername("admin");
+    if (!admin) {
+      const newAdmin = await databaseService.createUser({
+        username: "admin",
+        email: "admin@smashpadel.com",
+        password: "admin",
+        provider: "local",
+        role: "admin",
+      });
+      console.log("Admin user created:", newAdmin.username);
+    } else {
+      console.log("Admin user already exists.");
+    }
   } catch (err) {
-    console.error("Error creating admin user:", err.message);
+    console.error("Error creating admin:", err.message);
+    throw err;
   }
 }
 

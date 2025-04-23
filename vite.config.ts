@@ -58,8 +58,7 @@ export default defineConfig({
             options: {
               cacheName: "asset-cache",
               expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+                maxAgeSeconds: 365 * 24 * 60 * 60 * 1000, // 1 year
               },
             },
           },
@@ -69,8 +68,7 @@ export default defineConfig({
             options: {
               cacheName: "image-cache",
               expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
+                maxAgeSeconds: 365 * 24 * 60 * 60 * 1000,
               },
             },
           },

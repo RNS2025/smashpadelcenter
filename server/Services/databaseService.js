@@ -1,23 +1,40 @@
 const User = require("../models/user");
 
 /**
- * Create a new user and hash the password using Argon2.
- * @param {Object} userData - The user data (username and password)
+ * Create a new user with optional password for local login or OAuth provider details.
+ * @param {Object} userData - The user data (username, email, provider, providerId, password)
  * @returns {Promise<Object>} The newly created user object
- * @throws {Error} If username already exists
+ * @throws {Error} If username or email already exists
  */
 async function createUser(userData) {
-  const { username, password } = userData;
+  const {
+    username,
+    email = "empty",
+    provider = "local",
+    providerId = null,
+    password,
+  } = userData;
   try {
-    // Check if username already exists
+    // Check if username already exists (not checking email)
     const existingUser = await User.findOne({ username });
     if (existingUser) {
       throw new Error("Username already exists");
     }
 
+    // Check if providerId already exists (for social logins)
+    if (provider !== "local" && providerId) {
+      const existingProvider = await User.findOne({ provider, providerId });
+      if (existingProvider) {
+        throw new Error("User already exists with this provider account");
+      }
+    }
+
     const newUser = new User({
       username,
-      password, // The password will be hashed by Mongoose pre-save hook
+      email: email || null,
+      provider: provider || "local",
+      providerId: provider === "local" ? null : providerId,
+      password: provider === "local" ? password : undefined,
       role: "user",
     });
     await newUser.save();
@@ -33,7 +50,7 @@ async function createUser(userData) {
  */
 async function getAllUsers() {
   try {
-    return await User.find({}, "username role"); // Return only username and role
+    return await User.find({}, "username role email provider");
   } catch (err) {
     throw new Error("Error fetching users: " + err.message);
   }
@@ -47,6 +64,33 @@ async function getAllUsers() {
 async function findUserByUsername(username) {
   try {
     return await User.findOne({ username });
+  } catch (err) {
+    throw new Error("Error finding user: " + err.message);
+  }
+}
+
+/**
+ * Find a user by email.
+ * @param {String} email - The email of the user to find
+ * @returns {Promise<Object|null>} The user object if found, else null
+ */
+async function findUserByEmail(email) {
+  try {
+    return await User.findOne({ email });
+  } catch (err) {
+    throw new Error("Error finding user: " + err.message);
+  }
+}
+
+/**
+ * Find a user by OAuth provider and providerId.
+ * @param {String} provider - The OAuth provider (google, facebook, github)
+ * @param {String} providerId - The provider's unique ID for the user
+ * @returns {Promise<Object|null>} The user object if found, else null
+ */
+async function findUserByProvider(provider, providerId) {
+  try {
+    return await User.findOne({ provider, providerId });
   } catch (err) {
     throw new Error("Error finding user: " + err.message);
   }
@@ -76,5 +120,7 @@ module.exports = {
   createUser,
   getAllUsers,
   findUserByUsername,
+  findUserByEmail,
+  findUserByProvider,
   updateUserRole,
 };

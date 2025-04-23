@@ -1,7 +1,7 @@
 import { Helmet } from "react-helmet-async";
-import { FormEvent, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { login } from "../services/auth";
+import { login, loginWithProvider } from "../services/auth";
 
 interface LocationState {
   message?: string;
@@ -13,31 +13,41 @@ export const LoginPage = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Check for messages from navigation state
   useEffect(() => {
     const state = location.state as LocationState;
     if (state?.message) {
       setSuccessMessage(state.message);
-      // Clear the state to prevent showing the message after refresh
       window.history.replaceState({}, document.title);
     }
   }, [location]);
 
-  const handleLogin = async (e: FormEvent) => {
+  const handleLocalLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setSuccessMessage("");
-    try {
-      const data = await login(username, password);
-      console.log("Logged in:", data);
+    setIsSubmitting(true);
 
-      // Handle successful login
-      navigate("/hjem");
-    } catch (err) {
-      setError((err as any).message);
+    try {
+      await login(username, password);
+      navigate("/hjem", { replace: true });
+    } catch (err: any) {
+      setError(err.message || "Failed to log in");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleProviderLogin = (provider: string) => {
+    setError("");
+    setSuccessMessage("");
+    try {
+      loginWithProvider(provider);
+    } catch (err: any) {
+      setError(err.message || "Failed to initiate login");
     }
   };
 
@@ -97,7 +107,7 @@ export const LoginPage = () => {
                 </p>
               </div>
 
-              <form action="#" className="mt-8 flex flex-col gap-6">
+              <div className="mt-8 flex flex-col gap-6">
                 <div className="col-span-6">
                   <h2 className="text-2xl font-bold">Log ind</h2>
                 </div>
@@ -108,68 +118,95 @@ export const LoginPage = () => {
                   </div>
                 )}
 
-                <div className="col-span-6">
-                  <label
-                    htmlFor="Username"
-                    className="block text-sm font-medium text-left"
-                  >
-                    Brugernavn
-                  </label>
-
-                  <input
-                    type="text"
-                    id="Username"
-                    name="username"
-                    className="mt-1 w-80 rounded-md text-sm shadow-sm border-gray-700 bg-gray-800 transition-all duration-200"
-                    autoComplete={"username"}
-                    onChange={(e) => setUsername(e.target.value)}
-                  />
-                </div>
-
-                <div className="col-span-6">
-                  <label
-                    htmlFor="Password"
-                    className="block text-sm font-medium text-left"
-                  >
-                    Adgangskode
-                  </label>
-
-                  <input
-                    type="password"
-                    id="Password"
-                    name="password"
-                    className="mt-1 w-80 rounded-md text-sm shadow-sm border-gray-700 bg-gray-800 transition-all duration-200"
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                </div>
-
                 {error && (
                   <div className="col-span-6 transition-opacity duration-300 ease-in-out">
-                    <p className="text-red-500 text-sm">
-                      Forkert brugernavn eller adgangskode.
-                    </p>
+                    <p className="text-red-500 text-sm">{error}</p>
                   </div>
                 )}
 
-                <div className="flex items-center gap-4">
+                <form
+                  onSubmit={handleLocalLogin}
+                  className="flex flex-col gap-4"
+                >
+                  <div>
+                    <label
+                      htmlFor="username"
+                      className="block text-sm font-medium"
+                    >
+                      Brugernavn
+                    </label>
+                    <input
+                      type="text"
+                      id="username"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      className="mt-1 w-full rounded-md border-gray-200 bg-white text-sm shadow-sm focus:border-blue-600 focus:ring focus:ring-blue-600 focus:ring-opacity-50 text-black"
+                      required
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="password"
+                      className="block text-sm font-medium"
+                    >
+                      Adgangskode
+                    </label>
+                    <input
+                      type="password"
+                      id="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="mt-1 w-full rounded-md border-gray-200 bg-white text-sm shadow-sm focus:border-blue-600 focus:ring focus:ring-blue-600 focus:ring-opacity-50 text-black"
+                      required
+                      disabled={isSubmitting}
+                    />
+                  </div>
                   <button
-                    onClick={handleLogin}
-                    className="inline-block shrink-0 rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium transition-all duration-300 hover:bg-transparent hover:text-blue-600 focus:outline-none focus:ring active:text-blue-500"
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="inline-flex items-center justify-center rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition-all duration-300 hover:bg-transparent hover:text-blue-600 focus:outline-none focus:ring disabled:opacity-50"
                   >
-                    SMASH!
+                    Log ind
                   </button>
                   <button
                     type="button"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      navigate("/register");
-                    }}
-                    className="inline-block shrink-0 rounded-md border border-gray-600 bg-gray-600 px-12 py-3 text-sm font-medium transition-all duration-300 hover:bg-transparent hover:text-gray-600 focus:outline-none focus:ring active:text-gray-500"
+                    onClick={() => navigate("/glemt-adgangskode")}
+                    className="text-sm text-blue-600 hover:underline"
                   >
-                    Registrer
+                    Glemt adgangskode?
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => navigate("/register")}
+                    className="text-sm text-blue-600 hover:underline"
+                  >
+                    Opret Konto
+                  </button>
+                </form>
+
+                <div className="flex items-center my-4">
+                  <div className="flex-grow border-t border-gray-300"></div>
+                  <span className="mx-4 text-sm text-gray-500">eller</span>
+                  <div className="flex-grow border-t border-gray-300"></div>
+                </div>
+
+                <div className="flex flex-col gap-4">
+                  <button
+                    onClick={() => handleProviderLogin("google")}
+                    className="inline-flex items-center justify-center rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition-all duration-300 hover:bg-transparent hover:text-blue-600 focus:outline-none focus:ring"
+                    disabled={isSubmitting}
+                  >
+                    <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
+                      <path
+                        fill="currentColor"
+                        d="M12.24 10.667v2.333h6.84c-.28 1.333-1.933 3.867-6.84 3.867-4.12 0-7.467-3.333-7.467-7.467s3.347-7.467 7.467-7.467c2.12 0 4.013.867 5.373 2.267l1.64-1.64C17.373 1.12 14.907 0 12.24 0 6.307 0 1.373 4.933 1.373 10.867s4.933 10.867 10.867 10.867c6.307 0 10.867-4.933 10.867-10.867 0-.733-.093-1.467-.24-2.2h-10.627z"
+                      />
+                    </svg>
+                    Log ind med Google
                   </button>
                 </div>
-              </form>
+              </div>
             </div>
           </main>
         </div>

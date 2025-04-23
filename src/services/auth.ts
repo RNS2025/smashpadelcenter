@@ -7,23 +7,19 @@ export const login = async (username: string, password: string) => {
     const response = await api.post("/login", { username, password });
     return response.data;
   } catch (error: any) {
-    if (error.response) {
-      console.error("Login error:", error.response.data);
-      throw new Error(
-        error.response.data.message || "Invalid username or password"
-      );
-    } else {
-      throw new Error("Network error or server unreachable");
-    }
+    throw new Error(
+      error.response?.data?.error || "Failed to log in. Please try again."
+    );
   }
 };
 
-export const register = async (username: string, password: string) => {
+export const logout = async () => {
   try {
-    const response = await api.post("/register", { username, password });
-    return response.data;
+    await api.post("/logout");
+    document.cookie =
+      "session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; HttpOnly;";
   } catch (error) {
-    throw new Error("Error creating user");
+    throw new Error("Failed to log out. Please try again later.");
   }
 };
 
@@ -63,12 +59,17 @@ export const changeUserRole = async (username: string, role: string) => {
   }
 };
 
-export const logout = async () => {
+export const loginWithProvider = (provider: string) => {
+  window.location.href = `https://localhost:3001/api/v1/auth/${provider}`;
+};
+
+export const register = async (username: string, password: string) => {
   try {
-    await api.post("/logout");
-    document.cookie =
-      "session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; HttpOnly;";
-  } catch (error) {
-    throw new Error("Failed to log out. Please try again later.");
+    const response = await api.post("/register", { username, password });
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      error.response?.data?.error || "Failed to register. Please try again."
+    );
   }
 };

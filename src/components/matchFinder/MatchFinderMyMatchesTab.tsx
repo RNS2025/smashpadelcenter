@@ -14,7 +14,7 @@ registerLocale("da", da);
 
 export const MatchFinderMyMatchesTab = () => {
   const navigate = useNavigate();
-  const { username } = useUser();
+  const { user } = useUser();
 
   const [matches, setMatches] = useState<PadelMatch[]>([]);
   const [loading, setLoading] = useState(true);
@@ -23,8 +23,8 @@ export const MatchFinderMyMatchesTab = () => {
   useEffect(() => {
     const fetchMatches = async () => {
       try {
-        if (username) {
-          const data = await communityApi.getMatchesByUser(username);
+        if (user?.username) {
+          const data = await communityApi.getMatchesByUser(user?.username);
           setMatches(data);
         }
         setLoading(false);
@@ -35,7 +35,7 @@ export const MatchFinderMyMatchesTab = () => {
       }
     };
     fetchMatches().then();
-  }, [username]);
+  }, [user?.username]);
 
   if (loading) {
     return <LoadingSpinner />;
@@ -71,12 +71,17 @@ export const MatchFinderMyMatchesTab = () => {
           >
             <div className="flex justify-between">
               <h1 className="font-semibold">
-                {safeFormatDate(match.matchDateTime, "EEEE | dd. MMMM | HH:mm").toUpperCase()} - {safeFormatDate(match.endTime, "HH:mm")}
+                {safeFormatDate(
+                  match.matchDateTime,
+                  "EEEE | dd. MMMM | HH:mm"
+                ).toUpperCase()}{" "}
+                - {safeFormatDate(match.endTime, "HH:mm")}
               </h1>
-              {match.joinRequests.length > 0 && username === match.username && (
-              <h1 className="bg-red-500 text-white rounded-full px-1.5 py-0.5 text-xs animate-pulse">
-                {match.joinRequests.length}
-              </h1>
+              {match.joinRequests.length > 0 &&
+                user?.username === match.username && (
+                  <h1 className="bg-red-500 text-white rounded-full px-1.5 py-0.5 text-xs animate-pulse">
+                    {match.joinRequests.length}
+                  </h1>
                 )}
             </div>
 
@@ -88,54 +93,64 @@ export const MatchFinderMyMatchesTab = () => {
               <p>Niveau {match.level}</p>
 
               <div className="flex items-center">
-                {[...Array(match.participants.length + match.reservedSpots.length)].map((_, i) => (
-                    <UserCircleIcon
-                        key={`participant-${i}`}
-                        className="h-5 text-cyan-500"
-                    />
+                {[
+                  ...Array(
+                    match.participants.length + match.reservedSpots.length
+                  ),
+                ].map((_, i) => (
+                  <UserCircleIcon
+                    key={`participant-${i}`}
+                    className="h-5 text-cyan-500"
+                  />
                 ))}
 
-
-                {[...Array(
+                {[
+                  ...Array(
                     Math.max(
-                        0,
-                        match.totalSpots - (match.participants.length + match.reservedSpots.length)
+                      0,
+                      match.totalSpots -
+                        (match.participants.length + match.reservedSpots.length)
                     )
-                )]
-                    .slice(0, match.joinRequests.length)
-                    .map((_, i) => (
-                        <UserCircleIcon
-                            key={`join-${i}`}
-                            className="h-5 text-yellow-500"
-                        />
-                    ))}
+                  ),
+                ]
+                  .slice(0, match.joinRequests.length)
+                  .map((_, i) => (
+                    <UserCircleIcon
+                      key={`join-${i}`}
+                      className="h-5 text-yellow-500"
+                    />
+                  ))}
 
-
-                {[...Array(
+                {[
+                  ...Array(
                     Math.max(
-                        0,
-                        match.totalSpots -
+                      0,
+                      match.totalSpots -
                         (match.participants.length +
-                            match.reservedSpots.length +
-                            Math.min(match.joinRequests.length, match.totalSpots))
+                          match.reservedSpots.length +
+                          Math.min(match.joinRequests.length, match.totalSpots))
                     )
-                )].map((_, i) => (
-                    <UserCircleIcon
-                        key={`empty-${i}`}
-                        className="h-5 text-gray-500"
-                    />
+                  ),
+                ].map((_, i) => (
+                  <UserCircleIcon
+                    key={`empty-${i}`}
+                    className="h-5 text-gray-500"
+                  />
                 ))}
-
 
                 {match.joinRequests.length >
-                    match.totalSpots -
-                    (match.participants.length + match.reservedSpots.length) && (
-                        <div className="ml-1 text-xs text-yellow-400 font-semibold">
-                          +{match.joinRequests.length - (match.totalSpots - (match.participants.length + match.reservedSpots.length))}
-                        </div>
-                    )}
+                  match.totalSpots -
+                    (match.participants.length +
+                      match.reservedSpots.length) && (
+                  <div className="ml-1 text-xs text-yellow-400 font-semibold">
+                    +
+                    {match.joinRequests.length -
+                      (match.totalSpots -
+                        (match.participants.length +
+                          match.reservedSpots.length))}
+                  </div>
+                )}
               </div>
-
             </div>
             <p className="text-gray-500">Oprettet af {match.username}</p>
           </div>

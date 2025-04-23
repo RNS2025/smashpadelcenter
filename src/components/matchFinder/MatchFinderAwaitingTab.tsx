@@ -7,14 +7,14 @@ import { format } from "date-fns";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../../context/UserContext";
-import {registerLocale} from "react-datepicker";
-import {da} from "date-fns/locale";
+import { registerLocale } from "react-datepicker";
+import { da } from "date-fns/locale";
 import { toZonedTime } from "date-fns-tz";
 registerLocale("da", da);
 
 export const MatchFinderAwaitingTab = () => {
   const navigate = useNavigate();
-  const { username } = useUser();
+  const { user } = useUser();
 
   const [matches, setMatches] = useState<PadelMatch[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,7 +25,8 @@ export const MatchFinderAwaitingTab = () => {
       try {
         const data = await communityApi.getMatches();
         const awaitingMatches = data.filter(
-          (match) => username && match.joinRequests.includes(username)
+          (match) =>
+            user?.username && match.joinRequests.includes(user?.username)
         );
         setMatches(awaitingMatches);
         setLoading(false);
@@ -36,7 +37,7 @@ export const MatchFinderAwaitingTab = () => {
       }
     };
     fetchMatches().then();
-  }, [username]);
+  }, [user?.username]);
 
   if (loading) {
     return <LoadingSpinner />;
@@ -74,7 +75,11 @@ export const MatchFinderAwaitingTab = () => {
               className="border border-yellow-500 rounded-lg p-4 space-y-1.5 cursor-pointer hover:bg-gray-700 mb-5"
             >
               <h1 className="font-semibold">
-                {safeFormatDate(match.matchDateTime, "EEEE | dd. MMMM | HH:mm").toUpperCase()} - {safeFormatDate(match.endTime, "HH:mm")}
+                {safeFormatDate(
+                  match.matchDateTime,
+                  "EEEE | dd. MMMM | HH:mm"
+                ).toUpperCase()}{" "}
+                - {safeFormatDate(match.endTime, "HH:mm")}
               </h1>
 
               <div className="flex justify-between border-b border-gray-600">
@@ -85,52 +90,67 @@ export const MatchFinderAwaitingTab = () => {
               <div className="flex justify-between">
                 <p>Niveau {match.level}</p>
                 <div className="flex items-center">
-                  {[...Array(match.participants.length + match.reservedSpots.length)].map((_, i) => (
-                      <UserCircleIcon
-                          key={`participant-${i}`}
-                          className="h-5 text-cyan-500"
-                      />
+                  {[
+                    ...Array(
+                      match.participants.length + match.reservedSpots.length
+                    ),
+                  ].map((_, i) => (
+                    <UserCircleIcon
+                      key={`participant-${i}`}
+                      className="h-5 text-cyan-500"
+                    />
                   ))}
 
-
-                  {[...Array(
+                  {[
+                    ...Array(
                       Math.max(
-                          0,
-                          match.totalSpots - (match.participants.length + match.reservedSpots.length)
-                      )
-                  )]
-                      .slice(0, match.joinRequests.length)
-                      .map((_, i) => (
-                          <UserCircleIcon
-                              key={`join-${i}`}
-                              className="h-5 text-yellow-500"
-                          />
-                      ))}
-
-
-                  {[...Array(
-                      Math.max(
-                          0,
-                          match.totalSpots -
+                        0,
+                        match.totalSpots -
                           (match.participants.length +
-                              match.reservedSpots.length +
-                              Math.min(match.joinRequests.length, match.totalSpots))
+                            match.reservedSpots.length)
                       )
-                  )].map((_, i) => (
+                    ),
+                  ]
+                    .slice(0, match.joinRequests.length)
+                    .map((_, i) => (
                       <UserCircleIcon
-                          key={`empty-${i}`}
-                          className="h-5 text-gray-500"
+                        key={`join-${i}`}
+                        className="h-5 text-yellow-500"
                       />
-                  ))}
+                    ))}
 
+                  {[
+                    ...Array(
+                      Math.max(
+                        0,
+                        match.totalSpots -
+                          (match.participants.length +
+                            match.reservedSpots.length +
+                            Math.min(
+                              match.joinRequests.length,
+                              match.totalSpots
+                            ))
+                      )
+                    ),
+                  ].map((_, i) => (
+                    <UserCircleIcon
+                      key={`empty-${i}`}
+                      className="h-5 text-gray-500"
+                    />
+                  ))}
 
                   {match.joinRequests.length >
-                      match.totalSpots -
-                      (match.participants.length + match.reservedSpots.length) && (
-                          <div className="ml-1 text-xs text-yellow-400 font-semibold">
-                            +{match.joinRequests.length - (match.totalSpots - (match.participants.length + match.reservedSpots.length))}
-                          </div>
-                      )}
+                    match.totalSpots -
+                      (match.participants.length +
+                        match.reservedSpots.length) && (
+                    <div className="ml-1 text-xs text-yellow-400 font-semibold">
+                      +
+                      {match.joinRequests.length -
+                        (match.totalSpots -
+                          (match.participants.length +
+                            match.reservedSpots.length))}
+                    </div>
+                  )}
                 </div>
               </div>
               <p className="text-gray-500">Oprettet af {match.username}</p>

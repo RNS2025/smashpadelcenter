@@ -20,18 +20,29 @@ import {
 import { setupNotifications } from "../../utils/notifications";
 
 export const HomePage = () => {
-  const { role, refreshUser, username } = useUser();
+  const { role, refreshUser, username, isAuthenticated } = useUser();
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
-    // Refresh user data if role is not set
-    if (!role && !isRefreshing) {
-      setIsRefreshing(true);
-      refreshUser()
-        .then(() => setIsRefreshing(false))
-        .catch(() => setIsRefreshing(false));
+    let timeoutId: NodeJS.Timeout | null = null;
+
+    // Only refresh user data if not authenticated or role is missing
+    if (!isAuthenticated || !role) {
+      if (!isRefreshing) {
+        setIsRefreshing(true);
+        // Delay refresh to allow session to stabilize after OAuth redirect
+        timeoutId = setTimeout(() => {
+          refreshUser()
+            .then(() => setIsRefreshing(false))
+            .catch((err) => {
+              console.error("Failed to refresh user:", err);
+              setIsRefreshing(false);
+            });
+        }, 1000); // 1-second delay
+      }
     }
 
+    // Initialize notifications only if username exists
     if (!username) return;
 
     const initializeNotifications = async () => {
@@ -43,7 +54,12 @@ export const HomePage = () => {
     };
 
     initializeNotifications();
-  }, [role, isRefreshing, refreshUser, username]); // Dependencies ensure it runs on mount and role change
+
+    // Cleanup timeout on unmount
+    return () => {
+      if (timeoutId) clearTimeout(timeoutId);
+    };
+  }, [role, isRefreshing, refreshUser, username, isAuthenticated]);
 
   return (
     <>
@@ -56,7 +72,7 @@ export const HomePage = () => {
 
         <div className="flex mt-5 items-center justify-center">
           <div className="grid gap-8 grid-cols-4 max-lg:grid-cols-3 max-md:grid-cols-2">
-            {role == "admin" && (
+            {role === "admin" && (
               <HomeScreenCard
                 icon={<CalendarIcon className="h-10 w-10" aria-hidden="true" />}
                 title="Book Bane"
@@ -64,7 +80,7 @@ export const HomePage = () => {
                 link="book-court"
               />
             )}
-            {role == "admin" && (
+            {role === "admin" && (
               <HomeScreenCard
                 icon={
                   <AcademicCapIcon className="h-10 w-10" aria-hidden="true" />
@@ -74,7 +90,7 @@ export const HomePage = () => {
                 link="book-training"
               />
             )}
-            {role == "admin" && (
+            {role === "admin" && (
               <HomeScreenCard
                 icon={<ChartBarIcon className="h-10 w-10" aria-hidden="true" />}
                 title="Arrangementer"
@@ -101,7 +117,7 @@ export const HomePage = () => {
               description="Overblik over ligaholdene tilknyttet SMASH"
               link="holdligaer"
             />
-            {role == "admin" && (
+            {role === "admin" && (
               <HomeScreenCard
                 icon={
                   <ListBulletIcon className="h-10 w-10" aria-hidden="true" />
@@ -111,7 +127,7 @@ export const HomePage = () => {
                 link="rangliste"
               />
             )}
-            {role == "admin" && (
+            {role === "admin" && (
               <HomeScreenCard
                 icon={
                   <NewspaperIcon className="h-10 w-10" aria-hidden="true" />
@@ -121,7 +137,7 @@ export const HomePage = () => {
                 link="news"
               />
             )}
-            {role == "admin" && (
+            {role === "admin" && (
               <HomeScreenCard
                 icon={<TicketIcon className="h-10 w-10" aria-hidden="true" />}
                 title="Kuponer"
@@ -129,7 +145,7 @@ export const HomePage = () => {
                 link="coupon"
               />
             )}
-            {role == "admin" && (
+            {role === "admin" && (
               <HomeScreenCard
                 icon={
                   <BuildingOfficeIcon
@@ -142,7 +158,7 @@ export const HomePage = () => {
                 link="partner"
               />
             )}
-            {role == "admin" && (
+            {role === "admin" && (
               <HomeScreenCard
                 icon={<CogIcon className="h-10 w-10" aria-hidden="true" />}
                 title="Admin Panel"

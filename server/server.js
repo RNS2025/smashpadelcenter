@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const session = require("express-session");
+const MongoStore = require("connect-mongo");
 const passport = require("./config/passport");
 const user = require("./config/roles");
 const authRoutes = require("./routes/authRoutes");
@@ -17,7 +18,7 @@ const LigaRoutes = require("./routes/LigaRoutes");
 const friendRoutes = require("./routes/friendRoutes");
 const messageRoutes = require("./routes/messageRoutes");
 const { swaggerUi, specs } = require("./config/swagger");
-const mongoose = require("./config/database");
+const { connectDB } = require("./config/database");
 const createAdmin = require("./scripts/createAdmin");
 const createTenUsers = require("./scripts/createTenUsers");
 const { updateAllData } = require("./scripts/dataScheduler");
@@ -26,34 +27,38 @@ const https = require("https");
 const fs = require("fs");
 const { setupSocketIO } = require("./WebSockets");
 const { setIO } = require("./Services/trainerService");
-require("dotenv").config();
+const dotenv = require("dotenv");
+const { mongoose } = require("./config/database");
+
+// Load .env file
+dotenv.config({ path: path.resolve(__dirname, ".env") });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
-const ENV = "development";
+const ENV = process.env.NODE_ENV || "development";
+const SESSION_SECRET = process.env.SESSION_SECRET || "default_secret_key";
+const MONGODB_URI =
+  process.env.MONGODB_URI || "mongodb://localhost:27017/smashpadel";
 
 // Middleware
 app.use(express.json());
 
-// Load SSL certificates (for local development or production with self-managed certs)
+// Load SSL certificates
 let server;
 if (ENV === "production") {
-  // In production, rely on hosting platform (e.g., Heroku, AWS) or load certs
-  // Example for self-managed certificates:
   const privateKey = fs.readFileSync("/path/to/privkey.pem", "utf8");
   const certificate = fs.readFileSync("/path/to/cert.pem", "utf8");
-  const ca = fs.readFileSync("/path/to/chain.pem", "utf8"); // Optional: CA bundle
+  const ca = fs.readFileSync("/path/to/chain.pem", "utf8");
   const credentials = { key: privateKey, cert: certificate, ca: ca };
   server = https.createServer(credentials, app);
 } else {
-  // Local development with self-signed certificates
   const privateKey = fs.readFileSync("certs/server.key", "utf8");
   const certificate = fs.readFileSync("certs/server.cert", "utf8");
   const credentials = { key: privateKey, cert: certificate };
   server = https.createServer(credentials, app);
 }
 
-// Setup Socket.IO with the HTTPS server
+// Setup Socket.IO
 const io = setupSocketIO(server);
 setIO(io);
 
@@ -65,25 +70,36 @@ app.use(
       "https://localhost:5173",
       "http://192.168.1.124:5173",
       "http://frontend:5173",
-      "https://rns2025.github.io", // Ensure HTTPS for GitHub Pages
+      "https://rns2025.github.io",
     ],
-    credentials: true,
+    credentials: true, // Allow cookies and credentials
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
-// Session setup
+// Session setup with MongoDB store
+// app.js
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || "your_secret_key",
-    resave: true,
-    saveUninitialized: true,
-    rolling: true,
+    secret: SESSION_SECRET,
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: MONGODB_URI,
+      collectionName: "sessions",
+      ttl: 365 * 24 * 60 * 60, // 1 year
+      autoRemove: "interval",
+      autoRemoveInterval: 10, // Remove expired sessions every 10 minutes
+    }),
     cookie: {
-      secure: true, // Must be true for HTTPS to ensure cookies are sent
+      secure: ENV === "production" ? true : false, // Use secure cookies in production
       httpOnly: true,
-      sameSite: "none", // Required for cross-origin requests with HTTPS
-      maxAge: 365 * 24 * 60 * 60 * 1000,
+      sameSite: ENV === "production" ? "none" : "lax", // Use 'none' for cross-site in production
+      maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
+      path: "/", // Ensure cookie is available for all routes
     },
+    rolling: true, // Refresh session on each request
   })
 );
 
@@ -94,7 +110,7 @@ app.use(passport.session());
 // Connect-Roles setup
 app.use(user.middleware());
 
-// Serve static files from the 'Uploads' folder
+// Serve static files
 app.use("/uploads", express.static(path.join(__dirname, "Uploads")));
 
 // Swagger setup
@@ -143,19 +159,23 @@ const cleanDatabase = async () => {
   }
 };
 
-// MongoDB connection setup
-mongoose.connection.once("open", async () => {
-  console.log("✅ Connected to MongoDB");
+// MongoDB connection and server startup
+async function startServer() {
+  try {
+    await connectDB();
+    await cleanDatabase(); // Uncomment this line to wipe the database
+    await createAdmin();
+    await createTenUsers();
+    server.listen(PORT, () => {
+      console.log(`🚀 Server is running on https://localhost:${PORT}`);
+      updateAllData();
+    });
+  } catch (err) {
+    console.error("Failed to start server:", err.message);
+    process.exit(1);
+  }
+}
 
-  // await cleanDatabase();
+startServer();
 
-  // Recreate admin and test users after potential wipe
-  await createAdmin();
-  await createTenUsers();
-
-  server.listen(PORT, () => {
-    console.log(`🚀 Server is running on https://localhost:${PORT}`);
-    // Start the scheduler
-    updateAllData(); // Optional: Run immediately on startup
-  });
-});
+module.exports = app;

@@ -1,17 +1,23 @@
 const mongoose = require("mongoose");
 
-const mongoURI =
-  process.env.MONGO_URI || "mongodb://localhost:27017/smashpadelcenter";
+const MONGODB_URI =
+  process.env.MONGODB_URI || "mongodb://localhost:27017/smashpadel";
 
-mongoose.connect(mongoURI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+async function connectDB() {
+  if (mongoose.connection.readyState === 1) {
+    console.log("Using existing MongoDB connection");
+    return mongoose.connection;
+  }
 
-const db = mongoose.connection;
-db.on("error", console.error.bind(console, "❌ MongoDB connection error:"));
-db.once("open", () => {
-  console.log("✅ Connected to MongoDB");
-});
+  try {
+    await mongoose.connect(MONGODB_URI);
+    console.log("✅ Connected to MongoDB");
+    return mongoose.connection;
+  } catch (err) {
+    console.error("MongoDB connection error:", err.message);
+    throw err;
+  }
+}
 
-module.exports = mongoose;
+// Export the connection function and mongoose instance
+module.exports = { connectDB, mongoose };

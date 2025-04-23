@@ -12,7 +12,7 @@ registerLocale("da", da);
 
 export const CreateMatchForm = () => {
   const navigate = useNavigate();
-  const { username } = useUser();
+  const { user } = useUser();
 
   const getNextHalfHour = () => {
     const now = new Date();
@@ -41,7 +41,7 @@ export const CreateMatchForm = () => {
   const [description, setDescription] = useState<string>("");
 
   const [reservedPlayers, setReservedPlayers] = useState(
-      [] as { name: string; level: number }[]
+    [] as { name: string; level: number }[]
   );
 
   useEffect(() => {
@@ -54,23 +54,20 @@ export const CreateMatchForm = () => {
     });
   }, [levelRange, selectedReserved]);
 
-
-
   const filterPassedTime = (time: Date) => {
     const hour = time.getHours();
     const minutes = time.getMinutes();
     const totalMinutes = hour * 60 + minutes;
 
     return totalMinutes >= 329 && totalMinutes <= 1380;
-  }
+  };
 
   const handleCreateMatch = async (event: FormEvent) => {
     event.preventDefault();
 
     try {
-
       const matchData: Omit<PadelMatch, "id"> = {
-        username: username ?? "Unknown",
+        username: user?.username ?? "Unknown",
         description: description || "Ingen bemærkninger",
         level: `${levelRange[0].toFixed(1)} - ${levelRange[1].toFixed(1)}`,
         participants: [],
@@ -83,7 +80,9 @@ export const CreateMatchForm = () => {
         createdAt: new Date().toISOString(),
         matchDateTime: selectedDate.toISOString(),
         startTime: selectedDate.toISOString(),
-        endTime: new Date(selectedDate.getTime() + selectedPlayingTime * 60 * 1000).toISOString(),
+        endTime: new Date(
+          selectedDate.getTime() + selectedPlayingTime * 60 * 1000
+        ).toISOString(),
         courtBooked,
         location,
         matchType: selectedMatchType,
@@ -127,10 +126,7 @@ export const CreateMatchForm = () => {
   return (
     <div className="w-full bg-white rounded-xl p-4 text-gray-900">
       <form className="space-y-10" onSubmit={handleCreateMatch}>
-
-
         <div className="lg:grid grid-cols-3 gap-4 max-lg:flex max-lg:flex-col">
-
           <div>
             <label className="font-semibold" htmlFor="center">
               Vælg center
@@ -156,8 +152,7 @@ export const CreateMatchForm = () => {
             </label>
             <DatePicker
               selected={selectedDate}
-              onChange={(date) =>
-                setSelectedDate(date!)}
+              onChange={(date) => setSelectedDate(date!)}
               showTimeSelect
               locale="da"
               timeFormat="HH:mm"
@@ -180,18 +175,18 @@ export const CreateMatchForm = () => {
             <div className="flex h-12">
               <div className="flex items-center w-full rounded-lg gap-6 pr-1">
                 {playingTimeArray.map((option) => (
-                    <button
-                        type="button"
-                        key={option}
-                        onClick={() => setSelectedPlayingTime(option)}
-                        className={`p-2 w-full rounded-xl transition duration-300 ${
-                            selectedPlayingTime === option
-                                ? "bg-cyan-500 text-white hover:bg-cyan-600 transition duration-300"
-                                : "bg-gray-300 hover:bg-gray-400 transition duration-300"
-                        }`}
-                    >
-                      {option}
-                    </button>
+                  <button
+                    type="button"
+                    key={option}
+                    onClick={() => setSelectedPlayingTime(option)}
+                    className={`p-2 w-full rounded-xl transition duration-300 ${
+                      selectedPlayingTime === option
+                        ? "bg-cyan-500 text-white hover:bg-cyan-600 transition duration-300"
+                        : "bg-gray-300 hover:bg-gray-400 transition duration-300"
+                    }`}
+                  >
+                    {option}
+                  </button>
                 ))}
               </div>
             </div>
@@ -204,18 +199,18 @@ export const CreateMatchForm = () => {
             <div className="flex h-12">
               <div className="flex items-center w-full rounded-lg gap-6 pr-1">
                 {courtBookedArray.map(({ label, value }) => (
-                    <button
-                        type="button"
-                        key={label}
-                        onClick={() => setCourtBooked(value)}
-                        className={`p-2 w-full rounded-xl transition duration-300 ${
-                            courtBooked === value
-                                ? "bg-cyan-500 hover:bg-cyan-600 transition duration-300 text-white"
-                                : "bg-gray-300 hover:bg-gray-400 transition duration-300"
-                        }`}
-                    >
-                      {label}
-                    </button>
+                  <button
+                    type="button"
+                    key={label}
+                    onClick={() => setCourtBooked(value)}
+                    className={`p-2 w-full rounded-xl transition duration-300 ${
+                      courtBooked === value
+                        ? "bg-cyan-500 hover:bg-cyan-600 transition duration-300 text-white"
+                        : "bg-gray-300 hover:bg-gray-400 transition duration-300"
+                    }`}
+                  >
+                    {label}
+                  </button>
                 ))}
               </div>
             </div>
@@ -228,23 +223,23 @@ export const CreateMatchForm = () => {
             <div className="flex h-12">
               <div className="flex justify-between items-center w-full rounded-lg gap-6 pr-1">
                 <input
-                    className="text-center rounded-lg w-full"
-                    type="number"
-                    step="0.1"
-                    min="1.0"
-                    max="7.0"
-                    value={levelRange[0].toFixed(1)}
-                    onChange={handleMinChange}
+                  className="text-center rounded-lg w-full"
+                  type="number"
+                  step="0.1"
+                  min="1.0"
+                  max="7.0"
+                  value={levelRange[0].toFixed(1)}
+                  onChange={handleMinChange}
                 />
                 -
                 <input
-                    className="text-center rounded-lg w-full"
-                    type="number"
-                    step="0.1"
-                    min={levelRange[0]}
-                    max="7.0"
-                    value={levelRange[1].toFixed(1)}
-                    onChange={handleMaxChange}
+                  className="text-center rounded-lg w-full"
+                  type="number"
+                  step="0.1"
+                  min={levelRange[0]}
+                  max="7.0"
+                  value={levelRange[1].toFixed(1)}
+                  onChange={handleMaxChange}
                 />
               </div>
             </div>
@@ -257,18 +252,18 @@ export const CreateMatchForm = () => {
             <div className="flex h-12">
               <div className="flex justify-between w-full items-center rounded-lg gap-6 pr-1">
                 {matchTypeArray.map((option) => (
-                    <button
-                        type="button"
-                        key={option}
-                        onClick={() => setSelectedMatchType(option)}
-                        className={`max-lg:w-full lg:w-20 p-2 text-sm rounded-xl transition duration-300 ${
-                            selectedMatchType === option
-                                ? "bg-cyan-500 hover:bg-cyan-600 transition duration-300 text-white"
-                                : "bg-gray-300 hover:bg-gray-400 transition duration-300"
-                        }`}
-                    >
-                      {option}
-                    </button>
+                  <button
+                    type="button"
+                    key={option}
+                    onClick={() => setSelectedMatchType(option)}
+                    className={`max-lg:w-full lg:w-20 p-2 text-sm rounded-xl transition duration-300 ${
+                      selectedMatchType === option
+                        ? "bg-cyan-500 hover:bg-cyan-600 transition duration-300 text-white"
+                        : "bg-gray-300 hover:bg-gray-400 transition duration-300"
+                    }`}
+                  >
+                    {option}
+                  </button>
                 ))}
               </div>
             </div>
@@ -281,49 +276,49 @@ export const CreateMatchForm = () => {
             <div className="flex h-12">
               <div className="flex items-center w-full rounded-lg gap-6 pr-1">
                 {availableSpotsArray.map((spot) => (
-                    <button
-                        type="button"
-                        key={spot}
-                        onClick={() => setSelectedReserved(spot)}
-                        className={`p-2 w-full rounded-xl transition duration-300 ${
-                            selectedReserved === spot
-                                ? "bg-cyan-500 text-white hover:bg-cyan-600 transition duration-300"
-                                : "bg-gray-300 hover:bg-gray-400 transition duration-300"
-                        }`}
-                    >
-                      {spot}
-                    </button>
+                  <button
+                    type="button"
+                    key={spot}
+                    onClick={() => setSelectedReserved(spot)}
+                    className={`p-2 w-full rounded-xl transition duration-300 ${
+                      selectedReserved === spot
+                        ? "bg-cyan-500 text-white hover:bg-cyan-600 transition duration-300"
+                        : "bg-gray-300 hover:bg-gray-400 transition duration-300"
+                    }`}
+                  >
+                    {spot}
+                  </button>
                 ))}
               </div>
             </div>
 
             {[...Array(selectedReserved)].map((_, i) => (
-                <div key={i} className="grid grid-cols-2 gap-2 mt-2">
-                  <input
-                      type="text"
-                      placeholder="Spillernavn"
-                      className="rounded-lg w-full text-sm"
-                      value={reservedPlayers[i]?.name}
-                      onChange={(e) => {
-                        const newPlayers = [...reservedPlayers];
-                        newPlayers[i].name = e.target.value;
-                        setReservedPlayers(newPlayers);
-                      }}
-                  />
-                  <input
-                      className="text-center rounded-lg w-full"
-                      type="number"
-                      step="0.1"
-                      min={levelRange[0]}
-                      max={levelRange[1]}
-                      value={reservedPlayers[i]?.level.toFixed(1)}
-                      onChange={(e) => {
-                        const newPlayers = [...reservedPlayers];
-                        newPlayers[i].level = parseFloat(e.target.value);
-                        setReservedPlayers(newPlayers);
-                      }}
-                  />
-                </div>
+              <div key={i} className="grid grid-cols-2 gap-2 mt-2">
+                <input
+                  type="text"
+                  placeholder="Spillernavn"
+                  className="rounded-lg w-full text-sm"
+                  value={reservedPlayers[i]?.name}
+                  onChange={(e) => {
+                    const newPlayers = [...reservedPlayers];
+                    newPlayers[i].name = e.target.value;
+                    setReservedPlayers(newPlayers);
+                  }}
+                />
+                <input
+                  className="text-center rounded-lg w-full"
+                  type="number"
+                  step="0.1"
+                  min={levelRange[0]}
+                  max={levelRange[1]}
+                  value={reservedPlayers[i]?.level.toFixed(1)}
+                  onChange={(e) => {
+                    const newPlayers = [...reservedPlayers];
+                    newPlayers[i].level = parseFloat(e.target.value);
+                    setReservedPlayers(newPlayers);
+                  }}
+                />
+              </div>
             ))}
           </div>
 
@@ -333,9 +328,9 @@ export const CreateMatchForm = () => {
             </label>
             <div className="pr-1">
               <textarea
-                  className="w-full rounded-lg h-12 resize-none"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                className="w-full rounded-lg h-12 resize-none"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
               />
             </div>
           </div>

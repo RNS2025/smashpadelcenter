@@ -5,25 +5,18 @@ const databaseService = require("../Services/databaseService");
 
 const router = express.Router();
 
-/**
- * @swagger
- * /api/v1/:
- *   get:
- *     summary: Check if the server is running
- *     tags: [Auth]
- *     responses:
- *       200:
- *         description: Server is running
- */
-router.get("/", (req, res) => {
-  res.send("Server is running");
-});
+const ensureSession = (req, res, next) => {
+  if (!req.isAuthenticated()) {
+    return res.status(401).json({ error: "Authentication failed" });
+  }
+  next();
+};
 
 /**
  * @swagger
  * /api/v1/login:
  *   post:
- *     summary: Log in a user
+ *     summary: Log in with username and password
  *     tags: [Auth]
  *     requestBody:
  *       required: true
@@ -38,74 +31,181 @@ router.get("/", (req, res) => {
  *                 type: string
  *     responses:
  *       200:
- *         description: Logged in
+ *         description: Login successful
  *       401:
- *         description: Incorrect credentials
+ *         description: Invalid credentials
  */
 router.post("/login", (req, res, next) => {
   passport.authenticate("local", (err, user, info) => {
-    if (err) return next(err);
-    if (!user)
-      return res.status(401).json({ message: info?.message || "Unauthorized" });
-
-    req.login(user, (err) => {
-      if (err) return next(err);
-      return res.json({ message: "Logged in successfully", user });
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    if (!user) {
+      return res
+        .status(401)
+        .json({ error: info.message || "Invalid credentials" });
+    }
+    req.logIn(user, (err) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      return res.status(200).json({
+        message: "Login successful",
+        user: { username: user.username, role: user.role },
+      });
     });
   })(req, res, next);
 });
 
 /**
  * @swagger
- * /api/v1/register:
- *   post:
- *     summary: Register a new user
+ * /api/v1/auth/google:
+ *   get:
+ *     summary: Initiate Google OAuth login
  *     tags: [Auth]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             properties:
- *               username:
- *                 type: string
- *               password:
- *                 type: string
  *     responses:
- *       201:
- *         description: User created
- *       400:
- *         description: Error creating user
+ *       302:
+ *         description: Redirects to Google OAuth
  */
-router.post("/register", async (req, res) => {
-  const { username, password } = req.body;
-  try {
-    // Check if the username already exists
-    const existingUser = await databaseService.findUserByUsername(username);
-    if (existingUser) {
-      return res.status(400).json({ error: "Username already exists" });
-    }
+router.get(
+  "/auth/google",
+  passport.authenticate("google", { scope: ["profile", "email"] })
+);
 
-    // Create a new user
-    const newUser = await databaseService.createUser({ username, password });
-    res.status(201).json(newUser);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
+// routes/authRoutes.js
+/**
+ * @swagger
+ * /api/v1/auth/check:
+ *   get:
+ *     summary: Check if user is authenticated
+ *     tags: [Auth]
+ *     responses:
+ *       200:
+ *         description: Authentication status
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 isAuthenticated:
+ *                   type: boolean
+ *                 user:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     username:
+ *                       type: string
+ *                     email:
+ *                       type: string
+ *                     role:
+ *                       type: string
+ *                     provider:
+ *                       type: string
+ */
+router.get("/auth/check", (req, res) => {
+  if (req.isAuthenticated()) {
+    res.status(200).json({
+      isAuthenticated: true,
+      user: {
+        id: req.user._id,
+        username: req.user.username,
+        email: req.user.email,
+        role: req.user.role,
+        provider: req.user.provider,
+      },
+    });
+  } else {
+    res.status(200).json({ isAuthenticated: false, user: null });
   }
 });
 
-router.get("/by-username/:username", async (req, res) => {
-  try {
-    const user = await User.findOne({ username: req.params.username });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-    res.json(user);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+/**
+ * @swagger
+ * /api/v1/auth/google/callback:
+ *   get:
+ *     summary: Google OAuth callback
+ *     tags: [Auth]
+ *     responses:
+ *       302:
+ *         description: Redirects to frontend
+ */
+router.get(
+  "/auth/google/callback",
+  passport.authenticate("google", { failureRedirect: "/login" }),
+  ensureSession,
+  (req, res) => {
+    res.redirect(`${process.env.FRONTEND_URL}/smashpadelcenter/hjem`);
   }
-});
+);
+
+/**
+ * @swagger
+ * /api/v1/auth/facebook:
+ *   get:
+ *     summary: Initiate Facebook OAuth login
+ *     tags: [Auth]
+ *     responses:
+ *       302:
+ *         description: Redirects to Facebook OAuth
+ */
+router.get(
+  "/auth/facebook",
+  passport.authenticate("facebook", { scope: ["email"] })
+);
+
+/**
+ * @swagger
+ * /api/v1/auth/facebook/callback:
+ *   get:
+ *     summary: Facebook OAuth callback
+ *     tags: [Auth]
+ *     responses:
+ *       302:
+ *         description: Redirects to frontend
+ */
+router.get(
+  "/auth/facebook/callback",
+  passport.authenticate("facebook", { failureRedirect: "/login" }),
+  ensureSession,
+  (req, res) => {
+    res.redirect(`${process.env.FRONTEND_URL}/hjem`);
+  }
+);
+
+/**
+ * @swagger
+ * /api/v1/auth/github:
+ *   get:
+ *     summary: Initiate GitHub OAuth login
+ *     tags: [Auth]
+ *     responses:
+ *       302:
+ *         description: Redirects to GitHub OAuth
+ */
+router.get(
+  "/auth/github",
+  passport.authenticate("github", { scope: ["user:email"] })
+);
+
+/**
+ * @swagger
+ * /api/v1/auth/github/callback:
+ *   get:
+ *     summary: GitHub OAuth callback
+ *     tags: [Auth]
+ *     responses:
+ *       302:
+ *         description: Redirects to frontend
+ */
+router.get(
+  "/auth/github/callback",
+  passport.authenticate("github", { failureRedirect: "/login" }),
+  ensureSession,
+  (req, res) => {
+    res.redirect(`${process.env.FRONTEND_URL}/hjem`);
+  }
+);
 
 /**
  * @swagger
@@ -119,27 +219,20 @@ router.get("/by-username/:username", async (req, res) => {
  *       200:
  *         description: A list of users and their roles
  *       401:
- *         description: Unauthorized - No user logged in
+ *         description: Unauthorized
  *       403:
- *         description: Forbidden - User is not an admin
- *       500:
- *         description: Server error
+ *         description: Forbidden
  */
 router.get("/users", async (req, res) => {
   try {
-    // Ensure user is logged in
     if (!req.user) {
       return res
         .status(401)
         .json({ message: "Unauthorized - No user logged in" });
     }
-
-    // Ensure user is an admin
     if (req.user.role !== "admin") {
       return res.status(403).json({ message: "Forbidden - Admins only" });
     }
-
-    // Fetch users from database
     const users = await databaseService.getAllUsers();
     res.status(200).json(users);
   } catch (err) {
@@ -169,8 +262,6 @@ router.get("/users", async (req, res) => {
  *         description: Role updated
  *       400:
  *         description: Error updating role
- *       403:
- *         description: Access Denied
  */
 router.post("/change-role", user.can("access admin page"), async (req, res) => {
   const { username, role } = req.body;
@@ -196,20 +287,13 @@ router.post("/change-role", user.can("access admin page"), async (req, res) => {
  */
 router.get("/role", (req, res) => {
   try {
-    console.log("Cookies:", req.cookies); // Debugging
-    console.log("Session ID:", req.sessionID); // Debugging
-    console.log("Session Data:", req.session); // Debugging
-    console.log("User from session:", req.user); // Debugging
-
     if (!req.user) {
       return res
         .status(401)
         .json({ message: "Unauthorized - No user logged in" });
     }
-
     res.json({ role: req.user.role });
   } catch (err) {
-    console.error("Error fetching user role:", err);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
@@ -220,36 +304,21 @@ router.get("/role", (req, res) => {
  *   get:
  *     summary: Get the username of the logged-in user
  *     tags: [Auth]
- *     security:
- *       - cookieAuth: []
  *     responses:
  *       200:
- *         description: Username of the logged-in user
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 username:
- *                   type: string
+ *         description: Username
  *       401:
- *         description: Unauthorized - No user logged in
- *       500:
- *         description: Internal Server Error
+ *         description: Unauthorized
  */
 router.get("/username", (req, res) => {
   try {
-    // Check if user is logged in
     if (!req.user) {
       return res
         .status(401)
         .json({ message: "Unauthorized - No user logged in" });
     }
-
-    // Return the username from the authenticated user object
     res.status(200).json({ username: req.user.username });
   } catch (err) {
-    console.error("Error fetching username:", err);
     res.status(500).json({ message: "Internal Server Error" });
   }
 });
@@ -281,6 +350,74 @@ router.post("/logout", (req, res) => {
       res.status(200).json({ message: "Logged out successfully" });
     });
   });
+});
+
+/**
+ * @swagger
+ * /api/v1/register:
+ *   post:
+ *     summary: Register a new user
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *             required:
+ *               - username
+ *               - email
+ *               - password
+ *     responses:
+ *       201:
+ *         description: User registered successfully
+ *       400:
+ *         description: Invalid input or user already exists
+ *       500:
+ *         description: Server error
+ */
+router.post("/register", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    if (!username || !password) {
+      return res.status(400).json({ error: "All fields are required" });
+    }
+
+    // Check if user already exists
+    const existingUser = await databaseService.findUserByUsername(username);
+    if (existingUser) {
+      return res.status(400).json({ error: "Username already in use" });
+    }
+
+    // Create new user with default role
+    const newUser = await databaseService.createUser({
+      username,
+      password,
+      role: "user",
+      provider: "local",
+    });
+
+    // Auto-login after registration
+    req.login(newUser, (err) => {
+      if (err) {
+        return res.status(500).json({ error: err.message });
+      }
+      return res.status(201).json({
+        message: "Registration successful",
+        user: { username: newUser.username, role: newUser.role },
+      });
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 module.exports = router;
