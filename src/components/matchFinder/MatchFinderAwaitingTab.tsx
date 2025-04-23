@@ -65,7 +65,7 @@ export const MatchFinderAwaitingTab = () => {
 
       <div className="text-sm ">
         {matches.length === 0 ? (
-          <p>Ingen kampe afventer din bekræftelse.</p>
+          <p className="mt-10">Ingen kampe afventer din bekræftelse.</p>
         ) : (
           matches.map((match) => (
             <div

@@ -63,7 +63,10 @@ export const MatchFinderAllMatchesTab = () => {
       </Helmet>
 
       <div className="text-sm cursor-pointer">
-        {matches
+        {matches.length === 0 ? (
+            <p className="mt-10">Ingen aktuelle kampe at vise.</p>
+        ) : (
+            matches
             .filter((match) => {
               const isFull = match.participants.length + match.reservedSpots.length === match.totalSpots;
 
@@ -86,7 +89,7 @@ export const MatchFinderAllMatchesTab = () => {
             </h1>
             <div className="flex justify-between border-b border-gray-600">
               <p>{match.location}</p>
-              <p>Herre</p>
+              <p>{match.matchType}</p>
             </div>
             <div className="flex justify-between">
               <p>Niveau {match.level}</p>
@@ -143,7 +146,7 @@ export const MatchFinderAllMatchesTab = () => {
             </div>
             <p className="text-gray-500">Oprettet af {match.username}</p>
           </div>
-        ))}
+            )))}
       </div>
     </>
   );

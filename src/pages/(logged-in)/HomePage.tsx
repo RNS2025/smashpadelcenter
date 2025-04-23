@@ -15,7 +15,7 @@ import {
   TicketIcon,
   BuildingOfficeIcon,
   TrophyIcon,
-  UsersIcon,
+  UsersIcon, CubeIcon,
 } from "@heroicons/react/24/outline";
 import { setupNotifications } from "../../utils/notifications";
 
@@ -87,6 +87,13 @@ export const HomePage = () => {
               title="Makkerbørs"
               description="Søg med- og modspillere"
               link="makkerbørs"
+            />
+
+            <HomeScreenCard
+                icon={<CubeIcon className="h-10 w-10" aria-hidden="true" />}
+                title="Privat-arrangementer"
+                description="Opret og administrer dine egne arrangementer"
+                link="privat-arrangementer"
             />
 
             <HomeScreenCard

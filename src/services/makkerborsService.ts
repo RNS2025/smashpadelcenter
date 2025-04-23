@@ -1,5 +1,6 @@
 import api from "../api/api";
 import { PadelMatch } from "../types/PadelMatch";
+import {PrivateEvent} from "../types/PrivateEvent.ts";
 
 const communityApi = {
   getMatches: async (): Promise<PadelMatch[]> => {
@@ -17,7 +18,7 @@ const communityApi = {
     return response.data;
   },
 
-  confirmJoin: async (
+  confirmJoinMatch: async (
     matchId: string,
     username: string
   ): Promise<PadelMatch> => {
@@ -52,6 +53,48 @@ const communityApi = {
     const response = await api.get(`/matches/player/${username}`);
     return response.data;
   },
+
+
+
+  //Private Arrangementer
+    getPrivateEventsForUser: async (username: string): Promise<PrivateEvent[]> => {
+        const response = await api.get(`/private-event/${username}`);
+        return response.data;
+    },
+    getPrivateEvents: async (): Promise<PrivateEvent[]> => {
+        const response = await api.get("/private-event");
+        return response.data;
+    },
+  getEventById: async (eventId: string): Promise<PrivateEvent> => {
+    const response = await api.get(`/private-event/${eventId}`);
+    return response.data;
+  },
+  createPrivateEvent: async (privateEvent: Omit<PrivateEvent, "id">): Promise<PrivateEvent> => {
+    const response = await api.post("/private-event", privateEvent);
+    return response.data;
+  },
+  updatePrivateEvent: async (eventId: string, update: Partial<Omit<PrivateEvent, "id">>): Promise<PrivateEvent> => {
+    const response = await api.patch(`/private-event/${eventId}`, update);
+    return response.data;
+  },
+  joinEvent: async (eventId: string, username: string): Promise<PrivateEvent> => {
+    const response = await api.post(`/private-event/${eventId}/join`, { username });
+    return response.data;
+  },
+  confirmJoinEvent: async (
+      eventId: string,
+      username: string
+  ): Promise<PrivateEvent> => {
+    const response = await api.post(`/private-event/${eventId}/confirm`, {
+      username,
+    });
+    return response.data;
+  },
+  deleteEvent: async (eventId: string): Promise<PrivateEvent[]> => {
+    const response = await api.delete(`/private-event/${eventId}`);
+    return response.data;
+  },
 };
+
 
 export default communityApi;

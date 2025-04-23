@@ -63,7 +63,10 @@ export const MatchFinderMyMatchesTab = () => {
       </Helmet>
 
       <div className="text-sm">
-        {matches.map((match) => (
+        {matches.length === 0 ? (
+            <p className="mt-10">Ingen aktuelle kampe at vise.</p>
+        ) : (
+            matches.map((match) => (
           <div
             onClick={() => navigate(`/makkerbørs/${match.id}`)}
             key={match.id}
@@ -139,7 +142,7 @@ export const MatchFinderMyMatchesTab = () => {
             </div>
             <p className="text-gray-500">Oprettet af {match.username}</p>
           </div>
-        ))}
+        )))}
       </div>
     </>
   );

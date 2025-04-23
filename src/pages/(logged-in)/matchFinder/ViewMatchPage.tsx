@@ -186,7 +186,7 @@ export const ViewMatchPage = () => {
   const handleConfirmJoin = async (participant: string) => {
     if (!match) return;
     try {
-      const updatedMatch = await communityApi.confirmJoin(
+      const updatedMatch = await communityApi.confirmJoinMatch(
         match.id,
         participant
       );
@@ -252,7 +252,7 @@ export const ViewMatchPage = () => {
 
       <div
         onClick={() => setInfoDialogVisible(false)}
-        className={`min-h-screen fixed inset-0 z-50 bg-gray-500 bg-opacity-90 flex items-center justify-center ${
+        className={`min-h-screen fixed inset-0 z-50 bg-black bg-opacity-10 flex items-center justify-center ${
           !infoDialogVisible ? "hidden" : ""
         }`}
       >
@@ -314,7 +314,7 @@ export const ViewMatchPage = () => {
                   <h1>{profile.username}</h1>
                 </div>
                 <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-20 h-12">
-                  {parseFloat(profile.skillLevel).toFixed(1)}
+                  {profile.skillLevel.toFixed(1)}
                 </div>
               </div>
             ))}
@@ -341,7 +341,7 @@ export const ViewMatchPage = () => {
           {/* Empty spots */}
           {[
             ...Array(
-              4 -
+              match.totalSpots -
                 (match.participants.length + (match.reservedSpots.length || 0))
             ),
           ].map((_, index) => (
@@ -390,29 +390,29 @@ export const ViewMatchPage = () => {
           <div className="grid grid-cols-2 text-center text-black gap-3">
             <div className="bg-white rounded flex justify-center items-center gap-1 py-4">
               <BoltIcon className="h-6 text-yellow-500" />
-              <h1 className="h-4">{match.level}</h1>
+              <h1 className="h-5">{match.level}</h1>
             </div>
 
             <div className="bg-white rounded flex justify-center items-center gap-1 py-4">
               <MapPinIcon className="h-6 text-red-500" />
-              <h1 className="h-4">{match.location.split(" ")[2]}</h1>
+              <h1 className="h-5">{match.location.split(" ")[2]}</h1>
             </div>
 
             {match.courtBooked ? (
               <div className="bg-white rounded flex justify-center items-center gap-1 py-4">
                 <CheckCircleIcon className="h-6 rounded-lg text-green-500" />
-                <h1 className="h-4">Bane er booket</h1>
+                <h1 className="h-5">Bane er booket</h1>
               </div>
             ) : (
               <div className="bg-white rounded flex justify-center items-center gap-1 py-4">
                 <XCircleIcon className="h-6 rounded-lg text-red-500" />
-                <h1 className="h-4">Bane ikke booket</h1>
+                <h1 className="h-5">Bane ikke booket</h1>
               </div>
             )}
 
             <div className="bg-white rounded flex justify-center items-center gap-1 py-4">
               <UserGroupIcon className="h-6 rounded-lg text-white bg-gradient-to-b from-sky-400 to-pink-400" />
-              <h1 className="h-4">{match.matchType}</h1>
+              <h1 className="h-5">{match.matchType}</h1>
             </div>
           </div>
 

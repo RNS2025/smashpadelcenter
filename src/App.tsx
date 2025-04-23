@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { UserProvider } from "./context/UserContext";
@@ -42,6 +42,11 @@ import OverviewTab from "./components/profile/tabs/OverviewTab.tsx";
 import MatchesTab from "./components/profile/tabs/MatchesTab.tsx";
 import EditTab from "./components/profile/tabs/EditTab.tsx";
 import "./App.css";
+import PrivateEventPage from "./pages/(logged-in)/private-event/PrivateEventPage.tsx";
+import MyEventsTab from "./components/private-event/MyEventsTab.tsx";
+import CreateEventPage from "./pages/(logged-in)/private-event/CreateEventPage.tsx";
+import ViewEventPage from "./pages/(logged-in)/private-event/ViewEventPage.tsx";
+import AllEventsTab from "./components/private-event/AllEventsTab.tsx";
 
 function App() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -162,6 +167,14 @@ function App() {
             </Route>
             <Route path="/makkerbørs/:matchId" element={<ViewMatchPage />} />
             <Route path="/makkerbørs/opretkamp" element={<CreateMatchPage />} />
+
+            <Route path="/privat-arrangementer" element={<PrivateEventPage />}>
+              <Route index element={<Navigate to="minearrangementer" replace />} />
+              <Route path="minearrangementer" element={<MyEventsTab />} />
+              <Route path="allearrangementer" element={<AllEventsTab />} />
+            </Route>
+            <Route path="/privat-arrangementer/opretarrangement" element={<CreateEventPage />} />
+            <Route path="/privat-arrangementer/:username/:eventId" element={<ViewEventPage />} />
 
             <Route path="/turneringer" element={<TournamentTabs />} />
             <Route

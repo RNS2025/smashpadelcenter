@@ -51,7 +51,7 @@ const MatchFinderPage: FC = () => {
             <div className="flex justify-between items-center max-sm:mt-5 mx-4 mb-4">
             <button
                 onClick={() => navigate("opretkamp")}
-                className="bg-cyan-500 rounded px-4 py-2 text-white"
+                className="bg-cyan-500 rounded px-2 py-2 text-white text-sm"
             >
               Opret kamp
             </button>
@@ -66,7 +66,7 @@ const MatchFinderPage: FC = () => {
                     onChange={(e) => setShowFullMatches(e.target.checked)}
                 />
 
-                <label htmlFor="showFullMatches" className="text-gray-500">
+                <label htmlFor="showFullMatches" className="text-gray-500 text-sm">
                     Vis fyldte kampe
                 </label>
               </div>
