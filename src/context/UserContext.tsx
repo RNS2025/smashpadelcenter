@@ -9,9 +9,8 @@ import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import { logout as authLogout } from "../services/auth";
 import { WHITELIST_ROUTES } from "./WhitelistRoutes";
-import User from "../types/user";
+import { User } from "../types/user";
 
-// Define the UserContextType interface if not already defined
 interface UserContextType {
   user: User | null;
   isAuthenticated: boolean;
@@ -24,7 +23,6 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-// For Vite, use import.meta.env instead of process.env
 const BACKEND_URL =
   import.meta.env.VITE_BACKEND_URL ||
   import.meta.env.REACT_APP_BACKEND_URL ||
@@ -53,38 +51,40 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
 
   const fetchUserData = async (currentPath: string) => {
-    if (loading && !isLogoutRef.current) return;
-
+    if (loading || isLogoutRef.current) return; // Skip if logging out
     setLoading(true);
-
     try {
-      const response = await axios.get(`${BACKEND_URL}/api/v1/auth/check`, {
-        withCredentials: true,
-      });
-
-      if (response.data.isAuthenticated) {
-        setUser(response.data.user);
+      console.log(
+        "Fetching user data from /api/v1/user-profiles/by-username/me"
+      );
+      const response = await axios.get(
+        `${BACKEND_URL}/api/v1/user-profiles/by-username/me`,
+        {
+          withCredentials: true,
+        }
+      );
+      console.log("User data response:", response.data);
+      if (response.data && response.data.username) {
+        setUser(response.data);
         setIsAuthenticated(true);
         setError(null);
         isLogoutRef.current = false;
-
-        // Store authentication state in sessionStorage to persist across redirects
         sessionStorage.setItem("isAuthenticated", "true");
-
-        // Redirect to /hjem if on login page
         if (isLoginPage(currentPath)) {
           navigate("/hjem", { replace: true });
         }
       } else {
-        setUser(null);
-        setIsAuthenticated(false);
-        sessionStorage.removeItem("isAuthenticated");
-        handleUnauthenticated(currentPath);
+        throw new Error("Invalid user data received");
       }
-    } catch (err) {
+    } catch (err: any) {
+      if (isLogoutRef.current) {
+        console.log("Ignoring fetch error during logout");
+        return; // Suppress errors during logout
+      }
       console.error("Auth check error:", err);
       setUser(null);
       setIsAuthenticated(false);
+      setError("Kunne ikke hente brugerdata.");
       sessionStorage.removeItem("isAuthenticated");
       handleUnauthenticated(currentPath);
     } finally {
@@ -128,22 +128,21 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       isLogoutRef.current = true;
       setError(null);
-      await authLogout();
       setUser(null);
       setIsAuthenticated(false);
       sessionStorage.removeItem("isAuthenticated");
+      await authLogout(); // Ensure this clears the backend session
       navigate("/", { replace: true });
     } catch (error) {
-      console.error("Error during logout", error);
+      console.error("Error during logout:", error);
+      setError("Fejl ved udlogning. Prøv igen.");
     } finally {
       isLogoutRef.current = false;
     }
   };
 
-  // Initial authentication check
   useEffect(() => {
     const checkInitialAuth = async () => {
-      // If we have a saved auth state or we're on an OAuth callback route
       if (
         sessionStorage.getItem("isAuthenticated") === "true" ||
         location.pathname.includes("/callback")
@@ -156,40 +155,66 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         }
       }
     };
-
     checkInitialAuth();
   }, []);
 
-  // Clear error on login page
   useEffect(() => {
     if (isLoginPage(location.pathname)) {
       setError(null);
     }
   }, [location.pathname]);
 
-  // Fetch user data on path change
   useEffect(() => {
     if (isLogoutRef.current) return;
-
-    // Don't fetch on initial render as this is handled by checkInitialAuth
     if (location.key) {
       fetchUserData(location.pathname);
     }
   }, [location.pathname]);
 
-  // Session keep-alive
+  useEffect(() => {
+    const checkInitialAuth = async () => {
+      if (isLogoutRef.current) {
+        console.log("Skipping auth check during logout");
+        setLoading(false);
+        return;
+      }
+      console.log("Checking initial auth state");
+      if (
+        sessionStorage.getItem("isAuthenticated") === "true" ||
+        location.pathname.includes("/callback")
+      ) {
+        await fetchUserData(location.pathname);
+      } else {
+        console.log("No auth state found, setting loading false");
+        setLoading(false);
+        if (!isRouteWhitelisted(location.pathname, WHITELIST_ROUTES)) {
+          handleUnauthenticated(location.pathname);
+        }
+      }
+    };
+    checkInitialAuth();
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (isLogoutRef.current) {
+      console.log("Skipping fetchUserData during logout");
+      return;
+    }
+    if (location.key) {
+      fetchUserData(location.pathname);
+    }
+  }, [location.pathname]);
+
   useEffect(() => {
     const interval = setInterval(() => {
       if (isAuthenticated) {
         axios
-          .get(`${BACKEND_URL}/api/v1/auth/check`, {
-            withCredentials: true,
-          })
+          .get(`${BACKEND_URL}/api/v1/auth/check`, { withCredentials: true })
           .catch((error) => {
             console.error("Session keep-alive failed", error);
           });
       }
-    }, 30 * 60 * 1000); // Ping every 30 minutes
+    }, 30 * 60 * 1000);
     return () => clearInterval(interval);
   }, [isAuthenticated]);
 

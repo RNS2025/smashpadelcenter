@@ -1,4 +1,5 @@
-import User from "./user";
+import { User } from "./user";
+
 interface UserContextType {
   user: User | null;
   isAuthenticated: boolean;
@@ -8,4 +9,5 @@ interface UserContextType {
   logout: () => Promise<void>;
   loading: boolean;
 }
+
 export default UserContextType;

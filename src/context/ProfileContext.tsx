@@ -7,16 +7,15 @@ import {
   ChangeEvent,
   FormEvent,
 } from "react";
-import { UserProfile } from "../types/UserProfile";
-import userProfileApi from "../services/userProfileService";
+import { User } from "../types/user";
+import userProfileService from "../services/userProfileService";
 import { useUser } from "./UserContext";
 
 interface ProfileContextValue {
-  profile: UserProfile | null;
+  profile: User | null;
   loading: boolean;
   error: string;
-
-  formData: Partial<UserProfile>;
+  formData: Partial<User>;
   handleInputChange: (
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => void;
@@ -28,15 +27,12 @@ const ProfileContext = createContext<ProfileContextValue | undefined>(
   undefined
 );
 
-// Changed to function declaration for consistency with Fast Refresh
 export function ProfileProvider({ children }: { children: ReactNode }) {
   const { user } = useUser();
-  const username = user?.username;
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profile, setProfile] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
-  const [formData, setFormData] = useState<Partial<UserProfile>>({});
+  const [formData, setFormData] = useState<Partial<User>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -44,7 +40,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       if (!user?.username) return;
       try {
         setLoading(true);
-        const profileData = await userProfileApi.getOrCreateUserProfile(
+        const profileData = await userProfileService.getOrCreateUserProfile(
           user.username
         );
         setProfile(profileData);
@@ -56,7 +52,6 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         setLoading(false);
       }
     };
-
     fetchData();
   }, [user?.username]);
 
@@ -77,19 +72,27 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       formData.skillLevel &&
       (formData.skillLevel < 1 || formData.skillLevel > 5)
     ) {
+      console.error("Invalid skillLevel:", formData.skillLevel);
       setIsSubmitting(false);
       return;
     }
-
+    console.log("Submitting formData:", formData); // Debug log
     try {
-      if (username) {
-        await userProfileApi.updateUserProfile(username, formData);
-        const updated = await userProfileApi.getOrCreateUserProfile(username);
+      if (user?.username) {
+        console.log("Updating profile for username:", user.username);
+        await userProfileService.updateUserProfile(user.username, formData);
+        const updated = await userProfileService.getOrCreateUserProfile(
+          user.username
+        );
+        console.log("Updated profile:", updated);
         setProfile(updated);
         setFormData(updated);
+      } else {
+        console.error("No username available for update");
       }
     } catch (err: any) {
-      console.error("Fejl ved opdatering:", err);
+      console.error("Error updating profile:", err);
+      setError("Fejl ved opdatering af profil");
     } finally {
       setIsSubmitting(false);
     }
@@ -112,7 +115,6 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   );
 }
 
-// Changed to function declaration for Fast Refresh compatibility
 export function useProfileContext() {
   const context = useContext(ProfileContext);
   if (!context) {

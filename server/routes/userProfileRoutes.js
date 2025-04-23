@@ -1,35 +1,28 @@
 const express = require("express");
 const router = express.Router();
-const userProfileService = require("../Services/userProfileService");
-const User = require("../models/user");
+const databaseService = require("../Services/databaseService");
 
 router.get("/by-username/:username", async (req, res) => {
   try {
-    const profile = await userProfileService.getProfileByUsername(
-      req.params.username
-    );
+    const username =
+      req.params.username === "me" && req.isAuthenticated()
+        ? req.user.username
+        : req.params.username;
+    const profile = await databaseService.getProfileByUsername(username);
     res.json(profile);
   } catch (error) {
     res.status(404).json({ message: error.message });
   }
 });
 
-router.post("/by-username/:username", async (req, res) => {
-  try {
-    const profile = await userProfileService.createUserProfile(
-      req.params.username,
-      req.body
-    );
-    res.json(profile);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-});
-
 router.put("/by-username/:username", async (req, res) => {
   try {
-    const updatedProfile = await userProfileService.updateUserProfile(
-      req.params.username,
+    const username =
+      req.params.username === "me" && req.isAuthenticated()
+        ? req.user.username
+        : req.params.username;
+    const updatedProfile = await databaseService.updateUserProfile(
+      username,
       req.body
     );
     res.json(updatedProfile);
@@ -40,7 +33,7 @@ router.put("/by-username/:username", async (req, res) => {
 
 router.get("/:userId", async (req, res) => {
   try {
-    const profile = await userProfileService.getProfileWithMatches(
+    const profile = await databaseService.getProfileWithMatches(
       req.params.userId
     );
     res.json(profile);
