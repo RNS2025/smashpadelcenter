@@ -1,38 +1,115 @@
-const User = require("../models/user");
-const argon2 = require("argon2");
+const { connectDB, mongoose } = require("../config/database");
+const databaseService = require("../Services/databaseService");
 
 async function createTenUsers() {
   try {
+    // Ensure MongoDB connection is active
+    await connectDB();
+    if (mongoose.connection.readyState !== 1) {
+      throw new Error("Failed to establish MongoDB connection.");
+    }
+
     const users = [
-      { username: "user1", password: "password1", role: "user" },
-      { username: "user2", password: "password2", role: "user" },
-      { username: "user3", password: "password3", role: "user" },
-      { username: "user4", password: "password4", role: "user" },
-      { username: "user5", password: "password5", role: "user" },
-      { username: "user6", password: "password6", role: "user" },
-      { username: "user7", password: "password7", role: "user" },
-      { username: "user8", password: "password8", role: "user" },
-      { username: "user9", password: "password9", role: "user" },
-      { username: "user10", password: "password10", role: "user" },
+      {
+        username: "user1",
+        email: "user1@smashpadel.com",
+        password: "password1",
+        provider: "local",
+        role: "user",
+      },
+      {
+        username: "user2",
+        email: "user2@smashpadel.com",
+        password: "password2",
+        provider: "local",
+        role: "user",
+      },
+      {
+        username: "user3",
+        email: "user3@smashpadel.com",
+        password: "password3",
+        provider: "local",
+        role: "user",
+      },
+      {
+        username: "user4",
+        email: "user4@smashpadel.com",
+        password: "password4",
+        provider: "local",
+        role: "user",
+      },
+      {
+        username: "user5",
+        email: "user5@smashpadel.com",
+        password: "password5",
+        provider: "local",
+        role: "user",
+      },
+      {
+        username: "user6",
+        email: "user6@smashpadel.com",
+        password: "password6",
+        provider: "local",
+        role: "user",
+      },
+      {
+        username: "user7",
+        email: "user7@smashpadel.com",
+        password: "password7",
+        provider: "local",
+        role: "user",
+      },
+      {
+        username: "user8",
+        email: "user8@smashpadel.com",
+        password: "password8",
+        provider: "local",
+        role: "user",
+      },
+      {
+        username: "user9",
+        email: "user9@smashpadel.com",
+        password: "password9",
+        provider: "local",
+        role: "user",
+      },
+      {
+        username: "user10",
+        email: "user10@smashpadel.com",
+        password: "password10",
+        provider: "local",
+        role: "user",
+      },
     ];
 
     for (const user of users) {
-      // Check if the user already exists
-      const existingUser = await User.findOne({
-        where: { username: user.username },
-      });
+      try {
+        // Check if the user already exists by username or email
+        const existingUser =
+          (await databaseService.findUserByUsername(user.username)) ||
+          (await databaseService.findUserByEmail(user.email));
 
-      if (existingUser) {
-        console.log(`User ${user.username} already exists.`);
-      } else {
-        const newUser = await User.create(user);
-        console.log(`User ${newUser.username} created successfully.`);
+        if (existingUser) {
+          console.log(
+            `User ${user.username} or email ${user.email} already exists. Skipping.`
+          );
+          continue;
+        }
+
+        const newUser = await databaseService.createUser(user);
+        console.log(
+          `User ${newUser.username} created successfully with ID: ${newUser._id}`
+        );
+      } catch (err) {
+        console.error(`Error creating user ${user.username}: ${err.message}`);
       }
     }
+
+    console.log("User creation process completed successfully.");
   } catch (err) {
-    console.error("Error creating users:", err.message);
+    console.error("Error in createTenUsers:", err.message);
+    throw err;
   }
 }
 
-createTenUsers();
 module.exports = createTenUsers;

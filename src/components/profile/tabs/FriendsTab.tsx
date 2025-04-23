@@ -29,7 +29,7 @@ const FriendsTab = ({
   handleSelectFriend,
   successMessage,
   errorMessage,
-}) => {
+}: FriendsTabProps) => {
   return (
     <div>
       {successMessage && (

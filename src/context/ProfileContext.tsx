@@ -1,108 +1,186 @@
 import {
-    createContext,
-    useContext,
-    useState,
-    useEffect,
-    ReactNode,
-    ChangeEvent,
-    FormEvent,
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  ChangeEvent,
+  FormEvent,
 } from "react";
-import { UserProfile } from "../types/UserProfile";
-import userProfileApi from "../services/userProfileService";
+import { User } from "../types/user";
+import userProfileService from "../services/userProfileService";
+import communityApi from "../services/makkerborsService"; // Changed to use your existing API service
 import { useUser } from "./UserContext";
+import { PadelMatch } from "../types/PadelMatch"; // Using your existing PadelMatch type
 
-interface ProfileContextValue {
-    profile: UserProfile | null;
-    loading: boolean;
-    error: string;
-
-    formData: Partial<UserProfile>;
-    handleInputChange: (e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => void;
-    handleSubmit: (e: FormEvent<HTMLFormElement>) => void;
-    isSubmitting: boolean;
+interface MatchesData {
+  upcoming: PadelMatch[];
+  former: PadelMatch[];
 }
 
-const ProfileContext = createContext<ProfileContextValue | undefined>(undefined);
+interface ProfileContextValue {
+  profile: User | null;
+  loading: boolean;
+  error: string;
+  formData: Partial<User>;
+  matches: MatchesData;
+  matchesLoading: boolean;
+  refreshMatches: () => Promise<void>;
+  handleInputChange: (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => void;
+  handleSubmit: (e: FormEvent<HTMLFormElement>) => void;
+  isSubmitting: boolean;
+}
 
-export const ProfileProvider = ({ children }: { children: ReactNode }) => {
-    const { username } = useUser();
-    const [profile, setProfile] = useState<UserProfile | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState("");
+const ProfileContext = createContext<ProfileContextValue | undefined>(
+  undefined
+);
 
-    const [formData, setFormData] = useState<Partial<UserProfile>>({});
-    const [isSubmitting, setIsSubmitting] = useState(false);
+export function ProfileProvider({ children }: { children: ReactNode }) {
+  const { user } = useUser();
+  const [profile, setProfile] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [formData, setFormData] = useState<Partial<User>>({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [matches, setMatches] = useState<MatchesData>({
+    upcoming: [],
+    former: [],
+  });
+  const [matchesLoading, setMatchesLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            if (!username) return;
-            try {
-                setLoading(true);
-                const profileData = await userProfileApi.getOrCreateUserProfile(username);
-                setProfile(profileData);
-                setFormData(profileData);
-            } catch (err: any) {
-                console.error("Error fetching profile data:", err);
-                setError("Kunne ikke hente profil eller bookinger");
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchData().then();
-    }, [username]);
-
-    const handleInputChange = (
-        e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
-    ) => {
-        const { name, value } = e.target;
-        setFormData((prev) => ({
-            ...prev,
-            [name]: name === "skillLevel" ? parseFloat(value) : value,
-        }));
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user?.username) return;
+      try {
+        setLoading(true);
+        const profileData = await userProfileService.getOrCreateUserProfile(
+          user.username
+        );
+        setProfile(profileData);
+        setFormData(profileData);
+      } catch (err: any) {
+        console.error("Error fetching profile data:", err);
+        setError("Kunne ikke hente profil eller bookinger");
+      } finally {
+        setLoading(false);
+      }
     };
+    fetchData();
+  }, [user?.username]);
 
-    const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault();
-        setIsSubmitting(true);
-        if (formData.skillLevel && (formData.skillLevel < 1 || formData.skillLevel > 5)) {
-            setIsSubmitting(false);
-            return;
-        }
+  useEffect(() => {
+    fetchMatches();
+  }, [user?.username]);
 
-        try {
-            await userProfileApi.updateUserProfile(username!, formData);
-            const updated = await userProfileApi.getOrCreateUserProfile(username!);
-            setProfile(updated);
-            setFormData(updated);
-        } catch (err: any) {
-            console.error("Fejl ved opdatering:", err);
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
+  const fetchMatches = async () => {
+    if (!user?.username) return;
+    try {
+      setMatchesLoading(true);
+      // Using your existing communityApi.getMatchesByUser method
+      const userMatches = await communityApi.getMatchesByUser(user.username);
 
-    return (
-        <ProfileContext.Provider
-            value={{
-                profile,
-                loading,
-                error,
-                formData,
-                handleInputChange,
-                handleSubmit,
-                isSubmitting
-            }}
-        >
-            {children}
-        </ProfileContext.Provider>
-    );
-};
+      const now = new Date();
+      const upcomingMatches = userMatches
+        .filter((match) => new Date(match.matchDateTime) > now)
+        .sort(
+          (a, b) =>
+            new Date(a.matchDateTime).getTime() -
+            new Date(b.matchDateTime).getTime()
+        );
 
-export const useProfileContext = () => {
-    const context = useContext(ProfileContext);
-    if (!context) {
-        throw new Error("useProfileContext must be used within a ProfileProvider");
+      const formerMatches = userMatches
+        .filter((match) => new Date(match.matchDateTime) <= now)
+        .sort(
+          (a, b) =>
+            new Date(b.matchDateTime).getTime() -
+            new Date(a.matchDateTime).getTime()
+        );
+
+      setMatches({
+        upcoming: upcomingMatches,
+        former: formerMatches,
+      });
+    } catch (err: any) {
+      console.error("Error fetching match data:", err);
+      // Don't set error here as it would override profile errors
+    } finally {
+      setMatchesLoading(false);
     }
-    return context;
-};
+  };
+
+  const refreshMatches = async () => {
+    await fetchMatches();
+  };
+
+  const handleInputChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === "skillLevel" ? parseFloat(value) : value,
+    }));
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    if (
+      formData.skillLevel &&
+      (formData.skillLevel < 1 || formData.skillLevel > 5)
+    ) {
+      console.error("Invalid skillLevel:", formData.skillLevel);
+      setIsSubmitting(false);
+      return;
+    }
+    console.log("Submitting formData:", formData);
+    try {
+      if (user?.username) {
+        console.log("Updating profile for username:", user.username);
+        await userProfileService.updateUserProfile(user.username, formData);
+        const updated = await userProfileService.getOrCreateUserProfile(
+          user.username
+        );
+        console.log("Updated profile:", updated);
+        setProfile(updated);
+        setFormData(updated);
+      } else {
+        console.error("No username available for update");
+      }
+    } catch (err: any) {
+      console.error("Error updating profile:", err);
+      setError("Fejl ved opdatering af profil");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <ProfileContext.Provider
+      value={{
+        profile,
+        loading,
+        error,
+        formData,
+        matches,
+        matchesLoading,
+        refreshMatches,
+        handleInputChange,
+        handleSubmit,
+        isSubmitting,
+      }}
+    >
+      {children}
+    </ProfileContext.Provider>
+  );
+}
+
+export function useProfileContext() {
+  const context = useContext(ProfileContext);
+  if (!context) {
+    throw new Error("useProfileContext must be used within a ProfileProvider");
+  }
+  return context;
+}

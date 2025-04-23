@@ -24,3 +24,7 @@ dist-ssr
 *.sw?
 *.sqlite
 dev-dist/
+
+# Local env files
+.env
+.env.*.local

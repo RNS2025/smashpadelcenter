@@ -1,49 +1,119 @@
 const mongoose = require("mongoose");
-const argon2 = require("argon2");
+const bcrypt = require("bcryptjs");
 
-// Define User Schema
-const UserSchema = new mongoose.Schema(
-  {
-    username: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
-    },
-    password: {
-      type: String,
-      required: true,
-    },
-    role: {
-      type: String,
-      default: "Bruger",
+const userSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+  },
+  email: {
+    type: String,
+    required: false,
+    unique: true,
+    trim: true,
+    lowercase: true,
+  },
+  password: {
+    type: String,
+    required: function () {
+      return this.provider === "local";
     },
   },
-  { timestamps: true }
-);
+  provider: {
+    type: String,
+    required: true,
+    enum: ["local", "google", "facebook", "github"],
+    default: "local",
+  },
+  providerId: {
+    type: String,
+    required: function () {
+      return this.provider !== "local";
+    },
+    sparse: true,
+  },
+  role: {
+    type: String,
+    enum: ["user", "Admin", "Træner"],
+    default: "user",
+  },
+  fullName: {
+    type: String,
+    trim: true,
+    default: "",
+  },
+  phoneNumber: {
+    type: String,
+    trim: true,
+    default: "",
+  },
+  profilePictureUrl: {
+    type: String,
+    default: "/api/placeholder/150/150",
+  },
+  skillLevel: {
+    type: Number,
+    min: 1,
+    max: 5,
+    default: 1,
+  },
+  position: {
+    type: String,
+    default: "Begge",
+  },
+  playingStyle: {
+    type: String,
+    trim: true,
+    default: "",
+  },
+  equipment: {
+    type: String,
+    trim: true,
+    default: "",
+  },
+  matchHistory: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "PadelMatch",
+    },
+  ],
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+});
 
-// Hash password before saving
-UserSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
-
-  try {
-    this.password = await argon2.hash(this.password);
-    next();
-  } catch (error) {
-    return next(error);
+// Drop existing providerId index if it exists
+userSchema.indexes().forEach((index) => {
+  if (index.key && index.key.providerId && index.name === "providerId_1") {
+    try {
+      userSchema.dropIndex(index.name);
+      console.log(`Dropped index: ${index.name}`);
+    } catch (err) {
+      console.error(`Error dropping index ${index.name}: ${err.message}`);
+    }
   }
 });
 
-// Compare entered password with stored hashed password
-UserSchema.methods.comparePassword = async function (password) {
-  try {
-    return await argon2.verify(this.password, password);
-  } catch (error) {
-    throw new Error("Password comparison failed");
+// Create a sparse index for providerId
+userSchema.index({ providerId: 1 }, { sparse: true, unique: true });
+
+// Hash password before saving
+userSchema.pre("save", async function (next) {
+  if (this.isModified("password") && this.provider === "local") {
+    this.password = await bcrypt.hash(this.password, 10);
   }
+  if (this.provider === "local") {
+    this.providerId = undefined;
+  }
+  next();
+});
+
+// Compare password
+userSchema.methods.comparePassword = async function (candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// Create User model
-const User = mongoose.model("User", UserSchema);
-
-module.exports = User;
+module.exports = mongoose.model("User", userSchema);

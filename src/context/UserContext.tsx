@@ -5,92 +5,114 @@ import React, {
   useEffect,
   useRef,
 } from "react";
-import {
-  getUserRole,
-  getUsername,
-  logout as authLogout,
-} from "../services/auth";
 import { useNavigate, useLocation } from "react-router-dom";
+import axios from "axios";
+import { logout as authLogout } from "../services/auth";
 import { WHITELIST_ROUTES } from "./WhitelistRoutes";
-import UserContextType from "../types/UserContextType";
+import { User } from "../types/user";
+
+interface UserContextType {
+  user: User | null;
+  isAuthenticated: boolean;
+  error: string | null;
+  fetchUser: () => Promise<void>;
+  refreshUser: () => Promise<void>;
+  logout: () => Promise<void>;
+  loading: boolean;
+}
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-// Utility function to check if a path matches a route pattern
+const BACKEND_URL =
+  import.meta.env.VITE_BACKEND_URL ||
+  import.meta.env.REACT_APP_BACKEND_URL ||
+  "https://localhost:3001";
+
 const isRouteWhitelisted = (pathname: string, whitelist: string[]): boolean => {
   return whitelist.some((route) => {
-    // If it's a static route, check exact match
     if (!route.includes(":")) return route === pathname;
-    // For dynamic routes, create a regex pattern
-    const pattern = route
-      .replace(/:[^/]+/g, "[^/]+") // Replace :param with wildcard
-      .replace(/\//g, "\\/"); // Escape slashes
+    const pattern = route.replace(/:[^/]+/g, "[^/]+").replace(/\//g, "\\/");
     const regex = new RegExp(`^${pattern}$`);
     return regex.test(pathname);
   });
 };
 
-// Add a function to check if current path is login page
 const isLoginPage = (pathname: string): boolean => {
   return pathname === "/" || pathname === "/login";
 };
 
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
-  const [role, setRole] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [username, setUsername] = useState<string | null>(null);
-  // Use ref instead of state to track loading
-  const isLoadingRef = useRef(false);
-  // Add a ref to track if logout was performed
+  const [loading, setLoading] = useState(true);
   const isLogoutRef = useRef(false);
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Extract the actual API call to a separate function
   const fetchUserData = async (currentPath: string) => {
-    // Skip if already loading
-    if (isLoadingRef.current) return;
-    isLoadingRef.current = true;
-
+    if (loading || isLogoutRef.current) return; // Skip if logging out
+    setLoading(true);
     try {
-      const data = await getUserRole();
-      setRole(data.role);
-      const user = await getUsername();
-      setUsername(user.username);
-      setError(null);
-      // Reset logout flag if login was successful
-      isLogoutRef.current = false;
-    } catch {
-      setRole(null);
-
-      // Only redirect if the route is NOT whitelisted AND not in logout process
-      if (
-        !isRouteWhitelisted(currentPath, WHITELIST_ROUTES) &&
-        !isLogoutRef.current
-      ) {
-        // Only set error message if not on login page
-        if (!isLoginPage(currentPath)) {
-          setError("Adgang nægtet - Log ind for at se denne side");
-        } else {
-          setError(null); // Clear error if on login page
+      console.log(
+        "Fetching user data from /api/v1/user-profiles/by-username/me"
+      );
+      const response = await axios.get(
+        `${BACKEND_URL}/api/v1/user-profiles/by-username/me`,
+        {
+          withCredentials: true,
         }
-
-        // Still navigate but avoid showing message when already on login page
-        if (!isLoginPage(currentPath)) {
-          navigate("/", {
-            state: {
-              message: "Log venligst ind for at få adgang til denne side",
-            },
-          });
+      );
+      console.log("User data response:", response.data);
+      if (response.data && response.data.username) {
+        setUser(response.data);
+        setIsAuthenticated(true);
+        setError(null);
+        isLogoutRef.current = false;
+        sessionStorage.setItem("isAuthenticated", "true");
+        if (isLoginPage(currentPath)) {
+          navigate("/hjem", { replace: true });
         }
+      } else {
+        throw new Error("Invalid user data received");
       }
+    } catch (err: any) {
+      if (isLogoutRef.current) {
+        console.log("Ignoring fetch error during logout");
+        return; // Suppress errors during logout
+      }
+      console.error("Auth check error:", err);
+      setUser(null);
+      setIsAuthenticated(false);
+      setError("Kunne ikke hente brugerdata.");
+      sessionStorage.removeItem("isAuthenticated");
+      handleUnauthenticated(currentPath);
     } finally {
-      isLoadingRef.current = false;
+      setLoading(false);
     }
   };
 
-  // This function is for the context API
-  const fetchRole = async () => {
+  const handleUnauthenticated = (currentPath: string) => {
+    if (
+      !isRouteWhitelisted(currentPath, WHITELIST_ROUTES) &&
+      !isLogoutRef.current
+    ) {
+      if (!isLoginPage(currentPath)) {
+        setError("Adgang nægtet - Log ind for at se denne side");
+        navigate("/", {
+          state: {
+            message: "Log venligst ind for at få adgang til denne side",
+            from: currentPath,
+          },
+          replace: true,
+        });
+      } else {
+        setError(null);
+      }
+    }
+  };
+
+  const fetchUser = async () => {
     await fetchUserData(location.pathname);
   };
 
@@ -104,55 +126,108 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = async () => {
     try {
-      // Set logout flag before performing logout
       isLogoutRef.current = true;
-      // Clear error message immediately
       setError(null);
-
-      await authLogout();
-      setRole(null);
-      setUsername(null);
-
-      // Navigate without state to prevent message
+      setUser(null);
+      setIsAuthenticated(false);
+      sessionStorage.removeItem("isAuthenticated");
+      await authLogout(); // Ensure this clears the backend session
       navigate("/", { replace: true });
     } catch (error) {
-      console.error("Error during logout", error);
+      console.error("Error during logout:", error);
+      setError("Fejl ved udlogning. Prøv igen.");
+    } finally {
+      isLogoutRef.current = false;
     }
   };
 
-  // Update error state when path changes to handle login page specially
+  useEffect(() => {
+    const checkInitialAuth = async () => {
+      if (
+        sessionStorage.getItem("isAuthenticated") === "true" ||
+        location.pathname.includes("/callback")
+      ) {
+        await fetchUserData(location.pathname);
+      } else {
+        setLoading(false);
+        if (!isRouteWhitelisted(location.pathname, WHITELIST_ROUTES)) {
+          handleUnauthenticated(location.pathname);
+        }
+      }
+    };
+    checkInitialAuth();
+  }, []);
+
   useEffect(() => {
     if (isLoginPage(location.pathname)) {
-      setError(null); // Clear error message on login page
+      setError(null);
     }
   }, [location.pathname]);
 
-  // Remove fetchRole from dependencies, only react to pathname changes
   useEffect(() => {
-    // Skip API call right after logout
+    if (isLogoutRef.current) return;
+    if (location.key) {
+      fetchUserData(location.pathname);
+    }
+  }, [location.pathname]);
+
+  useEffect(() => {
+    const checkInitialAuth = async () => {
+      if (isLogoutRef.current) {
+        console.log("Skipping auth check during logout");
+        setLoading(false);
+        return;
+      }
+      console.log("Checking initial auth state");
+      if (
+        sessionStorage.getItem("isAuthenticated") === "true" ||
+        location.pathname.includes("/callback")
+      ) {
+        await fetchUserData(location.pathname);
+      } else {
+        console.log("No auth state found, setting loading false");
+        setLoading(false);
+        if (!isRouteWhitelisted(location.pathname, WHITELIST_ROUTES)) {
+          handleUnauthenticated(location.pathname);
+        }
+      }
+    };
+    checkInitialAuth();
+  }, [location.pathname]);
+
+  useEffect(() => {
     if (isLogoutRef.current) {
+      console.log("Skipping fetchUserData during logout");
       return;
     }
-
-    // We only want this to run when the path changes
-    fetchUserData(location.pathname);
-
-    // Cleanup function to potentially cancel pending requests
-    return () => {
-      // If you have a way to cancel requests, you could do it here
-    };
+    if (location.key) {
+      fetchUserData(location.pathname);
+    }
   }, [location.pathname]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      if (isAuthenticated) {
+        axios
+          .get(`${BACKEND_URL}/api/v1/auth/check`, { withCredentials: true })
+          .catch((error) => {
+            console.error("Session keep-alive failed", error);
+          });
+      }
+    }, 30 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [isAuthenticated]);
 
   return (
     <UserContext.Provider
       value={{
-        role,
+        user,
+        isAuthenticated,
         error,
-        fetchRole,
+        fetchUser,
         refreshUser,
         logout,
-        username,
-        loading: isLoadingRef.current,
+        loading,
       }}
     >
       {children}

@@ -14,7 +14,7 @@ import rankedInService from "../services/rankedIn";
 import TournamentSelector from "../components/tournaments/check-in/TournamentSelector.tsx";
 
 const CheckInPage = () => {
-  const { role, error: authError, refreshUser, username } = useUser();
+  const { user, error: authError, refreshUser } = useUser();
   const navigate = useNavigate(); // For programmatic navigation
   const [rows, setRows] = useState<Row[]>([]);
   const [selectedRowId, setSelectedRowId] = useState<string | null>(null);
@@ -140,7 +140,7 @@ const CheckInPage = () => {
             playerId: id,
             playerName: playerNames[i],
             checkedIn: newCheckInStatus,
-            userId: username || "Unknown",
+            userId: user?.username || "Unknown",
           })
         )
       );
@@ -173,7 +173,7 @@ const CheckInPage = () => {
       !selectedTournament ||
       !selectedRowId ||
       players.length === 0 ||
-      role !== "admin"
+      user?.role !== "admin"
     )
       return;
 
@@ -262,7 +262,7 @@ const CheckInPage = () => {
               checkedInPlayers={checkedInPlayers}
               loading={loading.players}
               isCheckingIn={loading.checkIn}
-              userRole={role!}
+              userRole={user?.role || "Unknown"}
               tournamentNotToday={
                 selectedTournament?.startDate !== new Date().toISOString()
               }

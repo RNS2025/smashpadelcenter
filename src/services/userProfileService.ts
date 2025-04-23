@@ -1,22 +1,20 @@
 import api from "../api/api";
-import { UserProfile } from "../types/UserProfile";
+import { User } from "../types/user";
 
-const getOrCreateUserProfile = async (
-  username: string
-): Promise<UserProfile> => {
+const getOrCreateUserProfile = async (username: string): Promise<User> => {
   try {
     const response = await api.get(`/user-profiles/by-username/${username}`);
     return response.data;
   } catch (error) {
-    console.error("Error fetching or creating user profile:", error);
+    console.error("Error fetching user profile:", error);
     throw error;
   }
 };
 
 const updateUserProfile = async (
   username: string,
-  updates: Partial<UserProfile>
-): Promise<UserProfile> => {
+  updates: Partial<User>
+): Promise<User> => {
   try {
     const response = await api.put(
       `/user-profiles/by-username/${username}`,
