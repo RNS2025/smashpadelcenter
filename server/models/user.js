@@ -32,13 +32,53 @@ const userSchema = new mongoose.Schema({
     required: function () {
       return this.provider !== "local";
     },
-    sparse: true, // Allows multiple null/undefined values
+    sparse: true,
   },
   role: {
     type: String,
     enum: ["user", "Admin", "Træner"],
     default: "user",
   },
+  fullName: {
+    type: String,
+    trim: true,
+    default: "",
+  },
+  phoneNumber: {
+    type: String,
+    trim: true,
+    default: "",
+  },
+  profilePictureUrl: {
+    type: String,
+    default: "/api/placeholder/150/150",
+  },
+  skillLevel: {
+    type: Number,
+    min: 1,
+    max: 5,
+    default: 1,
+  },
+  position: {
+    type: String,
+    default: "Begge",
+  },
+  playingStyle: {
+    type: String,
+    trim: true,
+    default: "",
+  },
+  equipment: {
+    type: String,
+    trim: true,
+    default: "",
+  },
+  matchHistory: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "PadelMatch",
+    },
+  ],
   createdAt: {
     type: Date,
     default: Date.now,
@@ -65,7 +105,6 @@ userSchema.pre("save", async function (next) {
   if (this.isModified("password") && this.provider === "local") {
     this.password = await bcrypt.hash(this.password, 10);
   }
-  // Ensure providerId is undefined for local users
   if (this.provider === "local") {
     this.providerId = undefined;
   }

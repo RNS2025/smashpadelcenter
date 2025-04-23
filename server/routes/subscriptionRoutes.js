@@ -5,8 +5,6 @@ const {
 } = require("../Services/subscriptionService");
 const SubscriptionPreference = require("../models/subscriptionPreferenceSchema");
 const NotificationHistory = require("../models/NotificationHistory");
-const UserProfile = require("../models/UserProfile");
-
 const router = express.Router();
 
 /**
