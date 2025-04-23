@@ -1,12 +1,14 @@
-import "./App.css";
+import React, { useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
+import { UserProvider } from "./context/UserContext";
+import { ProfileProvider } from "./context/ProfileContext.tsx";
+import InstallPrompt from "./components/InstallPrompt"; // Adjust path as needed
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/(logged-in)/HomePage.tsx";
 import AdminPage from "./pages/(logged-in)/misc/AdminPage.tsx";
 import CheckInPage from "./pages/CheckInPage.tsx";
 import PlayerPage from "./pages/(logged-in)/tournament/PlayerPage.tsx";
-import { HelmetProvider } from "react-helmet-async";
-import { UserProvider } from "./context/UserContext";
 import BookCourtPage from "./pages/(logged-in)/BookingOfCourt.tsx";
 import BookTrainingPage from "./pages/(logged-in)/BookTraining.tsx";
 import MatchFinderPage from "./pages/(logged-in)/matchFinder/MatchFinderPage.tsx";
@@ -37,15 +39,89 @@ import MatchFinderMyMatchesTab from "./components/matchFinder/MatchFinderMyMatch
 import MatchFinderAwaitingTab from "./components/matchFinder/MatchFinderAwaitingTab.tsx";
 import ViewMatchPage from "./pages/(logged-in)/matchFinder/ViewMatchPage.tsx";
 import OverviewTab from "./components/profile/tabs/OverviewTab.tsx";
-import { ProfileProvider } from "./context/ProfileContext.tsx";
 import MatchesTab from "./components/profile/tabs/MatchesTab.tsx";
 import EditTab from "./components/profile/tabs/EditTab.tsx";
+import "./App.css";
 
 function App() {
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isAppInstalled, setIsAppInstalled] = useState(false);
+  const [isPromptDismissed, setIsPromptDismissed] = useState(false);
+
+  useEffect(() => {
+    // Check if app is already installed
+    const checkInstallation = async () => {
+      if ("getInstalledRelatedApps" in navigator) {
+        const relatedApps = await (navigator as any).getInstalledRelatedApps();
+        const isInstalled = relatedApps.some((app: any) =>
+          app.url.includes(window.location.origin)
+        );
+        setIsAppInstalled(isInstalled);
+      }
+
+      // Check if user has dismissed the prompt recently
+      const dismissedTimestamp = localStorage.getItem("pwaPromptDismissed");
+      if (dismissedTimestamp) {
+        const dismissedDate = new Date(parseInt(dismissedTimestamp, 10));
+        const now = new Date();
+        const daysSinceDismissal =
+          (now.getTime() - dismissedDate.getTime()) / (1000 * 60 * 60 * 24);
+        if (daysSinceDismissal < 7) {
+          setIsPromptDismissed(true);
+        }
+      }
+    };
+
+    checkInstallation();
+
+    // Handle beforeinstallprompt event
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+
+    // Handle appinstalled event
+    const handleAppInstalled = () => {
+      setIsAppInstalled(true);
+      setDeferredPrompt(null);
+      console.log("PWA was installed");
+    };
+
+    window.addEventListener("appinstalled", handleAppInstalled);
+
+    return () => {
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt
+      );
+      window.removeEventListener("appinstalled", handleAppInstalled);
+    };
+  }, []);
+
+  const handleDismiss = () => {
+    localStorage.setItem("pwaPromptDismissed", Date.now().toString());
+    setIsPromptDismissed(true);
+  };
+
+  // Don't show prompt if app is installed, prompt is dismissed, or running in standalone mode
+  const shouldShowPrompt =
+    deferredPrompt &&
+    !isAppInstalled &&
+    !isPromptDismissed &&
+    !window.matchMedia("(display-mode: standalone)").matches;
+
   return (
     <HelmetProvider>
       <BrowserRouter basename="/smashpadelcenter">
         <UserProvider>
+          {shouldShowPrompt && (
+            <InstallPrompt
+              deferredPrompt={deferredPrompt}
+              onDismiss={handleDismiss}
+            />
+          )}
           <Routes>
             {/* Whitelisted Routes */}
             <Route path="/" element={<LoginPage />} />
@@ -59,19 +135,19 @@ function App() {
             <Route path="/register" element={<RegisterPage />} />
 
             {/* Protected Routes */}
-            <Route path="/profil" element={
-              <ProfileProvider>
-                <ProfilePage />
-              </ProfileProvider>
-            }>
+            <Route
+              path="/profil"
+              element={
+                <ProfileProvider>
+                  <ProfilePage />
+                </ProfileProvider>
+              }
+            >
               <Route index element={<Navigate to="overblik" replace />} />
               <Route path="overblik" element={<OverviewTab />} />
               <Route path="rediger" element={<EditTab />} />
               <Route path="kampe" element={<MatchesTab />} />
             </Route>
-
-
-
 
             <Route path="/hjem" element={<HomePage />} />
             <Route path="/admin" element={<AdminPage />} />
