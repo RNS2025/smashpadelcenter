@@ -63,6 +63,8 @@ export const ViewMatchPage = () => {
     // Create socket connection
     const socket = io("https://localhost:3001", {
       path: "/socket.io/",
+      rejectUnauthorized: false, // Only use this for development with self-signed certs
+      withCredentials: true,
       transports: ["websocket", "polling"],
       reconnection: true,
       reconnectionAttempts: 5,

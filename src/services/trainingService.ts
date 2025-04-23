@@ -4,6 +4,9 @@ import { io } from "socket.io-client";
 
 const socket = io("https://localhost:3001", {
   path: "/socket.io/",
+  rejectUnauthorized: false, // Only use this for development with self-signed certs
+  transports: ["polling", "websocket"],
+  withCredentials: true,
 });
 
 export const getAllTrainers = async (): Promise<Trainer[]> => {
