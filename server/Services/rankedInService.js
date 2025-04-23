@@ -571,24 +571,26 @@ const getPlayerDetails = async (playerId, language = "en") => {
     const playerData = response.data;
     return {
       Header: {
-        PlayerId: playerData.PlayerId,
-        ImageThumbnailUrl: playerData.ImageThumbnailUrl || "",
-        FullName: playerData.FullName,
-        RankedinId: playerData.RankedinId,
-        HomeClubName: playerData.HomeClubName || "",
-        HomeClubUrl: playerData.HomeClubUrl || "",
-        CountryShort: playerData.CountryShort || "",
-        Age: playerData.Age || "",
-        Form: playerData.Form || [],
-        IsProPlayer: playerData.IsProPlayer || false,
+        PlayerId: playerData.Header.PlayerId,
+        ImageThumbnailUrl: playerData.Header.ImageThumbnailUrl || "",
+        FullName:
+          playerData.Header.FirstName + " " + playerData.Header.LastName,
+        RankedinId: playerData.Header.RankedinId,
+        HomeClubName: playerData.Header.HomeClubName || "",
+        HomeClubUrl: playerData.Header.HomeClubUrl || "",
+        CountryShort: playerData.Header.CountryShort || "",
+        Age: playerData.Header.Age || "",
+        Form: playerData.Header.Form || [],
+        IsProPlayer: playerData.Header.IsProPlayer || false,
       },
       Statistics: {
-        WinLossDoublesCurrentYear: playerData.WinLossDoublesCurrentYear || "",
+        WinLossDoublesCurrentYear:
+          playerData.Statistics.WinLossDoublesCurrentYear || "",
         EventsParticipatedDoublesCurrentYear:
-          playerData.EventsParticipatedDoublesCurrentYear || "",
-        CareerWinLossDoubles: playerData.CareerWinLossDoubles || "",
+          playerData.Statistics.EventsParticipatedDoublesCurrentYear || "",
+        CareerWinLossDoubles: playerData.Statistics.CareerWinLossDoubles || "",
         CareerEventsParticipatedDoubles:
-          playerData.CareerEventsParticipatedDoubles || "",
+          playerData.Statistics.CareerEventsParticipatedDoubles || "",
       },
     };
   } catch (error) {

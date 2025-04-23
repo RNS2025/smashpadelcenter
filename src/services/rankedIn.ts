@@ -80,8 +80,8 @@ const rankedInService = {
       });
 
       return response.data.map((player: any) => ({
-        Name: player.Name,
-        RankedInId: player.RankedInId,
+        Name: `${player.firstName} ${player.lastName}`,
+        RankedInId: player.rankedInId,
       }));
     } catch (error) {
       console.error("Error fetching players in row:", error);
@@ -221,11 +221,17 @@ const rankedInService = {
       throw error;
     }
   },
-  getPlayerDetails: async (playerId: string): Promise<PlayerData> => {
+  getPlayerDetails: async (
+    playerId: string,
+    language = "dk"
+  ): Promise<PlayerData | null> => {
     try {
       const response = await api.get("/GetPlayerDetails", {
-        params: { playerId },
+        params: { playerId, language },
       });
+      if (!response.data) {
+        throw new Error("No player data returned");
+      }
       return response.data;
     } catch (error) {
       console.error("Error fetching player details:", error);
