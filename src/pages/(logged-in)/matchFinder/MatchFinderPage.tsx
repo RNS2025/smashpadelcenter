@@ -3,15 +3,17 @@ import { Helmet } from "react-helmet-async";
 import Animation from "../../../components/misc/Animation.tsx";
 import HomeBar from "../../../components/misc/HomeBar.tsx";
 import "react-datepicker/dist/react-datepicker.css";
-import { Outlet, useNavigate } from "react-router-dom";
+import {Outlet, useLocation, useNavigate} from "react-router-dom";
 import MatchFinderTabMenu from "../../../components/matchFinder/MatchFinderTabMenu.tsx";
 import { useUser } from "../../../context/UserContext";
 import communityApi from "../../../services/makkerborsService";
 
 const MatchFinderPage: FC = () => {
+  const location = useLocation();
   const navigate = useNavigate();
   const { username } = useUser();
   const [joinRequestsCount, setJoinRequestsCount] = useState(0);
+    const [showFullMatches, setShowFullMatches] = useState(false);
 
   useEffect(() => {
     const fetchJoinRequestCount = async () => {
@@ -46,15 +48,32 @@ const MatchFinderPage: FC = () => {
             <div className="justify-self-center mb-5">
               <MatchFinderTabMenu joinRequestsCount={joinRequestsCount} />
             </div>
+            <div className="flex justify-between items-center max-sm:mt-5 mx-4 mb-4">
             <button
                 onClick={() => navigate("opretkamp")}
-                className="max-sm:mt-5 mx-4 bg-cyan-500 rounded px-4 py-2 text-white mb-4"
+                className="bg-cyan-500 rounded px-4 py-2 text-white"
             >
               Opret kamp
             </button>
 
+              <div className={`flex items-center gap-1 ${!location.pathname.includes("allekampe") ? "hidden" : ""}`}>
+                <input
+                    className=""
+                    type="checkbox"
+                    id="showFullMatches"
+                    name="showFullMatches"
+                    checked={showFullMatches}
+                    onChange={(e) => setShowFullMatches(e.target.checked)}
+                />
+
+                <label htmlFor="showFullMatches" className="text-gray-500">
+                    Vis fyldte kampe
+                </label>
+              </div>
+            </div>
+
             <div className="mx-4">
-              <Outlet />
+              <Outlet context={{showFullMatches}} />
             </div>
           </div>
         </Animation>

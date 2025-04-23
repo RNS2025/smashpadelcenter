@@ -84,25 +84,53 @@ export const MatchFinderAwaitingTab = () => {
 
               <div className="flex justify-between">
                 <p>Niveau {match.level}</p>
-                <div className="flex">
-                  {[...Array(match.participants.length + match.reservedSpots.length),].map((_, i) => (
-                    <UserCircleIcon
-                      key={`participant-${i}`}
-                      className="h-5 text-cyan-500"
-                    />
-                  ))}
-                  {[...Array(match.joinRequests.length),].map((_, i) => (
+                <div className="flex items-center">
+                  {[...Array(match.participants.length + match.reservedSpots.length)].map((_, i) => (
                       <UserCircleIcon
-                          key={`empty-${i}`}
-                          className="h-5 text-yellow-500"
+                          key={`participant-${i}`}
+                          className="h-5 text-cyan-500"
                       />
                   ))}
-                  {[...Array(match.totalSpots - (match.participants.length + match.reservedSpots.length + match.joinRequests.length)),].map((_, i) => (
-                    <UserCircleIcon
-                      key={`empty-${i}`}
-                      className="h-5 text-gray-500"
-                    />
+
+
+                  {[...Array(
+                      Math.max(
+                          0,
+                          match.totalSpots - (match.participants.length + match.reservedSpots.length)
+                      )
+                  )]
+                      .slice(0, match.joinRequests.length)
+                      .map((_, i) => (
+                          <UserCircleIcon
+                              key={`join-${i}`}
+                              className="h-5 text-yellow-500"
+                          />
+                      ))}
+
+
+                  {[...Array(
+                      Math.max(
+                          0,
+                          match.totalSpots -
+                          (match.participants.length +
+                              match.reservedSpots.length +
+                              Math.min(match.joinRequests.length, match.totalSpots))
+                      )
+                  )].map((_, i) => (
+                      <UserCircleIcon
+                          key={`empty-${i}`}
+                          className="h-5 text-gray-500"
+                      />
                   ))}
+
+
+                  {match.joinRequests.length >
+                      match.totalSpots -
+                      (match.participants.length + match.reservedSpots.length) && (
+                          <div className="ml-1 text-xs text-yellow-400 font-semibold">
+                            +{match.joinRequests.length - (match.totalSpots - (match.participants.length + match.reservedSpots.length))}
+                          </div>
+                      )}
                 </div>
               </div>
               <p className="text-gray-500">Oprettet af {match.username}</p>

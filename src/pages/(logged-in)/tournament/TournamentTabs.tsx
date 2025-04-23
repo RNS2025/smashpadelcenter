@@ -25,20 +25,20 @@ export const TournamentTabs = () => {
                         icon={<CheckCircleIcon className="h-10 w-10" aria-hidden="true" />}
                         title="Indtjekning"
                         description="Tjek ind til DPF-turneringer"
-                        link="/turneringer/check-in"
+                        link="turneringer/check-in"
                     />
                     <HomeScreenCard
                         icon={<MapIcon className="h-10 w-10" aria-hidden="true" />}
                         title="Baneoversigt"
                         description="Se hvor kampene bliver afviklet"
-                        link="/turneringer/baneoversigt"
+                        link="turneringer/baneoversigt"
                     />
                     {role === "admin" && (
                     <HomeScreenCard
                         icon={<RectangleGroupIcon className="h-10 w-10" aria-hidden="true" />}
                         title="Resultater"
                         description="Indtast resultater for DPF-kampe"
-                        link="/turneringer/resultater"
+                        link="turneringer/resultater"
                     />
                     )}
                 </div>

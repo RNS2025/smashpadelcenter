@@ -62,9 +62,7 @@ const CheckInPage = () => {
         setPlayers([]);
         setSelectedRowId(null);
 
-        const fetchedRows = await rankedInService.getAllRows(
-          selectedTournament.eventId.toString()
-        );
+        const fetchedRows = await rankedInService.getAllRows(selectedTournament.eventId.toString());
         setRows(fetchedRows);
       } catch (err) {
         setError("Error fetching rows.");

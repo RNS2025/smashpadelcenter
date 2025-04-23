@@ -75,8 +75,8 @@ const getAvailableTournaments = async (
     await Tournament.deleteMany({ organisationId, isFinished });
     const tournamentDocs = data.payload.map((tournament) => ({
       organisationId,
-      eventId: tournament.id,
-      eventName: tournament.name,
+      eventId: tournament.eventId,
+      eventName: tournament.eventName,
       eventUrl: tournament.eventUrl || "",
       club: tournament.club || "",
       city: tournament.city || "",
