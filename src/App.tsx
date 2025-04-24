@@ -140,14 +140,7 @@ function App() {
             <Route path="/register" element={<RegisterPage />} />
 
             {/* Protected Routes */}
-            <Route
-              path="/profil"
-              element={
-                <ProfileProvider>
-                  <ProfilePage />
-                </ProfileProvider>
-              }
-            >
+            <Route path="/profil" element={<ProfileProvider><ProfilePage /></ProfileProvider>}>
               <Route index element={<Navigate to="overblik" replace />} />
               <Route path="overblik" element={<OverviewTab />} />
               <Route path="rediger" element={<EditTab />} />

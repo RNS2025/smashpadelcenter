@@ -7,29 +7,13 @@ import { useNavigate } from "react-router-dom";
 import communityApi from "../../../services/makkerborsService";
 import { PadelMatch } from "../../../types/PadelMatch";
 import { useUser } from "../../../context/UserContext";
+import { getNextHalfHour } from "../../../utils/dateUtils";
 
 registerLocale("da", da);
 
 export const CreateMatchForm = () => {
   const navigate = useNavigate();
   const { user } = useUser();
-
-  const getNextHalfHour = () => {
-    const now = new Date();
-    now.setSeconds(0);
-    now.setMilliseconds(0);
-
-    const minutes = now.getMinutes();
-
-    if (minutes < 30) {
-      now.setMinutes(30);
-    } else {
-      now.setHours(now.getHours() + 1);
-      now.setMinutes(0);
-    }
-
-    return now;
-  };
 
   const [selectedDate, setSelectedDate] = useState(getNextHalfHour);
   const [selectedReserved, setSelectedReserved] = useState<number>(0);
@@ -86,6 +70,8 @@ export const CreateMatchForm = () => {
         courtBooked,
         location,
         matchType: selectedMatchType,
+        score: "",
+        result: "pending",
       };
 
       await communityApi.createMatch(matchData);

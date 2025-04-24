@@ -4,27 +4,38 @@ import Animation from "../../../components/misc/Animation";
 import {useUser} from "../../../context/UserContext.tsx";
 import {Navigate, useParams} from "react-router-dom";
 import {useEffect, useState} from "react";
-import {UserProfile} from "../../../types/UserProfile.ts";
+import {User} from "../../../types/user.ts";
 import {PrivateEvent} from "../../../types/PrivateEvent.ts";
 import communityApi from "../../../services/makkerborsService.ts";
 import LoadingSpinner from "../../../components/misc/LoadingSpinner.tsx";
 import PlayerInfoDialog from "../../../components/matchFinder/misc/PlayerInfoDialog.tsx";
 import { safeFormatDate } from "../../../utils/dateUtils.ts";
-import {BoltIcon, CheckCircleIcon, MapPinIcon, UserCircleIcon, UserGroupIcon, XCircleIcon } from "@heroicons/react/24/outline";
+import {
+    BoltIcon,
+    CheckCircleIcon, CheckIcon,
+    DocumentDuplicateIcon,
+    MapPinIcon,
+    UserCircleIcon,
+    UserGroupIcon,
+    XCircleIcon
+} from "@heroicons/react/24/outline";
 import mockEvents from "../../../utils/mockEvents.ts";
 import userProfileService from "../../../services/userProfileService.ts";
 
 export const ViewEventPage = () => {
-    const { username } = useUser();
+    const { user } = useUser();
     const { eventId } = useParams<{eventId: string}>();
     const [event, setEvent] = useState<PrivateEvent | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [participantProfiles, setParticipantProfiles] = useState<UserProfile[]>(
+    const [participantProfiles, setParticipantProfiles] = useState<User[]>(
         []
     );
-    const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
+    const [selectedUser, setSelectedUser] = useState<User | null>(null);
     const [infoDialogVisible, setInfoDialogVisible] = useState(false);
+
+    const [copied, setCopied] = useState(false);
+
 
     const useMockData = true;
 
@@ -77,9 +88,9 @@ export const ViewEventPage = () => {
 
 
     const handleJoinEvent = async () => {
-        if (!event || !username || event.participants.includes(username)) return;
+        if (!event || !user?.username || event.participants.includes(user?.username)) return;
         try {
-            const updatedEvent = await communityApi.joinEvent(event.id, username);
+            const updatedEvent = await communityApi.joinEvent(event.id, user?.username);
             console.log("Updated event after join:", updatedEvent);
             if (!updatedEvent || !Array.isArray(updatedEvent.participants)) {
                 setError("Invalid event data returned");
@@ -125,6 +136,16 @@ export const ViewEventPage = () => {
             console.error("Error deleting event:", error);
             alert(error.response?.data?.message || "Fejl ved sletning af arrangement");
             setError("Fejl ved sletning af arrangement");
+        }
+    };
+
+    const handleInvitePlayers = async () => {
+        try {
+            await navigator.clipboard.writeText(window.location.href);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 10000);
+        } catch (err) {
+            console.error("Kunne ikke kopiere link:", err);
         }
     };
 
@@ -251,7 +272,7 @@ export const ViewEventPage = () => {
                     ))}
 
                     {/* Join requests (visible to creator) */}
-                    {event.username === username &&
+                    {event.username === user?.username &&
                         Array.isArray(event.joinRequests) &&
                         event.joinRequests.length > 0 && (
                             <>
@@ -315,26 +336,42 @@ export const ViewEventPage = () => {
                     </div>
 
                     {/* Action buttons */}
-                    {event.username !== username &&
-                        username &&
-                        !event.participants.includes(username) &&
-                        !event.joinRequests.includes(username) &&
+                    {event.username !== user?.username &&
+                        user?.username &&
+                        !event.participants.includes(user?.username) &&
+                        !event.joinRequests.includes(user?.username) &&
                         !isEventFull && (
                             <button
                                 onClick={handleJoinEvent}
                                 className="bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white"
                             >
-                                Tilmeld kamp
+                                Tilmeld arrangement
                             </button>
                         )}
 
-                    {event.username === username && (
+                    {event.username === user?.username && (
+                        <div className="flex justify-between">
                         <button
                             onClick={handleDeleteEvent}
                             className="bg-red-500 hover:bg-red-600 transition duration-300 rounded-lg py-2 px-4 text-white"
                         >
-                            Slet kamp
+                            Slet arrangement
                         </button>
+
+                            <div onClick={handleInvitePlayers} className="bg-green-500 hover:bg-green-600 transition duration-300 rounded-lg py-2 px-4 text-white flex">
+                                {!copied ? (
+                                    <>
+                                        <DocumentDuplicateIcon className="h-5"/>
+                                        <h1>Kopier arrangementslink</h1>
+                                    </>
+                                ) : (
+                                    <>
+                                        <CheckIcon className="h-5"/>
+                                        <h1>Link kopieret!</h1>
+                                    </>
+                                )}
+                            </div>
+                        </div>
                     )}
                 </div>
             </Animation>

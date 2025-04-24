@@ -9,6 +9,7 @@ import {useNavigate, useOutletContext} from "react-router-dom";
 import { toZonedTime } from "date-fns-tz";
 import { registerLocale } from "react-datepicker";
 import { da } from "date-fns/locale";
+import {useUser} from "../../context/UserContext.tsx";
 registerLocale("da", da);
 
 type OutletContextType = {
@@ -17,6 +18,7 @@ type OutletContextType = {
 
 export const MatchFinderAllMatchesTab = () => {
   const navigate = useNavigate();
+  const { user } = useUser();
   const { showFullMatches } = useOutletContext<OutletContextType>();
   const [matches, setMatches] = useState<PadelMatch[]>([]);
   const [loading, setLoading] = useState(true);
@@ -144,7 +146,7 @@ export const MatchFinderAllMatchesTab = () => {
               </div>
 
             </div>
-            <p className="text-gray-500">Oprettet af {match.username}</p>
+            <p className="text-gray-500">Oprettet af {match.username === user?.username ? "dig" : `${match.username}`}</p>
           </div>
             )))}
       </div>

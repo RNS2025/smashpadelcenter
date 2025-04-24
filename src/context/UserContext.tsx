@@ -51,19 +51,15 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
 
   const fetchUserData = async (currentPath: string) => {
-    if (loading || isLogoutRef.current) return; // Skip if logging out
+    if ( isLogoutRef.current) return;
     setLoading(true);
     try {
-      console.log(
-        "Fetching user data from /api/v1/user-profiles/by-username/me"
-      );
       const response = await axios.get(
         `${BACKEND_URL}/api/v1/user-profiles/by-username/me`,
         {
           withCredentials: true,
         }
       );
-      console.log("User data response:", response.data);
       if (response.data && response.data.username) {
         setUser(response.data);
         setIsAuthenticated(true);
@@ -178,7 +174,6 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         setLoading(false);
         return;
       }
-      console.log("Checking initial auth state");
       if (
         sessionStorage.getItem("isAuthenticated") === "true" ||
         location.pathname.includes("/callback")

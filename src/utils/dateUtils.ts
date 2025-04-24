@@ -12,3 +12,20 @@ export const safeFormatDate = (dateString: string, formatString: string): string
         return "Ugyldig dato";
     }
 };
+
+export const getNextHalfHour = () => {
+    const now = new Date();
+    now.setSeconds(0);
+    now.setMilliseconds(0);
+
+    const minutes = now.getMinutes();
+
+    if (minutes < 30) {
+        now.setMinutes(30);
+    } else {
+        now.setHours(now.getHours() + 1);
+        now.setMinutes(0);
+    }
+
+    return now;
+};

@@ -7,7 +7,8 @@ import {
   UserCircleIcon,
   UserGroupIcon,
   CheckCircleIcon,
-  XCircleIcon,
+  XCircleIcon, DocumentDuplicateIcon,
+  CheckIcon,
 } from "@heroicons/react/24/outline";
 import { useUser } from "../../../context/UserContext";
 import { useEffect, useState } from "react";
@@ -19,23 +20,23 @@ import { format } from "date-fns";
 import { io } from "socket.io-client";
 import { toZonedTime } from "date-fns-tz";
 import { da } from "date-fns/locale";
-import { UserProfile } from "../../../types/UserProfile";
+import { User } from "../../../types/user.ts";
 import userProfileService from "../../../services/userProfileService.ts";
 import PlayerInfoDialog from "../../../components/matchFinder/misc/PlayerInfoDialog.tsx";
 
 export const ViewMatchPage = () => {
-  const { username } = useUser();
+  const { user } = useUser();
   const { matchId } = useParams<{ matchId: string }>();
   const [match, setMatch] = useState<PadelMatch | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [socketConnected, setSocketConnected] = useState(false);
-  const [participantProfiles, setParticipantProfiles] = useState<UserProfile[]>(
+  const [participantProfiles, setParticipantProfiles] = useState<User[]>(
     []
   );
-  const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
-
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [infoDialogVisible, setInfoDialogVisible] = useState(false);
+    const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const fetchParticipants = async () => {
@@ -166,9 +167,9 @@ export const ViewMatchPage = () => {
   };
 
   const handleJoinMatch = async () => {
-    if (!match || !username || match.participants.includes(username)) return;
+    if (!match || !user?.username || match.participants.includes(user?.username)) return;
     try {
-      const updatedMatch = await communityApi.joinMatch(match.id, username);
+      const updatedMatch = await communityApi.joinMatch(match.id, user?.username);
       console.log("Updated match after join:", updatedMatch);
       if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
         setError("Invalid match data returned");
@@ -214,6 +215,16 @@ export const ViewMatchPage = () => {
       console.error("Error deleting match:", error);
       alert(error.response?.data?.message || "Fejl ved sletning af kamp");
       setError("Fejl ved sletning af kamp");
+    }
+  };
+
+  const handleInvitePlayers = async () => {
+    try {
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 10000);
+    } catch (err) {
+      console.error("Kunne ikke kopiere link:", err);
     }
   };
 
@@ -360,7 +371,7 @@ export const ViewMatchPage = () => {
           ))}
 
           {/* Join requests (visible to creator) */}
-          {match.username === username &&
+          {match.username === user?.username &&
             Array.isArray(match.joinRequests) &&
             match.joinRequests.length > 0 && (
               <>
@@ -422,10 +433,10 @@ export const ViewMatchPage = () => {
           </div>
 
           {/* Action buttons */}
-          {match.username !== username &&
-            username &&
-            !match.participants.includes(username) &&
-            !match.joinRequests.includes(username) &&
+          {match.username !== user?.username &&
+              user?.username &&
+            !match.participants.includes(user?.username) &&
+            !match.joinRequests.includes(user?.username) &&
             !isMatchFull && (
               <button
                 onClick={handleJoinMatch}
@@ -435,13 +446,29 @@ export const ViewMatchPage = () => {
               </button>
             )}
 
-          {match.username === username && (
-            <button
-              onClick={handleDeleteMatch}
-              className="bg-red-500 hover:bg-red-600 transition duration-300 rounded-lg py-2 px-4 text-white"
-            >
-              Slet kamp
-            </button>
+          {match.username === user?.username && (
+              <div className="flex justify-between">
+                <button
+                    onClick={handleDeleteMatch}
+                    className="bg-red-500 hover:bg-red-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                >
+                  Slet kamp
+                </button>
+
+                <div onClick={handleInvitePlayers} className="bg-green-500 hover:bg-green-600 transition duration-300 rounded-lg py-2 px-4 text-white flex">
+                  {!copied ? (
+                      <>
+                  <DocumentDuplicateIcon className="h-5"/>
+                  <h1>Kopier kamplink</h1>
+                      </>
+                    ) : (
+                        <>
+                        <CheckIcon className="h-5"/>
+                          <h1>Link kopieret!</h1>
+                        </>
+                    )}
+                </div>
+              </div>
           )}
         </div>
       </Animation>

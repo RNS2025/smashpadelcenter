@@ -14,6 +14,6 @@ export interface PadelMatch {
   courtBooked: boolean;
   location: string;
   matchType: string; // e.g., "Herre", "Dame", "Mix", "Blandet"
-  score: string;
+  score?: string;
   result: "win" | "loss" | "pending" | "unknown";
 }

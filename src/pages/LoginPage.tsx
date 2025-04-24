@@ -34,8 +34,9 @@ export const LoginPage = () => {
     try {
       await login(username, password);
       navigate("/hjem", { replace: true });
-    } catch (err: any) {
-      setError(err.message || "Failed to log in");
+    } catch (err) {
+      setError("Kunne ikke logge ind.");
+      console.log(err);
     } finally {
       setIsSubmitting(false);
     }
@@ -46,8 +47,9 @@ export const LoginPage = () => {
     setSuccessMessage("");
     try {
       loginWithProvider(provider);
-    } catch (err: any) {
-      setError(err.message || "Failed to initiate login");
+    } catch (err) {
+      setError("Kunne ikke logge ind");
+        console.log(err);
     }
   };
 

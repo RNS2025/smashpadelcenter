@@ -7,11 +7,12 @@ import {Outlet, useLocation, useNavigate} from "react-router-dom";
 import MatchFinderTabMenu from "../../../components/matchFinder/MatchFinderTabMenu.tsx";
 import { useUser } from "../../../context/UserContext";
 import communityApi from "../../../services/makkerborsService";
+import {LockClosedIcon, LockOpenIcon} from "@heroicons/react/24/outline";
 
 const MatchFinderPage: FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { username } = useUser();
+  const { user } = useUser();
   const [joinRequestsCount, setJoinRequestsCount] = useState(0);
     const [showFullMatches, setShowFullMatches] = useState(false);
 
@@ -20,7 +21,7 @@ const MatchFinderPage: FC = () => {
       try {
         const data = await communityApi.getMatches();
         const myMatches = data.filter(
-            (match) => match.username === username
+            (match) => match.username === user?.username
         );
         const totalJoinRequests = myMatches.reduce(
             (sum, match) => sum + (match.joinRequests?.length || 0),
@@ -33,7 +34,7 @@ const MatchFinderPage: FC = () => {
     };
 
     fetchJoinRequestCount().then();
-  }, [username]);
+  }, [user?.username]);
 
   return (
       <>
@@ -51,25 +52,24 @@ const MatchFinderPage: FC = () => {
             <div className="flex justify-between items-center max-sm:mt-5 mx-4 mb-4">
             <button
                 onClick={() => navigate("opretkamp")}
-                className="bg-cyan-500 rounded px-2 py-2 text-white text-sm"
+                className="bg-cyan-500 rounded px-2 py-2 text-white"
             >
               Opret kamp
             </button>
+            </div>
 
-              <div className={`flex items-center gap-1 ${!location.pathname.includes("allekampe") ? "hidden" : ""}`}>
-                <input
-                    className=""
-                    type="checkbox"
-                    id="showFullMatches"
-                    name="showFullMatches"
-                    checked={showFullMatches}
-                    onChange={(e) => setShowFullMatches(e.target.checked)}
-                />
+            <div className="flex justify-between items-center max-sm:mt-5 mx-4 mb-4">
+            <div onClick={() => setShowFullMatches(prevState => !prevState)} className={`flex items-center gap-1 ${!location.pathname.includes("allekampe") ? "hidden" : ""}`}>
+              {showFullMatches ? (
+                  <LockClosedIcon className="h-5 w-5 text-yellow-500" />
+              ) : (
+                  <LockOpenIcon className="h-5 w-5 text-yellow-500" />
+              )}
 
-                <label htmlFor="showFullMatches" className="text-gray-500 text-sm">
-                    Vis fyldte kampe
-                </label>
-              </div>
+              <label htmlFor="showClosedEvents" className="text-gray-500">
+                {!showFullMatches ? "Vis" : "Skjul"} fyldte kampe
+              </label>
+            </div>
             </div>
 
             <div className="mx-4">

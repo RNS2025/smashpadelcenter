@@ -11,7 +11,7 @@ import mockEvents from "../../utils/mockEvents.ts";
 
 export const MyEventsTab = () => {
     const navigate = useNavigate();
-    const {username} = useUser();
+    const {user} = useUser();
     const [privateEvents, setPrivateEvents] = useState<PrivateEvent[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -21,14 +21,16 @@ export const MyEventsTab = () => {
 
     useEffect(() => {
         if (useMockData) {
-            setPrivateEvents(mockEvents.filter(e => e.participants.includes(username!)));
+            setPrivateEvents(mockEvents.filter(e => e.participants.includes(user?.username as string)).sort((a, b) => {
+                return new Date(a.eventDateTime).getTime() - new Date(b.eventDateTime).getTime();
+            }));
             setLoading(false);
             return;
         }
 
         const fetchPrivateEvents = async () => {
             try {
-                const response = await communityApi.getPrivateEventsForUser(username!);
+                const response = await communityApi.getPrivateEventsForUser(user!.username!);
                 setPrivateEvents(response);
             } catch (err) {
                 console.error("Fejl ved hentning af arrangementer:", err);
@@ -39,7 +41,7 @@ export const MyEventsTab = () => {
         };
 
         fetchPrivateEvents().then();
-    }, [useMockData, username]);
+    }, [useMockData, user, user?.username]);
 
 
     if (loading) {
@@ -79,7 +81,7 @@ export const MyEventsTab = () => {
                                 <div className="flex justify-between">
                                     {event.joinRequests.length > 0 ? (
                                         <div className="flex items-center gap-1">
-                                            <QuestionMarkCircleIcon className={`h-5 text-yellow-500 ${event.username === username ? "animate-pulse" : ""}`}/>
+                                            <QuestionMarkCircleIcon className={`h-5 text-yellow-500 ${event.username === user?.username ? "animate-pulse" : ""}`}/>
                                             <p>{event.joinRequests.length} {event.joinRequests.length === 1 ? "anmodning" : "anmodninger"}</p>
                                         </div>
                                     ) : (
@@ -95,7 +97,7 @@ export const MyEventsTab = () => {
                                 <p>{event.eventFormat}</p>
                                 </div>
                                     <div className="flex justify-between">
-                                    <p className="text-gray-500 italic">Oprettet af {event.username === username ? "dig" : `${event.username}`}</p>
+                                    <p className="text-gray-500 italic">Oprettet af {event.username === user?.username ? "dig" : `${event.username}`}</p>
                                     <p className="text-gray-500 italic">{event.openRegistration ? "Åben tilmelding" : "Lukket tilmelding"}</p>
                                     </div>
                                 </div>

@@ -16,7 +16,7 @@ type OutletContextType = {
 export const AllEventsTab = () => {
     const navigate = useNavigate();
     const {showClosedEvents} = useOutletContext<OutletContextType>();
-    const {username} = useUser();
+    const {user} = useUser();
     const [privateEvents, setPrivateEvents] = useState<PrivateEvent[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -34,7 +34,9 @@ export const AllEventsTab = () => {
         const fetchPrivateEvents = async () => {
             try {
                 const response = await communityApi.getPrivateEvents();
-                setPrivateEvents(response);
+                setPrivateEvents(response.sort((a, b) => {
+                    return new Date(a.eventDateTime).getTime() - new Date(b.eventDateTime).getTime();
+                }));
             } catch (err) {
                 console.error("Fejl ved hentning af arrangementer:", err);
                 setError("Kunne ikke hente arrangementer");
@@ -73,12 +75,12 @@ export const AllEventsTab = () => {
                 {privateEvents.length === 0 ? (
                     <p className="mt-10">Ingen aktuelle arrangementer at vise.</p>
                 ) : (
-                    visibleEvents.map((event) => (
+                    visibleEvents.filter(e => e.username !== user?.username && e.eventDateTime > new Date().toISOString())
+                    .map((event) => (
                         <div
-                            onClick={() => navigate(`/privat-arrangementer/${event.username}/${event.id}`)}
+                            onClick={event.openRegistration ? () => navigate(`/privat-arrangementer/${event.username}/${event.id}`) : undefined}
                             key={event.id}
-                            className={`border p-4 rounded-lg space-y-1.5 hover:bg-gray-700 mb-5
-                                 ${new Date(event.eventDateTime) < new Date() ? "opacity-70" : ""}`}
+                            className={`border p-4 rounded-lg space-y-1.5 hover:bg-gray-700 mb-5 ${!event.openRegistration ? "opacity-50" : ""}`}
                         >
                             <h1 className="font-semibold text-lg">
                                 {event.title}
@@ -107,7 +109,7 @@ export const AllEventsTab = () => {
                                     <p>{event.eventFormat}</p>
                                 </div>
                                 <div className="flex justify-between">
-                                    <p className="text-gray-500 italic">Oprettet af {event.username === username ? "dig" : `${event.username}`}</p>
+                                    <p className="text-gray-500 italic">Oprettet af {event.username}</p>
                                     <p className="text-gray-500 italic">{event.openRegistration ? "Åben tilmelding" : "Lukket tilmelding"}</p>
                                 </div>
                             </div>

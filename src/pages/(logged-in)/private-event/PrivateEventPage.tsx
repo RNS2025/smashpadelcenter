@@ -6,11 +6,12 @@ import {useEffect, useState} from "react";
 import communityApi from "../../../services/makkerborsService.ts";
 import { useUser } from "../../../context/UserContext.tsx";
 import mockEvents from "../../../utils/mockEvents.ts";
+import {LockClosedIcon, LockOpenIcon} from "@heroicons/react/24/outline";
 
 
 export const PrivateEventPage = () => {
     const navigate = useNavigate();
-    const { username } = useUser();
+    const { user } = useUser();
     const [joinRequestsCount, setJoinRequestsCount] = useState(0);
     const [showClosedEvents, setShowClosedEvents] = useState(false);
 
@@ -20,7 +21,7 @@ export const PrivateEventPage = () => {
     useEffect(() => {
         const fetchJoinRequestsCount = async () => {
             if (useMockData) {
-                const total = mockEvents.filter(e => e.username === username)
+                const total = mockEvents.filter(e => e.username === user?.username)
                     .reduce(
                     (sum, t) => sum + t.joinRequests.length,
                     0
@@ -28,7 +29,7 @@ export const PrivateEventPage = () => {
                 setJoinRequestsCount(total);
             } else {
                 try {
-                    const tournaments = await communityApi.getPrivateEventsForUser(username!);
+                    const tournaments = await communityApi.getPrivateEventsForUser(user!.username!);
                     const total = tournaments.reduce(
                         (sum: number, t: any) => sum + (t.joinRequests?.length || 0),
                         0
@@ -41,7 +42,7 @@ export const PrivateEventPage = () => {
         };
 
         fetchJoinRequestsCount().then();
-    }, [useMockData, username]);
+    }, [useMockData, user]);
 
 
 
@@ -56,25 +57,24 @@ export const PrivateEventPage = () => {
                 <div className="flex justify-between items-center max-sm:mt-5 mx-4 mb-4">
                     <button
                         onClick={() => navigate("opretarrangement")}
-                        className="bg-cyan-500 rounded px-2 py-2 text-white text-sm"
+                        className="bg-cyan-500 rounded px-2 py-2 text-white"
                     >
                         Opret arrangement
                     </button>
+                </div>
 
-                    <div className={`flex items-center gap-1 ${!location.pathname.includes("allearrangementer") ? "hidden" : ""}`}>
-                        <input
-                            className=""
-                            type="checkbox"
-                            id="showClosedEvents"
-                            name="showClosedEvents"
-                            checked={showClosedEvents}
-                            onChange={(e) => setShowClosedEvents(e.target.checked)}
-                        />
+                <div className="flex justify-between items-center max-sm:mt-5 mx-4 mb-4">
+                <div onClick={() => setShowClosedEvents(prevState => !prevState)} className={`flex items-center gap-1 ${!location.pathname.includes("allearrangementer") ? "hidden" : ""}`}>
+                    {showClosedEvents ? (
+                        <LockClosedIcon className="h-5 w-5 text-yellow-500" />
+                    ) : (
+                        <LockOpenIcon className="h-5 w-5 text-yellow-500" />
+                    )}
 
-                        <label htmlFor="showClosedEvents" className="text-gray-500 text-sm">
-                            Vis lukkede arrangementer
-                        </label>
-                    </div>
+                    <label htmlFor="showClosedEvents" className="text-gray-500">
+                        {!showClosedEvents ? "Vis" : "Skjul"} lukkede arrangementer
+                    </label>
+                </div>
                 </div>
 
                 <div className="mx-4">

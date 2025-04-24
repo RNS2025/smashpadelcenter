@@ -69,89 +69,99 @@ const OverviewTab = () => {
         <strong>Telefon:</strong> {profile.phoneNumber || "N/A"}
       </p>
 
-      <h3 className="text-lg font-semibold text-gray-800 mt-4 mb-2">
-        Kommende Kampe
-      </h3>
-      {matchesLoading ? (
-        <LoadingSpinner />
-      ) : matches.upcoming.length > 0 ? (
-        <ul className="space-y-2">
-          {matches.upcoming.map((match) => (
-            <li key={match.id} className="border p-4 rounded-lg text-gray-800">
-              <p>
-                <strong>Dato:</strong>{" "}
-                {new Date(match.matchDateTime).toLocaleString("da-DK")}
-              </p>
-              <p>
-                <strong>Sted:</strong> {match.location}
-              </p>
-              <p>
-                <strong>Kamptype:</strong> {match.matchType}
-              </p>
-              <p>
-                <strong>Niveau:</strong> {match.level}
-              </p>
-              <p>
-                <strong>Deltagere:</strong>{" "}
-                {match.participants.join(", ") || "Ingen"}
-              </p>
-              {match.description && (
-                <p>
-                  <strong>Beskrivelse:</strong> {match.description}
-                </p>
-              )}
-              <p>
-                <strong>Bane booket:</strong> {match.courtBooked ? "Ja" : "Nej"}
-              </p>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="text-gray-600">Ingen kommende kampe.</p>
-      )}
+
+        <h3 className="text-lg font-semibold text-gray-800 mt-4 mb-2">Kommende Kampe</h3>
+
+        {matchesLoading ? (
+            <div className="py-4">
+                <LoadingSpinner />
+            </div>
+        ) : matches.upcoming.length > 0 ? (
+            <ul className="space-y-2">
+                {matches.upcoming.map((match) => (
+                    <li key={match.id} className="border py-2 rounded-lg text-gray-800">
+                        <p>
+                            <strong>Dato:</strong>{" "}
+                            {new Date(match.matchDateTime).toLocaleString("da-DK")}
+                        </p>
+                        <p>
+                            <strong>Sted:</strong> {match.location}
+                        </p>
+                        <p>
+                            <strong>Kamptype:</strong> {match.matchType}
+                        </p>
+                        <p>
+                            <strong>Niveau:</strong> {match.level}
+                        </p>
+                        <p>
+                            <strong>Deltagere:</strong>{" "}
+                            {match.participants.join(", ") || "Ingen"}
+                        </p>
+                        {match.description && (
+                            <p>
+                                <strong>Beskrivelse:</strong> {match.description}
+                            </p>
+                        )}
+                        <p>
+                            <strong>Bane booket:</strong> {match.courtBooked ? "Ja" : "Nej"}
+                        </p>
+                    </li>
+                ))}
+            </ul>
+        ) : (
+            <p className="text-gray-600">Ingen kommende kampe.</p>
+        )}
+
+
 
       <h3 className="text-lg font-semibold text-gray-800 mt-4 mb-2">
         Tidligere Kampe
       </h3>
-      {matchesLoading ? (
-        <LoadingSpinner />
-      ) : matches.former.length > 0 ? (
-        <ul className="space-y-2">
-          {matches.former.map((match) => (
-            <li key={match.id} className="border p-4 rounded-lg text-gray-800">
-              <p>
-                <strong>Dato:</strong>{" "}
-                {new Date(match.matchDateTime).toLocaleString("da-DK")}
-              </p>
-              <p>
-                <strong>Sted:</strong> {match.location}
-              </p>
-              <p>
-                <strong>Kamptype:</strong> {match.matchType}
-              </p>
-              <p>
-                <strong>Niveau:</strong> {match.level}
-              </p>
-              <p>
-                <strong>Deltagere:</strong>{" "}
-                {match.participants.join(", ") || "Ingen"}
-              </p>
-              {match.score && (
-                <p>
-                  <strong>Score:</strong> {match.score}
-                </p>
-              )}
-              {match.result && (
-                <p>
-                  <strong>Resultat:</strong> {match.result}
-                </p>
-              )}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p className="text-gray-600">Ingen tidligere kampe.</p>
-      )}
+
+
+        {matchesLoading ? (
+            <div className="py-4">
+                <LoadingSpinner />
+            </div>
+        ) : matches.former.length > 0 ? (
+            <ul className="space-y-2">
+                {matches.former.map((match) => (
+                    <li key={match.id} className="border py-2 rounded-lg text-gray-800">
+                        <p>
+                            <strong>Dato:</strong>{" "}
+                            {new Date(match.matchDateTime).toLocaleString("da-DK")}
+                        </p>
+                        <p>
+                            <strong>Sted:</strong> {match.location}
+                        </p>
+                        <p>
+                            <strong>Kamptype:</strong> {match.matchType}
+                        </p>
+                        <p>
+                            <strong>Niveau:</strong> {match.level}
+                        </p>
+                        <p>
+                            <strong>Deltagere:</strong>{" "}
+                            {match.participants.join(", ") || "Ingen"}
+                        </p>
+                        {match.score && (
+                            <p>
+                                <strong>Score:</strong> {match.score}
+                            </p>
+                        )}
+                        {match.result && (
+                            <p>
+                                <strong>Resultat:</strong> {match.result}
+                            </p>
+                        )}
+                    </li>
+                ))}
+            </ul>
+        ) : (
+            <p className="text-gray-600">Ingen tidligere kampe.</p>
+        )}
+
+
     </div>
   );
 };

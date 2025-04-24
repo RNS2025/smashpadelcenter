@@ -5,7 +5,7 @@ import {
   useEffect,
   ReactNode,
   ChangeEvent,
-  FormEvent,
+  FormEvent, useCallback,
 } from "react";
 import { User } from "../types/user";
 import userProfileService from "../services/userProfileService";
@@ -50,14 +50,46 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   });
   const [matchesLoading, setMatchesLoading] = useState(true);
 
+  const fetchMatches = useCallback(async () => {
+    if (!user?.username) return;
+    try {
+      setMatchesLoading(true);
+      const userMatches = await communityApi.getMatchesByUser(user.username);
+
+      const now = new Date();
+      const upcomingMatches = userMatches
+          .filter((match) => new Date(match.matchDateTime) > now)
+          .sort(
+              (a, b) =>
+                  new Date(a.matchDateTime).getTime() -
+                  new Date(b.matchDateTime).getTime()
+          );
+
+      const formerMatches = userMatches
+          .filter((match) => new Date(match.matchDateTime) <= now)
+          .sort(
+              (a, b) =>
+                  new Date(b.matchDateTime).getTime() -
+                  new Date(a.matchDateTime).getTime()
+          );
+
+      setMatches({
+        upcoming: upcomingMatches,
+        former: formerMatches,
+      });
+    } catch (err: any) {
+      console.error("Error fetching match data:", err);
+    } finally {
+      setMatchesLoading(false);
+    }
+  }, [user?.username]);
+
   useEffect(() => {
     const fetchData = async () => {
       if (!user?.username) return;
       try {
         setLoading(true);
-        const profileData = await userProfileService.getOrCreateUserProfile(
-          user.username
-        );
+        const profileData = await userProfileService.getOrCreateUserProfile(user.username);
         setProfile(profileData);
         setFormData(profileData);
       } catch (err: any) {
@@ -67,48 +99,16 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         setLoading(false);
       }
     };
-    fetchData();
-  }, [user?.username]);
+
+    if (!user) return;
+    fetchData().then();
+  }, [user]);
+
+
 
   useEffect(() => {
-    fetchMatches();
-  }, [user?.username]);
-
-  const fetchMatches = async () => {
-    if (!user?.username) return;
-    try {
-      setMatchesLoading(true);
-      // Using your existing communityApi.getMatchesByUser method
-      const userMatches = await communityApi.getMatchesByUser(user.username);
-
-      const now = new Date();
-      const upcomingMatches = userMatches
-        .filter((match) => new Date(match.matchDateTime) > now)
-        .sort(
-          (a, b) =>
-            new Date(a.matchDateTime).getTime() -
-            new Date(b.matchDateTime).getTime()
-        );
-
-      const formerMatches = userMatches
-        .filter((match) => new Date(match.matchDateTime) <= now)
-        .sort(
-          (a, b) =>
-            new Date(b.matchDateTime).getTime() -
-            new Date(a.matchDateTime).getTime()
-        );
-
-      setMatches({
-        upcoming: upcomingMatches,
-        former: formerMatches,
-      });
-    } catch (err: any) {
-      console.error("Error fetching match data:", err);
-      // Don't set error here as it would override profile errors
-    } finally {
-      setMatchesLoading(false);
-    }
-  };
+    fetchMatches().then();
+  }, [fetchMatches, user?.username]);
 
   const refreshMatches = async () => {
     await fetchMatches();

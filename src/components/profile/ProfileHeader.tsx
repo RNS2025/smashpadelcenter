@@ -1,6 +1,6 @@
-import { UserProfile } from "../../types/UserProfile.ts";
+import { User } from "../../types/user.ts";
 
-export const ProfileHeader = ({ profile }: { profile: UserProfile | null }) => {
+export const ProfileHeader = ({ profile }: { profile: User | null }) => {
     if (!profile) return null;
 
     const isAdmin = profile.role === "admin";

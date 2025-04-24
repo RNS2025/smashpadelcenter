@@ -12,9 +12,11 @@ const ProfilePage = () => {
   return (
     <Animation>
       <HomeBar backPage={"/hjem"}/>
+
+
       <div className="mx-auto p-6 max-w-4xl">
         {/* Profile Header */}
-        <ProfileHeader profile={profile} />
+          <ProfileHeader profile={profile} />
 
         {/* Tab Content */}
         <div className="bg-white shadow-md rounded-lg p-6 border border-gray-200">
