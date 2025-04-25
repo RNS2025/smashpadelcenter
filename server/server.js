@@ -22,6 +22,7 @@ const { connectDB } = require("./config/database");
 const createAdmin = require("./scripts/createAdmin");
 const createTenUsers = require("./scripts/createTenUsers");
 const { updateAllData } = require("./scripts/dataScheduler");
+const privateEventRoutes = require("./routes/privateEventRoutes");
 const path = require("path");
 const https = require("https");
 const fs = require("fs");
@@ -73,7 +74,7 @@ app.use(
       "https://rns2025.github.io",
     ],
     credentials: true, // Allow cookies and credentials
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
@@ -130,6 +131,7 @@ app.use("/api/v1/liga", LigaRoutes);
 app.use("/api/v1/user-profiles", userProfileRoutes);
 app.use("/api/v1/friends", friendRoutes);
 app.use("/api/v1/messages", messageRoutes);
+app.use("/api/v1/private-event", privateEventRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
