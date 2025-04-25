@@ -7,14 +7,15 @@ import {Outlet, useLocation, useNavigate} from "react-router-dom";
 import MatchFinderTabMenu from "../../../components/matchFinder/MatchFinderTabMenu.tsx";
 import { useUser } from "../../../context/UserContext";
 import communityApi from "../../../services/makkerborsService";
-import {LockClosedIcon, LockOpenIcon} from "@heroicons/react/24/outline";
+import {LockClosedIcon, LockOpenIcon, NumberedListIcon} from "@heroicons/react/24/outline";
 
 const MatchFinderPage: FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useUser();
   const [joinRequestsCount, setJoinRequestsCount] = useState(0);
-    const [showFullMatches, setShowFullMatches] = useState(false);
+  const [showFullMatches, setShowFullMatches] = useState(false);
+  const [isMyLevel, setIsMyLevel] = useState(false);
 
   useEffect(() => {
     const fetchJoinRequestCount = async () => {
@@ -58,7 +59,7 @@ const MatchFinderPage: FC = () => {
             </button>
             </div>
 
-            <div className="flex justify-between items-center max-sm:mt-5 mx-4 mb-4">
+            <div className="flex flex-col max-sm:mt-5 mx-4 mb-4 gap-4">
             <div onClick={() => setShowFullMatches(prevState => !prevState)} className={`flex items-center gap-1 ${!location.pathname.includes("allekampe") ? "hidden" : ""}`}>
               {showFullMatches ? (
                   <LockClosedIcon className="h-5 w-5 text-yellow-500" />
@@ -70,10 +71,22 @@ const MatchFinderPage: FC = () => {
                 {!showFullMatches ? "Vis" : "Skjul"} fyldte kampe
               </label>
             </div>
+
+              <div onClick={() => setIsMyLevel(prevState => !prevState)} className={`flex items-center gap-1 ${!location.pathname.includes("allekampe") ? "hidden" : ""}`}>
+                {isMyLevel ? (
+                    <NumberedListIcon className="h-5 w-5 text-yellow-500" />
+                ) : (
+                    <NumberedListIcon className="h-5 w-5 text-gray-500" />
+                )}
+
+                <label htmlFor="showClosedEvents" className="text-gray-500">
+                  {!isMyLevel ? "Vis kun kampe inden for mit niveau" : "Vis alle kampe"}
+                </label>
+              </div>
             </div>
 
             <div className="mx-4">
-              <Outlet context={{showFullMatches}} />
+              <Outlet context={{showFullMatches, isMyLevel}} />
             </div>
           </div>
         </Animation>

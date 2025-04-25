@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import communityApi from "../../../services/makkerborsService";
 import { PadelMatch } from "../../../types/PadelMatch";
 import { useUser } from "../../../context/UserContext";
-import { getNextHalfHour } from "../../../utils/dateUtils";
+import {getNextHalfHour, handleHiddenTimes} from "../../../utils/dateUtils";
 
 registerLocale("da", da);
 
@@ -81,14 +81,6 @@ export const CreateMatchForm = () => {
       console.error("Error creating match:", error);
       alert("Fejl ved oprettelse af kamp");
     }
-  };
-
-  const handleHiddenTimes = (time: Date) => {
-    const hour = time.getHours();
-    const minutes = time.getMinutes();
-    const totalMinutes = hour * 60 + minutes;
-
-    return totalMinutes >= 330 && totalMinutes <= 1380 ? "" : "hidden";
   };
 
   const handleMinChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -281,28 +273,31 @@ export const CreateMatchForm = () => {
             {[...Array(selectedReserved)].map((_, i) => (
               <div key={i} className="grid grid-cols-2 gap-2 mt-2">
                 <input
-                  type="text"
-                  placeholder="Spillernavn"
-                  className="rounded-lg w-full text-sm"
-                  value={reservedPlayers[i]?.name}
-                  onChange={(e) => {
-                    const newPlayers = [...reservedPlayers];
-                    newPlayers[i].name = e.target.value;
-                    setReservedPlayers(newPlayers);
-                  }}
+                    type="text"
+                    placeholder="Spillernavn"
+                    className="rounded-lg w-full text-sm"
+                    value={reservedPlayers[i]?.name ?? ""}
+                    onChange={(e) => {
+                      const newPlayers = [...reservedPlayers];
+                      if (!newPlayers[i]) newPlayers[i] = { name: "", level: (levelRange[0] + levelRange[1]) / 2 };
+                      newPlayers[i].name = e.target.value;
+                      setReservedPlayers(newPlayers);
+                    }}
                 />
+
                 <input
-                  className="text-center rounded-lg w-full"
-                  type="number"
-                  step="0.1"
-                  min={levelRange[0]}
-                  max={levelRange[1]}
-                  value={reservedPlayers[i]?.level.toFixed(1)}
-                  onChange={(e) => {
-                    const newPlayers = [...reservedPlayers];
-                    newPlayers[i].level = parseFloat(e.target.value);
-                    setReservedPlayers(newPlayers);
-                  }}
+                    className="text-center rounded-lg w-full"
+                    type="number"
+                    step="0.1"
+                    min={levelRange[0]}
+                    max={levelRange[1]}
+                    value={reservedPlayers[i]?.level?.toFixed(1) ?? ((levelRange[0] + levelRange[1]) / 2).toFixed(1)}
+                    onChange={(e) => {
+                      const newPlayers = [...reservedPlayers];
+                      if (!newPlayers[i]) newPlayers[i] = { name: "", level: (levelRange[0] + levelRange[1]) / 2 };
+                      newPlayers[i].level = parseFloat(e.target.value);
+                      setReservedPlayers(newPlayers);
+                    }}
                 />
               </div>
             ))}

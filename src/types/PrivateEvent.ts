@@ -2,8 +2,8 @@ interface PrivateEvent {
   id: string;
   username: string;
   title: string
-  description: string;
-  eventFormat: string;
+  description?: string;
+  eventFormat?: string;
   totalSpots: number;
   courtBooked: boolean;
   eventDateTime: string;

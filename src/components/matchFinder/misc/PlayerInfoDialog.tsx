@@ -1,8 +1,8 @@
-import {UserProfile} from "../../../types/UserProfile.ts";
+import {User} from "../../../types/user.ts";
 import {UserCircleIcon} from "@heroicons/react/24/outline";
 
 export const PlayerInfoDialog = ({user}: {
-    user?: UserProfile;
+    user?: User;
 }) => {
 
 
@@ -14,7 +14,7 @@ export const PlayerInfoDialog = ({user}: {
                     <h1 className="italic mb-4">@{user?.username}</h1>
                     <div className="grid grid-cols-2 gap-x-4 gap-y-2">
                         <h1 className="font-semibold">Navn:</h1>
-                        <h1>{user?.fullName || "Hans Hansen"}</h1>
+                        <h1>{user?.fullName}</h1>
 
                         <h1 className="font-semibold">Foretrukne side:</h1>
                         <h1>{user?.position}</h1>

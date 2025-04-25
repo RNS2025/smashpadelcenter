@@ -5,17 +5,15 @@ import { fetchTeamInfo } from "../../../services/LigaService.ts";
 import Animation from "../../../components/misc/Animation.tsx";
 import HomeBar from "../../../components/misc/HomeBar.tsx";
 import TeamProfileTabMenu from "../../../components/lunar/teamProfile/TeamProfileTabMenu.tsx";
+import LoadingSpinner from "../../../components/misc/LoadingSpinner.tsx";
 
 export const LeagueTeamProfilePage = () => {
   const { teamId } = useParams<{ teamId: string }>();
-  const cachedName = teamId
-    ? sessionStorage.getItem(`teamName_${teamId}`)
-    : null;
+  const cachedName = teamId ? sessionStorage.getItem(`teamName_${teamId}`) : null;
   const [team, setTeam] = useState<TeamDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  //TODO: Kunne også blive et hook?
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -32,8 +30,7 @@ export const LeagueTeamProfilePage = () => {
           parseInt(teamId, 10)
         );
         setTeam(response.Team);
-        // Update cache with latest team name
-        if (response.Team?.Name) {
+        if (response.Team?.Name && !sessionStorage.getItem(`teamName_${teamId}`)) {
           sessionStorage.setItem(`teamName_${teamId}`, response.Team.Name);
         }
       } catch (err) {
@@ -43,14 +40,16 @@ export const LeagueTeamProfilePage = () => {
       }
     };
 
-    fetchData();
+    fetchData().then();
   }, [teamId]);
 
   if (loading) {
     return (
       <Animation>
         <HomeBar backPage="/holdligaer" />
-        <div className="mx-auto p-6 mt-10 text-center">Loading...</div>
+        <div className="h-full w-full flex items-center justify-center">
+          <LoadingSpinner />
+        </div>
       </Animation>
     );
   }
@@ -60,7 +59,7 @@ export const LeagueTeamProfilePage = () => {
       <Animation>
         <HomeBar backPage="/holdligaer" />
         <div className="mx-auto p-6 mt-10 text-center text-red-500">
-          {error || "Team not found"}
+          {error || "Hold ikke fundet"}
         </div>
       </Animation>
     );
@@ -73,12 +72,12 @@ export const LeagueTeamProfilePage = () => {
         <div className="flex gap-5 px-2">
           <img
             src={team.HomeClubImageUrl}
-            alt={`${team.HomeClub.Name}'s profile`}
+            alt={`${team.HomeClub.Name}s profil`}
             className="w-16 h-16 sm:w-32 sm:h-32 rounded-full object-cover"
           />
           <div className="w-full">
             <h1 className="sm:text-xl md:text-3xl font-bold text-gray-800 mb-2">
-              {team.Name || cachedName || "Unknown Team"}
+              {cachedName || ""}
             </h1>
             <div className="flex flex-col gap-2 max-sm:text-sm text-gray-600">
               {team.Initiator.map((initiator) => (

@@ -55,32 +55,24 @@ const communityApi = {
   },
 
   //Private Arrangementer
+  getPrivateEvents: async (): Promise<PrivateEvent[]> => {
+    const response = await api.get("/private-event");
+    return response.data;
+  },
   getPrivateEventsForUser: async (
     username: string
   ): Promise<PrivateEvent[]> => {
     const response = await api.get(`/private-event/${username}`);
-
-    console.log(
-      "[DEBUG] Response from getPrivateEventsForUser:",
-      response.data
-    );
     return response.data;
   },
-  getPrivateEvents: async (): Promise<PrivateEvent[]> => {
-    const response = await api.get("/private-event");
-    console.log("[DEBUG] Response from getPrivateEvents:", response.data);
-    return response.data;
-  },
-  getEventById: async (eventId: string): Promise<PrivateEvent> => {
-    const response = await api.get(`/private-event/${eventId}`);
-    console.log("[DEBUG] Response from getEventById:", response.data);
+  getEventById: async (username: string, eventId: string): Promise<PrivateEvent> => {
+    const response = await api.get(`/private-event/${username}/${eventId}`);
     return response.data;
   },
   createPrivateEvent: async (
     privateEvent: Omit<PrivateEvent, "id">
   ): Promise<PrivateEvent> => {
     const response = await api.post("/private-event", privateEvent);
-    console.log("[DEBUG] Response from createPrivateEvent:", response.data);
     return response.data;
   },
   updatePrivateEvent: async (
@@ -88,7 +80,6 @@ const communityApi = {
     update: Partial<Omit<PrivateEvent, "id">>
   ): Promise<PrivateEvent> => {
     const response = await api.patch(`/private-event/${eventId}`, update);
-    console.log("[DEBUG] Response from updatePrivateEvent:", response.data);
     return response.data;
   },
   joinEvent: async (
@@ -108,12 +99,10 @@ const communityApi = {
     const response = await api.post(`/private-event/${eventId}/confirm`, {
       username,
     });
-    console.log("[DEBUG] Response from confirmJoinEvent:", response.data);
     return response.data;
   },
   deleteEvent: async (eventId: string): Promise<PrivateEvent[]> => {
     const response = await api.delete(`/private-event/${eventId}`);
-    console.log("[DEBUG] Response from deleteEvent:", response.data);
     return response.data;
   },
 };

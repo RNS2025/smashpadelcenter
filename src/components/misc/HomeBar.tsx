@@ -75,7 +75,7 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
             <div className="flex gap-4">
               <HomeIcon
                 onClick={() => navigate("/hjem")}
-                className="h-8 text-black cursor-pointer"
+                className={`h-8 text-black cursor-pointer ${location.pathname === "/hjem" ? "hidden" : ""}`}
               />
               <BellIcon
                 onClick={() => setNotificationsVisible((prev) => !prev)}
@@ -111,7 +111,7 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
             </h1>
             <h1
               onClick={() => navigate("/admin")}
-              className="block px-4 py-2 text-sm text-black hover:bg-gray-100"
+              className={`block px-4 py-2 text-sm text-black hover:bg-gray-100 ${user?.role === "admin" ? "" : "hidden"}`}
             >
               Admin Panel
             </h1>

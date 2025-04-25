@@ -109,49 +109,97 @@ export const AllEventsTab = () => {
                 <div className="border-b border-gray-600">
                   <p>{event.location}</p>
                 </div>
-                <div className="flex flex-col gap-y-2">
-                  <div className="flex justify-between">
-                    {event.joinRequests.length > 0 ? (
-                      <div className="flex items-center gap-1">
-                        <QuestionMarkCircleIcon className="h-5 text-yellow-500" />
-                        <p>
-                          {event.joinRequests.length}{" "}
-                          {event.joinRequests.length === 1
-                            ? "anmodning"
-                            : "anmodninger"}
+
+
+                {!event.level && event.joinRequests.length === 0 ? (
+                    <div className="flex flex-col gap-y-2">
+                      <div className="flex justify-between">
+                        <p>{event.eventFormat}</p>
+                        <div className="flex items-center gap-1">
+                          <UserCircleIcon
+                              className={`h-5 ${
+                                  event.participants.length === event.totalSpots
+                                      ? "text-cyan-500"
+                                      : "text-gray-500"
+                              }`}
+                          />
+
+                          <p className="h-4">
+                            {event.participants.length}/{event.totalSpots}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between">
+                        <p className="text-gray-500 italic">
+                          Oprettet af{" "}
+                          {event.username === user?.username
+                              ? "dig"
+                              : `${event.username}`}
+                        </p>
+                        <p className="text-gray-500 italic">
+                          {event.openRegistration
+                              ? "Åben tilmelding"
+                              : "Lukket tilmelding"}
                         </p>
                       </div>
-                    ) : (
-                      <span></span>
-                    )}
-                    <div className="flex items-center gap-1">
-                      <UserCircleIcon
-                        className={`h-5 ${
-                          event.participants.length === event.totalSpots
-                            ? "text-cyan-500"
-                            : "text-gray-500"
-                        }`}
-                      />
-                      <p>
-                        {event.participants.length}/{event.totalSpots}
-                      </p>
                     </div>
-                  </div>
-                  <div className="flex justify-between">
-                    <p>Niveau {event.level}</p>
-                    <p>{event.eventFormat}</p>
-                  </div>
-                  <div className="flex justify-between">
-                    <p className="text-gray-500 italic">
-                      Oprettet af {event.username}
-                    </p>
-                    <p className="text-gray-500 italic">
-                      {event.openRegistration
-                        ? "Åben tilmelding"
-                        : "Lukket tilmelding"}
-                    </p>
-                  </div>
-                </div>
+                ) : (
+                    <div className="flex flex-col gap-y-2">
+                      <div className="flex justify-between">
+                        {event.joinRequests.length > 0 ? (
+                            <div className="flex items-center gap-1">
+                              <QuestionMarkCircleIcon
+                                  className={`h-5 text-yellow-500 ${
+                                      event.username === user?.username
+                                          ? "animate-pulse"
+                                          : ""
+                                  }`}
+                              />
+                              <p>
+                                {event.joinRequests.length}{" "}
+                                {event.joinRequests.length === 1
+                                    ? "anmodning"
+                                    : "anmodninger"}
+                              </p>
+                            </div>
+                        ) : (
+                            <span></span>
+                        )}
+                        <div className="flex items-center gap-1">
+                          <UserCircleIcon
+                              className={`h-5 ${
+                                  event.participants.length === event.totalSpots
+                                      ? "text-cyan-500"
+                                      : "text-gray-500"
+                              }`}
+                          />
+                          <p>
+                            {event.participants.length}/{event.totalSpots}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex justify-between">
+                        <p>{event.level ? `Niveau ${event.level}` : ""}</p>
+                        <p>{event.eventFormat}</p>
+                      </div>
+                      <div className="flex justify-between">
+                        <p className="text-gray-500 italic">
+                          Oprettet af{" "}
+                          {event.username === user?.username
+                              ? "dig"
+                              : `${event.username}`}
+                        </p>
+                        <p className="text-gray-500 italic">
+                          {event.openRegistration
+                              ? "Åben tilmelding"
+                              : "Lukket tilmelding"}
+                        </p>
+                      </div>
+                    </div>
+                )}
+
+
               </div>
             ))
         )}

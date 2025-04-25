@@ -27,9 +27,9 @@ const privateEventService = {
     }
   },
 
-  getPrivateEventById: async (eventId = null) => {
+  getPrivateEventById: async (username, eventId) => {
     try {
-      const event = await PrivateEvent.findById(eventId);
+      const event = await PrivateEvent.findOne({_id: eventId, username});
       if (!event) throw new Error("Event not found");
 
       return {

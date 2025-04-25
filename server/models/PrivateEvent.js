@@ -12,11 +12,11 @@ const privateEventSchema = new mongoose.Schema({
   },
   description: {
     type: String,
-    required: true,
+    required: false,
   },
   eventFormat: {
     type: String,
-    required: true,
+    required: false,
   },
   totalSpots: {
     type: Number,

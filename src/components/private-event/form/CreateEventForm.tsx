@@ -14,29 +14,13 @@ import { useNavigate } from "react-router-dom";
 import communityApi from "../../../services/makkerborsService.ts";
 import { PrivateEvent } from "../../../types/PrivateEvent.ts";
 import { useUser } from "../../../context/UserContext.tsx";
+import {getNextHalfHour, handleHiddenTimes} from "../../../utils/dateUtils.ts";
 
 registerLocale("da", da);
 
 export const CreateEventForm = () => {
   const navigate = useNavigate();
-  const { user, loading: userLoading } = useUser(); // Use user and loading
-
-  const getNextHalfHour = () => {
-    const now = new Date();
-    now.setSeconds(0);
-    now.setMilliseconds(0);
-
-    const minutes = now.getMinutes();
-
-    if (minutes < 30) {
-      now.setMinutes(30);
-    } else {
-      now.setHours(now.getHours() + 1);
-      now.setMinutes(0);
-    }
-
-    return now;
-  };
+  const { user, loading: userLoading } = useUser();
 
   const [title, setTitle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
@@ -105,15 +89,18 @@ export const CreateEventForm = () => {
           ? `${levelRange[0]}-${levelRange[1]}`
           : undefined,
         openRegistration,
-        participants: [user.username], // Add creator to participants
+        participants: [user.username],
         joinRequests: [],
         createdAt: new Date().toISOString(),
         accessUrl: "",
       };
 
       const createdEvent = await communityApi.createPrivateEvent(eventData);
-      console.log("[DEBUG] Created event:", createdEvent);
-      alert("Turnering oprettet!");
+      const accessUrl = `/privat-arrangementer/${createdEvent.id}`;
+      await communityApi.updatePrivateEvent(createdEvent.id, {
+        accessUrl
+      });
+      alert("Arrangement oprettet!");
       navigate("/privat-arrangementer/minearrangementer");
     } catch (error: any) {
       console.error("Fejl ved oprettelse af turnering:", error);
@@ -121,14 +108,6 @@ export const CreateEventForm = () => {
         error.response?.data?.message || "Fejl ved oprettelse af turnering"
       );
     }
-  };
-
-  const handleHiddenTimes = (time: Date) => {
-    const hour = time.getHours();
-    const minutes = time.getMinutes();
-    const totalMinutes = hour * 60 + minutes;
-
-    return totalMinutes >= 330 && totalMinutes <= 1380 ? "" : "hidden";
   };
 
   const handleMinChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -197,7 +176,6 @@ export const CreateEventForm = () => {
                 className="w-full rounded-lg h-24 resize-none"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                required
               />
             </div>
           </div>
@@ -213,7 +191,6 @@ export const CreateEventForm = () => {
                 className="w-full rounded-lg h-12 resize-none"
                 value={eventFormat}
                 onChange={(e) => setEventFormat(e.target.value)}
-                required
               />
             </div>
           </div>

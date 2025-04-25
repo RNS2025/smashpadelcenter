@@ -52,21 +52,21 @@ const OverviewTab = () => {
         Spilleroplysninger
       </h3>
       <p className="text-gray-600">
-        <strong>Position:</strong> {profile.position || "N/A"}
+        <strong>Position:</strong> {profile.position}
       </p>
       <p className="text-gray-600">
-        <strong>Spillestil:</strong> {profile.playingStyle || "N/A"}
+        <strong>Spillestil:</strong> {profile.playingStyle}
       </p>
       <p className="text-gray-600">
-        <strong>Udstyr:</strong> {profile.equipment || "N/A"}
+        <strong>Udstyr:</strong> {profile.equipment}
       </p>
 
       <h3 className="text-lg font-semibold text-gray-800 mt-4 mb-2">Kontakt</h3>
       <p className="text-gray-600">
-        <strong>Email:</strong> {profile.email || "N/A"}
+        <strong>Email:</strong> {profile.email}
       </p>
-      <p className="text-gray-600">
-        <strong>Telefon:</strong> {profile.phoneNumber || "N/A"}
+      <p className={`text-gray-600 ${profile.phoneNumber ? "" : "hidden"}`}>
+        <strong>Telefon:</strong> {profile.phoneNumber}
       </p>
 
 

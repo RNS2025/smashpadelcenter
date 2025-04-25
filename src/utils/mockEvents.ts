@@ -40,7 +40,7 @@ const mockEvents: PrivateEvent[] = [
         startTime: "2025-10-27T16:00:00Z",
         endTime: "2025-10-27T18:00:00Z",
         location: "SMASH Padelcenter Horsens",
-        level: "2.0 - 3.0",
+        level: "",
         openRegistration: false,
         participants: [
             "user1",
@@ -48,7 +48,6 @@ const mockEvents: PrivateEvent[] = [
             "user3",
         ],
         joinRequests: [
-            "user9"
         ],
         createdAt: new Date().toISOString(),
         accessUrl: "/private-tournament/user2/2",

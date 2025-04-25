@@ -18,6 +18,7 @@ export const PrivateEventPage = () => {
 
   useEffect(() => {
     const fetchJoinRequestsCount = async () => {
+      if (!user?.username) return;
       if (useMockData) {
         const total = mockEvents
           .filter((e) => e.username === user?.username)
@@ -25,9 +26,10 @@ export const PrivateEventPage = () => {
         setJoinRequestsCount(total);
       } else {
         try {
-          const tournaments = await communityApi.getPrivateEventsForUser(
-            user!.username!
-          );
+          const tournaments = await communityApi.getPrivateEventsForUser(user?.username);
+            if (!tournaments || tournaments.length === 0) {
+                return;
+            }
           const total = tournaments.reduce(
             (sum: number, t: any) => sum + (t.joinRequests?.length || 0),
             0

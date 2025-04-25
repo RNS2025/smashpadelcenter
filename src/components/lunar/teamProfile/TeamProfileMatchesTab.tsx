@@ -1,6 +1,6 @@
 import {Helmet} from "react-helmet-async";
 import {useNavigate, useParams} from "react-router-dom";
-import {useEffect, useState} from "react";
+import {Fragment, useEffect, useState} from "react";
 import {TeamMatch} from "../../../types/LunarTypes.ts";
 import {fetchTeamMatches} from "../../../services/LigaService.ts";
 import {ClockIcon, MapPinIcon} from "@heroicons/react/24/outline";
@@ -63,8 +63,8 @@ export const TeamProfileMatchesTab = () => {
 
                         <tbody className="divide-y divide-gray-200">
                         {teamMatches.map((match) => (
-                            <>
-                                <tr key={match.MatchId} className="hover:bg-cyan-500 transition-colors duration-500">
+                                <Fragment key={match.MatchId}>
+                                <tr className="hover:bg-cyan-500 transition-colors duration-500">
                                     <td className="px-4 py-4 font-medium text-gray-900">{match.Details.Date}</td>
                                     <td className={`px-4 py-4 font-medium text-gray-900 ${match.Team1.IsWinner ? "font-semibold" : ""}`}>
                                         {match.Team1.Name}
@@ -101,7 +101,7 @@ export const TeamProfileMatchesTab = () => {
                                         </td>
                                     </tr>
                                 )}
-                            </>
+                                </Fragment>
                         ))}
                         </tbody>
 

@@ -1,6 +1,6 @@
 import {Helmet} from "react-helmet-async";
 import {useParams} from "react-router-dom";
-import {useEffect, useState} from "react";
+import {Fragment, useEffect, useState} from "react";
 import {MatchDetails, TeamMatch} from "../../../types/LunarTypes.ts";
 import {fetchMatchDetails, fetchTeamMatches} from "../../../services/LigaService.ts";
 
@@ -46,12 +46,12 @@ export const TeamProfileMatchDetailsTab = () => {
                     <table className="min-w-[700px] w-full divide-y-2 divide-gray-200 bg-white">
                     <thead className="text-left bg-gray-300 font-bold">
                         <tr>
-                            <th className="px-4 py-2 text-gray-900 select-none">
+                            <th className="px-4 py-2 text-gray-900 select-none w-[35%]">
                                 <div className="flex items-center gap-2">
                                     {currentMatch.Team1.Name}
                                 </div>
                             </th>
-                            <th className="px-4 py-2 text-gray-900 select-none">
+                            <th className="px-4 py-2 text-gray-900 select-none w-[35%]">
                                 <div className="flex items-center gap-2">
                                     {currentMatch.Team2.Name}
                                 </div>
@@ -66,9 +66,9 @@ export const TeamProfileMatchDetailsTab = () => {
 
                         <tbody className="divide-y divide-gray-200">
                         {matchDetails?.Matches.Matches.map((match) => (
-                            <>
+                            <Fragment key={match.Id}>
                             {match.MatchResult?.HasDetailedScore && (
-                                <tr key={match.Id} className="hover:bg-cyan-500 transition-colors duration-500">
+                                <tr className="hover:bg-cyan-500 transition-colors duration-500">
                                     <td className={`px-4 py-4 font-medium text-gray-900 ${match.MatchResult?.IsFirstParticipantWinner ? "font-semibold" : ""}`}>
                                         <p>{match.Challenger.Name}</p>
                                         <p>{match.Challenger.Player2Name}</p>
@@ -93,7 +93,7 @@ export const TeamProfileMatchDetailsTab = () => {
                                     </td>
                                 </tr>
                             )}
-                            </>
+                            </Fragment>
                         ))}
                         </tbody>
                     </table>

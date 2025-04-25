@@ -156,7 +156,7 @@ export const CourtMapPage = () => {
                     {renderMatchInfo(upcomingMatch, "Næste Kamp")}
 
                     {!ongoingMatch && !upcomingMatch && (
-                      <p className="text-center mt-4">
+                      <p className="mt-4">
                         Ingen kampe planlagt for denne bane.
                       </p>
                     )}

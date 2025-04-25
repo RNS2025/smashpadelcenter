@@ -1,7 +1,7 @@
 import { Helmet } from "react-helmet-async";
-import { useState, useEffect } from "react";
+import {useState, useEffect, FormEvent} from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { login, loginWithProvider } from "../services/auth";
+import { login, loginWithProvider } from "../../services/auth.ts";
 
 interface LocationState {
   message?: string;
@@ -25,7 +25,7 @@ export const LoginPage = () => {
     }
   }, [location]);
 
-  const handleLocalLogin = async (e: React.FormEvent) => {
+  const handleLocalLogin = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
     setSuccessMessage("");
@@ -69,7 +69,7 @@ export const LoginPage = () => {
             />
 
             <div className="hidden lg:relative lg:block lg:p-12">
-              <a href="/" className="block">
+              <a href="/public" className="block">
                 <span className="sr-only">Home</span>
                 <img
                   src="https://www.smash.dk/wp-content/uploads/2021/05/SMASH-neg-udenby@4x.png"
@@ -86,16 +86,16 @@ export const LoginPage = () => {
             </div>
           </section>
 
-          <main className="flex items-center justify-center px-8 py-8 sm:px-12 lg:col-span-7 lg:px-16 lg:py-12 xl:col-span-5">
-            <div className="max-w-xl lg:max-w-3xl">
+          <main className="flex items-center justify-center px-5 py-8 sm:px-12 lg:col-span-7 lg:px-16 lg:py-12 xl:col-span-5">
+            <div className="w-full lg:max-w-sm">
               <div className="relative -mt-16 block lg:hidden">
-                <a href="/" className="block">
+                <a href="/public" className="block">
                   <span className="sr-only">Home</span>
-                  <div className="relative inline-block bg-gray-900 p-6 rounded-full">
+                  <div className="relative inline-block bg-gray-900 p-4 rounded-full">
                     <img
                       src="https://www.smash.dk/wp-content/uploads/2021/05/SMASH-neg-udenby@4x.png"
                       alt="Home"
-                      className="h-8 sm:h-12"
+                      className="h-12 sm:h-12"
                     />
                   </div>
                 </a>
@@ -104,12 +104,12 @@ export const LoginPage = () => {
                   SMASH Padelcenter 🎾
                 </h1>
 
-                <p className="mt-4 leading-relaxed text-gray-400">
+                <p className="leading-relaxed text-gray-400">
                   Din nye klubapp.
                 </p>
               </div>
 
-              <div className="mt-8 flex flex-col gap-6">
+              <div className="mt-6 flex flex-col gap-6 xl:gap-5">
                 <div className="col-span-6">
                   <h2 className="text-2xl font-bold">Log ind</h2>
                 </div>
@@ -121,7 +121,7 @@ export const LoginPage = () => {
                 )}
 
                 {error && (
-                  <div className="col-span-6 transition-opacity duration-300 ease-in-out">
+                  <div className="col-span-6 transition-all duration-300 ease-in-out bg-red-100 border border-red-300 rounded-md p-3">
                     <p className="text-red-500 text-sm">{error}</p>
                   </div>
                 )}
@@ -142,7 +142,7 @@ export const LoginPage = () => {
                       id="username"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      className="mt-1 w-full rounded-md border-gray-200 bg-white text-sm shadow-sm focus:border-blue-600 focus:ring focus:ring-blue-600 focus:ring-opacity-50 text-black"
+                      className="mt-1 w-full rounded-md border-gray-700 bg-gray-800 text-sm shadow-sm focus:border-blue-600 focus:ring focus:ring-blue-600 focus:ring-opacity-50 "
                       required
                       disabled={isSubmitting}
                     />
@@ -159,7 +159,7 @@ export const LoginPage = () => {
                       id="password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="mt-1 w-full rounded-md border-gray-200 bg-white text-sm shadow-sm focus:border-blue-600 focus:ring focus:ring-blue-600 focus:ring-opacity-50 text-black"
+                      className="mt-1 w-full rounded-md border-gray-700 bg-gray-800 text-sm shadow-sm focus:border-blue-600 focus:ring focus:ring-blue-600 focus:ring-opacity-50 "
                       required
                       disabled={isSubmitting}
                     />
@@ -187,7 +187,7 @@ export const LoginPage = () => {
                   </button>
                 </form>
 
-                <div className="flex items-center my-4">
+                <div className="flex items-center">
                   <div className="flex-grow border-t border-gray-300"></div>
                   <span className="mx-4 text-sm text-gray-500">eller</span>
                   <div className="flex-grow border-t border-gray-300"></div>

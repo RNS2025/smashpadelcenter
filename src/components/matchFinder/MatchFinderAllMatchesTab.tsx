@@ -14,12 +14,13 @@ registerLocale("da", da);
 
 type OutletContextType = {
   showFullMatches: boolean;
+  isMyLevel: boolean;
 };
 
 export const MatchFinderAllMatchesTab = () => {
   const navigate = useNavigate();
   const { user } = useUser();
-  const { showFullMatches } = useOutletContext<OutletContextType>();
+  const { showFullMatches, isMyLevel } = useOutletContext<OutletContextType>();
   const [matches, setMatches] = useState<PadelMatch[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -69,11 +70,24 @@ export const MatchFinderAllMatchesTab = () => {
             <p className="mt-10">Ingen aktuelle kampe at vise.</p>
         ) : (
             matches
-            .filter((match) => {
-              const isFull = match.participants.length + match.reservedSpots.length === match.totalSpots;
+                .filter((match) => {
+                  const isFull = match.participants.length + match.reservedSpots.length === match.totalSpots;
 
-              return showFullMatches ? true : !isFull;
-            })
+
+                  if (!showFullMatches && isFull) return false;
+
+
+                  if (isMyLevel && user?.skillLevel) {
+                    const [minLevel, maxLevel] = match.level.split(" - ").map(Number);
+                    const userLevel = Number(user.skillLevel);
+                    const matchesMyLevel = userLevel >= minLevel && userLevel <= maxLevel;
+
+                    if (!matchesMyLevel) return false;
+                  }
+
+                  return true;
+                })
+
             .sort((a, b) => {
               const aIsFull = a.participants.length + a.reservedSpots.length === a.totalSpots;
               const bIsFull = b.participants.length + b.reservedSpots.length === b.totalSpots;

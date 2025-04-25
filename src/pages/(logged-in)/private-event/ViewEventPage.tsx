@@ -38,6 +38,9 @@ export const ViewEventPage = () => {
   const useMockData = false;
 
   useEffect(() => {
+    if (!eventId || !user?.username) return;
+
+
     const fetchEvent = async () => {
       if (useMockData) {
         const foundEvent = mockEvents.find((e) => e.id === eventId);
@@ -51,7 +54,7 @@ export const ViewEventPage = () => {
       }
 
       try {
-        const fetched = await communityApi.getEventById(eventId!);
+        const fetched = await communityApi.getEventById(user.username, eventId);
         setEvent(fetched);
       } catch (err) {
         console.error("Fejl ved hentning af event:", err);
@@ -62,7 +65,7 @@ export const ViewEventPage = () => {
     };
 
     fetchEvent().then();
-  }, [eventId, useMockData]);
+  }, [eventId, useMockData, user?.username]);
 
   useEffect(() => {
     const fetchParticipantProfiles = async () => {
@@ -190,16 +193,7 @@ export const ViewEventPage = () => {
 
       <div
         onClick={() => setInfoDialogVisible(false)}
-        className={`min-h-screen fixed inset-0 z-50 bg-black bg-opacity-10 flex items-center justify-center ${
-          !infoDialogVisible ? "hidden" : ""
-        }`}
-      >
-        <PlayerInfoDialog user={selectedUser!} />
-      </div>
-
-      <div
-        onClick={() => setInfoDialogVisible(false)}
-        className={`min-h-screen fixed inset-0 z-50 bg-gray-500 bg-opacity-90 flex items-center justify-center ${
+        className={`min-h-screen fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center ${
           !infoDialogVisible ? "hidden" : ""
         }`}
       >
@@ -226,20 +220,8 @@ export const ViewEventPage = () => {
             - {safeFormatDate(event.endTime, "HH:mm")}
           </h1>
 
-          {/* Event creator */}
-          <div className="border rounded flex items-center px-1">
-            <UserCircleIcon className="h-20" />
-            <div className="w-full pr-1 truncate">
-              <h1>{event.username}</h1>
-            </div>
-            <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-20 h-12">
-              2.5
-            </div>
-          </div>
-
           {/* Participants */}
           {participantProfiles
-            .filter((p) => p.username !== event.username)
             .map((profile) => (
               <div
                 onClick={() => {
@@ -306,7 +288,8 @@ export const ViewEventPage = () => {
             )}
 
           <div className="grid grid-cols-2 text-center text-black gap-3">
-            <div className="bg-white rounded flex justify-center items-center gap-1 py-4">
+
+            <div className={`bg-white rounded flex justify-center items-center gap-1 py-4 ${!event.level ? "hidden" : ""}`}>
               <BoltIcon className="h-6 text-yellow-500" />
               <h1 className="h-5">{event.level}</h1>
             </div>
@@ -330,7 +313,7 @@ export const ViewEventPage = () => {
               </div>
             )}
 
-            <div className="bg-white rounded flex justify-center items-center gap-1 py-4">
+            <div className={`bg-white rounded flex justify-center items-center gap-1 py-4 ${!event.eventFormat ? "hidden" : ""}`}>
               <UserGroupIcon className="h-6 rounded-lg text-white bg-gradient-to-b from-sky-400 to-pink-400" />
               <h1 className="h-5 truncate overflow-hidden whitespace-nowrap max-w-[100px]">
                 {event.eventFormat}
@@ -361,14 +344,14 @@ export const ViewEventPage = () => {
             <div className="flex justify-between">
               <button
                 onClick={handleDeleteEvent}
-                className="bg-red-500 hover:bg-red-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                className="bg-red-500 hover:bg-red-600 transition duration-300 rounded-lg py-4 px-2 text-white"
               >
                 Slet arrangement
               </button>
 
               <div
                 onClick={handleInvitePlayers}
-                className="bg-green-500 hover:bg-green-600 transition duration-300 rounded-lg py-2 px-4 text-white flex"
+                className="bg-green-500 hover:bg-green-600 transition duration-300 rounded-lg py-4 px-2 text-white flex"
               >
                 {!copied ? (
                   <>

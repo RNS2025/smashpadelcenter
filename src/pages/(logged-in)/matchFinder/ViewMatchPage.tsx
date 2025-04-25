@@ -263,7 +263,7 @@ export const ViewMatchPage = () => {
 
       <div
         onClick={() => setInfoDialogVisible(false)}
-        className={`min-h-screen fixed inset-0 z-50 bg-black bg-opacity-10 flex items-center justify-center ${
+        className={`min-h-screen fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center ${
           !infoDialogVisible ? "hidden" : ""
         }`}
       >
@@ -290,6 +290,8 @@ export const ViewMatchPage = () => {
             - {safeFormatDate(match.endTime, "HH:mm")}
           </h1>
 
+          <h1 className="text-center text-gray-500 italic text-sm">Tryk på et spillernavn for at se mere information.</h1>
+
           {!socketConnected && (
             <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-2 mb-4">
               Realtidsopdateringer er ikke tilgængelige. Opdater siden for at se
@@ -297,20 +299,8 @@ export const ViewMatchPage = () => {
             </div>
           )}
 
-          {/* Match creator */}
-          <div className="border rounded flex items-center px-1">
-            <UserCircleIcon className="h-20" />
-            <div className="w-full pr-1 truncate">
-              <h1>{match.username}</h1>
-            </div>
-            <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-20 h-12">
-              2.5
-            </div>
-          </div>
-
           {/* Participants */}
           {participantProfiles
-            .filter((p) => p.username !== match.username)
             .map((profile) => (
               <div
                 onClick={() => {

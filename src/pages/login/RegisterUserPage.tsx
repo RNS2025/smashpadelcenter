@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { register } from "../services/auth";
+import { register } from "../../services/auth.ts";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 
@@ -25,7 +25,7 @@ export default function RegisterPage() {
     } else if (redirectCountdown === 0 && successMessage) {
       navigate("/login", {
         state: {
-          message: "Registration successful! You can now log in.",
+          message: "Din konto er oprettet! Du kan nu logge ind.",
           from: "register",
         },
       });
@@ -36,12 +36,12 @@ export default function RegisterPage() {
     setPasswordError("");
 
     if (password !== confirmPassword) {
-      setPasswordError("Passwords do not match");
+      setPasswordError("Adgangskoder matcher ikke");
       return false;
     }
 
     if (password.length < 8) {
-      setPasswordError("Password must be at least 8 characters");
+      setPasswordError("Din adgangskode skal være mindst 8 tegn lang");
       return false;
     }
 
@@ -54,7 +54,7 @@ export default function RegisterPage() {
     setSuccessMessage("");
 
     if (!username || !password || !confirmPassword) {
-      setError("All fields are required");
+      setError("Alle felter skal udfyldes");
       return;
     }
 
@@ -68,7 +68,7 @@ export default function RegisterPage() {
 
       // Set success message and start countdown
       setSuccessMessage(
-        "Registration successful! Redirecting to login page..."
+        "Din konto er oprettet! Omdirigerer til login siden..."
       );
       setUsername("");
       setPassword("");
@@ -79,7 +79,7 @@ export default function RegisterPage() {
       setError(
         err instanceof Error
           ? err.message
-          : "Registration failed. Please try again."
+          : "Der opstod en fejl under registreringen. Prøv igen."
       );
     }
   };
@@ -88,7 +88,7 @@ export default function RegisterPage() {
   const handleNavigateToLogin = () => {
     navigate("/login", {
       state: {
-        message: "Registration successful! You can now log in.",
+        message: "Din konto er oprettet! Du kan nu logge ind.",
         from: "register",
       },
     });
@@ -110,7 +110,7 @@ export default function RegisterPage() {
             />
 
             <div className="hidden lg:relative lg:block lg:p-12">
-              <a href="/" className="block">
+              <a href="/public" className="block">
                 <span className="sr-only">Home</span>
                 <img
                   src="https://www.smash.dk/wp-content/uploads/2021/05/SMASH-neg-udenby@4x.png"
@@ -120,33 +120,33 @@ export default function RegisterPage() {
               </a>
 
               <h2 className="mt-6 text-2xl font-bold sm:text-3xl md:text-4xl">
-                SMASH Padelcenter
+                SMASH Padelcenter 🎾
               </h2>
 
               <p className="mt-4 leading-relaxed">Din nye klubapp.</p>
             </div>
           </section>
 
-          <main className="flex items-center justify-center px-8 py-8 sm:px-12 lg:col-span-7 lg:px-16 lg:py-12 xl:col-span-5">
-            <div className="max-w-xl lg:max-w-3xl">
+          <main className="flex items-center justify-center px-5 py-8 sm:px-12 lg:col-span-7 lg:px-16 lg:py-12 xl:col-span-5">
+            <div className="w-full lg:max-w-sm">
               <div className="relative -mt-16 block lg:hidden">
-                <a href="/" className="block">
+                <a href="/public" className="block">
                   <span className="sr-only">Home</span>
-                  <div className="relative inline-block bg-gray-900 p-6 rounded-full">
+                  <div className="relative inline-block bg-gray-900 p-4 rounded-full">
                     <img
-                      src="https://www.smash.dk/wp-content/uploads/2021/05/SMASH-neg-udenby@4x.png"
-                      alt="Home"
-                      className="h-8 sm:h-12"
+                        src="https://www.smash.dk/wp-content/uploads/2021/05/SMASH-neg-udenby@4x.png"
+                        alt="Home"
+                        className="h-12 sm:h-12"
                     />
                   </div>
                 </a>
 
                 <h1 className="mt-2 text-2xl font-bold sm:text-3xl md:text-4xl">
-                  SMASH Medarbejderportal 🎾
+                  SMASH Padelcenter 🎾
                 </h1>
 
-                <p className="mt-4 leading-relaxed text-gray-400">
-                  Vagtplansystem, nyheder, beskeder - og meget mere.
+                <p className="leading-relaxed text-gray-400">
+                  Din nye klubapp.
                 </p>
               </div>
 
@@ -169,7 +169,7 @@ export default function RegisterPage() {
                     <p className="text-green-700 text-sm">{successMessage}</p>
                     {redirectCountdown > 0 && (
                       <p className="text-green-600 text-xs mt-1">
-                        Redirecting in {redirectCountdown} seconds...
+                        Du vil blive omdirigeret om {redirectCountdown} sekunder.
                       </p>
                     )}
                     <button
@@ -193,14 +193,14 @@ export default function RegisterPage() {
                       </label>
 
                       <input
-                        type="text"
-                        id="username"
-                        name="username"
-                        autoComplete="username"
-                        required
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        className="mt-1 w-80 rounded-md text-sm shadow-sm border-gray-700 bg-gray-800 transition-all duration-200"
+                          type="text"
+                          id="username"
+                          name="username"
+                          autoComplete="username"
+                          required
+                          value={username}
+                          onChange={(e) => setUsername(e.target.value)}
+                          className="mt-1 w-full rounded-md border-gray-700 bg-gray-800 text-sm shadow-sm focus:border-blue-600 focus:ring focus:ring-blue-600 focus:ring-opacity-50 "
                       />
                     </div>
 
@@ -220,7 +220,7 @@ export default function RegisterPage() {
                         required
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="mt-1 w-80 rounded-md text-sm shadow-sm border-gray-700 bg-gray-800 transition-all duration-200"
+                        className="mt-1 w-full rounded-md border-gray-700 bg-gray-800 text-sm shadow-sm focus:border-blue-600 focus:ring focus:ring-blue-600 focus:ring-opacity-50 "
                       />
                     </div>
 
@@ -240,7 +240,7 @@ export default function RegisterPage() {
                         required
                         value={confirmPassword}
                         onChange={(e) => setConfirmPassword(e.target.value)}
-                        className="mt-1 w-80 rounded-md text-sm shadow-sm border-gray-700 bg-gray-800 transition-all duration-200"
+                        className="mt-1 w-full rounded-md border-gray-700 bg-gray-800 text-sm shadow-sm focus:border-blue-600 focus:ring focus:ring-blue-600 focus:ring-opacity-50 "
                       />
                       {passwordError && (
                         <p className="mt-1 text-sm text-red-500 transition-opacity duration-200">

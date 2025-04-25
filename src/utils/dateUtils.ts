@@ -29,3 +29,11 @@ export const getNextHalfHour = () => {
 
     return now;
 };
+
+export const handleHiddenTimes = (time: Date) => {
+    const hour = time.getHours();
+    const minutes = time.getMinutes();
+    const totalMinutes = hour * 60 + minutes;
+
+    return totalMinutes >= 330 && totalMinutes <= 1380 ? "" : "hidden";
+};

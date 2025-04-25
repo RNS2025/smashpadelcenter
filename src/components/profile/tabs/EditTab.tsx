@@ -1,8 +1,7 @@
 import { useProfileContext } from "../../../context/ProfileContext";
 
 const EditTab = () => {
-  const { formData, isSubmitting, handleSubmit, handleInputChange } =
-    useProfileContext();
+  const { formData, isSubmitting, handleSubmit, handleInputChange } = useProfileContext();
 
   return (
     <div>

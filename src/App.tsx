@@ -3,8 +3,8 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { UserProvider } from "./context/UserContext";
 import { ProfileProvider } from "./context/ProfileContext.tsx";
-import InstallPrompt from "./components/InstallPrompt"; // Adjust path as needed
-import LoginPage from "./pages/LoginPage";
+import InstallPrompt from "./components/misc/InstallPrompt.tsx"; // Adjust path as needed
+import LoginPage from "./pages/login/LoginPage.tsx";
 import HomePage from "./pages/(logged-in)/HomePage.tsx";
 import AdminPage from "./pages/(logged-in)/misc/AdminPage.tsx";
 import CheckInPage from "./pages/CheckInPage.tsx";
@@ -20,7 +20,7 @@ import PartnerPage from "./pages/(logged-in)/PartnerPage.tsx";
 import ArrangementPage from "./pages/(logged-in)/ArrangementPage.tsx";
 import ProfilePage from "./pages/(logged-in)/ProfilePage/ProfilePage.tsx";
 import FeedbackPage from "./pages/(logged-in)/FeedbackPage.tsx";
-import RegisterPage from "./pages/RegisterUserPage.tsx";
+import RegisterPage from "./pages/login/RegisterUserPage.tsx";
 import CourtTimes from "./pages/court-times.tsx";
 import TournamentTabs from "./pages/(logged-in)/tournament/TournamentTabs.tsx";
 import CourtMapPage from "./pages/(logged-in)/tournament/CourtMapPage.tsx";

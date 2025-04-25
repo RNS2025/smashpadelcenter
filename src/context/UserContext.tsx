@@ -4,6 +4,7 @@ import React, {
   useState,
   useEffect,
   useRef,
+  useCallback,
 } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
@@ -50,45 +51,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const fetchUserData = async (currentPath: string) => {
-    if ( isLogoutRef.current) return;
-    setLoading(true);
-    try {
-      const response = await axios.get(
-        `${BACKEND_URL}/api/v1/user-profiles/by-username/me`,
-        {
-          withCredentials: true,
-        }
-      );
-      if (response.data && response.data.username) {
-        setUser(response.data);
-        setIsAuthenticated(true);
-        setError(null);
-        isLogoutRef.current = false;
-        sessionStorage.setItem("isAuthenticated", "true");
-        if (isLoginPage(currentPath)) {
-          navigate("/hjem", { replace: true });
-        }
-      } else {
-        throw new Error("Invalid user data received");
-      }
-    } catch (err: any) {
-      if (isLogoutRef.current) {
-        console.log("Ignoring fetch error during logout");
-        return; // Suppress errors during logout
-      }
-      console.error("Auth check error:", err);
-      setUser(null);
-      setIsAuthenticated(false);
-      setError("Kunne ikke hente brugerdata.");
-      sessionStorage.removeItem("isAuthenticated");
-      handleUnauthenticated(currentPath);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleUnauthenticated = (currentPath: string) => {
+  const handleUnauthenticated = useCallback((currentPath: string) => {
     if (
       !isRouteWhitelisted(currentPath, WHITELIST_ROUTES) &&
       !isLogoutRef.current
@@ -106,7 +69,45 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         setError(null);
       }
     }
-  };
+  }, [navigate]);
+
+  const fetchUserData = useCallback(async (currentPath: string) => {
+    if ( isLogoutRef.current) return;
+    setLoading(true);
+    try {
+      const response = await axios.get(
+          `${BACKEND_URL}/api/v1/user-profiles/by-username/me`,
+          {
+            withCredentials: true,
+          }
+      );
+      if (response.data && response.data.username) {
+        setUser(response.data);
+        setIsAuthenticated(true);
+        setError(null);
+        isLogoutRef.current = false;
+        sessionStorage.setItem("isAuthenticated", "true");
+        if (isLoginPage(currentPath)) {
+          navigate("/hjem", { replace: true });
+        }
+      } else {
+        return new Error("Invalid user data received");
+      }
+    } catch (err: any) {
+      if (isLogoutRef.current) {
+        console.log("Ignoring fetch error during logout");
+        return;
+      }
+      console.error("Auth check error:", err);
+      setUser(null);
+      setIsAuthenticated(false);
+      setError("Kunne ikke hente brugerdata.");
+      sessionStorage.removeItem("isAuthenticated");
+      handleUnauthenticated(currentPath);
+    } finally {
+      setLoading(false);
+    }
+  }, [handleUnauthenticated, navigate]);
 
   const fetchUser = async () => {
     await fetchUserData(location.pathname);
@@ -151,8 +152,8 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         }
       }
     };
-    checkInitialAuth();
-  }, []);
+    checkInitialAuth().then();
+  }, [fetchUserData, handleUnauthenticated, location.pathname]);
 
   useEffect(() => {
     if (isLoginPage(location.pathname)) {
@@ -163,9 +164,9 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   useEffect(() => {
     if (isLogoutRef.current) return;
     if (location.key) {
-      fetchUserData(location.pathname);
+      fetchUserData(location.pathname).then();
     }
-  }, [location.pathname]);
+  }, [fetchUserData, location.key, location.pathname]);
 
   useEffect(() => {
     const checkInitialAuth = async () => {
@@ -187,8 +188,8 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         }
       }
     };
-    checkInitialAuth();
-  }, [location.pathname]);
+    checkInitialAuth().then();
+  }, [fetchUserData, handleUnauthenticated, location.pathname]);
 
   useEffect(() => {
     if (isLogoutRef.current) {
@@ -196,9 +197,9 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
     if (location.key) {
-      fetchUserData(location.pathname);
+      fetchUserData(location.pathname).then();
     }
-  }, [location.pathname]);
+  }, [fetchUserData, location.key, location.pathname]);
 
   useEffect(() => {
     const interval = setInterval(() => {
