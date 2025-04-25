@@ -6,6 +6,7 @@ const crypto = require("crypto");
 const privateEventService = {
   getAllPrivateEvents: async () => {
     const events = await PrivateEvent.find();
+    console.log("Fetched all private events:", events);
     return events.map((event) => ({
       ...event.toObject(),
       id: event._id.toString(),
@@ -27,11 +28,10 @@ const privateEventService = {
     }
   },
 
-  getPrivateEventById: async (username, eventId) => {
+  getPrivateEventById: async (eventId) => {
     try {
-      const event = await PrivateEvent.findOne({_id: eventId, username});
+      const event = await PrivateEvent.findOne({ _id: eventId });
       if (!event) throw new Error("Event not found");
-
       return {
         ...event.toObject(),
         id: event._id.toString(),
@@ -173,7 +173,8 @@ const privateEventService = {
       );
 
       await PrivateEvent.findByIdAndDelete(eventId);
-      return await PrivateEvent.find().map((event) => ({
+      const events = await PrivateEvent.find();
+      return events.map((event) => ({
         ...event.toObject(),
         id: event._id.toString(),
         participants: event.participants || [],

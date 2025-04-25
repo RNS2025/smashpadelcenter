@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const padelMatchService = require("../Services/padelMatchService");
+const PadelMatch = require("../models/PadelMatch");
 
 // GET /api/v1/matches - Get all matches
 router.get("/", async (req, res) => {
@@ -64,7 +65,7 @@ router.post("/:id/confirm", async (req, res) => {
       return res.status(401).json({ message: "Not authenticated" });
     }
     const { username } = req.body;
-    const match = await PadelMatch.findById(req.params.id);
+    const match = await padelMatchService.getMatchById(req.params.id);
     if (!match) {
       return res.status(404).json({ message: "Match not found" });
     }
@@ -124,22 +125,14 @@ router.patch("/:id/reserve", async (req, res) => {
 // DELETE /api/v1/matches/:id - Delete a match
 router.delete("/:id", async (req, res) => {
   try {
-    if (!req.isAuthenticated()) {
-      return res.status(401).json({ message: "Not authenticated" });
-    }
-    const match = await PadelMatch.findById(req.params.id);
+    const match = await padelMatchService.getMatchById(req.params.id);
     if (!match) {
       return res.status(404).json({ message: "Match not found" });
     }
-    if (match.username !== req.user.username) {
-      return res
-        .status(403)
-        .json({ message: "Only the match creator can delete the match" });
-    }
-    const matches = await padelMatchService.deleteMatch(req.params.id);
     const io = req.app.get("socketio");
     console.log("Emitting matchDeleted for match:", req.params.id);
     io.to(req.params.id).emit("matchDeleted", req.params.id);
+    const matches = await padelMatchService.deleteMatch(req.params.id);
     res.json(matches);
   } catch (error) {
     console.error("Error deleting match:", error.message);

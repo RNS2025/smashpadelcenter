@@ -42,17 +42,19 @@ router.get("/:username", async (req, res) => {
 });
 
 // GET /api/v1/private-event/:username/:eventId
-router.get("/:username/:eventId", async (req, res) => {
+router.get("/event/:eventId", async (req, res) => {
   try {
     const { username, eventId } = req.params;
-    const event = await privateEventService.getPrivateEventById(username, eventId);
+    const event = await privateEventService.getPrivateEventById(eventId);
+    if (!event) {
+      return res.status(404).json({ message: "Event not found" });
+    }
     res.json(event);
   } catch (error) {
     console.error("Error fetching event:", error.message);
     res.status(404).json({ message: error.message });
   }
 });
-
 
 // POST /api/v1/private-event - Create a new private event
 router.post("/", async (req, res) => {

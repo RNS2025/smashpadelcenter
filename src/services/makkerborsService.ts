@@ -65,8 +65,8 @@ const communityApi = {
     const response = await api.get(`/private-event/${username}`);
     return response.data;
   },
-  getEventById: async (username: string, eventId: string): Promise<PrivateEvent> => {
-    const response = await api.get(`/private-event/${username}/${eventId}`);
+  getEventById: async (eventId: string): Promise<PrivateEvent> => {
+    const response = await api.get(`/private-event/event/${eventId}`);
     return response.data;
   },
   createPrivateEvent: async (

@@ -40,7 +40,6 @@ export const ViewEventPage = () => {
   useEffect(() => {
     if (!eventId || !user?.username) return;
 
-
     const fetchEvent = async () => {
       if (useMockData) {
         const foundEvent = mockEvents.find((e) => e.id === eventId);
@@ -54,7 +53,7 @@ export const ViewEventPage = () => {
       }
 
       try {
-        const fetched = await communityApi.getEventById(user.username, eventId);
+        const fetched = await communityApi.getEventById(eventId);
         setEvent(fetched);
       } catch (err) {
         console.error("Fejl ved hentning af event:", err);
@@ -221,25 +220,24 @@ export const ViewEventPage = () => {
           </h1>
 
           {/* Participants */}
-          {participantProfiles
-            .map((profile) => (
-              <div
-                onClick={() => {
-                  setSelectedUser(profile);
-                  setInfoDialogVisible(true);
-                }}
-                key={profile.username}
-                className="border rounded flex items-center px-1"
-              >
-                <UserCircleIcon className="h-20" />
-                <div className="w-full pr-1 truncate">
-                  <h1>{profile.username}</h1>
-                </div>
-                <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-20 h-12">
-                  {profile.skillLevel.toFixed(1)}
-                </div>
+          {participantProfiles.map((profile) => (
+            <div
+              onClick={() => {
+                setSelectedUser(profile);
+                setInfoDialogVisible(true);
+              }}
+              key={profile.username}
+              className="border rounded flex items-center px-1"
+            >
+              <UserCircleIcon className="h-20" />
+              <div className="w-full pr-1 truncate">
+                <h1>{profile.username}</h1>
               </div>
-            ))}
+              <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-20 h-12">
+                {profile.skillLevel.toFixed(1)}
+              </div>
+            </div>
+          ))}
 
           {/* Empty spots */}
           {[...Array(event.totalSpots - event.participants.length)].map(
@@ -288,8 +286,11 @@ export const ViewEventPage = () => {
             )}
 
           <div className="grid grid-cols-2 text-center text-black gap-3">
-
-            <div className={`bg-white rounded flex justify-center items-center gap-1 py-4 ${!event.level ? "hidden" : ""}`}>
+            <div
+              className={`bg-white rounded flex justify-center items-center gap-1 py-4 ${
+                !event.level ? "hidden" : ""
+              }`}
+            >
               <BoltIcon className="h-6 text-yellow-500" />
               <h1 className="h-5">{event.level}</h1>
             </div>
@@ -313,7 +314,11 @@ export const ViewEventPage = () => {
               </div>
             )}
 
-            <div className={`bg-white rounded flex justify-center items-center gap-1 py-4 ${!event.eventFormat ? "hidden" : ""}`}>
+            <div
+              className={`bg-white rounded flex justify-center items-center gap-1 py-4 ${
+                !event.eventFormat ? "hidden" : ""
+              }`}
+            >
               <UserGroupIcon className="h-6 rounded-lg text-white bg-gradient-to-b from-sky-400 to-pink-400" />
               <h1 className="h-5 truncate overflow-hidden whitespace-nowrap max-w-[100px]">
                 {event.eventFormat}

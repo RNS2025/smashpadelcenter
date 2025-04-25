@@ -7,7 +7,8 @@ import {
   UserCircleIcon,
   UserGroupIcon,
   CheckCircleIcon,
-  XCircleIcon, DocumentDuplicateIcon,
+  XCircleIcon,
+  DocumentDuplicateIcon,
   CheckIcon,
 } from "@heroicons/react/24/outline";
 import { useUser } from "../../../context/UserContext";
@@ -25,18 +26,16 @@ import userProfileService from "../../../services/userProfileService.ts";
 import PlayerInfoDialog from "../../../components/matchFinder/misc/PlayerInfoDialog.tsx";
 
 export const ViewMatchPage = () => {
-  const { user } = useUser();
+  const { user, loading: userLoading } = useUser();
   const { matchId } = useParams<{ matchId: string }>();
   const [match, setMatch] = useState<PadelMatch | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [socketConnected, setSocketConnected] = useState(false);
-  const [participantProfiles, setParticipantProfiles] = useState<User[]>(
-    []
-  );
+  const [participantProfiles, setParticipantProfiles] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [infoDialogVisible, setInfoDialogVisible] = useState(false);
-    const [copied, setCopied] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const fetchParticipants = async () => {
@@ -167,9 +166,17 @@ export const ViewMatchPage = () => {
   };
 
   const handleJoinMatch = async () => {
-    if (!match || !user?.username || match.participants.includes(user?.username)) return;
+    if (
+      !match ||
+      !user?.username ||
+      match.participants.includes(user?.username)
+    )
+      return;
     try {
-      const updatedMatch = await communityApi.joinMatch(match.id, user?.username);
+      const updatedMatch = await communityApi.joinMatch(
+        match.id,
+        user?.username
+      );
       console.log("Updated match after join:", updatedMatch);
       if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
         setError("Invalid match data returned");
@@ -290,7 +297,9 @@ export const ViewMatchPage = () => {
             - {safeFormatDate(match.endTime, "HH:mm")}
           </h1>
 
-          <h1 className="text-center text-gray-500 italic text-sm">Tryk på et spillernavn for at se mere information.</h1>
+          <h1 className="text-center text-gray-500 italic text-sm">
+            Tryk på et spillernavn for at se mere information.
+          </h1>
 
           {!socketConnected && (
             <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-2 mb-4">
@@ -300,25 +309,24 @@ export const ViewMatchPage = () => {
           )}
 
           {/* Participants */}
-          {participantProfiles
-            .map((profile) => (
-              <div
-                onClick={() => {
-                  setSelectedUser(profile);
-                  setInfoDialogVisible(true);
-                }}
-                key={profile.username}
-                className="border rounded flex items-center px-1"
-              >
-                <UserCircleIcon className="h-20" />
-                <div className="w-full pr-1 truncate">
-                  <h1>{profile.username}</h1>
-                </div>
-                <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-20 h-12">
-                  {profile.skillLevel.toFixed(1)}
-                </div>
+          {participantProfiles.map((profile) => (
+            <div
+              onClick={() => {
+                setSelectedUser(profile);
+                setInfoDialogVisible(true);
+              }}
+              key={profile.username}
+              className="border rounded flex items-center px-1"
+            >
+              <UserCircleIcon className="h-20" />
+              <div className="w-full pr-1 truncate">
+                <h1>{profile.username}</h1>
               </div>
-            ))}
+              <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-20 h-12">
+                {profile.skillLevel.toFixed(1)}
+              </div>
+            </div>
+          ))}
 
           {match.reservedSpots.length > 0 ? (
             match.reservedSpots.map((reserved) => (
@@ -424,7 +432,7 @@ export const ViewMatchPage = () => {
 
           {/* Action buttons */}
           {match.username !== user?.username &&
-              user?.username &&
+            user?.username &&
             !match.participants.includes(user?.username) &&
             !match.joinRequests.includes(user?.username) &&
             !isMatchFull && (
@@ -437,28 +445,31 @@ export const ViewMatchPage = () => {
             )}
 
           {match.username === user?.username && (
-              <div className="flex justify-between">
-                <button
-                    onClick={handleDeleteMatch}
-                    className="bg-red-500 hover:bg-red-600 transition duration-300 rounded-lg py-2 px-4 text-white"
-                >
-                  Slet kamp
-                </button>
+            <div className="flex justify-between">
+              <button
+                onClick={handleDeleteMatch}
+                className="bg-red-500 hover:bg-red-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+              >
+                Slet kamp
+              </button>
 
-                <div onClick={handleInvitePlayers} className="bg-green-500 hover:bg-green-600 transition duration-300 rounded-lg py-2 px-4 text-white flex">
-                  {!copied ? (
-                      <>
-                  <DocumentDuplicateIcon className="h-5"/>
-                  <h1>Kopier kamplink</h1>
-                      </>
-                    ) : (
-                        <>
-                        <CheckIcon className="h-5"/>
-                          <h1>Link kopieret!</h1>
-                        </>
-                    )}
-                </div>
+              <div
+                onClick={handleInvitePlayers}
+                className="bg-green-500 hover:bg-green-600 transition duration-300 rounded-lg py-2 px-4 text-white flex"
+              >
+                {!copied ? (
+                  <>
+                    <DocumentDuplicateIcon className="h-5" />
+                    <h1>Kopier kamplink</h1>
+                  </>
+                ) : (
+                  <>
+                    <CheckIcon className="h-5" />
+                    <h1>Link kopieret!</h1>
+                  </>
+                )}
               </div>
+            </div>
           )}
         </div>
       </Animation>
