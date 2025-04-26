@@ -2,20 +2,34 @@
 const PrivateEvent = require("../models/PrivateEvent");
 const User = require("../models/user");
 const crypto = require("crypto");
+const logger = require("../config/logger");
 
 const privateEventService = {
   getAllPrivateEvents: async () => {
-    const events = await PrivateEvent.find();
-    console.log("Fetched all private events:", events);
-    return events.map((event) => ({
-      ...event.toObject(),
-      id: event._id.toString(),
-    }));
+    try {
+      const events = await PrivateEvent.find();
+      logger.info("PrivateEventService: Fetched all private events", {
+        count: events.length,
+      });
+      return events.map((event) => ({
+        ...event.toObject(),
+        id: event._id.toString(),
+      }));
+    } catch (error) {
+      logger.error("PrivateEventService: Error fetching events", {
+        error: error.message,
+      });
+      throw error;
+    }
   },
 
   getPrivateEventsByUser: async (username) => {
     try {
       const events = await PrivateEvent.find({ username });
+      logger.info("PrivateEventService: Fetched events by user", {
+        username,
+        count: events.length,
+      });
       return events.map((event) => ({
         ...event.toObject(),
         id: event._id.toString(),
@@ -23,7 +37,10 @@ const privateEventService = {
         joinRequests: event.joinRequests || [],
       }));
     } catch (error) {
-      console.error("Error fetching events by user:", error.message);
+      logger.error("PrivateEventService: Error fetching events by user", {
+        username,
+        error: error.message,
+      });
       throw new Error("Error fetching events: " + error.message);
     }
   },
@@ -32,6 +49,7 @@ const privateEventService = {
     try {
       const event = await PrivateEvent.findOne({ _id: eventId });
       if (!event) throw new Error("Event not found");
+      logger.info("PrivateEventService: Fetched event by ID", { eventId });
       return {
         ...event.toObject(),
         id: event._id.toString(),
@@ -39,7 +57,10 @@ const privateEventService = {
         joinRequests: event.joinRequests || [],
       };
     } catch (error) {
-      console.error("Error fetching event by ID:", error.message);
+      logger.error("PrivateEventService: Error fetching event by ID", {
+        eventId,
+        error: error.message,
+      });
       throw new Error("Error fetching event: " + error.message);
     }
   },
@@ -71,12 +92,17 @@ const privateEventService = {
         { $push: { eventHistory: savedEvent._id } }
       );
 
+      logger.info("PrivateEventService: Created new private event", {
+        eventId: savedEvent._id,
+      });
       return {
         ...savedEvent.toObject(),
         id: savedEvent._id.toString(),
       };
     } catch (error) {
-      console.error("Error creating event:", error.message);
+      logger.error("PrivateEventService: Error creating event", {
+        error: error.message,
+      });
       throw new Error("Error creating event: " + error.message);
     }
   },
@@ -89,6 +115,7 @@ const privateEventService = {
       Object.assign(event, updateData);
       const updatedEvent = await event.save();
 
+      logger.info("PrivateEventService: Updated private event", { eventId });
       return {
         ...updatedEvent.toObject(),
         id: updatedEvent._id.toString(),
@@ -96,7 +123,10 @@ const privateEventService = {
         joinRequests: updatedEvent.joinRequests || [],
       };
     } catch (error) {
-      console.error("Error updating event:", error.message);
+      logger.error("PrivateEventService: Error updating event", {
+        eventId,
+        error: error.message,
+      });
       throw new Error("Error updating event: " + error.message);
     }
   },
@@ -118,6 +148,10 @@ const privateEventService = {
       event.joinRequests.push(username);
       await event.save();
 
+      logger.info("PrivateEventService: User requested to join event", {
+        eventId,
+        username,
+      });
       return {
         ...event.toObject(),
         id: event._id.toString(),
@@ -125,7 +159,11 @@ const privateEventService = {
         joinRequests: event.joinRequests || [],
       };
     } catch (error) {
-      console.error("Error joining event:", error.message);
+      logger.error("PrivateEventService: Error joining event", {
+        eventId,
+        username,
+        error: error.message,
+      });
       throw new Error("Error joining event: " + error.message);
     }
   },
@@ -150,6 +188,10 @@ const privateEventService = {
         { $push: { eventHistory: event._id } }
       );
 
+      logger.info("PrivateEventService: User confirmed to join event", {
+        eventId,
+        username,
+      });
       return {
         ...event.toObject(),
         id: event._id.toString(),
@@ -157,7 +199,11 @@ const privateEventService = {
         joinRequests: event.joinRequests || [],
       };
     } catch (error) {
-      console.error("Error confirming join:", error.message);
+      logger.error("PrivateEventService: Error confirming join", {
+        eventId,
+        username,
+        error: error.message,
+      });
       throw new Error("Error confirming join: " + error.message);
     }
   },
@@ -174,6 +220,8 @@ const privateEventService = {
 
       await PrivateEvent.findByIdAndDelete(eventId);
       const events = await PrivateEvent.find();
+
+      logger.info("PrivateEventService: Deleted private event", { eventId });
       return events.map((event) => ({
         ...event.toObject(),
         id: event._id.toString(),
@@ -181,7 +229,10 @@ const privateEventService = {
         joinRequests: event.joinRequests || [],
       }));
     } catch (error) {
-      console.error("Error deleting event:", error.message);
+      logger.error("PrivateEventService: Error deleting event", {
+        eventId,
+        error: error.message,
+      });
       throw new Error("Error deleting event: " + error.message);
     }
   },

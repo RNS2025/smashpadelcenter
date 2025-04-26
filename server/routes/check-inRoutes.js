@@ -1,6 +1,7 @@
 const express = require("express");
 const checkInService = require("../Services/checkInService");
 const { sendNotification } = require("../Services/subscriptionService");
+const logger = require("../config/logger"); // Add logger import
 
 const router = express.Router();
 
@@ -30,14 +31,24 @@ const router = express.Router();
  *         description: Server error
  */
 router.get("/check-in/status", async (req, res) => {
+  logger.debug("Fetching check-in status", {
+    tournamentId: req.query.tournamentId,
+    rowId: req.query.rowId,
+  });
   try {
     const { tournamentId, rowId } = req.query;
     const checkInStatus = await checkInService.getCheckInStatus(
       tournamentId,
       rowId
     );
+    logger.info("Check-in status fetched successfully", {
+      tournamentId,
+      rowId,
+      playersCount: checkInStatus.length,
+    });
     res.status(200).json(checkInStatus);
   } catch (err) {
+    logger.error("Error fetching check-in status", { error: err.message });
     res.status(500).json({ error: err.message });
   }
 });
@@ -72,6 +83,11 @@ router.get("/check-in/status", async (req, res) => {
  *         description: Server error
  */
 router.post("/check-in/update", async (req, res) => {
+  logger.debug("Updating check-in status", {
+    tournamentId: req.body.tournamentId,
+    playerId: req.body.playerId,
+    checkedIn: req.body.checkedIn,
+  });
   try {
     const { tournamentId, rowId, playerId, playerName, checkedIn, userId } =
       req.body;
@@ -91,11 +107,20 @@ router.post("/check-in/update", async (req, res) => {
       "turneringer"
     );
 
+    logger.info("Check-in status updated successfully", {
+      tournamentId,
+      rowId,
+      playerId,
+      playerName,
+      checkedIn,
+    });
     res.status(200).json({ message: "Check-in status updated successfully" });
   } catch (err) {
+    logger.error("Error updating check-in status", { error: err.message });
     res.status(500).json({ error: err.message });
   }
 });
+
 /**
  * @swagger
  * /api/v1/check-in/bulk-update:
@@ -131,6 +156,12 @@ router.post("/check-in/update", async (req, res) => {
  *         description: Server error
  */
 router.post("/check-in/bulk-update", async (req, res) => {
+  logger.debug("Bulk updating check-in status", {
+    tournamentId: req.body.tournamentId,
+    rowId: req.body.rowId,
+    checkedIn: req.body.checkedIn,
+    playerCount: req.body.players.length,
+  });
   try {
     const { tournamentId, rowId, checkedIn, players } = req.body;
     await checkInService.bulkUpdateCheckInStatus(
@@ -139,10 +170,17 @@ router.post("/check-in/bulk-update", async (req, res) => {
       checkedIn,
       players
     );
+    logger.info("Bulk check-in status updated successfully", {
+      tournamentId,
+      rowId,
+      checkedIn,
+      playerCount: players.length,
+    });
     res.status(200).json({
       message: "Check-in status updated successfully for all players",
     });
   } catch (err) {
+    logger.error("Error bulk updating check-in status", { error: err.message });
     res.status(500).json({ error: err.message });
   }
 });

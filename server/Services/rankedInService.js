@@ -1,15 +1,13 @@
 const axios = require("axios");
 const { Tournament, Player } = require("../models/rankedInModels");
+const logger = require("../config/logger");
 const API_BASE_URL = "https://api.rankedin.com/v1/";
 const OrganisationIdSmashHorsens = "4310";
 const OrganisationIdSmashStensballe = "9492";
 
 // Debug: Verify model import
-console.log(
-  "Tournament model:",
-  typeof Tournament,
-  "Player model:",
-  typeof Player
+logger.debug(
+  "Tournament model: " + typeof Tournament + ", Player model: " + typeof Player
 );
 
 const getAvailableTournaments = async (
@@ -20,7 +18,7 @@ const getAvailableTournaments = async (
   take = 10
 ) => {
   // Check MongoDB first
-  console.log(
+  logger.info(
     `Checking MongoDB for tournaments: org ${organisationId}, isFinished ${isFinished}`
   );
   const tournaments = await Tournament.find({
@@ -28,7 +26,7 @@ const getAvailableTournaments = async (
     isFinished,
   }).lean();
   if (tournaments.length > 0) {
-    console.log(`Using DB tournaments for org ${organisationId}`);
+    logger.info(`Using DB tournaments for org ${organisationId}`);
     return {
       payload: tournaments.map((t) => ({
         eventId: t.eventId,
@@ -61,13 +59,13 @@ const getAvailableTournaments = async (
       }
     );
     const data = response.data;
-    console.log(`API response for org ${organisationId}:`, {
+    logger.info(`API response for org ${organisationId}:`, {
       payloadLength: data.payload?.length || 0,
     });
 
     // Handle empty or invalid response
     if (!data.payload || data.payload.length === 0) {
-      console.log(`No tournaments returned from API for org ${organisationId}`);
+      logger.warn(`No tournaments returned from API for org ${organisationId}`);
       return { payload: [] };
     }
 
@@ -89,7 +87,7 @@ const getAvailableTournaments = async (
     }));
     await Tournament.insertMany(tournamentDocs);
 
-    console.log(
+    logger.info(
       `Saved ${tournamentDocs.length} tournaments for org ${organisationId}`
     );
     return {
@@ -107,10 +105,9 @@ const getAvailableTournaments = async (
       })),
     };
   } catch (error) {
-    console.error(
-      `Error fetching tournaments for org ${organisationId}:`,
-      error.message
-    );
+    logger.error(`Error fetching tournaments for org ${organisationId}:`, {
+      error: error.message,
+    });
     return { payload: [] };
   }
 };
@@ -120,7 +117,7 @@ const getUpcomingTournament = async (
   language = "en"
 ) => {
   try {
-    console.debug("Fetching upcoming tournament with params:", {
+    logger.debug("Fetching upcoming tournament with params:", {
       organisationId,
       language,
     });
@@ -133,7 +130,7 @@ const getUpcomingTournament = async (
     );
     return tournaments;
   } catch (error) {
-    console.error("Error fetching upcoming tournament:", error.message);
+    logger.error("Error fetching upcoming tournament:", error.message);
     return { payload: [] };
   }
 };
@@ -141,14 +138,14 @@ const getUpcomingTournament = async (
 const getAllTournamentPlayers = async (tournamentId, language = "en") => {
   // Validate tournamentId
   if (!tournamentId) {
-    console.warn("Skipping getAllTournamentPlayers: tournamentId is undefined");
+    logger.warn("Skipping getAllTournamentPlayers: tournamentId is undefined");
     return [];
   }
 
   // Check MongoDB first
   const players = await Player.find({ tournamentId }).lean();
   if (players.length > 0) {
-    console.log(`Using DB players for tournament ${tournamentId}`);
+    logger.info(`Using DB players for tournament ${tournamentId}`);
     return players.map((p) => ({
       id: p.rankedInId,
       firstName: p.name.split(" ")[0] || "",
@@ -160,7 +157,7 @@ const getAllTournamentPlayers = async (tournamentId, language = "en") => {
 
   // Fetch from API
   try {
-    console.log(`Fetching players for tournamentId ${tournamentId}`);
+    logger.info(`Fetching players for tournamentId ${tournamentId}`);
     const response = await axios.get(
       `${API_BASE_URL}tournament/GetAllSeedsAsync`,
       {
@@ -179,7 +176,7 @@ const getAllTournamentPlayers = async (tournamentId, language = "en") => {
     }));
     await Player.insertMany(playerDocs);
 
-    console.log(
+    logger.info(
       `Saved ${playerDocs.length} players for tournament ${tournamentId}`
     );
     return playerDocs.map((p) => ({
@@ -189,7 +186,7 @@ const getAllTournamentPlayers = async (tournamentId, language = "en") => {
       rankedInId: p.rankedInId,
     }));
   } catch (error) {
-    console.error(
+    logger.error(
       `Error fetching tournament players for tournamentId ${tournamentId}:`,
       {
         message: error.message,
@@ -203,7 +200,7 @@ const getAllTournamentPlayers = async (tournamentId, language = "en") => {
 
 const getAllRows = async (tournamentId) => {
   if (!tournamentId) {
-    console.warn("Skipping getAllRows: tournamentId is undefined");
+    logger.warn("Skipping getAllRows: tournamentId is undefined");
     return [];
   }
   try {
@@ -216,7 +213,7 @@ const getAllRows = async (tournamentId) => {
     const rows = response.data;
     return rows; // Adjust based on Row interface if needed
   } catch (error) {
-    console.error(
+    logger.error(
       `Error fetching rows for tournamentId ${tournamentId}:`,
       error.message
     );
@@ -230,7 +227,7 @@ const getPlayersInRow = async (
   language = "en"
 ) => {
   if (!tournamentId || !tournamentClassId) {
-    console.warn(
+    logger.warn(
       "Skipping getPlayersInRow: invalid tournamentId or tournamentClassId"
     );
     return [];
@@ -257,7 +254,7 @@ const getPlayersInRow = async (
       // Add other Player fields as needed
     }));
   } catch (error) {
-    console.error(
+    logger.error(
       `Error fetching players in row for tournamentId ${tournamentId}:`,
       error.message
     );
@@ -273,7 +270,7 @@ const getPlayersMatches = async (
   language = "en"
 ) => {
   if (!playerId || !tournamentClassId) {
-    console.warn(
+    logger.warn(
       "Skipping getPlayersMatches: invalid playerId or tournamentClassId"
     );
     return [];
@@ -536,7 +533,7 @@ const getPlayersMatches = async (
           break;
 
         default:
-          console.warn(`Unsupported BaseType: ${tournamentData.BaseType}`);
+          logger.warn(`Unsupported BaseType: ${tournamentData.BaseType}`);
           break;
       }
     });
@@ -548,7 +545,7 @@ const getPlayersMatches = async (
 
     return playerMatches;
   } catch (error) {
-    console.error(
+    logger.error(
       `Error fetching matches for playerId ${playerId}:`,
       error.message
     );
@@ -558,7 +555,7 @@ const getPlayersMatches = async (
 
 const getPlayerDetails = async (playerId, language = "en") => {
   if (!playerId) {
-    console.warn("Skipping getPlayerDetails: playerId is undefined");
+    logger.warn("Skipping getPlayerDetails: playerId is undefined");
     return null;
   }
   try {
@@ -594,7 +591,7 @@ const getPlayerDetails = async (playerId, language = "en") => {
       },
     };
   } catch (error) {
-    console.error(
+    logger.error(
       `Error fetching player details for playerId ${playerId}:`,
       error.message
     );
@@ -604,7 +601,7 @@ const getPlayerDetails = async (playerId, language = "en") => {
 
 const getAllMatches = async (tournamentId, language = "en") => {
   if (!tournamentId) {
-    console.warn("Skipping getAllMatches: tournamentId is undefined");
+    logger.warn("Skipping getAllMatches: tournamentId is undefined");
     return [];
   }
   try {
@@ -617,7 +614,7 @@ const getAllMatches = async (tournamentId, language = "en") => {
     const matches = response.data;
     return matches;
   } catch (error) {
-    console.error(
+    logger.error(
       `Error fetching matches for tournamentId ${tournamentId}:`,
       error.message
     );
@@ -630,7 +627,7 @@ const getNextMatchAndUpcommingOnCourt = async (
   language = "en"
 ) => {
   if (!tournamentId || !courtName) {
-    console.warn(
+    logger.warn(
       "Skipping getNextMatchOnCourt: invalid tournamentId or courtName"
     );
     return { ongoingMatch: null, upcomingMatch: null };
@@ -648,7 +645,7 @@ const getNextMatchAndUpcommingOnCourt = async (
     );
     const matches = response.data.Matches || [];
     if (!matches || matches.length === 0) {
-      console.log(`No matches found for tournamentId ${tournamentId}`);
+      logger.info(`No matches found for tournamentId ${tournamentId}`);
       return { ongoingMatch: null, upcomingMatch: null };
     }
     const now = new Date();
@@ -672,7 +669,7 @@ const getNextMatchAndUpcommingOnCourt = async (
       .sort((a, b) => new Date(a.Date) - new Date(b.Date))[0];
     return { ongoingMatch, upcomingMatch };
   } catch (error) {
-    console.error(
+    logger.error(
       `Error fetching next match on court for tournamentId ${tournamentId}:`,
       error.message
     );

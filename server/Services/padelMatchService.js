@@ -1,13 +1,24 @@
 const PadelMatch = require("../models/PadelMatch");
 const User = require("../models/user");
+const logger = require("../config/logger");
 
 const padelMatchService = {
   getAllMatches: async () => {
-    const matches = await PadelMatch.find();
-    return matches.map((match) => ({
-      ...match.toObject(),
-      id: match._id.toString(),
-    }));
+    try {
+      const matches = await PadelMatch.find();
+      logger.debug("PadelMatchService: Retrieved all matches", {
+        count: matches.length,
+      });
+      return matches.map((match) => ({
+        ...match.toObject(),
+        id: match._id.toString(),
+      }));
+    } catch (error) {
+      logger.error("PadelMatchService: Error fetching all matches:", {
+        error: error.message,
+      });
+      throw new Error("Failed to fetch matches");
+    }
   },
 
   createMatch: async (matchData) => {

@@ -1,5 +1,6 @@
 const axios = require("axios");
 const cheerio = require("cheerio");
+const logger = require("../config/logger");
 
 async function fetchSmashEvents() {
   const url = "https://book.smash.dk/newlook/proc_liste.asp"; // The new URL to fetch the HTML from
@@ -19,7 +20,7 @@ async function fetchSmashEvents() {
     // Check if the request was successful
     if (response.status === 200) {
       const html = response.data; // Get the HTML from the response
-      console.log("HTML fetched successfully.");
+      logger.debug("SmashEventService: HTML fetched successfully");
 
       const $ = cheerio.load(html); // Load the HTML with Cheerio
 
@@ -54,18 +55,21 @@ async function fetchSmashEvents() {
         });
       });
 
-      // Log the events array to check if the data has been scraped correctly
-      console.log(events);
+      logger.info("SmashEventService: Events scraped successfully", {
+        count: events.length,
+      });
       return events; // Return the events array
     } else {
-      console.error(`Failed to fetch data. Status code: ${response.status}`);
+      logger.error("SmashEventService: Failed to fetch data", {
+        statusCode: response.status,
+      });
       return []; // Return an empty array if there's an issue
     }
   } catch (error) {
-    console.error("Error fetching events:", error.message);
-    if (error.response) {
-      console.error("Response data:", error.response.data); // Log response data if available
-    }
+    logger.error("SmashEventService: Error fetching events:", {
+      error: error.message,
+      responseData: error.response?.data,
+    });
     return []; // Return an empty array if there's an error
   }
 }

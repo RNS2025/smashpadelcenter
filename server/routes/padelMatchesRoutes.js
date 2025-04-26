@@ -2,14 +2,16 @@ const express = require("express");
 const router = express.Router();
 const padelMatchService = require("../Services/padelMatchService");
 const PadelMatch = require("../models/PadelMatch");
+const logger = require("../config/logger");
 
 // GET /api/v1/matches - Get all matches
 router.get("/", async (req, res) => {
   try {
     const matches = await padelMatchService.getAllMatches();
+    logger.info("Successfully fetched all padel matches");
     res.json(matches);
   } catch (error) {
-    console.error("Error fetching matches:", error.message);
+    logger.error("Error fetching matches", { error: error.message });
     res.status(500).json({ message: error.message });
   }
 });
@@ -18,6 +20,7 @@ router.get("/", async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     if (!req.isAuthenticated()) {
+      logger.warn("Unauthenticated user attempted to create a match");
       return res.status(401).json({ message: "Not authenticated" });
     }
     const matchData = {
@@ -26,11 +29,15 @@ router.post("/", async (req, res) => {
     };
     const newMatch = await padelMatchService.createMatch(matchData);
     const io = req.app.get("socketio");
-    console.log("Emitting matchUpdated for match:", newMatch.id);
+    logger.info("Emitting matchUpdated event", { matchId: newMatch.id });
     io.to(newMatch.id).emit("matchUpdated", newMatch);
+
+    logger.info("Successfully created new padel match", {
+      matchId: newMatch.id,
+    });
     res.status(201).json(newMatch);
   } catch (error) {
-    console.error("Error creating match:", error.message);
+    logger.error("Error creating match", { error: error.message });
     res.status(400).json({ message: error.message });
   }
 });
@@ -39,21 +46,34 @@ router.post("/", async (req, res) => {
 router.post("/:id/join", async (req, res) => {
   try {
     if (!req.isAuthenticated()) {
+      logger.warn("Unauthenticated user attempted to join a match");
       return res.status(401).json({ message: "Not authenticated" });
     }
     const { username } = req.body;
     if (username !== req.user.username) {
+      logger.warn("User attempted to join match as another user", {
+        requestedUsername: username,
+        actualUsername: req.user.username,
+      });
       return res
         .status(403)
         .json({ message: "Cannot join match as another user" });
     }
     const match = await padelMatchService.joinMatch(req.params.id, username);
     const io = req.app.get("socketio");
-    console.log("Emitting matchUpdated for match:", match.id);
+    logger.info("Emitting matchUpdated event", { matchId: match.id });
     io.to(req.params.id).emit("matchUpdated", match);
+
+    logger.info("User successfully joined match", {
+      username,
+      matchId: req.params.id,
+    });
     res.json(match);
   } catch (error) {
-    console.error("joinMatch error:", error.message);
+    logger.error("Error joining match", {
+      matchId: req.params.id,
+      error: error.message,
+    });
     res.status(400).json({ message: error.message });
   }
 });
@@ -62,14 +82,23 @@ router.post("/:id/join", async (req, res) => {
 router.post("/:id/confirm", async (req, res) => {
   try {
     if (!req.isAuthenticated()) {
+      logger.warn("Unauthenticated user attempted to confirm a join request");
       return res.status(401).json({ message: "Not authenticated" });
     }
     const { username } = req.body;
     const match = await padelMatchService.getMatchById(req.params.id);
     if (!match) {
+      logger.warn("Attempted to confirm join for non-existent match", {
+        matchId: req.params.id,
+      });
       return res.status(404).json({ message: "Match not found" });
     }
     if (match.username !== req.user.username) {
+      logger.warn("Non-creator attempted to confirm join", {
+        matchId: req.params.id,
+        requestUser: req.user.username,
+        matchCreator: match.username,
+      });
       return res
         .status(403)
         .json({ message: "Only the match creator can confirm joins" });
@@ -79,11 +108,19 @@ router.post("/:id/confirm", async (req, res) => {
       username
     );
     const io = req.app.get("socketio");
-    console.log("Emitting matchUpdated for match:", updatedMatch.id);
+    logger.info("Emitting matchUpdated event", { matchId: updatedMatch.id });
     io.to(req.params.id).emit("matchUpdated", updatedMatch);
+
+    logger.info("Successfully confirmed user join", {
+      matchId: req.params.id,
+      username,
+    });
     res.json(updatedMatch);
   } catch (error) {
-    console.error("confirmJoin error:", error.message);
+    logger.error("Error confirming join", {
+      matchId: req.params.id,
+      error: error.message,
+    });
     res.status(400).json({ message: error.message });
   }
 });
@@ -92,14 +129,23 @@ router.post("/:id/confirm", async (req, res) => {
 router.patch("/:id/reserve", async (req, res) => {
   try {
     if (!req.isAuthenticated()) {
+      logger.warn("Unauthenticated user attempted to reserve a spot");
       return res.status(401).json({ message: "Not authenticated" });
     }
     const { spotIndex, reserve } = req.body;
     const match = await PadelMatch.findById(req.params.id);
     if (!match) {
+      logger.warn("Attempted to reserve spot for non-existent match", {
+        matchId: req.params.id,
+      });
       return res.status(404).json({ message: "Match not found" });
     }
     if (match.username !== req.user.username) {
+      logger.warn("Non-creator attempted to reserve spot", {
+        matchId: req.params.id,
+        requestUser: req.user.username,
+        matchCreator: match.username,
+      });
       return res
         .status(403)
         .json({ message: "Only the match creator can reserve spots" });
@@ -110,14 +156,22 @@ router.patch("/:id/reserve", async (req, res) => {
       reserve
     );
     const io = req.app.get("socketio");
-    console.log("Emitting matchUpdated for match:", req.params.id);
+    logger.info("Emitting matchUpdated event", { matchId: req.params.id });
     io.to(req.params.id).emit(
       "matchUpdated",
       matches.find((m) => m.id === req.params.id)
     );
+
+    logger.info(`Successfully ${reserve ? "reserved" : "unreserved"} spot`, {
+      matchId: req.params.id,
+      spotIndex,
+    });
     res.json(matches);
   } catch (error) {
-    console.error("Error reserving spots:", error.message);
+    logger.error("Error reserving spots", {
+      matchId: req.params.id,
+      error: error.message,
+    });
     res.status(400).json({ message: error.message });
   }
 });
@@ -127,15 +181,23 @@ router.delete("/:id", async (req, res) => {
   try {
     const match = await padelMatchService.getMatchById(req.params.id);
     if (!match) {
+      logger.warn("Attempted to delete non-existent match", {
+        matchId: req.params.id,
+      });
       return res.status(404).json({ message: "Match not found" });
     }
     const io = req.app.get("socketio");
-    console.log("Emitting matchDeleted for match:", req.params.id);
+    logger.info("Emitting matchDeleted event", { matchId: req.params.id });
     io.to(req.params.id).emit("matchDeleted", req.params.id);
     const matches = await padelMatchService.deleteMatch(req.params.id);
+
+    logger.info("Successfully deleted match", { matchId: req.params.id });
     res.json(matches);
   } catch (error) {
-    console.error("Error deleting match:", error.message);
+    logger.error("Error deleting match", {
+      matchId: req.params.id,
+      error: error.message,
+    });
     res.status(404).json({ message: error.message });
   }
 });
@@ -144,9 +206,13 @@ router.delete("/:id", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     const match = await padelMatchService.getMatchById(req.params.id);
+    logger.info("Successfully fetched match by ID", { matchId: req.params.id });
     res.json(match);
   } catch (error) {
-    console.error("Error fetching match:", error.message);
+    logger.error("Error fetching match", {
+      matchId: req.params.id,
+      error: error.message,
+    });
     res.status(404).json({ message: error.message });
   }
 });
@@ -159,9 +225,13 @@ router.get("/player/:username", async (req, res) => {
         ? req.user.username
         : req.params.username;
     const matches = await padelMatchService.getMatchesByPlayer(username);
+    logger.info("Successfully fetched matches for player", { username });
     res.json(matches);
   } catch (error) {
-    console.error("Error fetching player matches:", error.message);
+    logger.error("Error fetching player matches", {
+      username: req.params.username,
+      error: error.message,
+    });
     res.status(404).json({ message: error.message });
   }
 });

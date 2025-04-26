@@ -3,6 +3,7 @@ const webPush = require("web-push");
 const SubscriptionPreference = require("../models/subscriptionPreferenceSchema");
 const { v4: uuidv4 } = require("uuid");
 const NotificationHistory = require("../models/NotificationHistory");
+const logger = require("../config/logger");
 
 // Configure VAPID keys
 const vapidKeys = {
@@ -42,7 +43,9 @@ const saveSubscription = async (subscription, userId) => {
     });
 
     if (existingSubscription) {
-      console.log(`Subscription for user ${userId} already exists.`);
+      logger.info("SubscriptionService: Subscription already exists", {
+        userId,
+      });
       return existingSubscription; // Return the existing subscription
     }
 
@@ -56,9 +59,12 @@ const saveSubscription = async (subscription, userId) => {
       userId,
     });
 
+    logger.info("SubscriptionService: New subscription created", { userId });
     return newSubscription;
   } catch (error) {
-    console.error("Error saving subscription:", error);
+    logger.error("SubscriptionService: Error saving subscription:", {
+      error: error.message,
+    });
     throw error;
   }
 };
@@ -71,7 +77,9 @@ const sendNotification = async (userId, title, body, category) => {
     const subscriptions = await SubscriptionService.find(filter);
 
     if (!subscriptions.length) {
-      console.log("No subscriptions found for user:", userId);
+      logger.info("SubscriptionService: No subscriptions found for user", {
+        userId,
+      });
       return;
     }
 
@@ -102,8 +110,12 @@ const sendNotification = async (userId, title, body, category) => {
           userPrefs.preferences &&
           userPrefs.preferences[category] === false
         ) {
-          console.log(
-            `User ${subscription.userId} has disabled ${category} notifications. Skipping.`
+          logger.info(
+            "SubscriptionService: User has disabled notifications for category",
+            {
+              userId: subscription.userId,
+              category,
+            }
           );
           continue;
         }
@@ -131,17 +143,24 @@ const sendNotification = async (userId, title, body, category) => {
         webPush
           .sendNotification(sub, payload)
           .then(() =>
-            console.log(`Notification sent to ${subscription.endpoint}`)
+            logger.info("SubscriptionService: Notification sent", {
+              endpoint: subscription.endpoint,
+            })
           )
           .catch((error) =>
-            console.error(`Error sending to ${subscription.endpoint}:`, error)
+            logger.error("SubscriptionService: Error sending notification", {
+              endpoint: subscription.endpoint,
+              error: error.message,
+            })
           )
       );
     }
 
     await Promise.all(notificationPromises);
   } catch (error) {
-    console.error("Error in sendNotification:", error);
+    logger.error("SubscriptionService: Error in sendNotification", {
+      error: error.message,
+    });
     throw error;
   }
 };

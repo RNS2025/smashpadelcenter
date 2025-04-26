@@ -5,6 +5,7 @@ const {
 } = require("../Services/subscriptionService");
 const SubscriptionPreference = require("../models/subscriptionPreferenceSchema");
 const NotificationHistory = require("../models/NotificationHistory");
+const logger = require("../config/logger"); // Import logger
 const router = express.Router();
 
 /**
@@ -36,9 +37,13 @@ router.post("/subscribe", async (req, res) => {
   try {
     const { subscription, userId } = req.body;
     await saveSubscription(subscription, userId);
+    logger.info("Subscription saved successfully", { userId });
     res.status(201).json({ message: "Subscription saved successfully." });
   } catch (error) {
-    console.error("Error saving subscription:", error);
+    logger.error("Error saving subscription", {
+      userId: req.body.userId,
+      error: error.message,
+    });
     res.status(500).json({ error: "Failed to save subscription." });
   }
 });
@@ -78,9 +83,14 @@ router.post("/notify", async (req, res) => {
   try {
     const { userId, title, body, category } = req.body;
     await sendNotification(userId, title, body, category);
+    logger.info("Notification sent successfully", { userId, category });
     res.status(200).json({ message: "Notification sent successfully." });
   } catch (error) {
-    console.error("Error sending notification:", error);
+    logger.error("Error sending notification", {
+      userId: req.body.userId,
+      category: req.body.category,
+      error: error.message,
+    });
     res.status(500).json({ error: "Failed to send notification." });
   }
 });
@@ -129,16 +139,22 @@ router.post("/notify", async (req, res) => {
 router.get("/notifications/:username", async (req, res) => {
   try {
     const { username } = req.params;
-    console.log(`Fetching notifications for username: ${username}`);
+    logger.info("Fetching notifications for user", { username });
     const notifications = await NotificationHistory.find({
       userId: username,
     }).sort({
       createdAt: -1,
     });
-    console.log(`Found ${notifications.length} notifications`);
+    logger.info("Notifications fetched successfully", {
+      username,
+      count: notifications.length,
+    });
     res.status(200).json(notifications);
   } catch (error) {
-    console.error("Error fetching notification history:", error);
+    logger.error("Error fetching notification history", {
+      username: req.params.username,
+      error: error.message,
+    });
     res.status(500).json({ error: "Failed to fetch notification history." });
   }
 });
@@ -173,11 +189,16 @@ router.put("/notifications/:notificationId/read", async (req, res) => {
       { new: true }
     );
     if (!notification) {
+      logger.warn("Notification not found", { notificationId });
       return res.status(404).json({ error: "Notification not found." });
     }
+    logger.info("Notification marked as read", { notificationId });
     res.status(200).json({ message: "Notification marked as read." });
   } catch (error) {
-    console.error("Error marking notification as read:", error);
+    logger.error("Error marking notification as read", {
+      notificationId: req.params.notificationId,
+      error: error.message,
+    });
     res.status(500).json({ error: "Failed to mark notification as read." });
   }
 });
@@ -186,9 +207,11 @@ router.put("/notifications/:notificationId/read", async (req, res) => {
 router.get("/preferences/:userId", async (req, res) => {
   try {
     const { userId } = req.params;
+    logger.info("Fetching notification preferences", { userId });
     const preferences = await SubscriptionPreference.findOne({ userId });
 
     if (!preferences) {
+      logger.info("No preferences found, returning defaults", { userId });
       // Return default preferences if none exist
       return res.status(200).json({
         preferences: {
@@ -200,9 +223,13 @@ router.get("/preferences/:userId", async (req, res) => {
       });
     }
 
+    logger.info("Preferences fetched successfully", { userId });
     res.status(200).json({ preferences: preferences.preferences });
   } catch (error) {
-    console.error("Error fetching notification preferences:", error);
+    logger.error("Error fetching notification preferences", {
+      userId: req.params.userId,
+      error: error.message,
+    });
     res
       .status(500)
       .json({ error: "Failed to fetch notification preferences." });
@@ -215,6 +242,7 @@ router.post("/preferences", async (req, res) => {
     const { userId, preferences } = req.body;
 
     if (!userId) {
+      logger.warn("Missing userId in preferences request");
       return res.status(400).json({ error: "User ID is required" });
     }
 
@@ -225,9 +253,13 @@ router.post("/preferences", async (req, res) => {
       { upsert: true, new: true }
     );
 
+    logger.info("Notification preferences saved successfully", { userId });
     res.status(200).json({ message: "Preferences saved successfully" });
   } catch (error) {
-    console.error("Error saving notification preferences:", error);
+    logger.error("Error saving notification preferences", {
+      userId: req.body.userId,
+      error: error.message,
+    });
     res.status(500).json({ error: "Failed to save notification preferences." });
   }
 });

@@ -1,6 +1,6 @@
 const express = require("express");
 const rankedInService = require("../Services/rankedInService");
-
+const logger = require("../config/logger"); // Import logger
 const router = express.Router();
 
 /**
@@ -33,8 +33,15 @@ router.get("/GetAllTournamentPlayers", async (req, res) => {
       tournamentid,
       language
     );
+    logger.info("Successfully fetched all tournament players", {
+      tournamentid,
+    });
     res.status(200).json(players);
   } catch (err) {
+    logger.error("Error fetching tournament players", {
+      tournamentid: req.query.tournamentid,
+      error: err.message,
+    });
     res.status(500).json({ error: err.message });
   }
 });
@@ -60,8 +67,13 @@ router.get("/GetAllRows", async (req, res) => {
   try {
     const { id } = req.query;
     const rows = await rankedInService.getAllRows(id);
+    logger.info("Successfully fetched all rows", { tournamentId: id });
     res.status(200).json(rows);
   } catch (err) {
+    logger.error("Error fetching rows", {
+      tournamentId: req.query.id,
+      error: err.message,
+    });
     res.status(500).json({ error: err.message });
   }
 });
@@ -103,8 +115,17 @@ router.get("/GetPlayersInRow", async (req, res) => {
       tournamentClassId,
       language
     );
+    logger.info("Successfully fetched players in row", {
+      tournamentId,
+      tournamentClassId,
+    });
     res.status(200).json(players);
   } catch (err) {
+    logger.error("Error fetching players in row", {
+      tournamentId: req.query.tournamentId,
+      tournamentClassId: req.query.tournamentClassId,
+      error: err.message,
+    });
     res.status(500).json({ error: err.message });
   }
 });
@@ -124,8 +145,10 @@ router.get("/GetPlayersInRow", async (req, res) => {
 router.get("/GetUpcomingTournament", async (req, res) => {
   try {
     const tournaments = await rankedInService.getUpcomingTournament();
+    logger.info("Successfully fetched upcoming tournaments");
     res.status(200).json(tournaments);
   } catch (err) {
+    logger.error("Error fetching upcoming tournaments", { error: err.message });
     res.status(500).json({ error: err.message });
   }
 });
@@ -183,8 +206,16 @@ router.get("/GetAvailableTournaments", async (req, res) => {
       skip,
       take
     );
+    logger.info("Successfully fetched available tournaments", {
+      organisationId,
+      isFinished,
+    });
     res.status(200).json(tournaments);
   } catch (err) {
+    logger.error("Error fetching available tournaments", {
+      organisationId: req.query.organisationId,
+      error: err.message,
+    });
     res.status(500).json({ error: err.message });
   }
 });
@@ -216,8 +247,14 @@ router.get("/GetPlayersMatches", async (req, res) => {
   try {
     const { playerId, rowId } = req.query;
     const matches = await rankedInService.getPlayersMatches(playerId, rowId);
+    logger.info("Successfully fetched player matches", { playerId, rowId });
     res.status(200).json(matches);
   } catch (err) {
+    logger.error("Error fetching player matches", {
+      playerId: req.query.playerId,
+      rowId: req.query.rowId,
+      error: err.message,
+    });
     res.status(500).json({ error: err.message });
   }
 });
@@ -249,13 +286,18 @@ router.get("/GetPlayersMatches", async (req, res) => {
  */
 router.get("/GetPlayerDetails", async (req, res) => {
   try {
-    const { playerId, language } = req.query; // Fixed: Added language to destructuring
+    const { playerId, language } = req.query;
     const playerDetails = await rankedInService.getPlayerDetails(
       playerId,
       language
     );
+    logger.info("Successfully fetched player details", { playerId });
     res.status(200).json(playerDetails);
   } catch (err) {
+    logger.error("Error fetching player details", {
+      playerId: req.query.playerId,
+      error: err.message,
+    });
     res.status(500).json({ error: err.message });
   }
 });
@@ -265,8 +307,13 @@ router.get("/GetAllMatches", async (req, res) => {
   try {
     const { tournamentId } = req.query;
     const matches = await rankedInService.getAllMatches(tournamentId);
+    logger.info("Successfully fetched all matches", { tournamentId });
     res.status(200).json(matches);
   } catch (err) {
+    logger.error("Error fetching all matches", {
+      tournamentId: req.query.tournamentId,
+      error: err.message,
+    });
     res.status(500).json({ error: err.message });
   }
 });
@@ -274,14 +321,22 @@ router.get("/GetAllMatches", async (req, res) => {
 // Get Current Match and Next Match for a Courtname
 router.get("/GetOnGoingMatchAndUpcommingMatch", async (req, res) => {
   try {
-    const { courtName } = req.query;
-    const { tournamentId } = req.query;
+    const { courtName, tournamentId } = req.query;
     const matches = await rankedInService.getNextMatchAndUpcommingOnCourt(
       tournamentId,
       courtName
     );
+    logger.info("Successfully fetched ongoing and upcoming matches", {
+      tournamentId,
+      courtName,
+    });
     res.status(200).json(matches);
   } catch (err) {
+    logger.error("Error fetching ongoing and upcoming matches", {
+      tournamentId: req.query.tournamentId,
+      courtName: req.query.courtName,
+      error: err.message,
+    });
     res.status(500).json({ error: err.message });
   }
 });

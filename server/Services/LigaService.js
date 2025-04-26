@@ -1,4 +1,5 @@
 const axios = require("axios");
+const logger = require("../config/logger");
 const {
   API_BASE_URL,
   OrganisationIdSmashHorsens,
@@ -14,7 +15,7 @@ const fetchOrganisationData = async (organisationId) => {
   const cachedData = orgCache.get(cacheKey);
 
   if (cachedData) {
-    console.log(`Cache hit for org ${organisationId}`);
+    logger.debug("LigaService: Cache hit for organization", { organisationId });
     return cachedData;
   }
 
@@ -26,7 +27,10 @@ const fetchOrganisationData = async (organisationId) => {
     orgCache.set(cacheKey, data);
     return data;
   } catch (error) {
-    console.error("Error fetching organisation data:", error);
+    logger.error("LigaService: Error fetching organisation data:", {
+      error: error.message,
+      organisationId,
+    });
     throw error;
   }
 };
