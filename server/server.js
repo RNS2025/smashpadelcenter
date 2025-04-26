@@ -159,11 +159,14 @@ const cleanDatabase = async () => {
     const collections = await mongoose.connection.db.collections();
     for (let collection of collections) {
       await collection.drop();
-      console.log(`🗑️ Dropped collection: ${collection.collectionName}`);
+      logger.info(`🗑️ Dropped collection: ${collection.collectionName}`);
     }
-    console.log("✅ Database wiped successfully");
+    logger.info("✅ Database wiped successfully");
   } catch (error) {
-    console.error("Error wiping database:", error);
+    logger.error("Error wiping database:", {
+      error: error.message,
+      stack: error.stack,
+    });
   }
 };
 

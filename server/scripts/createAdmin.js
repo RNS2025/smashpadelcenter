@@ -1,5 +1,6 @@
 const { mongoose } = require("../config/database");
 const databaseService = require("../Services/databaseService");
+const logger = require("../config/logger"); // Import Winston logger
 
 async function createAdmin() {
   try {
@@ -17,12 +18,15 @@ async function createAdmin() {
         provider: "local",
         role: "admin",
       });
-      console.log("Admin user created:", newAdmin.username);
+      logger.info(`Admin user created: ${newAdmin.username}`);
     } else {
-      console.log("Admin user already exists.");
+      logger.info("Admin user already exists.");
     }
   } catch (err) {
-    console.error("Error creating admin:", err.message);
+    logger.error("Error creating admin:", {
+      error: err.message,
+      stack: err.stack,
+    });
     throw err;
   }
 }

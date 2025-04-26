@@ -1,5 +1,6 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
+const logger = require("../config/logger"); // Import Winston logger
 
 const userSchema = new mongoose.Schema({
   username: {
@@ -90,9 +91,12 @@ userSchema.indexes().forEach((index) => {
   if (index.key && index.key.providerId && index.name === "providerId_1") {
     try {
       userSchema.dropIndex(index.name);
-      console.log(`Dropped index: ${index.name}`);
+      logger.info(`Dropped index: ${index.name}`);
     } catch (err) {
-      console.error(`Error dropping index ${index.name}: ${err.message}`);
+      logger.error(`Error dropping index ${index.name}:`, {
+        error: err.message,
+        stack: err.stack,
+      });
     }
   }
 });

@@ -1,3 +1,5 @@
+const logger = require("../server/config/logger");
+
 // service-worker.js
 
 // Dynamic URL mapping based on notification categories
@@ -40,12 +42,22 @@ self.addEventListener("push", (event) => {
     timestamp: Date.now(), // Show when the notification was received
   };
 
-  // Show the notification
   event.waitUntil(
     self.registration
       .showNotification(title, options)
-      .then(() => console.log("Notification displayed:", title))
-      .catch((error) => console.error("Error displaying notification:", error))
+      .then(() =>
+        logger.info(`Notification displayed: ${title}`, {
+          category,
+          notificationId,
+        })
+      )
+      .catch((error) =>
+        logger.error(`Error displaying notification: ${title}`, {
+          error: error.message,
+          category,
+          notificationId,
+        })
+      )
   );
 });
 
