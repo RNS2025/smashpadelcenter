@@ -27,7 +27,7 @@ const path = require("path");
 const https = require("https");
 const fs = require("fs");
 const { setupSocketIO } = require("./WebSockets");
-const { setIO } = require("./Services/trainerService");
+//const { setIO } = require("./Services/trainerService");
 const dotenv = require("dotenv");
 const { mongoose } = require("./config/database");
 const logger = require("./config/logger");
@@ -62,18 +62,12 @@ if (ENV === "production") {
 
 // Setup Socket.IO
 const io = setupSocketIO(server);
-setIO(io);
+//setIO(io);
 
 // CORS configuration
 app.use(
   cors({
-    origin: [
-      "http://localhost:5173",
-      "https://localhost:5173",
-      "http://192.168.1.124:5173",
-      "http://frontend:5173",
-      "https://rns2025.github.io",
-    ],
+    origin: true, // Allow all origins
     credentials: true, // Allow cookies and credentials
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -174,7 +168,7 @@ const cleanDatabase = async () => {
 async function startServer() {
   try {
     await connectDB();
-    //await cleanDatabase(); // Uncomment this line to wipe the database
+    await cleanDatabase(); // Uncomment this line to wipe the database
     await createAdmin();
     await createTenUsers();
     server.listen(PORT, () => {

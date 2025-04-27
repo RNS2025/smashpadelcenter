@@ -1,15 +1,17 @@
 import api from "../api/api";
+import { DaoGroupUser } from "../types/daoGroupAllUsers";
 import { User } from "../types/user";
 
-const getAllUsers = async (): Promise<User[]> => {
-    try {
-        const response = await api.get("/user-profiles");
-        return response.data;
-    } catch (error) {
-        console.error("Error fetching users:", error);
-        throw error;
-    }
-}
+const getAllUsers = async (): Promise<DaoGroupUser[]> => {
+  try {
+    const response = await api.get("/user-profiles");
+    console.log("Fetched users:", response.data); // Debugging line
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    throw error;
+  }
+};
 
 const getOrCreateUserProfile = async (username: string): Promise<User> => {
   try {
@@ -38,7 +40,7 @@ const updateUserProfile = async (
 };
 
 export default {
-    getAllUsers,
+  getAllUsers,
   getOrCreateUserProfile,
   updateUserProfile,
 };

@@ -11,7 +11,7 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       devOptions: {
-        enabled: true,
+        enabled: false, // Enable service worker in development
       },
       includeAssets: [
         "favicon.ico",
@@ -42,13 +42,18 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
+        // Only cache compiled assets, exclude source files
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2}"],
+        globIgnores: ["**/*.tsx", "**/*.ts", "**/src/**"], // Ignore source files
         runtimeCaching: [
           {
             urlPattern: ({ request }) => request.destination === "document",
             handler: "NetworkFirst",
             options: {
               cacheName: "html-cache",
+              expiration: {
+                maxAgeSeconds: 7 * 24 * 60 * 60, // 7 days
+              },
             },
           },
           {
@@ -58,7 +63,7 @@ export default defineConfig({
             options: {
               cacheName: "asset-cache",
               expiration: {
-                maxAgeSeconds: 365 * 24 * 60 * 60 * 1000, // 1 year
+                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
               },
             },
           },
@@ -68,14 +73,14 @@ export default defineConfig({
             options: {
               cacheName: "image-cache",
               expiration: {
-                maxAgeSeconds: 365 * 24 * 60 * 60 * 1000,
+                maxAgeSeconds: 30 * 24 * 60 * 60, // 30 days
               },
             },
           },
           {
             urlPattern: ({ url }) =>
               url.origin === "https://api.rankedin.com" ||
-              url.origin === "https://localhost:3001",
+              url.origin === "http://localhost:3001", // Use http for dev
             handler: "NetworkFirst",
             options: {
               cacheName: "api-cache",
@@ -89,11 +94,19 @@ export default defineConfig({
               },
             },
           },
+          // Exclude Socket.IO polling and WebSocket requests from service worker
+          {
+            urlPattern: ({ url }) => url.pathname.includes("/socket.io"),
+            handler: "NetworkOnly", // Bypass service worker for Socket.IO
+            options: {
+              cacheName: null,
+            },
+          },
         ],
       },
     }),
   ],
-  base: "/smashpadelcenter/", // Match your repository name
+  base: "/smashpadelcenter/",
   build: {
     outDir: "dist",
   },

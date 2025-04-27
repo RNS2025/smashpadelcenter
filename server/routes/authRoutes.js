@@ -134,6 +134,16 @@ router.post("/change-role", user.can("access admin page"), async (req, res) => {
   }
 });
 
+router.get("/user-profiles", async (req, res) => {
+  try {
+    const userProfiles = await databaseService.getAllUserProfiles();
+    res.status(200).json(userProfiles);
+  } catch (err) {
+    logger.error("Error fetching all user profiles", { error: err.message });
+    res.status(500).json({ error: err.message });
+  }
+});
+
 router.get("/role", (req, res) => {
   try {
     if (!req.user) {

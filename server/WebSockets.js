@@ -26,6 +26,7 @@ function setupSocketIO(server) {
         "http://localhost:5173",
         "https://localhost:5173",
         "https://rns2025.github.io",
+        "https://rns-apps.dk",
       ], // Frontend URL
       methods: ["GET", "POST"],
       credentials: true,

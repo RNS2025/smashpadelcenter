@@ -1,7 +1,7 @@
 // routes/privateEventRoutes.js
 const express = require("express");
 const router = express.Router();
-const privateEventService = require("../Services/privateEventService");
+const privateEventService = require("../Services/PrivateEventService");
 const PrivateEvent = require("../models/PrivateEvent");
 const logger = require("../config/logger"); // Import logger
 
@@ -10,6 +10,48 @@ const isBrowser = (req) => {
   const userAgent = req.headers["user-agent"] || "";
   return /Mozilla|Chrome|Safari|Edge|Firefox/i.test(userAgent);
 };
+
+// POST /api/v1/private-event/:eventId/invite - Invite players to a private event
+router.post("/:eventId/invite", async (req, res) => {
+  try {
+    const { usernames } = req.body;
+    const event = await PrivateEvent.findById(req.params.eventId);
+    if (!event) {
+      logger.warn("Attempted to invite players to non-existent event", {
+        eventId: req.params.eventId,
+      });
+      return res.status(404).json({ message: "Event not found" });
+    }
+    if (event.username !== req.user.username) {
+      logger.warn("Unauthorized invite attempt", {
+        eventId: req.params.eventId,
+        eventCreator: event.username,
+        attemptedBy: req.user.username,
+      });
+      return res
+        .status(403)
+        .json({ message: "Only the event creator can invite players" });
+    }
+    const updatedEvent = await privateEventService.invitePlayers(
+      req.params.eventId,
+      usernames
+    );
+    const io = req.app.get("socketio");
+    io.to(req.params.eventId).emit("eventUpdated", updatedEvent);
+    logger.info("Players invited to private event", {
+      eventId: req.params.eventId,
+      usernames,
+    });
+    res.json(updatedEvent);
+  } catch (error) {
+    logger.error("Error inviting players to private event", {
+      eventId: req.params.eventId,
+      usernames: req.body.usernames,
+      error: error.message,
+    });
+    res.status(400).json({ message: error.message });
+  }
+});
 
 // GET /api/v1/private-event - Get all private events
 router.get("/", async (req, res) => {
