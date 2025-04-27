@@ -42,7 +42,7 @@ export const MyEventsTab = () => {
                   new Date(e.eventDateTime) > new Date() &&
                   (e.username === user.username ||
                   (e.participants.includes(user.username)) ||
-                  e.invitedUsers?.includes(user.username))
+                  e.invitedPlayers?.includes(user.username))
               )
               .sort((a, b) => {
               return (
@@ -166,7 +166,7 @@ export const MyEventsTab = () => {
                             : "Lukket tilmelding"}
                       </p>
                     </div>
-                    {user && event.invitedUsers?.includes(user?.username) && (
+                    {user && event.invitedPlayers?.includes(user?.username) && (
                         <div className="flex justify-between">
                           <p className="text-gray-500 italic">
                             Du er inviteret til dette arrangement

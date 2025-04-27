@@ -5,6 +5,7 @@ export interface PadelMatch {
   level: string; // e.g., "2.0 - 3.0"
   participants: string[];
   joinRequests: string[];
+  invitedPlayers: string[];
   reservedSpots: { name: string; level: string }[];
   totalSpots: number;
   createdAt: string;

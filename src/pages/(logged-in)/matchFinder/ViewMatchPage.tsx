@@ -551,7 +551,7 @@ export const ViewMatchPage = () => {
                     Inviter spillere
                   </button>
 
-                  <div onClick={handleInvitePlayers} className="flex justify-center bg-green-500 hover:bg-green-600 transition duration-300 rounded-lg py-2 px-4 text-white">
+                  <div onClick={handleInvitePlayers} className="flex justify-center hidden bg-green-500 hover:bg-green-600 transition duration-300 rounded-lg py-2 px-4 text-white">
                     {!copied ? (
                         <>
                           <DocumentDuplicateIcon className="h-5"/>
