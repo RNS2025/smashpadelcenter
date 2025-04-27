@@ -28,6 +28,27 @@ const communityApi = {
     return response.data;
   },
 
+  declineJoinMatch: async (matchId: string, username: string): Promise<PadelMatch> => {
+    const response = await api.post(`/matches/${matchId}/decline`, {
+      username,
+    });
+    return response.data;
+  },
+
+  removePlayer: async (matchId: string, username: string): Promise<PadelMatch> => {
+    const response = await api.post(`/matches/${matchId}/remove`, {
+      username,
+    });
+    return response.data;
+  },
+
+  invitePlayersToMatch: async (matchId: string, usernames: string[]): Promise<PadelMatch> => {
+    const response = await api.post(`/matches/${matchId}/invite`, {
+      usernames,
+    });
+    return response.data;
+  },
+
   reserveSpots: async (
     matchId: string,
     spotIndex: number,
@@ -103,6 +124,12 @@ const communityApi = {
   },
   deleteEvent: async (eventId: string): Promise<PrivateEvent[]> => {
     const response = await api.delete(`/private-event/${eventId}`);
+    return response.data;
+  },
+  invitePlayersToEvent: async (eventId: string, usernames: string[]): Promise<PrivateEvent> => {
+    const response = await api.post(`/private-event/${eventId}/invite`, {
+      usernames,
+    });
     return response.data;
   },
 };

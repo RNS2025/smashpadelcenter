@@ -20,8 +20,9 @@ import {
   UserGroupIcon,
   XCircleIcon,
 } from "@heroicons/react/24/outline";
-import mockEvents from "../../../utils/mockEvents.ts";
+import mockEvents from "../../../utils/mock/mockEvents.ts";
 import userProfileService from "../../../services/userProfileService.ts";
+import EventInvitePlayersDialog from "../../../components/private-event/misc/EventInvitePlayersDialog.tsx";
 
 export const ViewEventPage = () => {
   const { user } = useUser();
@@ -32,6 +33,8 @@ export const ViewEventPage = () => {
   const [participantProfiles, setParticipantProfiles] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [infoDialogVisible, setInfoDialogVisible] = useState(false);
+  const [inviteDialogVisible, setInviteDialogVisible] = useState(false);
+
 
   const [copied, setCopied] = useState(false);
 
@@ -199,8 +202,18 @@ export const ViewEventPage = () => {
         <PlayerInfoDialog user={selectedUser!} />
       </div>
 
+      <div
+          className={`min-h-screen fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center ${
+              !inviteDialogVisible ? "hidden" : ""
+          }`}
+      >
+        <EventInvitePlayersDialog user={user!} event={event} onInvite={async () => {
+          setInviteDialogVisible(false)
+          await communityApi.getEventById(eventId);}} onClose={() => {setInviteDialogVisible(false)}} />
+      </div>
+
+      <HomeBar />
       <Animation>
-        <HomeBar />
 
         <div className="mx-4 my-10 space-y-4 text-sm">
           <h1
@@ -346,31 +359,38 @@ export const ViewEventPage = () => {
             )}
 
           {event.username === user?.username && (
-            <div className="flex justify-between">
-              <button
-                onClick={handleDeleteEvent}
-                className="bg-red-500 hover:bg-red-600 transition duration-300 rounded-lg py-4 px-2 text-white"
-              >
-                Slet arrangement
-              </button>
+              <>
+                <div className="flex flex-col w-full gap-4 text-lg">
 
-              <div
-                onClick={handleInvitePlayers}
-                className="bg-green-500 hover:bg-green-600 transition duration-300 rounded-lg py-4 px-2 text-white flex"
-              >
-                {!copied ? (
-                  <>
-                    <DocumentDuplicateIcon className="h-5" />
-                    <h1>Kopier arrangementslink</h1>
-                  </>
-                ) : (
-                  <>
-                    <CheckIcon className="h-5" />
-                    <h1>Link kopieret!</h1>
-                  </>
-                )}
-              </div>
-            </div>
+                  <button
+                      onClick={() => setInviteDialogVisible(true)}
+                      className="bg-green-500 hover:bg-green-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                  >
+                    Inviter spillere
+                  </button>
+
+                  <div onClick={handleInvitePlayers} className="flex justify-center bg-green-500 hover:bg-green-600 transition duration-300 rounded-lg py-2 px-4 text-white">
+                    {!copied ? (
+                        <>
+                          <DocumentDuplicateIcon className="h-5"/>
+                          <h1>Kopier kamplink</h1>
+                        </>
+                    ) : (
+                        <>
+                          <CheckIcon className="h-5"/>
+                          <h1>Link kopieret!</h1>
+                        </>
+                    )}
+                  </div>
+
+                  <button
+                      onClick={handleDeleteEvent}
+                      className="bg-red-500 hover:bg-red-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                  >
+                    Slet kamp
+                  </button>
+                </div>
+              </>
           )}
         </div>
       </Animation>

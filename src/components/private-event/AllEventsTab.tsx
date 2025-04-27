@@ -3,7 +3,7 @@ import { useNavigate, useOutletContext } from "react-router-dom";
 import { useUser } from "../../context/UserContext.tsx";
 import { useEffect, useState } from "react";
 import { PrivateEvent } from "../../types/PrivateEvent.ts";
-import mockEvents from "../../utils/mockEvents.ts";
+import mockEvents from "../../utils/mock/mockEvents.ts";
 import communityApi from "../../services/makkerborsService.ts";
 import LoadingSpinner from "../misc/LoadingSpinner.tsx";
 import { safeFormatDate } from "../../utils/dateUtils.ts";

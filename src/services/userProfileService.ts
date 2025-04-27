@@ -1,6 +1,16 @@
 import api from "../api/api";
 import { User } from "../types/user";
 
+const getAllUsers = async (): Promise<User[]> => {
+    try {
+        const response = await api.get("/user-profiles");
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        throw error;
+    }
+}
+
 const getOrCreateUserProfile = async (username: string): Promise<User> => {
   try {
     const response = await api.get(`/user-profiles/by-username/${username}`);
@@ -28,6 +38,7 @@ const updateUserProfile = async (
 };
 
 export default {
+    getAllUsers,
   getOrCreateUserProfile,
   updateUserProfile,
 };

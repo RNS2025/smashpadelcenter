@@ -29,7 +29,21 @@ export const MatchFinderAllMatchesTab = () => {
     const fetchMatches = async () => {
       try {
         const data = await communityApi.getMatches();
-        setMatches(data);
+
+        const now = new Date();
+
+        const sortedData = data
+            .filter((match) => {
+              const matchDate = new Date(match.matchDateTime);
+              return matchDate >= now;
+            })
+            .sort((a, b) => {
+              const aDate = new Date(a.matchDateTime).getTime();
+              const bDate = new Date(b.matchDateTime).getTime();
+              return aDate - bDate;
+            });
+
+        setMatches(sortedData);
         setLoading(false);
       } catch (err) {
         console.error("Error fetching matches:", err);
@@ -37,8 +51,12 @@ export const MatchFinderAllMatchesTab = () => {
         setLoading(false);
       }
     };
+
     fetchMatches().then();
   }, []);
+
+
+
 
   const safeFormatDate = (dateString: string, formatString: string): string => {
     try {
@@ -72,11 +90,7 @@ export const MatchFinderAllMatchesTab = () => {
             matches
                 .filter((match) => {
                   const isFull = match.participants.length + match.reservedSpots.length === match.totalSpots;
-
-
                   if (!showFullMatches && isFull) return false;
-
-
                   if (isMyLevel && user?.skillLevel) {
                     const [minLevel, maxLevel] = match.level.split(" - ").map(Number);
                     const userLevel = Number(user.skillLevel);
@@ -87,18 +101,12 @@ export const MatchFinderAllMatchesTab = () => {
 
                   return true;
                 })
-
-            .sort((a, b) => {
-              const aIsFull = a.participants.length + a.reservedSpots.length === a.totalSpots;
-              const bIsFull = b.participants.length + b.reservedSpots.length === b.totalSpots;
-
-              return Number(aIsFull) - Number(bIsFull);
-            })
             .map((match) => (
           <div
             onClick={() => navigate(`/makkerbørs/${match.id}`)}
             key={match.id}
-            className={`border p-4 rounded-lg space-y-1.5 hover:bg-gray-700 mb-5 ${match.participants.length + match.reservedSpots.length === match.totalSpots ? "opacity-70" : ""}`}
+            className={`border p-4 rounded-lg space-y-1.5 hover:bg-gray-700 mb-5 ${match.participants.length + match.reservedSpots.length === match.totalSpots ? "opacity-70 border-red-500" : ""}
+            ${user?.username && match.joinRequests.includes(user?.username) ? "border-yellow-500" : ""}`}
           >
             <h1 className="font-semibold">
               {safeFormatDate(match.matchDateTime, "EEEE | dd. MMMM | HH:mm").toUpperCase()} - {safeFormatDate(match.endTime, "HH:mm")}

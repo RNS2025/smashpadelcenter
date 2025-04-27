@@ -25,7 +25,25 @@ export const MatchFinderMyMatchesTab = () => {
       try {
         if (user?.username) {
           const data = await communityApi.getMatchesByUser(user?.username);
-          setMatches(data);
+
+          const sortedData = data.filter((match ) => {
+            const matchDate = new Date(match.matchDateTime);
+            return matchDate >= new Date();
+          })
+              .sort((a, b) => {
+            const aIsFull = a.participants.length + a.reservedSpots.length === a.totalSpots;
+            const bIsFull = b.participants.length + b.reservedSpots.length === b.totalSpots;
+
+            if (aIsFull !== bIsFull) {
+              return Number(aIsFull) - Number(bIsFull);
+            }
+
+            const aDate = new Date(a.matchDateTime).getTime();
+            const bDate = new Date(b.matchDateTime).getTime();
+            return aDate - bDate;
+          });
+
+          setMatches(sortedData);
         }
         setLoading(false);
       } catch (err) {
@@ -34,8 +52,10 @@ export const MatchFinderMyMatchesTab = () => {
         setLoading(false);
       }
     };
+
     fetchMatches().then();
   }, [user?.username]);
+
 
   if (loading) {
     return <LoadingSpinner />;
@@ -70,7 +90,7 @@ export const MatchFinderMyMatchesTab = () => {
           <div
             onClick={() => navigate(`/makkerbørs/${match.id}`)}
             key={match.id}
-            className="border border-green-500 p-4 rounded-lg space-y-1.5 hover:bg-gray-700 mb-5"
+            className="border p-4 rounded-lg space-y-1.5 hover:bg-gray-700 mb-5"
           >
             <div className="flex justify-between">
               <h1 className="font-semibold">

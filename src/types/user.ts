@@ -25,4 +25,9 @@ export interface User {
     wins: number;
     losses: number;
   };
+  groups?: {
+    id: string;
+    name: string;
+    members: string[];
+  }[];
 }

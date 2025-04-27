@@ -15,5 +15,7 @@ export interface PadelMatch {
   location: string;
   matchType: string; // e.g., "Herre", "Dame", "Mix", "Blandet"
   score?: string;
-  result: "win" | "loss" | "pending" | "unknown";
+  winningTeam?: string[];
+  losingTeam?: string[];
+  result?: "win" | "loss" | "pending" | "unknown";
 }

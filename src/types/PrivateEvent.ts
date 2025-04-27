@@ -16,6 +16,7 @@ interface PrivateEvent {
   joinRequests: string[];
   createdAt: string;
   accessUrl: string;
+  invitedUsers?: string[];
 }
 
 export type { PrivateEvent };

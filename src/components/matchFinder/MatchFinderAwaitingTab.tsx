@@ -26,8 +26,12 @@ export const MatchFinderAwaitingTab = () => {
         const data = await communityApi.getMatches();
         const awaitingMatches = data.filter(
           (match) =>
-            user?.username && match.joinRequests.includes(user?.username)
-        );
+            user?.username && match.joinRequests.includes(user?.username) && new Date(match.matchDateTime) >= new Date()
+        ).sort((a, b) => {
+            const aDate = new Date(a.matchDateTime).getTime();
+            const bDate = new Date(b.matchDateTime).getTime();
+            return aDate - bDate;
+        });
         setMatches(awaitingMatches);
         setLoading(false);
       } catch (err) {

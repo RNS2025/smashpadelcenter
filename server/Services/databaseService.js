@@ -16,6 +16,7 @@ module.exports = {
       position = "Begge",
       playingStyle = "",
       equipment = "",
+        groups = [],
     } = userData;
     try {
       const existingUser = await User.findOne({ username });
@@ -42,6 +43,7 @@ module.exports = {
         position,
         playingStyle,
         equipment,
+        groups: [],
       });
       await newUser.save();
       return newUser;
@@ -153,6 +155,7 @@ module.exports = {
         role: user.role || "user",
         pastMatches,
         stats,
+        groups: user.groups || [],
       };
     } catch (err) {
       console.error(`[DEBUG] Error updating profile for ${username}:`, err);
@@ -263,6 +266,7 @@ module.exports = {
         role: user.role || "user",
         pastMatches,
         stats,
+        groups: user.groups || [],
       };
     } catch (err) {
       console.error("Error fetching profile with matches:", err.message);

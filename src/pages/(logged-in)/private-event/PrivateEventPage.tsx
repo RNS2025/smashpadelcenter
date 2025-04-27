@@ -5,7 +5,7 @@ import PrivateEventTabMenu from "../../../components/private-event/PrivateEventT
 import { useEffect, useState } from "react";
 import communityApi from "../../../services/makkerborsService.ts";
 import { useUser } from "../../../context/UserContext.tsx";
-import mockEvents from "../../../utils/mockEvents.ts";
+import mockEvents from "../../../utils/mock/mockEvents.ts";
 import { LockClosedIcon, LockOpenIcon } from "@heroicons/react/24/outline";
 
 export const PrivateEventPage = () => {

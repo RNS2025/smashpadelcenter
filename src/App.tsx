@@ -39,7 +39,6 @@ import MatchFinderMyMatchesTab from "./components/matchFinder/MatchFinderMyMatch
 import MatchFinderAwaitingTab from "./components/matchFinder/MatchFinderAwaitingTab.tsx";
 import ViewMatchPage from "./pages/(logged-in)/matchFinder/ViewMatchPage.tsx";
 import OverviewTab from "./components/profile/tabs/OverviewTab.tsx";
-import MatchesTab from "./components/profile/tabs/MatchesTab.tsx";
 import EditTab from "./components/profile/tabs/EditTab.tsx";
 import "./App.css";
 import PrivateEventPage from "./pages/(logged-in)/private-event/PrivateEventPage.tsx";
@@ -47,6 +46,9 @@ import MyEventsTab from "./components/private-event/MyEventsTab.tsx";
 import CreateEventPage from "./pages/(logged-in)/private-event/CreateEventPage.tsx";
 import ViewEventPage from "./pages/(logged-in)/private-event/ViewEventPage.tsx";
 import AllEventsTab from "./components/private-event/AllEventsTab.tsx";
+import GroupsTab from "./components/profile/tabs/groups/GroupsTab.tsx";
+import CreateGroupTab from "./components/profile/tabs/groups/CreateGroupTab.tsx";
+import EditGroupTab from "./components/profile/tabs/groups/EditGroupTab.tsx";
 
 function App() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -144,7 +146,12 @@ function App() {
               <Route index element={<Navigate to="overblik" replace />} />
               <Route path="overblik" element={<OverviewTab />} />
               <Route path="rediger" element={<EditTab />} />
-              <Route path="kampe" element={<MatchesTab />} />
+
+              <Route path="grupper" element={<GroupsTab />} />
+              <Route path="grupper/opretgruppe" element={<CreateGroupTab />} />
+              <Route path="grupper/:groupId" element={<EditGroupTab />} />
+
+
             </Route>
 
             <Route path="/hjem" element={<HomePage />} />

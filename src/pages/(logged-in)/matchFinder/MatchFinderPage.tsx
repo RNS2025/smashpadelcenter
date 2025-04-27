@@ -43,8 +43,8 @@ const MatchFinderPage: FC = () => {
           <title>Makkerbørs</title>
         </Helmet>
 
+        <HomeBar backPage="/hjem" />
         <Animation>
-          <HomeBar backPage="/hjem" />
 
           <div className="sm:mx-20 my-10">
             <div className="justify-self-center mb-5">

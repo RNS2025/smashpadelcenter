@@ -83,6 +83,13 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
+  groups: [
+    {
+      id: { type: String, required: true },
+      name: { type: String, required: true },
+      members: [{ type: String, required: true }],
+    }
+  ],
 });
 
 // Drop existing providerId index if it exists
