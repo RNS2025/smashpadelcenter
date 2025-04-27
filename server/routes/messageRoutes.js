@@ -4,6 +4,7 @@ const Message = require("../models/Message");
 const Friend = require("../models/Friend");
 const User = require("../models/user");
 const user = require("../config/roles");
+const logger = require("../config/logger"); // Import logger
 
 /**
  * Middleware to inject io
@@ -40,14 +41,27 @@ router.use((req, res, next) => {
  *         description: Server error
  */
 router.get("/:friendId", user.can("access protected"), async (req, res) => {
+  logger.debug("Fetching messages with friend", {
+    friendId: req.params.friendId,
+    userId: req.user.id,
+  });
+
   try {
     const { friendId } = req.params;
     let userId = req.user.id;
     const isAdmin = req.user.role === "admin";
 
     if (isAdmin && req.query.userId) {
+      logger.debug("Admin fetching messages for another user", {
+        adminId: req.user.id,
+        requestedUserId: req.query.userId,
+      });
+
       const requestedUser = await User.findById(req.query.userId);
       if (!requestedUser) {
+        logger.info("Message request failed - user not found", {
+          requestedUserId: req.query.userId,
+        });
         return res.status(400).json({ error: "Bruger ikke fundet." });
       }
       userId = requestedUser._id;
@@ -61,6 +75,10 @@ router.get("/:friendId", user.can("access protected"), async (req, res) => {
     });
 
     if (!friendship && !isAdmin) {
+      logger.info("Message request denied - users are not friends", {
+        userId,
+        friendId,
+      });
       return res
         .status(400)
         .json({ error: "I er ikke venner med denne bruger." });
@@ -91,9 +109,14 @@ router.get("/:friendId", user.can("access protected"), async (req, res) => {
         });
       });
 
+    logger.info("Messages retrieved successfully", {
+      userId,
+      friendId,
+      messageCount: messages.length,
+    });
     res.status(200).json(messages);
   } catch (error) {
-    console.error("Fejl ved hentning af beskeder:", error);
+    logger.error("Error fetching messages", { error: error.message });
     res.status(500).json({ error: "Serverfejl." });
   }
 });
@@ -124,11 +147,20 @@ router.get("/:friendId", user.can("access protected"), async (req, res) => {
  *         description: Server error
  */
 router.post("/", user.can("access protected"), async (req, res) => {
+  logger.debug("Sending message", {
+    userId: req.user.id,
+    friendId: req.body.friendId,
+  });
+
   try {
     const { friendId, content } = req.body;
     const userId = req.user.id;
 
     if (!content.trim()) {
+      logger.info("Message sending failed - empty content", {
+        userId,
+        friendId,
+      });
       return res
         .status(400)
         .json({ error: "Beskedindhold må ikke være tomt." });
@@ -142,6 +174,10 @@ router.post("/", user.can("access protected"), async (req, res) => {
     });
 
     if (!friendship) {
+      logger.info("Message sending failed - users are not friends", {
+        userId,
+        friendId,
+      });
       return res
         .status(400)
         .json({ error: "I er ikke venner med denne bruger." });
@@ -161,9 +197,14 @@ router.post("/", user.can("access protected"), async (req, res) => {
     // Emit real-time message to both users
     req.io.to(userId).to(friendId).emit("newMessage", populatedMessage);
 
+    logger.info("Message sent successfully", {
+      messageId: message._id,
+      senderId: userId,
+      receiverId: friendId,
+    });
     res.status(201).json({ message: "Besked sendt.", data: populatedMessage });
   } catch (error) {
-    console.error("Fejl ved afsendelse af besked:", error);
+    logger.error("Error sending message", { error: error.message });
     res.status(500).json({ error: "Serverfejl." });
   }
 });

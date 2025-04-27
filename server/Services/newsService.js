@@ -1,4 +1,5 @@
 const News = require("../models/newsModel");
+const logger = require("../config/logger");
 
 /**
  * Create a new news article
@@ -18,9 +19,12 @@ async function createNews(newsData) {
 
     const newNews = new News(newNewsData);
     await newNews.save();
+    logger.info("NewsService: Created new article", { articleId: newNews._id });
     return newNews;
   } catch (error) {
-    console.error("Error in createNews service:", error);
+    logger.error("NewsService: Error creating news article:", {
+      error: error.message,
+    });
     throw new Error("Error creating news article: " + error.message);
   }
 }

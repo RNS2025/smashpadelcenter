@@ -13,9 +13,10 @@ const {
   OrganisationIdSmashHorsens,
   OrganisationIdSmashStensballe,
 } = require("../Services/rankedInService");
+const logger = require("../config/logger");
 
 const updateAllData = async () => {
-  console.log("Starting data update...");
+  logger.info("Starting data update...");
 
   try {
     // Update tournament data (rankedInService)
@@ -24,34 +25,37 @@ const updateAllData = async () => {
       OrganisationIdSmashStensballe,
     ]) {
       try {
-        console.log(`Updating tournaments for org ${orgId}`);
+        logger.info(`Updating tournaments for org ${orgId}`);
         const tournamentData = await getAvailableTournaments(orgId, false);
         if (!tournamentData.payload || tournamentData.payload.length === 0) {
-          console.log(`No tournaments found for org ${orgId}`);
+          logger.info(`No tournaments found for org ${orgId}`);
           continue;
         }
         for (const tournament of tournamentData.payload) {
           if (!tournament.eventId) {
-            console.warn(
+            logger.warn(
               `Skipping tournament with undefined eventId for org ${orgId}`
             );
             continue;
           }
           try {
-            console.log(`Processing tournament ${tournament.eventId}`);
+            logger.info(`Processing tournament ${tournament.eventId}`);
             await getAllTournamentPlayers(tournament.eventId);
           } catch (error) {
-            console.error(
+            logger.error(
               `Skipping tournament ${tournament.eventId} due to error:`,
-              error.message
+              {
+                error: error.message,
+                stack: error.stack,
+              }
             );
           }
         }
       } catch (error) {
-        console.error(
-          `Error updating tournaments for org ${orgId}:`,
-          error.message
-        );
+        logger.error(`Error updating tournaments for org ${orgId}:`, {
+          error: error.message,
+          stack: error.stack,
+        });
       }
     }
 
@@ -61,10 +65,10 @@ const updateAllData = async () => {
       OrganisationIdSmashStensballe,
     ]) {
       try {
-        console.log(`Updating leagues for org ${orgId}`);
+        logger.info(`Updating leagues for org ${orgId}`);
         const leagueData = await fetchOrganisationData(orgId);
         if (!leagueData.payload || leagueData.payload.length === 0) {
-          console.log(`No leagues found for org ${orgId}`);
+          logger.info(`No leagues found for org ${orgId}`);
           continue;
         }
         for (const league of leagueData.payload) {
@@ -74,22 +78,25 @@ const updateAllData = async () => {
           }
         }
       } catch (error) {
-        console.error(
-          `Error updating leagues for org ${orgId}:`,
-          error.message
-        );
+        logger.error(`Error updating leagues for org ${orgId}:`, {
+          error: error.message,
+          stack: error.stack,
+        });
       }
     }
 
-    console.log("Data update completed.");
+    logger.info("Data update completed.");
   } catch (error) {
-    console.error("Unexpected error during data update:", error);
+    logger.error("Unexpected error during data update:", {
+      error: error.message,
+      stack: error.stack,
+    });
   }
 };
 
 // Schedule updates
 cron.schedule(DATA_UPDATE_SCHEDULE, () => {
-  console.log(`Running scheduled data update at ${new Date().toISOString()}`);
+  logger.info(`Running scheduled data update at ${new Date().toISOString()}`);
   updateAllData();
 });
 

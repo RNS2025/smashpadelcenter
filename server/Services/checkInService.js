@@ -1,4 +1,5 @@
 const CheckIn = require("../models/CheckIn");
+const logger = require("../config/logger");
 
 /**
  * Get check-in status for players in a specific tournament and row
@@ -9,9 +10,18 @@ const CheckIn = require("../models/CheckIn");
 const getCheckInStatus = async (tournamentId, rowId) => {
   try {
     const checkInRecords = await CheckIn.find({ tournamentId, rowId }).lean();
+    logger.debug("CheckInService: Retrieved check-in status", {
+      tournamentId,
+      rowId,
+      count: checkInRecords.length,
+    });
     return checkInRecords;
   } catch (error) {
-    console.error("Error fetching check-in status:", error);
+    logger.error("CheckInService: Error fetching check-in status:", {
+      error: error.message,
+      tournamentId,
+      rowId,
+    });
     throw new Error("Failed to fetch check-in status");
   }
 };

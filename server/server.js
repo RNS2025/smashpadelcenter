@@ -30,6 +30,7 @@ const { setupSocketIO } = require("./WebSockets");
 const { setIO } = require("./Services/trainerService");
 const dotenv = require("dotenv");
 const { mongoose } = require("./config/database");
+const logger = require("./config/logger");
 
 // Load .env file
 dotenv.config({ path: path.resolve(__dirname, ".env") });
@@ -135,7 +136,12 @@ app.use("/api/v1/private-event", privateEventRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  logger.error("Unhandled error:", {
+    error: err.message,
+    stack: err.stack,
+    url: req.url,
+    method: req.method,
+  });
   res.status(500).json({ error: "Internal Server Error" });
 });
 
@@ -153,11 +159,14 @@ const cleanDatabase = async () => {
     const collections = await mongoose.connection.db.collections();
     for (let collection of collections) {
       await collection.drop();
-      console.log(`🗑️ Dropped collection: ${collection.collectionName}`);
+      logger.info(`🗑️ Dropped collection: ${collection.collectionName}`);
     }
-    console.log("✅ Database wiped successfully");
+    logger.info("✅ Database wiped successfully");
   } catch (error) {
-    console.error("Error wiping database:", error);
+    logger.error("Error wiping database:", {
+      error: error.message,
+      stack: error.stack,
+    });
   }
 };
 
@@ -169,11 +178,11 @@ async function startServer() {
     await createAdmin();
     await createTenUsers();
     server.listen(PORT, () => {
-      console.log(`🚀 Server is running on https://localhost:${PORT}`);
+      logger.info(`Server is running on https://localhost:${PORT}`);
       updateAllData();
     });
   } catch (err) {
-    console.error("Failed to start server:", err.message);
+    logger.error("Failed to start server:", err);
     process.exit(1);
   }
 }

@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const smashEventService = require("../Services/smashEventService");
+const logger = require("../config/logger"); // Import logger
 
 /**
  * @swagger
@@ -68,10 +69,12 @@ const smashEventService = require("../Services/smashEventService");
 router.get("/events", async (req, res) => {
   try {
     const events = await smashEventService.getAllEvents();
-    console.log("Events sent to frontend:", events); // Add this log to verify the data
+    logger.info("Successfully fetched all smash events", {
+      count: events.length,
+    });
     res.json(events);
   } catch (err) {
-    console.error("Error fetching events:", err);
+    logger.error("Error fetching smash events", { error: err.message });
     res.status(500).json({ error: err.message });
   }
 });

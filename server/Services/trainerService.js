@@ -1,10 +1,12 @@
 const { Trainer, Booking, TrainerMessage } = require("../models/Trainer");
 const User = require("../models/user");
 const { updateUserRole } = require("./databaseService");
+const logger = require("../config/logger");
 
 let io; // Socket.IO instance
 function setIO(socketIO) {
   io = socketIO;
+  logger.info("TrainerService: Socket.IO instance set");
 }
 
 const getAllTrainers = async () => {
@@ -12,14 +14,15 @@ const getAllTrainers = async () => {
     const trainers = await Trainer.find().lean();
     const idSet = new Set(trainers.map((t) => t._id.toString()));
     if (idSet.size !== trainers.length) {
-      console.warn(
-        "Duplicate trainer _id values detected:",
-        trainers.map((t) => t._id)
-      );
+      logger.warn("TrainerService: Duplicate trainer _id values detected:", {
+        trainerIds: trainers.map((t) => t._id),
+      });
     }
     return trainers;
   } catch (error) {
-    console.error("Error fetching trainers:", error);
+    logger.error("TrainerService: Error fetching trainers:", {
+      error: error.message,
+    });
     throw new Error("Failed to fetch trainers");
   }
 };
@@ -53,9 +56,14 @@ const createTrainer = async (trainerData) => {
       );
     }
 
+    logger.info("TrainerService: Trainer created successfully", {
+      trainer: savedTrainer,
+    });
     return savedTrainer;
   } catch (error) {
-    console.error("Error creating trainer:", error);
+    logger.error("TrainerService: Error creating trainer:", {
+      error: error.message,
+    });
     throw new Error("Failed to create trainer");
   }
 };
@@ -91,9 +99,14 @@ const bookTrainer = async (username, trainerUsername, date, timeSlot) => {
         .emit("newBooking", savedBooking);
     }
 
+    logger.info("TrainerService: Booking created successfully", {
+      booking: savedBooking,
+    });
     return savedBooking;
   } catch (error) {
-    console.error("Error booking trainer:", error);
+    logger.error("TrainerService: Error booking trainer:", {
+      error: error.message,
+    });
     throw new Error("Failed to book trainer");
   }
 };
@@ -103,9 +116,15 @@ const getUserBookings = async (username) => {
     const bookings = await Booking.find({ username })
       .populate("trainerId", "name specialty")
       .lean();
+    logger.info("TrainerService: User bookings fetched successfully", {
+      username,
+      bookings,
+    });
     return bookings;
   } catch (error) {
-    console.error("Error fetching bookings:", error);
+    logger.error("TrainerService: Error fetching bookings:", {
+      error: error.message,
+    });
     throw new Error("Failed to fetch bookings");
   }
 };
@@ -128,9 +147,14 @@ const sendTrainerMessage = async (senderUsername, trainerUsername, content) => {
         .emit("newTrainerMessage", savedMessage);
     }
 
+    logger.info("TrainerService: Message sent successfully", {
+      message: savedMessage,
+    });
     return savedMessage;
   } catch (error) {
-    console.error("Error sending message:", error);
+    logger.error("TrainerService: Error sending message:", {
+      error: error.message,
+    });
     throw new Error("Failed to send message");
   }
 };
@@ -151,9 +175,16 @@ const getTrainerMessages = async (username, trainerUsername) => {
       new Map(messages.map((msg) => [msg._id.toString(), msg])).values()
     );
 
+    logger.info("TrainerService: Trainer messages fetched successfully", {
+      username,
+      trainerUsername,
+      messages: uniqueMessages,
+    });
     return uniqueMessages;
   } catch (error) {
-    console.error("Error fetching messages:", error);
+    logger.error("TrainerService: Error fetching messages:", {
+      error: error.message,
+    });
     throw new Error("Failed to fetch messages");
   }
 };
@@ -162,9 +193,15 @@ const getTrainerByUsername = async (username) => {
   try {
     const trainer = await Trainer.findOne({ username });
     if (!trainer) throw new Error("Trainer not found");
+    logger.info("TrainerService: Trainer fetched successfully", {
+      username,
+      trainer,
+    });
     return trainer;
   } catch (error) {
-    console.error("Error fetching trainer:", error);
+    logger.error("TrainerService: Error fetching trainer:", {
+      error: error.message,
+    });
     throw new Error("Failed to fetch trainer");
   }
 };
@@ -210,9 +247,15 @@ const addTrainerAvailability = async (username, availabilityData) => {
       );
     }
 
+    logger.info("TrainerService: Trainer availability added successfully", {
+      username,
+      availability: updatedTrainer.availability,
+    });
     return updatedTrainer;
   } catch (error) {
-    console.error("Error adding trainer availability:", error);
+    logger.error("TrainerService: Error adding trainer availability:", {
+      error: error.message,
+    });
     throw new Error("Failed to add trainer availability");
   }
 };
@@ -236,9 +279,15 @@ const removeTrainerAvailability = async (username, date) => {
       );
     }
 
+    logger.info("TrainerService: Trainer availability removed successfully", {
+      username,
+      date,
+    });
     return updatedTrainer;
   } catch (error) {
-    console.error("Error removing trainer availability:", error);
+    logger.error("TrainerService: Error removing trainer availability:", {
+      error: error.message,
+    });
     throw new Error("Failed to remove trainer availability");
   }
 };
@@ -248,9 +297,15 @@ const getAllTrainerMessages = async (trainerUsername) => {
     const messages = await TrainerMessage.find({ trainerUsername })
       .sort({ createdAt: -1 })
       .lean();
+    logger.info("TrainerService: All trainer messages fetched successfully", {
+      trainerUsername,
+      messages,
+    });
     return messages;
   } catch (error) {
-    console.error("Error fetching trainer messages:", error);
+    logger.error("TrainerService: Error fetching trainer messages:", {
+      error: error.message,
+    });
     throw new Error("Failed to fetch trainer messages");
   }
 };

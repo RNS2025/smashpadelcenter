@@ -2,6 +2,7 @@ const { Server } = require("socket.io");
 const User = require("./models/user");
 const Friend = require("./models/Friend");
 const Message = require("./models/Message");
+const logger = require("./config/logger");
 const {
   getAllTrainerMessages,
   getTrainerByUsername,
@@ -33,19 +34,19 @@ function setupSocketIO(server) {
   });
 
   io.on("connection", (socket) => {
-    console.log("Client connected:", socket.id);
+    logger.info(`Client connected: ${socket.id}`);
 
     // Handle user joining with their username
     socket.on("join", async (username) => {
       try {
         if (!username || typeof username !== "string") {
-          console.error(`Invalid username received in join event: ${username}`);
+          logger.error(`Invalid username received in join event: ${username}`);
           return;
         }
 
         const user = await User.findOne({ username });
         if (!user) {
-          console.error(`User not found for username: ${username}`);
+          logger.error(`User not found for username: ${username}`);
           return;
         }
         const userId = user._id.toString();
@@ -75,16 +76,23 @@ function setupSocketIO(server) {
           socket.join(`trainer_${username}_user`);
         }
       } catch (error) {
-        console.error("Error in join event:", error);
+        logger.error("Error in join event:", {
+          error: error.message,
+          stack: error.stack,
+        });
       }
     });
+
     // Handle fetching all trainers
     socket.on("fetchTrainers", async () => {
       try {
         const trainers = await getAllTrainers();
         socket.emit("trainersData", trainers);
       } catch (error) {
-        console.error("Error fetching trainers:", error);
+        logger.error("Error fetching trainers:", {
+          error: error.message,
+          stack: error.stack,
+        });
         socket.emit("error", { message: "Failed to fetch trainers" });
       }
     });
@@ -95,7 +103,10 @@ function setupSocketIO(server) {
         const messages = await getTrainerMessages(username, trainerUsername);
         socket.emit("trainerMessagesData", messages);
       } catch (error) {
-        console.error("Error fetching trainer messages:", error);
+        logger.error("Error fetching trainer messages:", {
+          error: error.message,
+          stack: error.stack,
+        });
         socket.emit("error", { message: "Failed to fetch messages" });
       }
     });
@@ -122,7 +133,10 @@ function setupSocketIO(server) {
           );
           io.to(`user_${senderUsername}`).emit("newTrainerMessage", message);
         } catch (error) {
-          console.error("Error sending trainer message:", error);
+          logger.error("Error sending trainer message:", {
+            error: error.message,
+            stack: error.stack,
+          });
           socket.emit("error", { message: "Failed to send message" });
         }
       }
@@ -148,7 +162,10 @@ function setupSocketIO(server) {
           io.to(`trainer_${trainerUsername}`).emit("newBooking", booking);
           io.to(`user_${username}`).emit("newBooking", booking);
         } catch (error) {
-          console.error("Error booking trainer:", error);
+          logger.error("Error booking trainer:", {
+            error: error.message,
+            stack: error.stack,
+          });
           socket.emit("error", { message: "Failed to book trainer" });
         }
       }
@@ -172,7 +189,10 @@ function setupSocketIO(server) {
           updatedTrainer.availability
         );
       } catch (error) {
-        console.error("Error adding trainer availability:", error);
+        logger.error("Error adding trainer availability:", {
+          error: error.message,
+          stack: error.stack,
+        });
         socket.emit("error", { message: "Failed to add availability" });
       }
     });
@@ -192,7 +212,10 @@ function setupSocketIO(server) {
           updatedTrainer.availability
         );
       } catch (error) {
-        console.error("Error removing trainer availability:", error);
+        logger.error("Error removing trainer availability:", {
+          error: error.message,
+          stack: error.stack,
+        });
         socket.emit("error", { message: "Failed to remove availability" });
       }
     });
@@ -213,7 +236,10 @@ function setupSocketIO(server) {
           availability: trainer.availability,
         });
       } catch (error) {
-        console.error("Error fetching trainer data:", error);
+        logger.error("Error fetching trainer data:", {
+          error: error.message,
+          stack: error.stack,
+        });
         socket.emit("error", { message: "Failed to fetch trainer data" });
       }
     });
@@ -229,7 +255,7 @@ function setupSocketIO(server) {
             typeof senderUsername !== "string" ||
             typeof receiverUsername !== "string"
           ) {
-            console.error(
+            logger.error(
               `Invalid usernames in sendMessage: senderUsername=${senderUsername}, receiverUsername=${receiverUsername}`
             );
             return;
@@ -238,7 +264,7 @@ function setupSocketIO(server) {
           const sender = await User.findOne({ username: senderUsername });
           const receiver = await User.findOne({ username: receiverUsername });
           if (!sender || !receiver) {
-            console.error(
+            logger.error(
               `User not found: senderUsername=${senderUsername}, receiverUsername=${receiverUsername}`
             );
             return;
@@ -259,18 +285,21 @@ function setupSocketIO(server) {
 
           io.to(senderId).to(receiverId).emit("newMessage", populatedMessage);
         } catch (error) {
-          console.error("Error sending message:", error);
+          logger.error("Error sending message:", {
+            error: error.message,
+            stack: error.stack,
+          });
         }
       }
     );
 
     socket.on("joinMatchRoom", (matchId) => {
       socket.join(matchId);
-      console.log(`Client ${socket.id} joined room ${matchId}`);
+      logger.info(`Client ${socket.id} joined room ${matchId}`);
     });
 
     socket.on("disconnect", async () => {
-      console.log("Client disconnected:", socket.id);
+      logger.info(`Client disconnected: ${socket.id}`);
       let disconnectedUsername;
       for (let [username, socketId] of onlineUsers.entries()) {
         if (socketId === socket.id) {
@@ -284,7 +313,7 @@ function setupSocketIO(server) {
         try {
           const user = await User.findOne({ username: disconnectedUsername });
           if (!user) {
-            console.error(
+            logger.error(
               `User not found for username: ${disconnectedUsername}`
             );
             return;
@@ -307,7 +336,10 @@ function setupSocketIO(server) {
             });
           });
         } catch (error) {
-          console.error("Error in disconnect event:", error);
+          logger.error("Error in disconnect event:", {
+            error: error.message,
+            stack: error.stack,
+          });
         }
       }
     });

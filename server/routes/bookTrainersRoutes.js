@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const trainerService = require("../Services/trainerService");
+const logger = require("../config/logger");
 
 router.get("/trainers", async (req, res) => {
   try {
@@ -19,7 +20,31 @@ router.post("/trainers", async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 });
+router.get("/trainers", async (req, res) => {
+  logger.debug("Fetching all trainers");
+  try {
+    const trainers = await trainerService.getAllTrainers();
+    logger.info("Successfully retrieved all trainers", {
+      count: trainers.length,
+    });
+    res.json(trainers);
+  } catch (err) {
+    logger.error("Error fetching trainers", { error: err.message });
+    res.status(500).json({ error: err.message });
+  }
+});
 
+router.post("/trainers", async (req, res) => {
+  logger.debug("Creating new trainer", { trainerData: req.body });
+  try {
+    const trainer = await trainerService.createTrainer(req.body);
+    logger.info("Trainer created successfully", { username: trainer.username });
+    res.status(201).json(trainer);
+  } catch (err) {
+    logger.error("Error creating trainer", { error: err.message });
+    res.status(400).json({ error: err.message });
+  }
+});
 router.post("/book", async (req, res) => {
   try {
     const { username, trainerUsername, date, timeSlot } = req.body;

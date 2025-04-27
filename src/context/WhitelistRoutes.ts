@@ -5,5 +5,7 @@ export const WHITELIST_ROUTES = [
   "/register",
   "/login",
   "/",
+  "/player/:playerId/:rowId",
+  "/player/:playerId",
   "/InstallPrompt",
 ];

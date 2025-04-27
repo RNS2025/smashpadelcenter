@@ -1,5 +1,6 @@
 const { connectDB, mongoose } = require("../config/database");
 const databaseService = require("../Services/databaseService");
+const logger = require("../config/logger"); // Import Winston logger
 
 async function createTenUsers() {
   try {
@@ -90,24 +91,30 @@ async function createTenUsers() {
           (await databaseService.findUserByEmail(user.email));
 
         if (existingUser) {
-          console.log(
+          logger.info(
             `User ${user.username} or email ${user.email} already exists. Skipping.`
           );
           continue;
         }
 
         const newUser = await databaseService.createUser(user);
-        console.log(
+        logger.info(
           `User ${newUser.username} created successfully with ID: ${newUser._id}`
         );
       } catch (err) {
-        console.error(`Error creating user ${user.username}: ${err.message}`);
+        logger.error(`Error creating user ${user.username}:`, {
+          error: err.message,
+          stack: err.stack,
+        });
       }
     }
 
-    console.log("User creation process completed successfully.");
+    logger.info("User creation process completed successfully.");
   } catch (err) {
-    console.error("Error in createTenUsers:", err.message);
+    logger.error("Error in createTenUsers:", {
+      error: err.message,
+      stack: err.stack,
+    });
     throw err;
   }
 }

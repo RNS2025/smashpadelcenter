@@ -3,6 +3,7 @@ const {
   extractCourtNames,
   fetchAvailableCourtTimes,
 } = require("../scripts/scraper");
+const logger = require("../config/logger"); // Add logger import
 
 const router = express();
 
@@ -34,10 +35,13 @@ const router = express();
  *                     type: string
  */
 router.get("/courts/names", async (req, res) => {
+  logger.debug("Court names request received");
   try {
     const names = await extractCourtNames();
+    logger.info("Court names fetched successfully", { count: names.length });
     res.json({ courts: names });
   } catch (err) {
+    logger.error("Error fetching court names", { error: err.message });
     res.status(500).json({ error: err.message });
   }
 });
@@ -75,10 +79,15 @@ router.get("/courts/names", async (req, res) => {
  *                               type: string
  */
 router.get("/courts/times", async (req, res) => {
+  logger.debug("Court times request received");
   try {
     const data = await fetchAvailableCourtTimes();
+    logger.info("Court times fetched successfully", {
+      courtCount: data.length,
+    });
     res.json({ data });
   } catch (err) {
+    logger.error("Error fetching court times", { error: err.message });
     res.status(500).json({ error: err.message });
   }
 });

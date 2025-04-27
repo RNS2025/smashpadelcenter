@@ -1,5 +1,6 @@
 const User = require("../models/user");
 const PadelMatch = require("../models/PadelMatch");
+const logger = require("../config/logger");
 
 module.exports = {
   createUser: async (userData) => {
@@ -48,6 +49,10 @@ module.exports = {
       await newUser.save();
       return newUser;
     } catch (err) {
+      logger.error("DatabaseService: Error creating user:", {
+        error: err.message,
+        username: userData.username,
+      });
       throw new Error("Error creating user: " + err.message);
     }
   },

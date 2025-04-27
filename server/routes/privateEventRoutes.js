@@ -3,6 +3,7 @@ const express = require("express");
 const router = express.Router();
 const privateEventService = require("../Services/privateEventService");
 const PrivateEvent = require("../models/PrivateEvent");
+const logger = require("../config/logger"); // Import logger
 
 // Middleware to detect if the request is from a browser
 const isBrowser = (req) => {
@@ -18,9 +19,10 @@ router.get("/", async (req, res) => {
     const filteredEvents = req.isAuthenticated()
       ? events
       : events.filter((event) => event.openRegistration);
+    logger.info("Successfully fetched private events");
     res.json(filteredEvents);
   } catch (error) {
-    console.error("Error fetching events:", error.message);
+    logger.error("Error fetching private events", { error: error.message });
     res.status(500).json({ message: error.message });
   }
 });
@@ -29,14 +31,25 @@ router.get("/", async (req, res) => {
 router.get("/:username", async (req, res) => {
   try {
     if (!req.isAuthenticated() || req.user.username !== req.params.username) {
+      logger.warn("Unauthorized access attempt to user events", {
+        requestedUsername: req.params.username,
+        authenticated: req.isAuthenticated(),
+        user: req.isAuthenticated() ? req.user.username : null,
+      });
       return res.status(403).json({ message: "Access denied" });
     }
     const events = await privateEventService.getPrivateEventsByUser(
       req.params.username
     );
+    logger.info("Successfully fetched user private events", {
+      username: req.params.username,
+    });
     res.json(events);
   } catch (error) {
-    console.error("Error fetching user events:", error.message);
+    logger.error("Error fetching user private events", {
+      username: req.params.username,
+      error: error.message,
+    });
     res.status(404).json({ message: error.message });
   }
 });
@@ -44,14 +57,19 @@ router.get("/:username", async (req, res) => {
 // GET /api/v1/private-event/:username/:eventId
 router.get("/event/:eventId", async (req, res) => {
   try {
-    const { username, eventId } = req.params;
+    const { eventId } = req.params;
     const event = await privateEventService.getPrivateEventById(eventId);
     if (!event) {
+      logger.warn("Event not found", { eventId });
       return res.status(404).json({ message: "Event not found" });
     }
+    logger.info("Successfully fetched private event", { eventId });
     res.json(event);
   } catch (error) {
-    console.error("Error fetching event:", error.message);
+    logger.error("Error fetching private event", {
+      eventId: req.params.eventId,
+      error: error.message,
+    });
     res.status(404).json({ message: error.message });
   }
 });
@@ -60,6 +78,7 @@ router.get("/event/:eventId", async (req, res) => {
 router.post("/", async (req, res) => {
   try {
     if (!req.isAuthenticated()) {
+      logger.warn("Unauthenticated user attempted to create event");
       return res.status(401).json({ message: "Not authenticated" });
     }
     const eventData = {
@@ -69,9 +88,16 @@ router.post("/", async (req, res) => {
     const newEvent = await privateEventService.createPrivateEvent(eventData);
     const io = req.app.get("socketio");
     io.to(newEvent.id).emit("eventUpdated", newEvent);
+    logger.info("Private event created successfully", {
+      eventId: newEvent._id,
+      creator: req.user.username,
+    });
     res.status(201).json(newEvent);
   } catch (error) {
-    console.error("Error creating event:", error.message);
+    logger.error("Error creating private event", {
+      username: req.isAuthenticated() ? req.user.username : null,
+      error: error.message,
+    });
     res.status(400).json({ message: error.message });
   }
 });
@@ -80,13 +106,24 @@ router.post("/", async (req, res) => {
 router.patch("/:eventId", async (req, res) => {
   try {
     if (!req.isAuthenticated()) {
+      logger.warn("Unauthenticated user attempted to update event", {
+        eventId: req.params.eventId,
+      });
       return res.status(401).json({ message: "Not authenticated" });
     }
     const event = await PrivateEvent.findById(req.params.eventId);
     if (!event) {
+      logger.warn("Attempted to update non-existent event", {
+        eventId: req.params.eventId,
+      });
       return res.status(404).json({ message: "Event not found" });
     }
     if (event.username !== req.user.username) {
+      logger.warn("Unauthorized update attempt", {
+        eventId: req.params.eventId,
+        eventCreator: event.username,
+        attemptedBy: req.user.username,
+      });
       return res
         .status(403)
         .json({ message: "Only the event creator can update the event" });
@@ -97,9 +134,16 @@ router.patch("/:eventId", async (req, res) => {
     );
     const io = req.app.get("socketio");
     io.to(req.params.eventId).emit("eventUpdated", updatedEvent);
+    logger.info("Private event updated successfully", {
+      eventId: req.params.eventId,
+      username: req.user.username,
+    });
     res.json(updatedEvent);
   } catch (error) {
-    console.error("Error updating event:", error.message);
+    logger.error("Error updating private event", {
+      eventId: req.params.eventId,
+      error: error.message,
+    });
     res.status(400).json({ message: error.message });
   }
 });
@@ -108,10 +152,18 @@ router.patch("/:eventId", async (req, res) => {
 router.post("/:eventId/join", async (req, res) => {
   try {
     if (!req.isAuthenticated()) {
+      logger.warn("Unauthenticated user attempted to join event", {
+        eventId: req.params.eventId,
+      });
       return res.status(401).json({ message: "Not authenticated" });
     }
     const { username } = req.body;
     if (username !== req.user.username) {
+      logger.warn("User attempted to join as another user", {
+        eventId: req.params.eventId,
+        actualUser: req.user.username,
+        attemptedAs: username,
+      });
       return res
         .status(403)
         .json({ message: "Cannot join event as another user" });
@@ -122,9 +174,17 @@ router.post("/:eventId/join", async (req, res) => {
     );
     const io = req.app.get("socketio");
     io.to(req.params.eventId).emit("eventUpdated", event);
+    logger.info("User joined private event", {
+      eventId: req.params.eventId,
+      username,
+    });
     res.json(event);
   } catch (error) {
-    console.error("Error joining event:", error.message);
+    logger.error("Error joining private event", {
+      eventId: req.params.eventId,
+      username: req.body.username,
+      error: error.message,
+    });
     res.status(400).json({ message: error.message });
   }
 });
@@ -133,14 +193,25 @@ router.post("/:eventId/join", async (req, res) => {
 router.post("/:eventId/confirm", async (req, res) => {
   try {
     if (!req.isAuthenticated()) {
+      logger.warn("Unauthenticated user attempted to confirm join", {
+        eventId: req.params.eventId,
+      });
       return res.status(401).json({ message: "Not authenticated" });
     }
     const { username } = req.body;
     const event = await PrivateEvent.findById(req.params.eventId);
     if (!event) {
+      logger.warn("Attempted to confirm join for non-existent event", {
+        eventId: req.params.eventId,
+      });
       return res.status(404).json({ message: "Event not found" });
     }
     if (event.username !== req.user.username) {
+      logger.warn("Unauthorized confirm attempt", {
+        eventId: req.params.eventId,
+        eventCreator: event.username,
+        attemptedBy: req.user.username,
+      });
       return res
         .status(403)
         .json({ message: "Only the event creator can confirm joins" });
@@ -151,9 +222,17 @@ router.post("/:eventId/confirm", async (req, res) => {
     );
     const io = req.app.get("socketio");
     io.to(req.params.eventId).emit("eventUpdated", updatedEvent);
+    logger.info("Join request confirmed", {
+      eventId: req.params.eventId,
+      confirmedUser: username,
+    });
     res.json(updatedEvent);
   } catch (error) {
-    console.error("Error confirming join:", error.message);
+    logger.error("Error confirming join request", {
+      eventId: req.params.eventId,
+      username: req.body.username,
+      error: error.message,
+    });
     res.status(400).json({ message: error.message });
   }
 });
@@ -162,13 +241,24 @@ router.post("/:eventId/confirm", async (req, res) => {
 router.delete("/:eventId", async (req, res) => {
   try {
     if (!req.isAuthenticated()) {
+      logger.warn("Unauthenticated user attempted to delete event", {
+        eventId: req.params.eventId,
+      });
       return res.status(401).json({ message: "Not authenticated" });
     }
     const event = await PrivateEvent.findById(req.params.eventId);
     if (!event) {
+      logger.warn("Attempted to delete non-existent event", {
+        eventId: req.params.eventId,
+      });
       return res.status(404).json({ message: "Event not found" });
     }
     if (event.username !== req.user.username) {
+      logger.warn("Unauthorized delete attempt", {
+        eventId: req.params.eventId,
+        eventCreator: event.username,
+        attemptedBy: req.user.username,
+      });
       return res
         .status(403)
         .json({ message: "Only the event creator can delete the event" });
@@ -178,9 +268,16 @@ router.delete("/:eventId", async (req, res) => {
     );
     const io = req.app.get("socketio");
     io.to(req.params.eventId).emit("eventDeleted", req.params.eventId);
+    logger.info("Private event deleted successfully", {
+      eventId: req.params.eventId,
+      username: req.user.username,
+    });
     res.json(events);
   } catch (error) {
-    console.error("Error deleting event:", error.message);
+    logger.error("Error deleting private event", {
+      eventId: req.params.eventId,
+      error: error.message,
+    });
     res.status(404).json({ message: error.message });
   }
 });
