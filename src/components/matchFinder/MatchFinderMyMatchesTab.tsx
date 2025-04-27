@@ -175,7 +175,7 @@ export const MatchFinderMyMatchesTab = () => {
                 )}
               </div>
             </div>
-            <p className="text-gray-500">Oprettet af {match.username}</p>
+            <p className="text-gray-500">Oprettet af {match.username === user?.username ? "dig" : `${match.username}`}</p>
           </div>
         )))}
       </div>

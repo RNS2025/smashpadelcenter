@@ -1,6 +1,8 @@
 import { Helmet } from "react-helmet-async";
 import { useProfileContext } from "../../../context/ProfileContext";
 import LoadingSpinner from "../../misc/LoadingSpinner";
+import {safeFormatDate} from "../../../utils/dateUtils.ts";
+import {CheckCircleIcon, QuestionMarkCircleIcon} from "@heroicons/react/24/outline";
 
 const OverviewTab = () => {
   const { profile, matches, matchesLoading } = useProfileContext();
@@ -58,22 +60,14 @@ const OverviewTab = () => {
               <h3 className="text-lg font-semibold text-gray-800 mt-4 mb-2">
                   Spilleroplysninger
               </h3>
-              <p className="text-gray-600">
+              <p className="text-gray-800">
                   <strong>Position:</strong> {profile.position}
               </p>
-              <p className="text-gray-600">
+              <p className="text-gray-800">
                   <strong>Spillestil:</strong> {profile.playingStyle}
               </p>
-              <p className="text-gray-600">
+              <p className="text-gray-800">
                   <strong>Udstyr:</strong> {profile.equipment}
-              </p>
-
-              <h3 className="text-lg font-semibold text-gray-800 mt-4 mb-2">Kontakt</h3>
-              <p className="text-gray-600">
-                  <strong>Email:</strong> {profile.email}
-              </p>
-              <p className={`text-gray-600 ${profile.phoneNumber ? "" : "hidden"}`}>
-                  <strong>Telefon:</strong> {profile.phoneNumber}
               </p>
 
 
@@ -86,32 +80,39 @@ const OverviewTab = () => {
               ) : matches.upcoming.length > 0 ? (
                   <ul className="space-y-2">
                       {matches.upcoming.map((match) => (
-                          <li key={match.id} className="border py-2 rounded-lg text-gray-800">
-                              <p>
-                                  <strong>Dato:</strong>{" "}
-                                  {new Date(match.matchDateTime).toLocaleString("da-DK")}
-                              </p>
-                              <p>
-                                  <strong>Sted:</strong> {match.location}
-                              </p>
-                              <p>
-                                  <strong>Kamptype:</strong> {match.matchType}
-                              </p>
-                              <p>
-                                  <strong>Niveau:</strong> {match.level}
-                              </p>
-                              <p>
-                                  <strong>Deltagere:</strong>{" "}
-                                  {match.participants.join(", ") || "Ingen"}
-                              </p>
-                              {match.description && (
-                                  <p>
-                                      <strong>Beskrivelse:</strong> {match.description}
-                                  </p>
+                          <li key={match.id} className="border border-gray-900 p-2 rounded-lg text-gray-800">
+                              <div className="flex justify-between text-xs border-b border-gray-600">
+                                  <h1>{safeFormatDate(match.matchDateTime, "dd. MMMM | HH:mm").toUpperCase()}</h1>
+
+
+                                  <div className="flex gap-1">
+                                      <p>{match.location.includes("Horsens") ? "Horsens" : "Stensballe"}</p>
+                                      <p>|</p>
+                                      <p>{match.matchType}</p>
+                                  </div>
+                              </div>
+                              <div className="flex justify-between text-sm pt-2">
+
+                              <div className="flex items-center gap-4">
+                              {!match.result ? (
+                                  <QuestionMarkCircleIcon className="h-10 text-gray-800" />
+                              ) : (
+                                  <CheckCircleIcon className="h-10 text-green-800" />
                               )}
-                              <p>
-                                  <strong>Bane booket:</strong> {match.courtBooked ? "Ja" : "Nej"}
-                              </p>
+                                  <div className="text-sm">
+                                  <h1>Niveau:</h1>
+                                  <h1>{match.level}</h1>
+                                  </div>
+                              </div>
+
+                                  <div className="grid grid-cols-2 gap-2">
+                                  {match.participants.map((participant, index) => (
+                                      <p key={index}>
+                                          {participant}
+                                      </p>
+                                  ))}
+                                  </div>
+                              </div>
                           </li>
                       ))}
                   </ul>
@@ -132,34 +133,37 @@ const OverviewTab = () => {
               ) : matches.former.length > 0 ? (
                   <ul className="space-y-2">
                       {matches.former.map((match) => (
-                          <li key={match.id} className="border py-2 rounded-lg text-gray-800">
-                              <p>
-                                  <strong>Dato:</strong>{" "}
-                                  {new Date(match.matchDateTime).toLocaleString("da-DK")}
-                              </p>
-                              <p>
-                                  <strong>Sted:</strong> {match.location}
-                              </p>
-                              <p>
-                                  <strong>Kamptype:</strong> {match.matchType}
-                              </p>
-                              <p>
-                                  <strong>Niveau:</strong> {match.level}
-                              </p>
-                              <p>
-                                  <strong>Deltagere:</strong>{" "}
-                                  {match.participants.join(", ") || "Ingen"}
-                              </p>
-                              {match.score && (
-                                  <p>
-                                      <strong>Score:</strong> {match.score}
-                                  </p>
-                              )}
-                              {match.result && (
-                                  <p>
-                                      <strong>Resultat:</strong> {match.result}
-                                  </p>
-                              )}
+                          <li key={match.id} className="border border-gray-900 p-2 rounded-lg text-gray-800">
+                              <div className="flex justify-between text-xs border-b border-gray-600">
+                                  <h1>{safeFormatDate(match.matchDateTime, "dd. MMMM | HH:mm").toUpperCase()}</h1>
+                                  <div className="flex gap-1">
+                                      <p>{match.location.includes("Horsens") ? "Horsens" : "Stensballe"}</p>
+                                      <p>|</p>
+                                      <p>{match.matchType}</p>
+                                  </div>
+                              </div>
+                              <div className="flex justify-between text-sm pt-2">
+
+                                  <div className="flex items-center gap-4">
+                                      {!match.result ? (
+                                          <QuestionMarkCircleIcon className="h-10 text-gray-800" />
+                                      ) : (
+                                          <CheckCircleIcon className="h-10 text-green-800" />
+                                      )}
+                                      <div className="text-sm">
+                                          <h1>Niveau:</h1>
+                                          <h1>{match.level}</h1>
+                                      </div>
+                                  </div>
+
+                                  <div className="grid grid-cols-2 gap-2">
+                                  {match.participants.map((participant, index) => (
+                                      <p key={index}>
+                                            {participant}
+                                      </p>
+                                  ))}
+                                  </div>
+                              </div>
                           </li>
                       ))}
                   </ul>

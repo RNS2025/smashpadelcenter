@@ -42,9 +42,9 @@ export const EventInvitePlayersDialog = ({user, event, onInvite, onClose}: {
         if (!event || selectedUsers.length === 0) return;
 
         try {
-            const invitedUsernames = selectedUsers.map((user) => user.username);
+            const invitedPlayers = selectedUsers.map((user) => user.username);
 
-            const updatedEvent = await communityApi.invitePlayersToEvent(event.id, invitedUsernames);
+            const updatedEvent = await communityApi.invitePlayersToEvent(event.id, invitedPlayers);
 
             console.log("Updated match after inviting players:", updatedEvent);
             alert("Spillere inviteret!");

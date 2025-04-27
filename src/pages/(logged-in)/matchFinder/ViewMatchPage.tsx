@@ -493,6 +493,15 @@ export const ViewMatchPage = () => {
                   </>
               )}
 
+          {/*{user && match.invitedPlayers && match.invitedPlayers.includes(user.username) && ( */}
+          <div className="flex justify-between items-center border border-yellow-500 p-4 rounded-lg animate-pulse">
+            <h1>{match.username} har inviteret dig!</h1>
+            <div className="flex gap-2">
+            <XIcon className="size-8 text-red-500" />
+            <CheckIcon className="size-8 text-green-500" />
+            </div>
+          </div>
+
 
           <div className="grid grid-cols-2 text-center text-black gap-3">
             <div className="bg-white rounded flex justify-center items-center gap-1 py-4">
@@ -529,6 +538,7 @@ export const ViewMatchPage = () => {
           </div>
 
           {/* Action buttons */}
+
           {user?.username && match.username !== user?.username && !match.participants.includes(user?.username) &&
             !isMatchFull && (
               <button

@@ -42,9 +42,9 @@ export const MatchInvitePlayersDialog = ({user, match, onInvite, onClose}: {
         if (!match || selectedUsers.length === 0) return;
 
         try {
-            const invitedUsernames = selectedUsers.map((user) => user.username);
+            const invitedPlayers = selectedUsers.map((user) => user.username);
 
-            const updatedMatch = await communityApi.invitePlayersToMatch(match.id, invitedUsernames);
+            const updatedMatch = await communityApi.invitePlayersToMatch(match.id, invitedPlayers);
 
             console.log("Updated match after inviting players:", updatedMatch);
             alert("Spillere inviteret!");
@@ -93,25 +93,29 @@ export const MatchInvitePlayersDialog = ({user, match, onInvite, onClose}: {
 
                     <div className="flex flex-col gap-8 mt-5 p-4 w-full">
 
-                        <div>
-                        <label htmlFor="grupper" className="block text-sm font-medium text-gray-700">
-                            Vælg en gruppe
-                        </label>
-                        <select
-                            id="grupper"
-                            name="grupper"
-                            defaultValue=""
-                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm"
-                            onChange={(e) => handleGroupSelect(e.target.value)}
-                        >
-                            <option value="">Ingen gruppe</option>
-                            {user.groups?.map((group) => (
-                                <option key={group.id} value={group.id}>
-                                    {group.name}
-                                </option>
-                            ))}
-                        </select>
-                        </div>
+                        {user && (
+                            <div>
+                                <label htmlFor="grupper" className="block text-sm font-medium text-gray-700">
+                                    Vælg en gruppe
+                                </label>
+
+                                <select
+                                    id="grupper"
+                                    name="grupper"
+                                    defaultValue=""
+                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm"
+                                    onChange={(e) => handleGroupSelect(e.target.value)}
+                                >
+                                    <option value="">Ingen gruppe</option>
+                                    {user.groups?.map((group) => (
+                                        <option key={group.id} value={group.id}>
+                                            {group.name}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        )}
+
 
 
                         <div>

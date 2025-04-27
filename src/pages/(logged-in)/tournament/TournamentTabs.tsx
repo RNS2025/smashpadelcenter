@@ -1,12 +1,12 @@
 import {Helmet} from "react-helmet-async";
 import HomeScreenCard from "../../../components/HomeScreen/HomeScreenCard.tsx";
-import {CheckCircleIcon, MapIcon, RectangleGroupIcon} from "@heroicons/react/24/outline";
+import {CheckCircleIcon, InformationCircleIcon, MapIcon, RectangleGroupIcon} from "@heroicons/react/24/outline";
 import Animation from "../../../components/misc/Animation.tsx";
 import HomeBar from "../../../components/misc/HomeBar.tsx";
 import {useUser} from "../../../context/UserContext.tsx";
 
 export const TournamentTabs = () => {
-    const { role } = useUser();
+    const { user } = useUser();
 
 
 
@@ -16,11 +16,17 @@ export const TournamentTabs = () => {
                 <title>Turneringer</title>
             </Helmet>
 
-            <Animation>
             <HomeBar backPage="/hjem" />
+            <Animation>
 
-            <div className="flex items-center justify-center min-h-screen -mt-20 overflow-y-hidden">
-                <div className={`grid grid-cols-1 gap-8 sm:grid-cols-2 ${role === "admin" ? "lg:grid-cols-3" : "lg:grid-cols-2"}`}>
+            <div className="flex my-5 items-center justify-center">
+                <div className={`grid grid-cols-1 gap-8 sm:grid-cols-2 ${user?.role === "admin" ? "lg:grid-cols-3" : "lg:grid-cols-2"}`}>
+                    <HomeScreenCard
+                        icon={<InformationCircleIcon className="h-10 w-10" aria-hidden="true" />}
+                        title="Regler og informationer"
+                        description="Læs turneringsreglerne og informationer"
+                        link="turneringer/regler"
+                    />
                     <HomeScreenCard
                         icon={<CheckCircleIcon className="h-10 w-10" aria-hidden="true" />}
                         title="Indtjekning"
@@ -33,7 +39,7 @@ export const TournamentTabs = () => {
                         description="Se hvor kampene bliver afviklet"
                         link="turneringer/baneoversigt"
                     />
-                    {role === "admin" && (
+                    {user?.role === "admin" && (
                     <HomeScreenCard
                         icon={<RectangleGroupIcon className="h-10 w-10" aria-hidden="true" />}
                         title="Resultater"

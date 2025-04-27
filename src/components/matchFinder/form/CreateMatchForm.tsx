@@ -56,6 +56,7 @@ export const CreateMatchForm = () => {
         level: `${levelRange[0].toFixed(1)} - ${levelRange[1].toFixed(1)}`,
         participants: [],
         joinRequests: [],
+        invitedPlayers: [],
         reservedSpots: reservedPlayers.map((p) => ({
           name: p.name,
           level: p.level.toFixed(1),
@@ -76,7 +77,7 @@ export const CreateMatchForm = () => {
 
       await communityApi.createMatch(matchData);
       alert("Kamp oprettet!");
-      navigate("/makkerbørs");
+      navigate("/makkerbørs/minekampe");
     } catch (error) {
       console.error("Error creating match:", error);
       alert("Fejl ved oprettelse af kamp");
