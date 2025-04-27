@@ -310,7 +310,7 @@ router.patch("/:id/reserve", async (req, res) => {
 });
 
 // DELETE /api/v1/matches/:id - Delete a match
-router.delete("/:id", async (req, res) => {
+router.post("/:id/remove", async (req, res) => {
   try {
     const match = await padelMatchService.getMatchById(req.params.id);
     if (!match) {

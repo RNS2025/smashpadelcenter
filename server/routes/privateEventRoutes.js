@@ -53,6 +53,88 @@ router.post("/:eventId/invite", async (req, res) => {
   }
 });
 
+// POST /api/v1/private-event/:eventId/confirm - Confirm acceptance of a private event
+router.post("/:eventId/confirm", async (req, res) => {
+  try {
+    if (!req.isAuthenticated()) {
+      logger.warn("Unauthenticated user attempted to confirm event", {
+        eventId: req.params.eventId,
+      });
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    const { username } = req.body;
+    if (username !== req.user.username) {
+      logger.warn("User attempted to confirm as another user", {
+        eventId: req.params.eventId,
+        actualUser: req.user.username,
+        attemptedAs: username,
+      });
+      return res
+        .status(403)
+        .json({ message: "Cannot confirm event as another user" });
+    }
+    const updatedEvent = await privateEventService.confirmAcceptPrivateEvent(
+      req.params.eventId,
+      username
+    );
+    const io = req.app.get("socketio");
+    io.to(req.params.eventId).emit("eventUpdated", updatedEvent);
+    logger.info("User confirmed acceptance of private event", {
+      eventId: req.params.eventId,
+      username,
+    });
+    res.json(updatedEvent);
+  } catch (error) {
+    logger.error("Error confirming acceptance of private event", {
+      eventId: req.params.eventId,
+      username: req.body.username,
+      error: error.message,
+    });
+    res.status(400).json({ message: error.message });
+  }
+});
+
+// POST /api/v1/private-event/:eventId/decline - Decline a private event
+router.post("/:eventId/decline", async (req, res) => {
+  try {
+    if (!req.isAuthenticated()) {
+      logger.warn("Unauthenticated user attempted to decline event", {
+        eventId: req.params.eventId,
+      });
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    const { username } = req.body;
+    if (username !== req.user.username) {
+      logger.warn("User attempted to decline as another user", {
+        eventId: req.params.eventId,
+        actualUser: req.user.username,
+        attemptedAs: username,
+      });
+      return res
+        .status(403)
+        .json({ message: "Cannot decline event as another user" });
+    }
+    const updatedEvent = await privateEventService.confirmDeclinePrivateEvent(
+      req.params.eventId,
+      username
+    );
+    const io = req.app.get("socketio");
+    io.to(req.params.eventId).emit("eventUpdated", updatedEvent);
+    logger.info("User declined private event", {
+      eventId: req.params.eventId,
+      username,
+    });
+    res.json(updatedEvent);
+  } catch (error) {
+    logger.error("Error declining private event", {
+      eventId: req.params.eventId,
+      username: req.body.username,
+      error: error.message,
+    });
+    res.status(400).json({ message: error.message });
+  }
+});
+
 // GET /api/v1/private-event - Get all private events
 router.get("/", async (req, res) => {
   try {

@@ -23,6 +23,84 @@ const privateEventService = {
     }
   },
 
+  confirmAcceptPrivateEvent: async (eventId, username) => {
+    try {
+      const event = await PrivateEvent.findById(eventId);
+      if (!event) throw new Error("Event not found");
+
+      if (!event.invitedPlayers.includes(username)) {
+        throw new Error("User is not invited to this event");
+      }
+
+      // Remove user from invitedPlayers list and add to participants
+      event.invitedPlayers = event.invitedPlayers.filter((u) => u !== username);
+      event.participants.push(username);
+
+      await event.save();
+
+      // Update user's event history
+      await User.updateOne(
+        { username },
+        { $push: { eventHistory: event._id } }
+      );
+
+      logger.info("PrivateEventService: User accepted event invitation", {
+        eventId,
+        username,
+      });
+
+      return {
+        ...event.toObject(),
+        id: event._id.toString(),
+        participants: event.participants || [],
+        joinRequests: event.joinRequests || [],
+        invitedPlayers: event.invitedPlayers || [],
+      };
+    } catch (error) {
+      logger.error("PrivateEventService: Error accepting event invitation", {
+        eventId,
+        username,
+        error: error.message,
+      });
+      throw new Error("Error accepting invitation: " + error.message);
+    }
+  },
+
+  confirmDeclinePrivateEvent: async (eventId, username) => {
+    try {
+      const event = await PrivateEvent.findById(eventId);
+      if (!event) throw new Error("Event not found");
+
+      if (!event.invitedPlayers.includes(username)) {
+        throw new Error("User is not invited to this event");
+      }
+
+      // Remove user from invitedPlayers list
+      event.invitedPlayers = event.invitedPlayers.filter((u) => u !== username);
+      await event.save();
+
+      logger.info("PrivateEventService: User declined event invitation", {
+        eventId,
+        username,
+      });
+
+      return {
+        ...event.toObject(),
+        id: event._id.toString(),
+        participants: event.participants || [],
+        joinRequests: event.joinRequests || [],
+        invitedPlayers: event.invitedPlayers || [],
+      };
+    } catch (error) {
+      logger.error("PrivateEventService: Error declining event invitation", {
+        eventId,
+        username,
+        error: error.message,
+      });
+      throw new Error("Error declining invitation: " + error.message);
+    }
+  },
+
   getPrivateEventsByUser: async (username) => {
     try {
       const events = await PrivateEvent.find({ username });
@@ -122,16 +200,12 @@ const privateEventService = {
         throw new Error(`Invalid usernames: ${invalidUsernames.join(", ")}`);
       }
 
-      // Filter out usernames already in participants or joinRequests
-      const newInviteRequests = usernames.filter(
+      // Filter out usernames already in participants or invitedPlayers
+      const newInviteRequests = validUsernames.filter(
         (username) =>
           !event.participants.includes(username) &&
           !event.invitedPlayers.includes(username)
       );
-
-      if (newInviteRequests.length > 0) {
-        throw new Error("All users are already invited or participants");
-      }
 
       event.invitedPlayers.push(...newInviteRequests);
       await event.save();

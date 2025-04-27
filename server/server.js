@@ -168,7 +168,7 @@ const cleanDatabase = async () => {
 async function startServer() {
   try {
     await connectDB();
-    await cleanDatabase(); // Uncomment this line to wipe the database
+    //await cleanDatabase(); // Uncomment this line to wipe the database
     await createAdmin();
     await createTenUsers();
     server.listen(PORT, () => {

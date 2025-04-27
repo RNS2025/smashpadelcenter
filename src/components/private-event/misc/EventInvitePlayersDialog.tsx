@@ -4,6 +4,7 @@ import { mockUsers } from "../../../utils/mock/mockUsers.ts";
 import userProfileService from "../../../services/userProfileService.ts";
 import communityApi from "../../../services/makkerborsService.ts";
 import { PrivateEvent } from "../../../types/PrivateEvent.ts";
+import { DaoGroupUser } from "../../../types/daoGroupAllUsers.ts";
 
 export const EventInvitedPlayersDialog = ({
   user,
@@ -16,12 +17,12 @@ export const EventInvitedPlayersDialog = ({
   onInvite: (event: PrivateEvent) => void;
   onClose: () => void;
 }) => {
-  const [allUsers, setAllUsers] = useState<User[]>([]);
-  const [selectedUsers, setSelectedUsers] = useState<User[]>([]);
+  const [allUsers, setAllUsers] = useState<DaoGroupUser[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<DaoGroupUser[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [, setError] = useState<string | null>(null);
 
-  const useMockData = true;
+  const useMockData = false;
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -30,7 +31,10 @@ export const EventInvitedPlayersDialog = ({
       } else {
         try {
           const response = await userProfileService.getAllUsers();
-          setAllUsers(response.users || []);
+          const filteredResponse = (response.users || []).filter(
+            (u) => u.username !== user.username
+          );
+          setAllUsers(filteredResponse);
         } catch (error) {
           console.error("Error fetching users:", error);
           setError("Der opstod en fejl under indlæsning af brugere.");
@@ -64,11 +68,11 @@ export const EventInvitedPlayersDialog = ({
   const filteredUsers = allUsers.filter(
     (u) =>
       (u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.fullName.toLowerCase().includes(searchQuery.toLowerCase())) &&
-      !selectedUsers.some((member: User) => member.id === u.id)
+        u.fullName?.toLowerCase().includes(searchQuery.toLowerCase())) &&
+      !selectedUsers.some((member: DaoGroupUser) => member.id === u.id)
   );
 
-  const handleSelectUser = (user: User) => {
+  const handleSelectUser = (user: DaoGroupUser) => {
     setSelectedUsers((prev) => [...prev, user]);
     setSearchQuery("");
   };

@@ -31,7 +31,10 @@ export const MatchInvitedPlayersDialog = ({
       } else {
         try {
           const response = await userProfileService.getAllUsers();
-          setAllUsers(response.users || []);
+          const filteredResponse = (response.users || []).filter(
+            (u) => u.username !== user.username
+          );
+          setAllUsers(filteredResponse);
         } catch (error) {
           console.error("Error fetching users:", error);
           setError("Der opstod en fejl under indlæsning af brugere.");
