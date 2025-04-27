@@ -107,7 +107,7 @@ const privateEventService = {
     }
   },
 
-  invitePlayers: async (eventId, usernames) => {
+  invitedPlayers: async (eventId, usernames) => {
     try {
       const event = await PrivateEvent.findById(eventId);
       if (!event) throw new Error("Event not found");
@@ -129,7 +129,7 @@ const privateEventService = {
           !event.invitedPlayers.includes(username)
       );
 
-      if (newInviteRequests.length === 0) {
+      if (newInviteRequests.length > 0) {
         throw new Error("All users are already invited or participants");
       }
 

@@ -5,7 +5,7 @@ import userProfileService from "../../../services/userProfileService.ts";
 import communityApi from "../../../services/makkerborsService.ts";
 import { PrivateEvent } from "../../../types/PrivateEvent.ts";
 
-export const EventInvitePlayersDialog = ({
+export const EventInvitedPlayersDialog = ({
   user,
   event,
   onInvite,
@@ -40,13 +40,13 @@ export const EventInvitePlayersDialog = ({
     fetchUsers().then();
   }, [useMockData]);
 
-  const handleInvitePlayers = async () => {
+  const handleInvitedPlayers = async () => {
     if (!event || selectedUsers.length === 0) return;
 
     try {
       const invitedPlayers = selectedUsers.map((user) => user.username);
 
-      const updatedEvent = await communityApi.invitePlayersToEvent(
+      const updatedEvent = await communityApi.invitedPlayersToEvent(
         event.id,
         invitedPlayers
       );
@@ -189,7 +189,7 @@ export const EventInvitePlayersDialog = ({
               </button>
 
               <button
-                onClick={handleInvitePlayers}
+                onClick={handleInvitedPlayers}
                 type="button"
                 disabled={selectedUsers.length === 0}
                 className={`bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white mt-4 ${
@@ -206,4 +206,4 @@ export const EventInvitePlayersDialog = ({
   );
 };
 
-export default EventInvitePlayersDialog;
+export default EventInvitedPlayersDialog;

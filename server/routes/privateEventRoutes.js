@@ -32,7 +32,7 @@ router.post("/:eventId/invite", async (req, res) => {
         .status(403)
         .json({ message: "Only the event creator can invite players" });
     }
-    const updatedEvent = await privateEventService.invitePlayers(
+    const updatedEvent = await privateEventService.invitedPlayers(
       req.params.eventId,
       usernames
     );

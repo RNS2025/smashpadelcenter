@@ -6,7 +6,7 @@ import communityApi from "../../../services/makkerborsService.ts";
 import { PadelMatch } from "../../../types/PadelMatch.ts";
 import { DaoGroupUser } from "../../../types/daoGroupAllUsers.ts";
 
-export const MatchInvitePlayersDialog = ({
+export const MatchInvitedPlayersDialog = ({
   user,
   match,
   onInvite,
@@ -41,13 +41,13 @@ export const MatchInvitePlayersDialog = ({
     fetchUsers().then();
   }, [useMockData]);
 
-  const handleInvitePlayers = async () => {
+  const handleInvitedPlayers = async () => {
     if (!match || selectedUsers.length === 0) return;
 
     try {
       const invitedPlayers = selectedUsers.map((user) => user.username);
 
-      const updatedMatch = await communityApi.invitePlayersToMatch(
+      const updatedMatch = await communityApi.invitedPlayersToMatch(
         match.id,
         invitedPlayers
       );
@@ -95,27 +95,30 @@ export const MatchInvitePlayersDialog = ({
         <div className="flex flex-col items-center">
           <div className="flex flex-col gap-8 mt-5 p-4 w-full">
             {user && (
-                            <div>
-                                <label htmlFor="grupper" className="block text-sm font-medium text-gray-700">
-                                    Vælg en gruppe
-                                </label>
+              <div>
+                <label
+                  htmlFor="grupper"
+                  className="block text-sm font-medium text-gray-700"
+                >
+                  Vælg en gruppe
+                </label>
 
-                                <select
-                                    id="grupper"
-                                    name="grupper"
-                                    defaultValue=""
-                                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm"
-                                    onChange={(e) => handleGroupSelect(e.target.value)}
-                                >
-                                    <option value="">Ingen gruppe</option>
-                                    {user.groups?.map((group) => (
-                                        <option key={group.id} value={group.id}>
-                                            {group.name}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
-                        )}
+                <select
+                  id="grupper"
+                  name="grupper"
+                  defaultValue=""
+                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm"
+                  onChange={(e) => handleGroupSelect(e.target.value)}
+                >
+                  <option value="">Ingen gruppe</option>
+                  {user.groups?.map((group) => (
+                    <option key={group.id} value={group.id}>
+                      {group.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div>
               <label
@@ -190,7 +193,7 @@ export const MatchInvitePlayersDialog = ({
               </button>
 
               <button
-                onClick={handleInvitePlayers}
+                onClick={handleInvitedPlayers}
                 type="button"
                 disabled={selectedUsers.length === 0}
                 className={`bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white mt-4 ${
@@ -207,4 +210,4 @@ export const MatchInvitePlayersDialog = ({
   );
 };
 
-export default MatchInvitePlayersDialog;
+export default MatchInvitedPlayersDialog;

@@ -22,7 +22,7 @@ import {
 } from "@heroicons/react/24/outline";
 import mockEvents from "../../../utils/mock/mockEvents.ts";
 import userProfileService from "../../../services/userProfileService.ts";
-import EventInvitePlayersDialog from "../../../components/private-event/misc/EventInvitePlayersDialog.tsx";
+import EventInvitedPlayersDialog from "../../../components/private-event/misc/EventInvitePlayersDialog.tsx";
 
 export const ViewEventPage = () => {
   const { user } = useUser();
@@ -34,7 +34,6 @@ export const ViewEventPage = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [infoDialogVisible, setInfoDialogVisible] = useState(false);
   const [inviteDialogVisible, setInviteDialogVisible] = useState(false);
-
 
   const [copied, setCopied] = useState(false);
 
@@ -150,7 +149,7 @@ export const ViewEventPage = () => {
     }
   };
 
-  const handleInvitePlayers = async () => {
+  const handleInvitedPlayers = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
       setCopied(true);
@@ -203,18 +202,25 @@ export const ViewEventPage = () => {
       </div>
 
       <div
-          className={`min-h-screen fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center ${
-              !inviteDialogVisible ? "hidden" : ""
-          }`}
+        className={`min-h-screen fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center ${
+          !inviteDialogVisible ? "hidden" : ""
+        }`}
       >
-        <EventInvitePlayersDialog user={user!} event={event} onInvite={async () => {
-          setInviteDialogVisible(false)
-          await communityApi.getEventById(eventId);}} onClose={() => {setInviteDialogVisible(false)}} />
+        <EventInvitedPlayersDialog
+          user={user!}
+          event={event}
+          onInvite={async () => {
+            setInviteDialogVisible(false);
+            await communityApi.getEventById(eventId);
+          }}
+          onClose={() => {
+            setInviteDialogVisible(false);
+          }}
+        />
       </div>
 
       <HomeBar />
       <Animation>
-
         <div className="mx-4 my-10 space-y-4 text-sm">
           <h1
             className={`justify-self-center font-semibold ${
@@ -359,38 +365,40 @@ export const ViewEventPage = () => {
             )}
 
           {event.username === user?.username && (
-              <>
-                <div className="flex flex-col w-full gap-4 text-lg">
+            <>
+              <div className="flex flex-col w-full gap-4 text-lg">
+                <button
+                  onClick={() => setInviteDialogVisible(true)}
+                  className="bg-green-500 hover:bg-green-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                >
+                  Inviter spillere
+                </button>
 
-                  <button
-                      onClick={() => setInviteDialogVisible(true)}
-                      className="bg-green-500 hover:bg-green-600 transition duration-300 rounded-lg py-2 px-4 text-white"
-                  >
-                    Inviter spillere
-                  </button>
-
-                  <div onClick={handleInvitePlayers} className="hidden flex justify-center bg-green-500 hover:bg-green-600 transition duration-300 rounded-lg py-2 px-4 text-white">
-                    {!copied ? (
-                        <>
-                          <DocumentDuplicateIcon className="h-5"/>
-                          <h1>Kopier kamplink</h1>
-                        </>
-                    ) : (
-                        <>
-                          <CheckIcon className="h-5"/>
-                          <h1>Link kopieret!</h1>
-                        </>
-                    )}
-                  </div>
-
-                  <button
-                      onClick={handleDeleteEvent}
-                      className="bg-red-500 hover:bg-red-600 transition duration-300 rounded-lg py-2 px-4 text-white"
-                  >
-                    Slet kamp
-                  </button>
+                <div
+                  onClick={handleInvitedPlayers}
+                  className="hidden flex justify-center bg-green-500 hover:bg-green-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                >
+                  {!copied ? (
+                    <>
+                      <DocumentDuplicateIcon className="h-5" />
+                      <h1>Kopier kamplink</h1>
+                    </>
+                  ) : (
+                    <>
+                      <CheckIcon className="h-5" />
+                      <h1>Link kopieret!</h1>
+                    </>
+                  )}
                 </div>
-              </>
+
+                <button
+                  onClick={handleDeleteEvent}
+                  className="bg-red-500 hover:bg-red-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                >
+                  Slet kamp
+                </button>
+              </div>
+            </>
           )}
         </div>
       </Animation>

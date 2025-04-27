@@ -44,7 +44,7 @@ const padelMatchSchema = new mongoose.Schema({
     type: [reservedSpotSchema],
     default: [],
   },
-  invitePlayers: {
+  invitedPlayers: {
     type: [String],
     default: [],
   },

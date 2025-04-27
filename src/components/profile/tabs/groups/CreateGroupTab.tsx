@@ -33,12 +33,35 @@ export const CreateGroupTab = () => {
 
   useEffect(() => {
     const fetchUsers = async () => {
+      console.log("CreateGroupTab: Fetching users...");
+
+      setAllUsers([]); // Reset allUsers
+      setSelectedUsers([]); // Reset selectedUsers
+      setGroupName(""); // Reset groupName
+      setSearchQuery(""); // Reset searchQuery
+      setError(null); // Reset error
+
+      if (!user?.username) {
+        setError("Du skal være logget ind for at hente brugere.");
+
+        return;
+      }
+
       if (useMockData) {
-        setAllUsers(mockUsers);
+        console.log("Using mock data");
+        const filteredMockUsers = mockUsers.filter(
+          (u) => u.username !== user.username
+        );
+        setAllUsers(filteredMockUsers);
       } else {
         try {
+          console.log("Fetching users from API");
           const response = await userProfileService.getAllUsers();
-          setAllUsers(response.users || []);
+          const filteredResponse = (response.users || []).filter(
+            (u) => u.username !== user.username
+          );
+          console.log("Fetched users:", filteredResponse);
+          setAllUsers(filteredResponse);
         } catch (error) {
           console.error("Error fetching users:", error);
           setError("Der opstod en fejl under indlæsning af brugere.");
@@ -46,8 +69,16 @@ export const CreateGroupTab = () => {
       }
     };
     fetchUsers();
-  }, [useMockData]);
 
+    return () => {
+      console.log("CreateGroupTab: Cleaning up...");
+      setAllUsers([]); // Clear state on unmount
+      setSelectedUsers([]);
+      setGroupName("");
+      setSearchQuery("");
+      setError(null);
+    };
+  }, [useMockData, user?.username]);
   const handleCreateGroup = async (event: FormEvent) => {
     event.preventDefault();
 

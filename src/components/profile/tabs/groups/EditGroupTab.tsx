@@ -29,7 +29,7 @@ export const EditGroupTab = () => {
     setSearchQuery("");
   };
 
-  const useMockData = true;
+  const useMockData = false;
 
   useEffect(() => {
     const fetchUsersAndGroup = async () => {
@@ -38,7 +38,7 @@ export const EditGroupTab = () => {
       } else {
         try {
           const response = await userProfileService.getAllUsers();
-          setAllUsers(response);
+          setAllUsers(response.users || []);
         } catch (error) {
           console.error("Error fetching users:", error);
           setError("Der opstod en fejl under indlæsning af brugere.");

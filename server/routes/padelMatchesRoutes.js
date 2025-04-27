@@ -16,6 +16,90 @@ router.get("/", async (req, res) => {
   }
 });
 
+// POST /api/v1/matches/:id/reject - Reject a join request
+router.post("/:id/reject", async (req, res) => {
+  try {
+    const { username } = req.body;
+    const match = await PadelMatch.findById(req.params.id);
+    if (!match) {
+      logger.warn("Attempted to reject join for non-existent match", {
+        matchId: req.params.id,
+      });
+      return res.status(404).json({ message: "Match not found" });
+    }
+    // Check if user is invited to the match
+    if (!match.invitedPlayers.includes(username)) {
+      logger.warn("User not invited to match", {
+        matchId: req.params.id,
+        username,
+      });
+      return res.status(403).json({ message: "User not invited to match" });
+    }
+
+    const updatedMatch = await padelMatchService.rejectJoin(
+      req.params.id,
+      username
+    );
+    const io = req.app.get("socketio");
+    logger.info("Emitting matchUpdated event", { matchId: updatedMatch.id });
+    io.to(req.params.id).emit("matchUpdated", updatedMatch);
+
+    logger.info("Successfully rejected user join", {
+      matchId: req.params.id,
+      username,
+    });
+    res.json(updatedMatch);
+  } catch (error) {
+    logger.error("Error rejecting join", {
+      matchId: req.params.id,
+      error: error.message,
+    });
+    res.status(400).json({ message: error.message });
+  }
+});
+
+// POST /api/v1/matches/:id/accept - Accept a join request
+router.post("/:id/accept", async (req, res) => {
+  try {
+    const { username } = req.body;
+    const match = await PadelMatch.findById(req.params.id);
+    if (!match) {
+      logger.warn("Attempted to accept join for non-existent match", {
+        matchId: req.params.id,
+      });
+      return res.status(404).json({ message: "Match not found" });
+    }
+    // Check if user is invited to the match
+    if (!match.invitedPlayers.includes(username)) {
+      logger.warn("User not invited to match", {
+        matchId: req.params.id,
+        username,
+      });
+      return res.status(403).json({ message: "User not invited to match" });
+    }
+
+    const updatedMatch = await padelMatchService.acceptJoin(
+      req.params.id,
+      username
+    );
+    const io = req.app.get("socketio");
+    logger.info("Emitting matchUpdated event", { matchId: updatedMatch.id });
+    io.to(req.params.id).emit("matchUpdated", updatedMatch);
+
+    logger.info("Successfully accepted user join", {
+      matchId: req.params.id,
+      username,
+    });
+    res.json(updatedMatch);
+  } catch (error) {
+    logger.error("Error accepting join", {
+      matchId: req.params.id,
+      error: error.message,
+    });
+    res.status(400).json({ message: error.message });
+  }
+});
+
 // POST /api/v1/matches/:id/invite - Invite players to a match
 router.post("/:id/invite", async (req, res) => {
   try {
@@ -43,7 +127,7 @@ router.post("/:id/invite", async (req, res) => {
         .status(403)
         .json({ message: "Only the match creator can invite players" });
     }
-    const updatedMatch = await padelMatchService.invitePlayers(
+    const updatedMatch = await padelMatchService.invitedPlayers(
       req.params.id,
       usernames
     );

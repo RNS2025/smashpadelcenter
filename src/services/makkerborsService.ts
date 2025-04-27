@@ -18,6 +18,26 @@ const communityApi = {
     return response.data;
   },
 
+  rejectJoinMatch: async (
+    matchId: string,
+    username: string
+  ): Promise<PadelMatch> => {
+    const response = await api.post(`/matches/${matchId}/reject`, {
+      username,
+    });
+    return response.data;
+  },
+
+  acceptJoinMatch: async (
+    matchId: string,
+    username: string
+  ): Promise<PadelMatch> => {
+    const response = await api.post(`/matches/${matchId}/accept`, {
+      username,
+    });
+    return response.data;
+  },
+
   confirmJoinMatch: async (
     matchId: string,
     username: string
@@ -28,21 +48,30 @@ const communityApi = {
     return response.data;
   },
 
-  declineJoinMatch: async (matchId: string, username: string): Promise<PadelMatch> => {
+  declineJoinMatch: async (
+    matchId: string,
+    username: string
+  ): Promise<PadelMatch> => {
     const response = await api.post(`/matches/${matchId}/decline`, {
       username,
     });
     return response.data;
   },
 
-  removePlayer: async (matchId: string, username: string): Promise<PadelMatch> => {
+  removePlayer: async (
+    matchId: string,
+    username: string
+  ): Promise<PadelMatch> => {
     const response = await api.post(`/matches/${matchId}/remove`, {
       username,
     });
     return response.data;
   },
 
-  invitePlayersToMatch: async (matchId: string, usernames: string[]): Promise<PadelMatch> => {
+  invitedPlayersToMatch: async (
+    matchId: string,
+    usernames: string[]
+  ): Promise<PadelMatch> => {
     const response = await api.post(`/matches/${matchId}/invite`, {
       usernames,
     });
@@ -126,7 +155,10 @@ const communityApi = {
     const response = await api.delete(`/private-event/${eventId}`);
     return response.data;
   },
-  invitePlayersToEvent: async (eventId: string, usernames: string[]): Promise<PrivateEvent> => {
+  invitedPlayersToEvent: async (
+    eventId: string,
+    usernames: string[]
+  ): Promise<PrivateEvent> => {
     const response = await api.post(`/private-event/${eventId}/invite`, {
       usernames,
     });

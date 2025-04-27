@@ -9,7 +9,8 @@ import {
   CheckCircleIcon,
   XCircleIcon,
   DocumentDuplicateIcon,
-  CheckIcon, StarIcon,
+  CheckIcon,
+  StarIcon,
 } from "@heroicons/react/24/outline";
 import { useUser } from "../../../context/UserContext";
 import { useEffect, useState } from "react";
@@ -24,8 +25,8 @@ import { da } from "date-fns/locale";
 import { User } from "../../../types/user.ts";
 import userProfileService from "../../../services/userProfileService.ts";
 import PlayerInfoDialog from "../../../components/matchFinder/misc/PlayerInfoDialog.tsx";
-import {XIcon} from "lucide-react";
-import {MatchInvitePlayersDialog} from "../../../components/matchFinder/misc/MatchInvitePlayersDialog.tsx";
+import { XIcon } from "lucide-react";
+import { MatchInvitedPlayersDialog } from "../../../components/matchFinder/misc/MatchInvitePlayersDialog.tsx";
 
 export const ViewMatchPage = () => {
   const { user } = useUser();
@@ -36,7 +37,6 @@ export const ViewMatchPage = () => {
   const [socketConnected, setSocketConnected] = useState(false);
   const [participantProfiles, setParticipantProfiles] = useState<User[]>([]);
   const [joinRequestProfiles, setJoinRequestProfiles] = useState<User[]>([]);
-
 
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [infoDialogVisible, setInfoDialogVisible] = useState(false);
@@ -74,7 +74,10 @@ export const ViewMatchPage = () => {
         );
         setJoinRequestProfiles(profiles);
       } catch (err) {
-        console.error("Fejl ved hentning af tilmeldingsanmodningsprofiler:", err);
+        console.error(
+          "Fejl ved hentning af tilmeldingsanmodningsprofiler:",
+          err
+        );
       }
     };
 
@@ -161,6 +164,7 @@ export const ViewMatchPage = () => {
           return;
         }
         const matchData = await communityApi.getMatchById(matchId);
+        console.log("Fetched match data:", matchData);
         if (
           !matchData ||
           !Array.isArray(matchData.participants) ||
@@ -216,6 +220,48 @@ export const ViewMatchPage = () => {
     }
   };
 
+  const handleAcceptJoin = async (username: string) => {
+    if (!match) return;
+    try {
+      const updatedMatch = await communityApi.acceptJoinMatch(
+        match.id,
+        username
+      );
+      console.log("Updated match after confirm:", updatedMatch);
+      if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
+        setError("Invalid match data returned");
+        alert("Der opstod en fejl – prøv igen.");
+      }
+      alert("Tilmelding accepteret!");
+      setMatch(updatedMatch);
+    } catch (error: any) {
+      console.error("Error confirming join:", error);
+      alert(error.response?.data?.message || "Fejl ved bekræftelse");
+      setError("Fejl ved bekræftelse");
+    }
+  };
+
+  const handleRejectJoin = async (username: string) => {
+    if (!match) return;
+    try {
+      const updatedMatch = await communityApi.rejectJoinMatch(
+        match.id,
+        username
+      );
+      console.log("Updated match after confirm:", updatedMatch);
+      if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
+        setError("Invalid match data returned");
+        alert("Der opstod en fejl – prøv igen.");
+      }
+      alert("Tilmelding afvist!");
+      setMatch(updatedMatch);
+    } catch (error: any) {
+      console.error("Error confirming join:", error);
+      alert(error.response?.data?.message || "Fejl ved bekræftelse");
+      setError("Fejl ved bekræftelse");
+    }
+  };
+
   const handleConfirmJoin = async (username: string) => {
     if (!match) return;
     try {
@@ -240,7 +286,10 @@ export const ViewMatchPage = () => {
   const handleDeclineJoin = async (username: string) => {
     if (!match) return;
     try {
-      const updatedMatch = await communityApi.declineJoinMatch(match.id, username);
+      const updatedMatch = await communityApi.declineJoinMatch(
+        match.id,
+        username
+      );
       console.log("Updated match after confirm:", updatedMatch);
       if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
         setError("Invalid match data returned");
@@ -271,7 +320,7 @@ export const ViewMatchPage = () => {
       alert(error.response?.data?.message || "Fejl ved afvisning");
       setError("Fejl ved afvisning");
     }
-  }
+  };
 
   const handleDeleteMatch = async () => {
     if (!match) return;
@@ -286,7 +335,7 @@ export const ViewMatchPage = () => {
     }
   };
 
-  const handleInvitePlayers = async () => {
+  const handleInvitedPlayers = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
       setCopied(true);
@@ -339,18 +388,25 @@ export const ViewMatchPage = () => {
       </div>
 
       <div
-          className={`min-h-screen fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center ${
-              !inviteDialogVisible ? "hidden" : ""
-          }`}
+        className={`min-h-screen fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center ${
+          !inviteDialogVisible ? "hidden" : ""
+        }`}
       >
-        <MatchInvitePlayersDialog user={user!} match={match} onInvite={async () => {
-          setInviteDialogVisible(false)
-          await communityApi.getMatchById(matchId);}} onClose={() => {setInviteDialogVisible(false)}} />
+        <MatchInvitedPlayersDialog
+          user={user!}
+          match={match}
+          onInvite={async () => {
+            setInviteDialogVisible(false);
+            await communityApi.getMatchById(matchId);
+          }}
+          onClose={() => {
+            setInviteDialogVisible(false);
+          }}
+        />
       </div>
 
       <HomeBar />
       <Animation>
-
         <div className="mx-4 my-10 space-y-4 text-sm">
           <h1
             className={`justify-self-center font-semibold ${
@@ -381,45 +437,52 @@ export const ViewMatchPage = () => {
 
           {/* Participants */}
           {participantProfiles.map((profile) => (
-              <>
-                <div className="flex items-center gap-2">
+            <>
+              <div className="flex items-center gap-2">
                 <div
-                    key={profile.username}
-                    className="border rounded flex items-center px-1 w-full py-3"
+                  key={profile.username}
+                  className="border rounded flex items-center px-1 w-full py-3"
                 >
                   <div
-                      onClick={() => {
-                        setSelectedUser(profile);
-                        setInfoDialogVisible(true);
-                      }}
-                      className="flex items-center gap-2 w-full pr-1 truncate">
-                    <UserCircleIcon className="h-14"/>
+                    onClick={() => {
+                      setSelectedUser(profile);
+                      setInfoDialogVisible(true);
+                    }}
+                    className="flex items-center gap-2 w-full pr-1 truncate"
+                  >
+                    <UserCircleIcon className="h-14" />
                     <div className="flex flex-col gap-2">
-                    <h1>{profile.fullName}</h1>
-                    <h1 className="text-gray-500 italic">{profile.username}</h1>
+                      <h1>{profile.fullName}</h1>
+                      <h1 className="text-gray-500 italic">
+                        {profile.username}
+                      </h1>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-2">
+                    <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-12 h-12">
+                      {profile.skillLevel.toFixed(1)}
+                    </div>
 
-                  <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-12 h-12">
-                    {profile.skillLevel.toFixed(1)}
-                  </div>
-
-                  <div>
-                    {match.username === profile.username ? (
+                    <div>
+                      {match.username === profile.username ? (
                         <StarIcon className="size-6 text-yellow-500" />
-                    ) : (
-                        <XIcon onClick={() => handleRemovePlayerFromMatch(profile.username)} className="size-6 text-red-500" />
-                    )}
-                  </div>
+                      ) : (
+                        <XIcon
+                          onClick={() =>
+                            handleRemovePlayerFromMatch(profile.username)
+                          }
+                          className="size-6 text-red-500"
+                        />
+                      )}
+                    </div>
                   </div>
                 </div>
-                </div>
-              </>
+              </div>
+            </>
           ))}
 
-          {match.reservedSpots.length > 0 && (
+          {match.reservedSpots.length > 0 &&
             match.reservedSpots.map((reserved) => (
               <div
                 key={reserved.name}
@@ -433,8 +496,7 @@ export const ViewMatchPage = () => {
                   {reserved.level}
                 </div>
               </div>
-            ))
-          )}
+            ))}
 
           {/* Empty spots */}
           {[
@@ -459,49 +521,64 @@ export const ViewMatchPage = () => {
 
           {/* Join requests (visible to creator) */}
           {match.username === user?.username &&
-              Array.isArray(match.joinRequests) &&
-              match.joinRequests.length > 0 && (
-                  <>
-                    <h2 className="font-semibold">Tilmeldingsanmodninger</h2>
-                    {joinRequestProfiles.map((requester, index) => (
-                        <div
-                            onClick={() => {
-                              setSelectedUser(requester);
-                              setInfoDialogVisible(true);
-                            }}
-                            key={index}
-                            className="border rounded flex flex-col p-2 gap-2" // FLEX COL + GAP
-                        >
-                          <div className="flex items-center">
-                            <UserCircleIcon className="h-20" />
-                            <div className="flex flex-col w-full pr-1 truncate">
-                              <h1>{requester.username}</h1>
-                              <h1 className="text-gray-500">Afventer bekræftelse</h1>
-                            </div>
-                            <div className="bg-yellow-600 text-white rounded-full flex items-center justify-center w-20 h-12">
-                              {requester.skillLevel.toFixed(1)}
-                            </div>
-                          </div>
+            Array.isArray(match.joinRequests) &&
+            match.joinRequests.length > 0 && (
+              <>
+                <h2 className="font-semibold">Tilmeldingsanmodninger</h2>
+                {joinRequestProfiles.map((requester, index) => (
+                  <div
+                    onClick={() => {
+                      setSelectedUser(requester);
+                      setInfoDialogVisible(true);
+                    }}
+                    key={index}
+                    className="border rounded flex flex-col p-2 gap-2" // FLEX COL + GAP
+                  >
+                    <div className="flex items-center">
+                      <UserCircleIcon className="h-20" />
+                      <div className="flex flex-col w-full pr-1 truncate">
+                        <h1>{requester.username}</h1>
+                        <h1 className="text-gray-500">Afventer bekræftelse</h1>
+                      </div>
+                      <div className="bg-yellow-600 text-white rounded-full flex items-center justify-center w-20 h-12">
+                        {requester.skillLevel.toFixed(1)}
+                      </div>
+                    </div>
 
+                    <div className="flex justify-center gap-4">
+                      <XIcon
+                        onClick={() => handleDeclineJoin(requester.username)}
+                        className="size-8 text-red-500"
+                      />
+                      <CheckIcon
+                        onClick={() => handleConfirmJoin(requester.username)}
+                        className="size-8 text-green-500"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
 
-                          <div className="flex justify-center gap-4">
-                            <XIcon onClick={() => handleDeclineJoin(requester.username)} className="size-8 text-red-500" />
-                            <CheckIcon onClick={() => handleConfirmJoin(requester.username)} className="size-8 text-green-500" />
-                          </div>
-                        </div>
-                    ))}
-                  </>
-              )}
+          {user &&
+            match.invitedPlayers &&
+            match.invitedPlayers.includes(user.username) && (
+              <div className="flex justify-between items-center border border-yellow-500 p-4 rounded-lg animate-pulse">
+                <h1>{match.username} har inviteret dig!</h1>
+                <div className="flex gap-2">
+                  <XIcon
+                    className="size-8 text-red-500"
+                    onClick={() => handleRejectJoin(user.username)}
+                  />
+                  <CheckIcon
+                    className="size-8 text-green-500"
+                    onClick={() => handleAcceptJoin(user.username)}
+                  />
+                </div>
+              </div>
+            )}
 
-          {/*{user && match.invitedPlayers && match.invitedPlayers.includes(user.username) && ( */}
-          <div className="flex justify-between items-center border border-yellow-500 p-4 rounded-lg animate-pulse">
-            <h1>{match.username} har inviteret dig!</h1>
-            <div className="flex gap-2">
-            <XIcon className="size-8 text-red-500" />
-            <CheckIcon className="size-8 text-green-500" />
-            </div>
-          </div>
-
+          {/* Match details */}
 
           <div className="grid grid-cols-2 text-center text-black gap-3">
             <div className="bg-white rounded flex justify-center items-center gap-1 py-4">
@@ -539,50 +616,60 @@ export const ViewMatchPage = () => {
 
           {/* Action buttons */}
 
-          {user?.username && match.username !== user?.username && !match.participants.includes(user?.username) &&
+          {user?.username &&
+            match.username !== user?.username &&
+            !match.participants.includes(user?.username) &&
             !isMatchFull && (
               <button
                 onClick={handleJoinMatch}
-                className={`bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white ${match.joinRequests.includes(user?.username) ? "bg-gray-700 animate-pulse" : ""}`}
+                className={`bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white ${
+                  match.joinRequests.includes(user?.username)
+                    ? "bg-gray-700 animate-pulse"
+                    : ""
+                }`}
                 disabled={match.joinRequests.includes(user?.username)}
               >
-                {match.joinRequests.includes(user?.username) ? "Anmodning sendt" : "Tilmeld dig"}
+                {match.joinRequests.includes(user?.username)
+                  ? "Anmodning sendt"
+                  : "Tilmeld dig"}
               </button>
             )}
 
           {match.username === user?.username && (
-              <>
-                <div className="flex flex-col w-full gap-4 text-lg">
+            <>
+              <div className="flex flex-col w-full gap-4 text-lg">
+                <button
+                  onClick={() => setInviteDialogVisible(true)}
+                  className="bg-green-500 hover:bg-green-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                >
+                  Inviter spillere
+                </button>
 
-                  <button
-                      onClick={() => setInviteDialogVisible(true)}
-                      className="bg-green-500 hover:bg-green-600 transition duration-300 rounded-lg py-2 px-4 text-white"
-                  >
-                    Inviter spillere
-                  </button>
-
-                  <div onClick={handleInvitePlayers} className="flex justify-center hidden bg-green-500 hover:bg-green-600 transition duration-300 rounded-lg py-2 px-4 text-white">
-                    {!copied ? (
-                        <>
-                          <DocumentDuplicateIcon className="h-5"/>
-                          <h1>Kopier kamplink</h1>
-                        </>
-                    ) : (
-                        <>
-                          <CheckIcon className="h-5"/>
-                          <h1>Link kopieret!</h1>
-                        </>
-                    )}
-                  </div>
-
-                  <button
-                      onClick={handleDeleteMatch}
-                      className="bg-red-500 hover:bg-red-600 transition duration-300 rounded-lg py-2 px-4 text-white"
-                  >
-                    Slet kamp
-                  </button>
+                <div
+                  onClick={handleInvitedPlayers}
+                  className="flex justify-center hidden bg-green-500 hover:bg-green-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                >
+                  {!copied ? (
+                    <>
+                      <DocumentDuplicateIcon className="h-5" />
+                      <h1>Kopier kamplink</h1>
+                    </>
+                  ) : (
+                    <>
+                      <CheckIcon className="h-5" />
+                      <h1>Link kopieret!</h1>
+                    </>
+                  )}
                 </div>
-              </>
+
+                <button
+                  onClick={handleDeleteMatch}
+                  className="bg-red-500 hover:bg-red-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                >
+                  Slet kamp
+                </button>
+              </div>
+            </>
           )}
         </div>
       </Animation>

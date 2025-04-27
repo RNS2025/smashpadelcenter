@@ -21,7 +21,101 @@ const padelMatchService = {
     }
   },
 
-  invitePlayers: async (matchId, usernames) => {
+  rejectJoin: async (matchId, username) => {
+    try {
+      const match = await PadelMatch.findById(matchId);
+      if (!match) throw new Error("Match not found");
+
+      if (!match.invitedPlayers.includes(username)) {
+        throw new Error("No invitation found for this user");
+      }
+
+      // Remove the user from invitedPlayers
+      match.invitedPlayers = match.invitedPlayers.filter(
+        (player) => player !== username
+      );
+      await match.save();
+
+      const updatedMatch = {
+        ...match.toObject(),
+        id: match._id.toString(),
+        participants: match.participants || [],
+        joinRequests: match.joinRequests || [],
+        reservedSpots: match.reservedSpots || [],
+        invitedPlayers: match.invitedPlayers || [],
+        totalSpots: match.totalSpots || 4,
+      };
+      logger.debug("PadelMatchService: User rejected invitation", {
+        matchId,
+        username,
+      });
+      return updatedMatch;
+    } catch (error) {
+      logger.error("PadelMatchService: Error rejecting invitation", {
+        matchId,
+        username,
+        error: error.message,
+      });
+      throw new Error("Error rejecting invitation: " + error.message);
+    }
+  },
+
+  acceptJoin: async (matchId, username) => {
+    try {
+      const match = await PadelMatch.findById(matchId);
+      if (!match) throw new Error("Match not found");
+
+      if (!match.invitedPlayers.includes(username)) {
+        throw new Error("No invitation found for this user");
+      }
+
+      // Check if match is full
+      const nonOwnerParticipants = match.participants.filter(
+        (p) => p !== match.username
+      );
+      if (nonOwnerParticipants.length + match.reservedSpots.length >= 3) {
+        throw new Error("Match is full");
+      }
+
+      // Remove from invitedPlayers and add to participants
+      match.invitedPlayers = match.invitedPlayers.filter(
+        (player) => player !== username
+      );
+      match.participants.push(username);
+      await match.save();
+
+      // Update matchHistory for the user
+      await User.updateOne(
+        { username },
+        { $push: { matchHistory: match._id } }
+      );
+      logger.debug("Updated matchHistory for user:", { username });
+
+      const updatedMatch = {
+        ...match.toObject(),
+        id: match._id.toString(),
+        participants: match.participants || [],
+        joinRequests: match.joinRequests || [],
+        reservedSpots: match.reservedSpots || [],
+        invitedPlayers: match.invitedPlayers || [],
+        totalSpots: match.totalSpots || 4,
+      };
+      logger.debug("PadelMatchService: User accepted invitation", {
+        matchId,
+        username,
+      });
+      return updatedMatch;
+    } catch (error) {
+      logger.error("PadelMatchService: Error accepting invitation", {
+        matchId,
+        username,
+        error: error.message,
+      });
+      throw new Error("Error accepting invitation: " + error.message);
+    }
+  },
+
+  invitedPlayers: async (matchId, usernames) => {
     try {
       const match = await PadelMatch.findById(matchId);
       if (!match) throw new Error("Match not found");
@@ -37,13 +131,21 @@ const padelMatchService = {
       }
 
       const newInviteRequests = usernames.filter(
-        (username) =>
-          !match.participants.includes(username) &&
-          !match.invitePlayers.includes(username)
+        (username) => !match.participants.includes(username)
       );
 
       if (newInviteRequests.length === 0) {
-        throw new Error("All users are already invited or participants");
+        throw new Error("All users are already participants or invited");
+      }
+
+      // Check if the match creator is trying to invite themselves
+      if (newInviteRequests.includes(match.username)) {
+        throw new Error("Match creator cannot invite themselves");
+      }
+
+      // Check if the match is already full (excluding creator, max 3 additional players)
+      if (match.participants.length >= 4) {
+        throw new Error("Match is already full");
       }
 
       // Check if match is full (excluding creator, max 3 additional players)
@@ -62,7 +164,7 @@ const padelMatchService = {
       }
 
       // Add new join requests
-      match.invitePlayers.push(...newInviteRequests);
+      match.invitedPlayers.push(...newInviteRequests);
       await match.save();
       const updatedMatch = {
         ...match.toObject(),
@@ -70,10 +172,10 @@ const padelMatchService = {
         participants: match.participants || [],
         joinRequests: match.joinRequests || [],
         reservedSpots: match.reservedSpots || [],
-        invitePlayers: match.invitePlayers || [],
+        invitedPlayers: match.invitedPlayers || [],
         totalSpots: match.totalSpots || 4,
       };
-      console.log("invitePlayers updated match:", updatedMatch);
+      console.log("invitedPlayers updated match:", updatedMatch);
       return updatedMatch;
     } catch (error) {
       logger.error("PadelMatchService: Error inviting players", {
