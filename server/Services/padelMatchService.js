@@ -21,6 +21,70 @@ const padelMatchService = {
     }
   },
 
+  invitePlayers: async (matchId, usernames) => {
+    try {
+      const match = await PadelMatch.findById(matchId);
+      if (!match) throw new Error("Match not found");
+
+      // Validate usernames (ensure they exist in the User collection)
+      const validUsers = await User.find({ username: { $in: usernames } });
+      const validUsernames = validUsers.map((user) => user.username);
+      const invalidUsernames = usernames.filter(
+        (username) => !validUsernames.includes(username)
+      );
+      if (invalidUsernames.length > 0) {
+        throw new Error(`Invalid usernames: ${invalidUsernames.join(", ")}`);
+      }
+
+      const newInviteRequests = usernames.filter(
+        (username) =>
+          !match.participants.includes(username) &&
+          !match.invitePlayers.includes(username)
+      );
+
+      if (newInviteRequests.length === 0) {
+        throw new Error("All users are already invited or participants");
+      }
+
+      // Check if match is full (excluding creator, max 3 additional players)
+      const nonOwnerParticipants = match.participants.filter(
+        (p) => p !== match.username
+      );
+      if (
+        nonOwnerParticipants.length +
+          match.reservedSpots.length +
+          newInviteRequests.length >
+        3
+      ) {
+        throw new Error(
+          "Match is full or would exceed capacity with these invites"
+        );
+      }
+
+      // Add new join requests
+      match.invitePlayers.push(...newInviteRequests);
+      await match.save();
+      const updatedMatch = {
+        ...match.toObject(),
+        id: match._id.toString(),
+        participants: match.participants || [],
+        joinRequests: match.joinRequests || [],
+        reservedSpots: match.reservedSpots || [],
+        invitePlayers: match.invitePlayers || [],
+        totalSpots: match.totalSpots || 4,
+      };
+      console.log("invitePlayers updated match:", updatedMatch);
+      return updatedMatch;
+    } catch (error) {
+      logger.error("PadelMatchService: Error inviting players", {
+        matchId,
+        usernames,
+        error: error.message,
+      });
+      throw new Error("Error inviting players: " + error.message);
+    }
+  },
+
   createMatch: async (matchData) => {
     try {
       // Ensure participants include the creator and filter duplicates

@@ -1,4 +1,4 @@
-const { Trainer, Booking, TrainerMessage } = require("../models/Trainer");
+/*const { Trainer, Booking, TrainerMessage } = require("../models/Trainer");
 const User = require("../models/user");
 const { updateUserRole } = require("./databaseService");
 const logger = require("../config/logger");
@@ -7,7 +7,7 @@ let io; // Socket.IO instance
 function setIO(socketIO) {
   io = socketIO;
   logger.info("TrainerService: Socket.IO instance set");
-}
+}>
 
 const getAllTrainers = async () => {
   try {
@@ -323,3 +323,4 @@ module.exports = {
   removeTrainerAvailability,
   getAllTrainerMessages,
 };
+*/

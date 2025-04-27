@@ -107,6 +107,51 @@ const privateEventService = {
     }
   },
 
+  invitePlayers: async (eventId, usernames) => {
+    try {
+      const event = await PrivateEvent.findById(eventId);
+      if (!event) throw new Error("Event not found");
+
+      // Validate usernames (ensure they exist in the User collection)
+      const validUsers = await User.find({ username: { $in: usernames } });
+      const validUsernames = validUsers.map((user) => user.username);
+      const invalidUsernames = usernames.filter(
+        (username) => !validUsernames.includes(username)
+      );
+      if (invalidUsernames.length > 0) {
+        throw new Error(`Invalid usernames: ${invalidUsernames.join(", ")}`);
+      }
+
+      // Filter out usernames already in participants or joinRequests
+      const newInviteRequests = usernames.filter(
+        (username) =>
+          !event.participants.includes(username) &&
+          !event.invitedPlayers.includes(username)
+      );
+
+      if (newInviteRequests.length === 0) {
+        throw new Error("All users are already invited or participants");
+      }
+
+      event.invitedPlayers.push(...newInviteRequests);
+      await event.save();
+      return {
+        ...event.toObject(),
+        id: event._id.toString(),
+        participants: event.participants || [],
+        joinRequests: event.joinRequests || [],
+        invitedPlayers: event.invitedPlayers || [],
+      };
+    } catch (error) {
+      logger.error("PrivateEventService: Error inviting players", {
+        eventId,
+        usernames,
+        error: error.message,
+      });
+      throw new Error("Error inviting players: " + error.message);
+    }
+  },
+
   updatePrivateEvent: async (eventId, updateData = null) => {
     try {
       const event = await PrivateEvent.findById(eventId);

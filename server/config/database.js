@@ -2,7 +2,8 @@ const mongoose = require("mongoose");
 const logger = require("./logger");
 
 const MONGODB_URI =
-  process.env.MONGODB_URI || "mongodb://localhost:27017/smashpadel";
+  process.env.MONGODB_URI ||
+  "mongodb+srv://admin:<db_password>@cluster0.108ujbh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
 async function connectDB() {
   if (mongoose.connection.readyState === 1) {

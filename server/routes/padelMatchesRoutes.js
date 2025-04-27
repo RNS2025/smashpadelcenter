@@ -16,6 +16,55 @@ router.get("/", async (req, res) => {
   }
 });
 
+// POST /api/v1/matches/:id/invite - Invite players to a match
+router.post("/:id/invite", async (req, res) => {
+  try {
+    if (!req.isAuthenticated()) {
+      logger.warn("Unauthenticated user attempted to invite players to match", {
+        matchId: req.params.id,
+      });
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    const { usernames } = req.body;
+    const match = await PadelMatch.findById(req.params.id);
+    if (!match) {
+      logger.warn("Attempted to invite players to non-existent match", {
+        matchId: req.params.id,
+      });
+      return res.status(404).json({ message: "Match not found" });
+    }
+    if (match.username !== req.user.username) {
+      logger.warn("Unauthorized invite attempt", {
+        matchId: req.params.id,
+        matchCreator: match.username,
+        attemptedBy: req.user.username,
+      });
+      return res
+        .status(403)
+        .json({ message: "Only the match creator can invite players" });
+    }
+    const updatedMatch = await padelMatchService.invitePlayers(
+      req.params.id,
+      usernames
+    );
+    const io = req.app.get("socketio");
+    logger.info("Emitting matchUpdated event", { matchId: updatedMatch.id });
+    io.to(req.params.id).emit("matchUpdated", updatedMatch);
+    logger.info("Players invited to padel match", {
+      matchId: req.params.id,
+      usernames,
+    });
+    res.json(updatedMatch);
+  } catch (error) {
+    logger.error("Error inviting players to padel match", {
+      matchId: req.params.id,
+      usernames: req.body.usernames,
+      error: error.message,
+    });
+    res.status(400).json({ message: error.message });
+  }
+});
+
 // POST /api/v1/matches - Create a new match
 router.post("/", async (req, res) => {
   try {

@@ -17,7 +17,7 @@ module.exports = {
       position = "Begge",
       playingStyle = "",
       equipment = "",
-        groups = [],
+      groups = [],
     } = userData;
     try {
       const existingUser = await User.findOne({ username });
@@ -54,6 +54,47 @@ module.exports = {
         username: userData.username,
       });
       throw new Error("Error creating user: " + err.message);
+    }
+  },
+
+  getAllUserProfiles: async () => {
+    try {
+      const users = await User.find(
+        {},
+        "username email fullName profilePictureUrl createdAt updatedAt"
+      );
+      logger.info("DatabaseService: Fetched all user profiles", {
+        count: users.length,
+      });
+
+      const formattedUsers = users.map((user) => {
+        // Split fullName into firstName and lastName if available
+        let firstName = "";
+        let lastName = "";
+        if (user.fullName) {
+          const nameParts = user.fullName.trim().split(" ");
+          firstName = nameParts[0];
+          lastName = nameParts.length > 1 ? nameParts.slice(1).join(" ") : "";
+        }
+
+        return {
+          id: user._id.toString(),
+          username: user.username,
+          firstName: firstName || undefined,
+          lastName: lastName || undefined,
+          fullName: user.fullName || undefined,
+        };
+      });
+
+      return {
+        users: formattedUsers,
+        totalCount: formattedUsers.length,
+      };
+    } catch (err) {
+      logger.error("DatabaseService: Error fetching all user profiles", {
+        error: err.message,
+      });
+      throw new Error("Error fetching user profiles: " + err.message);
     }
   },
 
