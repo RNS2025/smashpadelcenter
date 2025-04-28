@@ -340,52 +340,71 @@ export const ViewEventPage = () => {
 
           {/* Participants */}
           {participantProfiles.map((profile) => (
-            <div
-              onClick={() => {
-                setSelectedUser(profile);
-                setInfoDialogVisible(true);
-              }}
-              key={profile.username}
-              className="border rounded flex items-center px-1"
-            >
-              <UserCircleIcon className="h-20" />
-              <div className="w-full pr-1 truncate">
-                <h1>{profile.username}</h1>
-              </div>
+              <>
+                <div className="flex items-center gap-2">
+                  <div
+                      key={profile.username}
+                      className="border rounded flex items-center px-1 w-full py-3"
+                  >
+                    <div
+                        onClick={() => {
+                          setSelectedUser(profile);
+                          setInfoDialogVisible(true);
+                        }}
+                        className="flex items-center gap-2 w-full pr-1 truncate"
+                    >
+                      <UserCircleIcon className="h-14" />
+                      <div className="flex flex-col gap-2">
+                        <h1>{profile.fullName}</h1>
+                        <h1 className="text-gray-500 italic">
+                          {profile.username}
+                        </h1>
+                      </div>
+                    </div>
 
-              <div className="flex items-center gap-2">
-              <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-12 h-12">
-                {profile.skillLevel.toFixed(1)}
-              </div>
+                    <div className="flex items-center gap-2">
+                      <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-12 h-12">
+                        {profile.skillLevel.toFixed(1)}
+                      </div>
 
-              <div>
-                {event.username === profile.username ? (
-                    <StarIcon className="size-6 text-yellow-500" />
-                ) : (
-                    <XIcon onClick={() => handleRemovePlayerFromEvent(profile.username)} className={`size-6 text-red-500 ${event.username !== user?.username ? "hidden" : ""}`} />
-                )}
-              </div>
-              </div>
-            </div>
+                      <div>
+                        {event.username === profile.username ? (
+                            <StarIcon className="size-6 text-yellow-500" />
+                        ) : (
+                            <XIcon
+                                onClick={() =>
+                                    handleRemovePlayerFromEvent(profile.username)
+                                }
+                                className={`size-6 text-red-500 ${event.username !== user?.username ? "hidden" : ""}`} />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
           ))}
 
           {/* Empty spots */}
           {[...Array(event.totalSpots - event.participants.length)].map(
             (_, index) => (
-              <div
-                key={`empty-${index}`}
-                className="border border-gray-500 rounded flex items-center px-1"
-              >
-                <UserCircleIcon className="h-20 text-gray-500" />
-                <div className="w-full pr-1 truncate">
-                  <h1 className="text-xl text-gray-500">Ledig plads</h1>
+                <div
+                    key={`empty-${index}`}
+                    className="border border-gray-500 rounded flex items-center"
+                >
+                  <UserCircleIcon className="h-20 text-gray-500" />
+                  <div className="w-full pr-1 truncate">
+                    <h1 className="text-xl text-gray-500">Ledig plads</h1>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <div className="bg-gray-500 text-white rounded-full flex items-center justify-center w-12 h-12">
+                      ?
+                    </div>
+                    <div>
+                    </div>
+                  </div>
                 </div>
-                <div className="bg-gray-500 text-white rounded-full flex items-center justify-center w-20 h-12">
-                  ?
-                </div>
-              </div>
-            )
-          )}
+            ))}
 
           {/* Join requests (visible to creator) */}
           {event.username === user?.username &&
@@ -407,8 +426,12 @@ export const ViewEventPage = () => {
                           <h1>{requester.username}</h1>
                           <h1 className="text-gray-500">Afventer bekræftelse</h1>
                         </div>
-                        <div className="bg-yellow-600 text-white rounded-full flex items-center justify-center w-20 h-12">
+
+
+                        <div className="flex items-center gap-2">
+                        <div className="bg-yellow-600 text-white rounded-full flex items-center justify-center w-12 h-12">
                           {requester.skillLevel.toFixed(1)}
+                        </div>
                         </div>
                       </div>
 
@@ -489,14 +512,20 @@ export const ViewEventPage = () => {
           {/* Action buttons */}
           {event.username !== user?.username &&
             user?.username &&
-            !event.participants.includes(user?.username) &&
-            !event.joinRequests.includes(user?.username) && !event.invitedPlayers?.includes(user?.username) &&
+            !event.participants.includes(user?.username) && !event.invitedPlayers?.includes(user?.username) &&
             !isEventFull && (
               <button
                 onClick={handleJoinEvent}
-                className="bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                className={`bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white ${
+                    event.joinRequests.includes(user?.username)
+                        ? "bg-gray-700 animate-pulse"
+                        : ""
+                }`}
+                disabled={event.joinRequests.includes(user?.username)}
               >
-                Tilmeld arrangement
+                {event.joinRequests.includes(user?.username)
+                    ? "Anmodning sendt"
+                    : "Tilmeld arrangement"}
               </button>
             )}
 
