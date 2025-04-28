@@ -5,13 +5,14 @@ import {
   useEffect,
   ReactNode,
   ChangeEvent,
-  FormEvent, useCallback,
+  FormEvent,
+  useCallback,
 } from "react";
 import { User } from "../types/user";
 import userProfileService from "../services/userProfileService";
-import communityApi from "../services/makkerborsService"; // Changed to use your existing API service
+import communityApi from "../services/makkerborsService";
 import { useUser } from "./UserContext";
-import { PadelMatch } from "../types/PadelMatch"; // Using your existing PadelMatch type
+import { PadelMatch } from "../types/PadelMatch";
 
 interface MatchesData {
   upcoming: PadelMatch[];
@@ -55,25 +56,22 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     try {
       setMatchesLoading(true);
       const userMatches = await communityApi.getMatchesByUser(user.username);
-
       const now = new Date();
       const upcomingMatches = userMatches
-          .filter((match) => new Date(match.matchDateTime) > now)
-          .sort(
-              (a, b) =>
-                  new Date(a.matchDateTime).getTime() -
-                  new Date(b.matchDateTime).getTime()
-          );
-
+        .filter((match) => new Date(match.matchDateTime) > now)
+        .sort(
+          (a, b) =>
+            new Date(a.matchDateTime).getTime() -
+            new Date(b.matchDateTime).getTime()
+        );
       const formerMatches = userMatches
-          .filter((match) => new Date(match.matchDateTime) <= now)
-          .filter((match => match.participants.length === match.totalSpots))
-          .sort(
-              (a, b) =>
-                  new Date(b.matchDateTime).getTime() -
-                  new Date(a.matchDateTime).getTime()
-          );
-
+        .filter((match) => new Date(match.matchDateTime) <= now)
+        .filter((match) => match.participants.length === match.totalSpots)
+        .sort(
+          (a, b) =>
+            new Date(b.matchDateTime).getTime() -
+            new Date(a.matchDateTime).getTime()
+        );
       setMatches({
         upcoming: upcomingMatches,
         former: formerMatches,
@@ -90,7 +88,9 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
       if (!user?.username) return;
       try {
         setLoading(true);
-        const profileData = await userProfileService.getOrCreateUserProfile(user.username);
+        const profileData = await userProfileService.getOrCreateUserProfile(
+          user.username
+        );
         setProfile(profileData);
         setFormData(profileData);
       } catch (err: any) {
@@ -100,12 +100,9 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         setLoading(false);
       }
     };
-
     if (!user) return;
     fetchData().then();
   }, [user]);
-
-
 
   useEffect(() => {
     fetchMatches().then();

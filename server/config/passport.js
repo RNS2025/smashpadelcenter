@@ -1,11 +1,8 @@
-// config/passport.js
 const LocalStrategy = require("passport-local").Strategy;
 const GoogleStrategy = require("passport-google-oauth20").Strategy;
-const FacebookStrategy = require("passport-facebook").Strategy;
-const GitHubStrategy = require("passport-github2").Strategy;
 const User = require("../models/user");
 const passport = require("passport");
-const mongoose = require("mongoose");
+const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
 dotenv.config();
 
@@ -18,12 +15,10 @@ passport.use(
           message: "Incorrect username or not a local account.",
         });
       }
-
       const isMatch = await user.comparePassword(password);
       if (!isMatch) {
         return done(null, false, { message: "Incorrect password." });
       }
-
       return done(null, user);
     } catch (err) {
       return done(err);
@@ -46,7 +41,7 @@ passport.use(
         });
         if (!user) {
           const email =
-            profile.emails?.[0]?.value || `${profile.id}@google.com`; // Fallback email
+            profile.emails?.[0]?.value || `${profile.id}@google.com`;
           const username =
             profile.displayName?.replace(/\s+/g, "") || email.split("@")[0];
           user = new User({
@@ -66,20 +61,14 @@ passport.use(
   )
 );
 
-passport.serializeUser((user, done) => {
-  done(null, user._id.toString());
-});
+// Remove serialize/deserialize as they are session-specific
+// Instead, create a function to generate JWT
+const generateToken = (user) => {
+  return jwt.sign(
+    { id: user._id, username: user.username, role: user.role },
+    process.env.JWT_SECRET || "your_jwt_secret",
+    { expiresIn: "1d" }
+  );
+};
 
-passport.deserializeUser(async (id, done) => {
-  try {
-    const user = await User.findById(id);
-    if (!user) {
-      return done(null, false);
-    }
-    done(null, user);
-  } catch (err) {
-    done(err);
-  }
-});
-
-module.exports = passport;
+module.exports = { passport, generateToken };

@@ -90,7 +90,7 @@ export const ViewMatchPage = () => {
     const ENV = import.meta.env.MODE;
     const SOCKET_URL =
       ENV === "production"
-        ? "https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net"
+        ? "http://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net"
         : "http://localhost:3001";
 
     console.log(`ViewMatchPage connecting to socket at: ${SOCKET_URL}`);

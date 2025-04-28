@@ -1,9 +1,7 @@
 const express = require("express");
 const cors = require("cors");
-const session = require("express-session");
-const MongoStore = require("connect-mongo");
-const passport = require("./config/passport");
-const user = require("./config/roles");
+const cookieParser = require("cookie-parser");
+const passport = require("./config/passport").passport;
 const authRoutes = require("./routes/authRoutes");
 const rankedInRoutes = require("./routes/rankedinRoutes");
 const checkInRoutes = require("./routes/check-inRoutes");
@@ -17,16 +15,15 @@ const userProfileRoutes = require("./routes/userProfileRoutes");
 const LigaRoutes = require("./routes/LigaRoutes");
 const friendRoutes = require("./routes/friendRoutes");
 const messageRoutes = require("./routes/messageRoutes");
+const privateEventRoutes = require("./routes/privateEventRoutes");
 const { swaggerUi, specs } = require("./config/swagger");
 const { connectDB, mongoose } = require("./config/database");
 const createAdmin = require("./scripts/createAdmin");
 const createTenUsers = require("./scripts/createTenUsers");
 const { updateAllData } = require("./scripts/dataScheduler");
-const privateEventRoutes = require("./routes/privateEventRoutes");
+const { verifyJWT } = require("./middleware/jwt");
 const path = require("path");
-const https = require("https");
 const http = require("http");
-const fs = require("fs");
 const { setupSocketIO } = require("./WebSockets");
 const dotenv = require("dotenv");
 const logger = require("./config/logger");
@@ -37,8 +34,7 @@ dotenv.config({ path: path.resolve(__dirname, ".env") });
 const app = express();
 const PORT = process.env.PORT || 3001;
 const ENV = process.env.NODE_ENV || "development";
-const SESSION_SECRET = process.env.SESSION_SECRET || "default_secret_key";
-const isDev = process.env.NODE_ENV === "dev";
+const isDev = ENV === "development";
 const MONGODB_URI = isDev
   ? process.env.MONGODB_URI || "mongodb://localhost:27017/smashpadel"
   : "mongodb+srv://admin:Rise%40ndShine@cluster0.108ujbh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0&ssl=true&tls=true";
@@ -48,6 +44,26 @@ logger.info(`Using ${isDev ? "development" : "production"} database`);
 
 // Middleware
 app.use(express.json());
+app.use(cookieParser());
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3001",
+      "http://localhost:5173",
+      "https://rns-apps.dk",
+      "http://rns-apps.dk",
+      "https://backend.rns-apps.dk",
+      "http://backend.rns-apps.dk",
+      "http://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net",
+      "https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net",
+      "https://*.azurewebsites.net",
+      "http://*.azurewebsites.net",
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
 
 // Log all incoming requests
 app.use((req, res, next) => {
@@ -55,66 +71,8 @@ app.use((req, res, next) => {
   next();
 });
 
-let httpServer = http.createServer(app);
-// let httpsServer = http.createServer(app);
-// if (ENV === "production") {
-//   const privateKey = fs.readFileSync("/path/to/privkey.pem", "utf8");
-//   const certificate = fs.readFileSync("/path/to/cert.pem", "utf8");
-//   const ca = fs.readFileSync("/path/to/chain.pem", "utf8");
-//   const credentials = { key: privateKey, cert: certificate, ca: ca };
-//   httpsServer = https.createServer(credentials, app);
-// } else {
-//   const privateKey = fs.readFileSync("certs/server.key", "utf8");
-//   const certificate = fs.readFileSync("certs/server.cert", "utf8");
-//   const credentials = { key: privateKey, cert: certificate };
-//   httpsServer = https.createServer(credentials, app);
-// }
-
-// Setup Socket.IO (use HTTPS server for Socket.IO)
-const io = setupSocketIO(httpServer);
-
-// CORS configuration
-app.use(
-  cors({
-    origin: true,
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
-  })
-);
-
-// Session setup with MongoDB store
-app.use(
-  session({
-    secret: SESSION_SECRET,
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: MONGODB_URI,
-      collectionName: "sessions",
-      ttl: 365 * 24 * 60 * 60,
-      autoRemove: "interval",
-      autoRemoveInterval: 10,
-    }),
-    cookie: {
-      secure: ENV === "production" ? true : false,
-      httpOnly: true,
-      sameSite: ENV === "production" ? "none" : "lax",
-      maxAge: 365 * 24 * 60 * 60 * 1000,
-      path: "/",
-    },
-    rolling: true,
-  })
-);
-
 // Passport setup
 app.use(passport.initialize());
-app.use(passport.session());
-
-// Connect-Roles setup
-app.use(user.middleware());
 
 // Serve static files
 app.use("/uploads", express.static(path.join(__dirname, "Uploads")));
@@ -149,7 +107,9 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Internal Server Error" });
 });
 
-// Make io available to routes
+// HTTP Server and Socket.IO setup
+const httpServer = http.createServer(app);
+const io = setupSocketIO(httpServer);
 app.set("socketio", io);
 
 // Health check
@@ -187,12 +147,6 @@ async function startServer() {
       logger.info(`HTTP Server is running on http://localhost:${PORT}`);
       updateAllData();
     });
-
-    // // Start HTTPS server
-    // httpsServer.listen(PORT, () => {
-    //   logger.info(`HTTPS Server is running on https://localhost:${PORT}`);
-    //   updateAllData();
-    // });
   } catch (err) {
     logger.error("Failed to start server:", err);
     process.exit(1);

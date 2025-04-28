@@ -3,10 +3,10 @@ SCM_DO_BUILD_DURING_DEPLOYMENT=true
 
 [environment]
 MONGODB_URI=mongodb+srv://admin:Rise%40ndShine@cluster0.108ujbh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0&ssl=true&tls=true
-SESSION_SECRET=your_secret_key
+JWT_SECRET=your_strong_jwt_secret_32_chars_or_more
 GOOGLE_CLIENT_ID=744761172735-ahlb08uf994rqkrh80ms609m5gh921b5.apps.googleusercontent.com
-GOOGLE_CLIENT_SECRET=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
+GOOGLE_CLIENT_SECRET=GOCSPX-2nxkkaxLqzk5uwwcu4E2MxSFa
 DEBUG_MODE=false
 NODE_ENV=prod
 FRONTEND_URL=https://rns-apps.dk
-BACKEND_URL=https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net
+BACKEND_URL=https://backend.rns-apps.dk
