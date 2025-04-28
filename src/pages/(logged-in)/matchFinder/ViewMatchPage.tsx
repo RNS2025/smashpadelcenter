@@ -11,6 +11,7 @@ import {
   DocumentDuplicateIcon,
   CheckIcon,
   StarIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { useUser } from "../../../context/UserContext";
 import { useEffect, useState } from "react";
@@ -22,7 +23,6 @@ import { io } from "socket.io-client";
 import { User } from "../../../types/user.ts";
 import userProfileService from "../../../services/userProfileService.ts";
 import PlayerInfoDialog from "../../../components/matchFinder/misc/PlayerInfoDialog.tsx";
-import { XIcon } from "lucide-react";
 import { MatchInvitedPlayersDialog } from "../../../components/matchFinder/misc/MatchInvitePlayersDialog.tsx";
 import { safeFormatDate } from "../../../utils/dateUtils.ts";
 
@@ -480,7 +480,7 @@ export const ViewMatchPage = () => {
                       {match.username === profile.username ? (
                         <StarIcon className="size-6 text-yellow-500" />
                       ) : (
-                        <XIcon
+                        <XMarkIcon
                           onClick={() =>
                             handleRemovePlayerFromMatch(profile.username)
                           }
@@ -570,7 +570,7 @@ export const ViewMatchPage = () => {
                           </div>
 
                     <div className="flex justify-center gap-4">
-                      <XIcon
+                      <XMarkIcon
                         onClick={() => handleDeclineJoin(requester.username)}
                         className="size-8 text-red-500"
                       />
@@ -588,7 +588,7 @@ export const ViewMatchPage = () => {
               <div className="flex justify-between items-center border border-yellow-500 p-4 rounded-lg animate-pulse">
                 <h1>{match.username} har inviteret dig!</h1>
                 <div className="flex gap-2">
-                  <XIcon
+                  <XMarkIcon
                     className="size-8 text-red-500"
                     onClick={() => handleRejectJoin(user.username)}
                   />
