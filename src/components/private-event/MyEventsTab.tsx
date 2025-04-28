@@ -40,10 +40,7 @@ export const MyEventsTab = () => {
           const filteredEvents = mockEvents
               .filter((e) =>
                   new Date(e.eventDateTime) > new Date() &&
-                  (e.username === user.username ||
-                  (e.participants.includes(user.username)) ||
-                  e.invitedPlayers?.includes(user.username))
-              )
+                  (e.username === user.username || (e.participants.includes(user.username)) || e.invitedPlayers?.includes(user.username)))
               .sort((a, b) => {
               return (
                 new Date(a.eventDateTime).getTime() -
@@ -52,14 +49,12 @@ export const MyEventsTab = () => {
             });
           setPrivateEvents(filteredEvents);
         } else {
-          const response = await communityApi.getPrivateEventsForUser(user.username);
+          const response = await communityApi.getPrivateEvents();
           const filteredEvents = response
             .filter(
               (e: PrivateEvent) =>
                   new Date(e.eventDateTime) > new Date() &&
-                  (e.username === user.username ||
-                  e.participants.includes(user.username))
-            )
+                  (e.username === user.username || (e.participants.includes(user.username)) || e.invitedPlayers?.includes(user.username)))
             .sort((a: PrivateEvent, b: PrivateEvent) => {
               return (
                 new Date(a.eventDateTime).getTime() -
@@ -168,7 +163,7 @@ export const MyEventsTab = () => {
                     </div>
                     {user && event.invitedPlayers?.includes(user?.username) && (
                         <div className="flex justify-between">
-                          <p className="text-gray-500 italic">
+                          <p className="text-yellow-500 italic">
                             Du er inviteret til dette arrangement
                           </p>
                         </div>

@@ -24,12 +24,12 @@ export const MatchFinderMyMatchesTab = () => {
     const fetchMatches = async () => {
       try {
         if (user?.username) {
-          const data = await communityApi.getMatchesByUser(user?.username);
+          const data = await communityApi.getMatches();
 
           const sortedData = data.filter((match ) => {
             const matchDate = new Date(match.matchDateTime);
             return matchDate >= new Date();
-          })
+          }).filter((match) => match.username === user.username || (match.participants.includes(user.username) || match.invitedPlayers.includes(user.username)))
               .sort((a, b) => {
             const aIsFull = a.participants.length + a.reservedSpots.length === a.totalSpots;
             const bIsFull = b.participants.length + b.reservedSpots.length === b.totalSpots;
@@ -176,6 +176,13 @@ export const MatchFinderMyMatchesTab = () => {
               </div>
             </div>
             <p className="text-gray-500">Oprettet af {match.username === user?.username ? "dig" : `${match.username}`}</p>
+            {user && match.invitedPlayers.includes(user?.username) && (
+                <div className="flex justify-between">
+                  <p className="text-yellow-500 italic">
+                    Du er inviteret til dette arrangement
+                  </p>
+                </div>
+            )}
           </div>
         )))}
       </div>

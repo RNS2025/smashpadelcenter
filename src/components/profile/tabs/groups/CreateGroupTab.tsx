@@ -57,7 +57,7 @@ export const CreateGroupTab = () => {
         try {
           console.log("Fetching users from API");
           const response = await userProfileService.getAllUsers();
-          const filteredResponse = (response.users || []).filter(
+          const filteredResponse = (response || []).filter(
             (u) => u.username !== user.username
           );
           console.log("Fetched users:", filteredResponse);
@@ -69,16 +69,9 @@ export const CreateGroupTab = () => {
       }
     };
     fetchUsers();
+  }, [useMockData]);
 
-    return () => {
-      console.log("CreateGroupTab: Cleaning up...");
-      setAllUsers([]); // Clear state on unmount
-      setSelectedUsers([]);
-      setGroupName("");
-      setSearchQuery("");
-      setError(null);
-    };
-  }, [useMockData, user?.username]);
+
   const handleCreateGroup = async (event: FormEvent) => {
     event.preventDefault();
 
@@ -165,7 +158,7 @@ export const CreateGroupTab = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
                 {searchQuery && (
-                  <div className="absolute z-10 bg-white w-full border border-black rounded mt-1 max-h-40 overflow-y-auto">
+                  <div className="absolute z-10 bg-white w-full border border-black rounded mt-1 h-40 py-4 overflow-y-auto">
                     {filteredUsers.length > 0 ? (
                       filteredUsers.map((member) => (
                         <div
