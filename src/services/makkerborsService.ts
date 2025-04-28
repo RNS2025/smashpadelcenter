@@ -48,16 +48,6 @@ const communityApi = {
     return response.data;
   },
 
-  declineJoinMatch: async (
-    matchId: string,
-    username: string
-  ): Promise<PadelMatch> => {
-    const response = await api.post(`/matches/${matchId}/decline`, {
-      username,
-    });
-    return response.data;
-  },
-
   confirmAcceptPrivateEvent: async (
     eventId: string,
     username: string

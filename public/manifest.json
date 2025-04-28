@@ -2,7 +2,7 @@
     "name": "RNS-APPS",
     "short_name": "Smash Klub App",
     "description": "A Progressive Web App for Smash Klub, a community for Padel players.",
-    "start_url": "/smashpadelcenter/",
+    "start_url": "/",
     "display": "standalone",
     "background_color": "#ffffff",
     "theme_color": "#1e3a8a",

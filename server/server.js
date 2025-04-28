@@ -18,18 +18,17 @@ const LigaRoutes = require("./routes/LigaRoutes");
 const friendRoutes = require("./routes/friendRoutes");
 const messageRoutes = require("./routes/messageRoutes");
 const { swaggerUi, specs } = require("./config/swagger");
-const { connectDB } = require("./config/database");
+const { connectDB, mongoose } = require("./config/database");
 const createAdmin = require("./scripts/createAdmin");
 const createTenUsers = require("./scripts/createTenUsers");
 const { updateAllData } = require("./scripts/dataScheduler");
 const privateEventRoutes = require("./routes/privateEventRoutes");
 const path = require("path");
 const https = require("https");
+const http = require("http");
 const fs = require("fs");
 const { setupSocketIO } = require("./WebSockets");
-//const { setIO } = require("./Services/trainerService");
 const dotenv = require("dotenv");
-const { mongoose } = require("./config/database");
 const logger = require("./config/logger");
 
 // Load .env file
@@ -37,6 +36,7 @@ dotenv.config({ path: path.resolve(__dirname, ".env") });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
+const HTTP_PORT = process.env.HTTP_PORT || 3000;
 const ENV = process.env.NODE_ENV || "development";
 const SESSION_SECRET = process.env.SESSION_SECRET || "default_secret_key";
 const MONGODB_URI =
@@ -45,37 +45,44 @@ const MONGODB_URI =
 // Middleware
 app.use(express.json());
 
+// Log all incoming requests
+app.use((req, res, next) => {
+  logger.info(`Incoming request: ${req.method} ${req.url}`);
+  next();
+});
+
 // Load SSL certificates
-let server;
+let httpsServer;
+let httpServer = http.createServer(app);
 if (ENV === "production") {
   const privateKey = fs.readFileSync("/path/to/privkey.pem", "utf8");
   const certificate = fs.readFileSync("/path/to/cert.pem", "utf8");
   const ca = fs.readFileSync("/path/to/chain.pem", "utf8");
   const credentials = { key: privateKey, cert: certificate, ca: ca };
-  server = https.createServer(credentials, app);
+  httpsServer = https.createServer(credentials, app);
 } else {
   const privateKey = fs.readFileSync("certs/server.key", "utf8");
   const certificate = fs.readFileSync("certs/server.cert", "utf8");
   const credentials = { key: privateKey, cert: certificate };
-  server = https.createServer(credentials, app);
+  httpsServer = https.createServer(credentials, app);
 }
 
-// Setup Socket.IO
-const io = setupSocketIO(server);
-//setIO(io);
+// Setup Socket.IO (use HTTPS server for Socket.IO)
+const io = setupSocketIO(httpsServer);
 
 // CORS configuration
 app.use(
   cors({
-    origin: true, // Allow all origins
-    credentials: true, // Allow cookies and credentials
+    origin: ["http://localhost:5173", "https://localhost:5173"],
+    credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
   })
 );
 
 // Session setup with MongoDB store
-// app.js
 app.use(
   session({
     secret: SESSION_SECRET,
@@ -84,18 +91,18 @@ app.use(
     store: MongoStore.create({
       mongoUrl: MONGODB_URI,
       collectionName: "sessions",
-      ttl: 365 * 24 * 60 * 60, // 1 year
+      ttl: 365 * 24 * 60 * 60,
       autoRemove: "interval",
-      autoRemoveInterval: 10, // Remove expired sessions every 10 minutes
+      autoRemoveInterval: 10,
     }),
     cookie: {
-      secure: ENV === "production" ? true : false, // Use secure cookies in production
+      secure: ENV === "production" ? true : false,
       httpOnly: true,
-      sameSite: ENV === "production" ? "none" : "lax", // Use 'none' for cross-site in production
-      maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year
-      path: "/", // Ensure cookie is available for all routes
+      sameSite: ENV === "production" ? "none" : "lax",
+      maxAge: 365 * 24 * 60 * 60 * 1000,
+      path: "/",
     },
-    rolling: true, // Refresh session on each request
+    rolling: true,
   })
 );
 
@@ -168,11 +175,18 @@ const cleanDatabase = async () => {
 async function startServer() {
   try {
     await connectDB();
-    //await cleanDatabase(); // Uncomment this line to wipe the database
+    //await cleanDatabase();
     await createAdmin();
     await createTenUsers();
-    server.listen(PORT, () => {
-      logger.info(`Server is running on https://localhost:${PORT}`);
+
+    // Start HTTP server
+    httpServer.listen(HTTP_PORT, () => {
+      logger.info(`HTTP Server is running on http://localhost:${HTTP_PORT}`);
+    });
+
+    // Start HTTPS server
+    httpsServer.listen(PORT, () => {
+      logger.info(`HTTPS Server is running on https://localhost:${PORT}`);
       updateAllData();
     });
   } catch (err) {

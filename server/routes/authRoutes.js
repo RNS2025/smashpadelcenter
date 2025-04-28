@@ -84,7 +84,7 @@ router.get(
     logger.info("Google OAuth login successful", {
       username: req.user.username,
     });
-    res.redirect(`${process.env.FRONTEND_URL}/smashpadelcenter/hjem`);
+    res.redirect(`${process.env.FRONTEND_URL}/hjem`);
   }
 );
 

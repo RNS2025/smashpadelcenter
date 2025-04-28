@@ -1,7 +1,7 @@
 // routes/privateEventRoutes.js
 const express = require("express");
 const router = express.Router();
-const privateEventService = require("../Services/PrivateEventService");
+const privateEventService = require("../Services/privateEventService");
 const PrivateEvent = require("../models/PrivateEvent");
 const logger = require("../config/logger"); // Import logger
 

@@ -17,10 +17,14 @@ services:
       - app_network
     environment:
       MONGODB_URI: mongodb://mongo:27017/smashpadelcenter
-      FRONTEND_URL: http://frontend:5173
-      PORT: 3001
+      SESSION_SECRET: your_secret_key
+      GOOGLE_CLIENT_ID: 744761172735-ahlb08uf994rqkrh80ms609m5gh921b5.apps.googleusercontent.com
+      GOOGLE_CLIENT_SECRET: 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
       VAPID_PUBLIC_KEY: BNs6vAoTALj4B4HwsVW3Kz6y3EYGc6XK5ZjM9V3QH42XDolvBKNQNmMBkThCu6TualLn5ZMzpydHp74wrk7aqXY
       VAPID_PRIVATE_KEY: qQte9v2HUtpVMYqMMu-BstuVKMcgHP8ZehaOHGoFnEw
+      FRONTEND_URL: http://YOUR_PUBLIC_IP:5173
+      PORT: 3001
+      DEBUG_MODE: false
     depends_on:
       - mongo
     ports:
@@ -31,8 +35,8 @@ services:
   frontend:
     build: ./
     environment:
-      - REACT_APP_API_BASE_URL=https://localhost:3001/api/v1
-      - VAPID_PUBLIC_KEY=BNs6vAoTALj4B4HwsVW3Kz6y3EYGc6XK5ZjM9V3QH42XDolvBKNQNmMBkThCu6TualLn5ZMzpydHp74wrk7aqXY
+      REACT_APP_API_BASE_URL: http://YOUR_PUBLIC_IP:3001/api/v1
+      VAPID_PUBLIC_KEY: BNs6vAoTALj4B4HwsVW3Kz6y3EYGc6XK5ZjM9V3QH42XDolvBKNQNmMBkThCu6TualLn5ZMzpydHp74wrk7aqXY
     restart: always
     networks:
       - app_network
@@ -40,6 +44,18 @@ services:
       - backend
     ports:
       - "5173:5173"
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - app_network
 
 networks:
   app_network:

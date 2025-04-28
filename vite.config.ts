@@ -4,14 +4,18 @@ import { VitePWA } from "vite-plugin-pwa";
 import fs from "fs";
 import path from "path";
 
-// https://vite.dev/config/
+// Load environment variables
+const isHttpsEnabled = process.env.VITE_HTTPS === "false"; // Toggle HTTPS via env variable
+const apiOrigin = process.env.VITE_API_ORIGIN || "http://localhost:3001"; // API origin for development
+const isProduction = process.env.NODE_ENV === "production";
+
 export default defineConfig({
   plugins: [
     react(),
     VitePWA({
       registerType: "autoUpdate",
       devOptions: {
-        enabled: false, // Enable service worker in development
+        enabled: false, // Enable service worker in development if needed
       },
       includeAssets: [
         "favicon.ico",
@@ -27,15 +31,15 @@ export default defineConfig({
         theme_color: "#1e3a8a",
         background_color: "#ffffff",
         display: "standalone",
-        start_url: "/smashpadelcenter/",
+        start_url: "/",
         icons: [
           {
-            src: "/smashpadelcenter/icons/android-chrome-192x192.png",
+            src: "/icons/android-chrome-192x192.png",
             sizes: "192x192",
             type: "image/png",
           },
           {
-            src: "/smashpadelcenter/icons/android-chrome-512x512.png",
+            src: "/icons/android-chrome-512x512.png",
             sizes: "512x512",
             type: "image/png",
           },
@@ -79,8 +83,8 @@ export default defineConfig({
           },
           {
             urlPattern: ({ url }) =>
-              url.origin === "https://api.rankedin.com" ||
-              url.origin === "http://localhost:3001", // Use http for dev
+              url.origin ===
+              (isProduction ? "https://api.rankedin.com" : apiOrigin),
             handler: "NetworkFirst",
             options: {
               cacheName: "api-cache",
@@ -106,7 +110,7 @@ export default defineConfig({
       },
     }),
   ],
-  base: "/smashpadelcenter/",
+  base: "/",
   build: {
     outDir: "dist",
   },
@@ -114,12 +118,17 @@ export default defineConfig({
     host: "0.0.0.0",
     port: 5173,
     strictPort: true,
-    https: {
-      key: fs.readFileSync(path.resolve(__dirname, "server/certs/server.key")),
-      cert: fs.readFileSync(
-        path.resolve(__dirname, "server/certs/server.cert")
-      ),
-    },
+    // Conditionally enable HTTPS based on environment variable
+    ...(isHttpsEnabled && {
+      https: {
+        key: fs.readFileSync(
+          path.resolve(__dirname, "server/certs/server.key")
+        ),
+        cert: fs.readFileSync(
+          path.resolve(__dirname, "server/certs/server.cert")
+        ),
+      },
+    }),
   },
   resolve: {
     alias: {

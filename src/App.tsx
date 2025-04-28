@@ -122,7 +122,7 @@ function App() {
 
   return (
     <HelmetProvider>
-      <BrowserRouter basename="/smashpadelcenter">
+      <BrowserRouter>
         <UserProvider>
           {shouldShowPrompt && (
             <InstallPrompt
