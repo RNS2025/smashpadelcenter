@@ -23,17 +23,20 @@ function setupSocketIO(server) {
   const io = new Server(server, {
     cors: {
       origin: [
+        "http://localhost:3001",
         "http://localhost:5173",
-        "http://localhost:3000",
-        "https://localhost:5173",
-        "https://rns2025.github.io",
         "https://rns-apps.dk",
-        "https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net",
-      ], // Frontend URL
+        "http://rns-apps.dk",
+        "https://backend.rns-apps.dk",
+        "http://backend.rns-apps.dk",
+        "http://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net",
+        "https://*.azurewebsites.net",
+        "http://*.azurewebsites.net",
+      ],
       methods: ["GET", "POST"],
+      allowedHeaders: ["Content-Type", "Authorization"],
       credentials: true,
     },
-    path: "/socket.io/",
   });
 
   io.on("connection", (socket) => {

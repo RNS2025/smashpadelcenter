@@ -1,5 +1,3 @@
-/* eslint-disable no-unused-vars */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import api from "../api/api";
 
 export const login = async (username: string, password: string) => {
@@ -16,8 +14,6 @@ export const login = async (username: string, password: string) => {
 export const logout = async () => {
   try {
     await api.post("/logout");
-    document.cookie =
-      "session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Secure; HttpOnly;";
   } catch (error) {
     throw new Error("Failed to log out. Please try again later.");
   }
@@ -63,11 +59,8 @@ export const loginWithProvider = (provider: string) => {
   const ENV = import.meta.env.MODE;
   const BACKEND_URL =
     ENV === "production"
-      ? "https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net"
+      ? "http://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net"
       : "http://localhost:3001";
-
-  console.log(`Auth service using API at: ${BACKEND_URL}`);
-
   window.location.href = `${BACKEND_URL}/api/v1/auth/${provider}`;
 };
 

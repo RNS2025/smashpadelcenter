@@ -3,7 +3,7 @@ const router = express.Router();
 const Message = require("../models/Message");
 const Friend = require("../models/Friend");
 const User = require("../models/user");
-const user = require("../config/roles");
+const { verifyJWT, checkRole } = require("../middleware/jwt");
 const logger = require("../config/logger"); // Import logger
 
 /**
@@ -40,86 +40,91 @@ router.use((req, res, next) => {
  *       500:
  *         description: Server error
  */
-router.get("/:friendId", user.can("access protected"), async (req, res) => {
-  logger.debug("Fetching messages with friend", {
-    friendId: req.params.friendId,
-    userId: req.user.id,
-  });
+router.get(
+  "/:friendId",
+  verifyJWT,
+  checkRole(["user", "admin", "trainer"]),
+  async (req, res) => {
+    logger.debug("Fetching messages with friend", {
+      friendId: req.params.friendId,
+      userId: req.user.id,
+    });
 
-  try {
-    const { friendId } = req.params;
-    let userId = req.user.id;
-    const isAdmin = req.user.role === "admin";
+    try {
+      const { friendId } = req.params;
+      let userId = req.user.id;
+      const isAdmin = req.user.role === "admin";
 
-    if (isAdmin && req.query.userId) {
-      logger.debug("Admin fetching messages for another user", {
-        adminId: req.user.id,
-        requestedUserId: req.query.userId,
-      });
-
-      const requestedUser = await User.findById(req.query.userId);
-      if (!requestedUser) {
-        logger.info("Message request failed - user not found", {
+      if (isAdmin && req.query.userId) {
+        logger.debug("Admin fetching messages for another user", {
+          adminId: req.user.id,
           requestedUserId: req.query.userId,
         });
-        return res.status(400).json({ error: "Bruger ikke fundet." });
+
+        const requestedUser = await User.findById(req.query.userId);
+        if (!requestedUser) {
+          logger.info("Message request failed - user not found", {
+            requestedUserId: req.query.userId,
+          });
+          return res.status(400).json({ error: "Bruger ikke fundet." });
+        }
+        userId = requestedUser._id;
       }
-      userId = requestedUser._id;
-    }
 
-    const friendship = await Friend.findOne({
-      $or: [
-        { userId, friendId, status: "accepted" },
-        { userId: friendId, friendId: userId, status: "accepted" },
-      ],
-    });
+      const friendship = await Friend.findOne({
+        $or: [
+          { userId, friendId, status: "accepted" },
+          { userId: friendId, friendId: userId, status: "accepted" },
+        ],
+      });
 
-    if (!friendship && !isAdmin) {
-      logger.info("Message request denied - users are not friends", {
+      if (!friendship && !isAdmin) {
+        logger.info("Message request denied - users are not friends", {
+          userId,
+          friendId,
+        });
+        return res
+          .status(400)
+          .json({ error: "I er ikke venner med denne bruger." });
+      }
+
+      const messages = await Message.find({
+        $or: [
+          { senderId: userId, receiverId: friendId },
+          { senderId: friendId, receiverId: userId },
+        ],
+      })
+        .sort({ createdAt: 1 })
+        .populate("senderId receiverId", "username");
+
+      // Mark messages as read for the user
+      await Message.updateMany(
+        { receiverId: userId, senderId: friendId, isRead: false },
+        { isRead: true }
+      );
+
+      // Emit read status to the sender
+      messages
+        .filter((msg) => msg.receiverId.toString() === userId && msg.isRead)
+        .forEach((msg) => {
+          req.io.to(msg.senderId.toString()).emit("messageRead", {
+            messageId: msg._id,
+            friendId: userId,
+          });
+        });
+
+      logger.info("Messages retrieved successfully", {
         userId,
         friendId,
+        messageCount: messages.length,
       });
-      return res
-        .status(400)
-        .json({ error: "I er ikke venner med denne bruger." });
+      res.status(200).json(messages);
+    } catch (error) {
+      logger.error("Error fetching messages", { error: error.message });
+      res.status(500).json({ error: "Serverfejl." });
     }
-
-    const messages = await Message.find({
-      $or: [
-        { senderId: userId, receiverId: friendId },
-        { senderId: friendId, receiverId: userId },
-      ],
-    })
-      .sort({ createdAt: 1 })
-      .populate("senderId receiverId", "username");
-
-    // Mark messages as read for the user
-    await Message.updateMany(
-      { receiverId: userId, senderId: friendId, isRead: false },
-      { isRead: true }
-    );
-
-    // Emit read status to the sender
-    messages
-      .filter((msg) => msg.receiverId.toString() === userId && msg.isRead)
-      .forEach((msg) => {
-        req.io.to(msg.senderId.toString()).emit("messageRead", {
-          messageId: msg._id,
-          friendId: userId,
-        });
-      });
-
-    logger.info("Messages retrieved successfully", {
-      userId,
-      friendId,
-      messageCount: messages.length,
-    });
-    res.status(200).json(messages);
-  } catch (error) {
-    logger.error("Error fetching messages", { error: error.message });
-    res.status(500).json({ error: "Serverfejl." });
   }
-});
+);
 
 /**
  * @swagger
@@ -146,67 +151,74 @@ router.get("/:friendId", user.can("access protected"), async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.post("/", user.can("access protected"), async (req, res) => {
-  logger.debug("Sending message", {
-    userId: req.user.id,
-    friendId: req.body.friendId,
-  });
+router.post(
+  "/",
+  verifyJWT,
+  checkRole(["user", "admin", "trainer"]),
+  async (req, res) => {
+    logger.debug("Sending message", {
+      userId: req.user.id,
+      friendId: req.body.friendId,
+    });
 
-  try {
-    const { friendId, content } = req.body;
-    const userId = req.user.id;
+    try {
+      const { friendId, content } = req.body;
+      const userId = req.user.id;
 
-    if (!content.trim()) {
-      logger.info("Message sending failed - empty content", {
-        userId,
-        friendId,
+      if (!content.trim()) {
+        logger.info("Message sending failed - empty content", {
+          userId,
+          friendId,
+        });
+        return res
+          .status(400)
+          .json({ error: "Beskedindhold må ikke være tomt." });
+      }
+
+      const friendship = await Friend.findOne({
+        $or: [
+          { userId, friendId, status: "accepted" },
+          { userId: friendId, friendId: userId, status: "accepted" },
+        ],
       });
-      return res
-        .status(400)
-        .json({ error: "Beskedindhold må ikke være tomt." });
-    }
 
-    const friendship = await Friend.findOne({
-      $or: [
-        { userId, friendId, status: "accepted" },
-        { userId: friendId, friendId: userId, status: "accepted" },
-      ],
-    });
+      if (!friendship) {
+        logger.info("Message sending failed - users are not friends", {
+          userId,
+          friendId,
+        });
+        return res
+          .status(400)
+          .json({ error: "I er ikke venner med denne bruger." });
+      }
 
-    if (!friendship) {
-      logger.info("Message sending failed - users are not friends", {
-        userId,
-        friendId,
+      const message = await Message.create({
+        senderId: userId,
+        receiverId: friendId,
+        content,
+        isRead: false,
       });
-      return res
-        .status(400)
-        .json({ error: "I er ikke venner med denne bruger." });
+
+      const populatedMessage = await Message.findById(message._id)
+        .populate("senderId", "username")
+        .populate("receiverId", "username");
+
+      // Emit real-time message to both users
+      req.io.to(userId).to(friendId).emit("newMessage", populatedMessage);
+
+      logger.info("Message sent successfully", {
+        messageId: message._id,
+        senderId: userId,
+        receiverId: friendId,
+      });
+      res
+        .status(201)
+        .json({ message: "Besked sendt.", data: populatedMessage });
+    } catch (error) {
+      logger.error("Error sending message", { error: error.message });
+      res.status(500).json({ error: "Serverfejl." });
     }
-
-    const message = await Message.create({
-      senderId: userId,
-      receiverId: friendId,
-      content,
-      isRead: false,
-    });
-
-    const populatedMessage = await Message.findById(message._id)
-      .populate("senderId", "username")
-      .populate("receiverId", "username");
-
-    // Emit real-time message to both users
-    req.io.to(userId).to(friendId).emit("newMessage", populatedMessage);
-
-    logger.info("Message sent successfully", {
-      messageId: message._id,
-      senderId: userId,
-      receiverId: friendId,
-    });
-    res.status(201).json({ message: "Besked sendt.", data: populatedMessage });
-  } catch (error) {
-    logger.error("Error sending message", { error: error.message });
-    res.status(500).json({ error: "Serverfejl." });
   }
-});
+);
 
 module.exports = router;

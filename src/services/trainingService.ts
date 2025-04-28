@@ -6,7 +6,7 @@ import { io } from "socket.io-client";
 const ENV = import.meta.env.MODE;
 const SOCKET_URL =
   ENV === "production"
-    ? "https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net"
+    ? "http://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net"
     : "http://localhost:3001";
 
 console.log(`TrainingService connecting to socket at: ${SOCKET_URL}`);
