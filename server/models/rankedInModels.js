@@ -68,6 +68,15 @@ const MatchSchema = new mongoose.Schema({
   updatedAt: { type: Date, default: Date.now },
 });
 
+const RankedInPlayerSearchResultSchema = new mongoose.Schema({
+  participantId: { type: Number, required: true },
+  participantName: { type: String, required: true },
+  points: { type: Number, required: true },
+  standing: { type: Number, required: true },
+  participantUrl: { type: String, required: true },
+});
+
+
 // Add indexes for performance
 TournamentSchema.index({ organisationId: 1, isFinished: 1 });
 PlayerSchema.index({ tournamentId: 1 });
@@ -81,4 +90,5 @@ module.exports = {
   League: mongoose.model("League", LeagueSchema),
   Team: mongoose.model("Team", TeamSchema),
   Match: mongoose.model("Match", MatchSchema),
+    RankedInPlayerSearchResult: mongoose.model("RankedInPlayerSearchResult", RankedInPlayerSearchResultSchema),
 };

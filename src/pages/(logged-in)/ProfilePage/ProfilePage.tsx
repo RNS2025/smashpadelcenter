@@ -4,9 +4,31 @@ import Animation from "../../../components/misc/Animation";
 import ProfileHeader from "../../../components/profile/ProfileHeader.tsx";
 import ProfileTabMenu from "../../../components/profile/ProfileTabMenu.tsx";
 import {useProfileContext} from "../../../context/ProfileContext.tsx";
+import {useEffect, useState} from "react";
+import RankedInPlayerSearchResult from "../../../types/RankedInProfile.ts";
+import rankedInService from "../../../services/rankedIn.ts";
 
 const ProfilePage = () => {
   const { profile } = useProfileContext();
+  const [rankedInProfile, setRankedInProfile] = useState<RankedInPlayerSearchResult>({} as RankedInPlayerSearchResult);
+
+
+    useEffect(() => {
+        if (!profile?.fullName) return;
+        const fetchRankedInProfile = async () => {
+            try {
+                const response = await rankedInService.searchPlayer(profile.fullName);
+                if (response.length > 0) {
+                    setRankedInProfile(response[0]);
+                } else {
+                    console.warn("No RankedIn profile found for", profile.fullName);
+                }
+            } catch (error) {
+                console.error("Error fetching RankedIn profile:", error);
+            }
+        };
+        fetchRankedInProfile().then();
+    }, [profile?.fullName]);
 
 
   return (
@@ -16,7 +38,7 @@ const ProfilePage = () => {
 
       <div className="mx-auto p-6 max-w-4xl">
         {/* Profile Header */}
-          <ProfileHeader profile={profile} />
+          <ProfileHeader profile={profile} rankedInProfile={rankedInProfile} />
 
         {/* Tab Content */}
         <div className="bg-white shadow-md rounded-lg p-6 border border-gray-200">

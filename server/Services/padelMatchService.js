@@ -321,6 +321,31 @@ const padelMatchService = {
     }
   },
 
+  playerCancelJoinMatch: async (matchId, username) => {
+    try {
+      const match = await PadelMatch.findById(matchId);
+        if (!match) throw new Error("Match not found");
+        if (!match.joinRequests.includes(username)) {
+          throw new Error("No join request found for this user");
+        }
+        match.joinRequests = match.joinRequests.filter((req) => req !== username);
+        await match.save();
+        const updatedMatch = {
+          ...match.toObject(),
+          id: match._id.toString(),
+          participants: match.participants || [],
+          joinRequests: match.joinRequests || [],
+          reservedSpots: match.reservedSpots || [],
+          totalSpots: match.totalSpots || 4,
+        };
+        console.log("playerCancelJoinMatch updated match:", updatedMatch);
+        return updatedMatch;
+        } catch (error) {
+        console.error("Error canceling join request:", error.message);
+        throw new Error("Error canceling join request: " + error.message);
+    }
+  },
+
   confirmJoin: async (matchId, username) => {
     try {
       const match = await PadelMatch.findById(matchId);

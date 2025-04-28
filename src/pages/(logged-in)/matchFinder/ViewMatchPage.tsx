@@ -18,15 +18,13 @@ import { PadelMatch } from "../../../types/PadelMatch";
 import communityApi from "../../../services/makkerborsService";
 import { Navigate, useParams } from "react-router-dom";
 import LoadingSpinner from "../../../components/misc/LoadingSpinner";
-import { format } from "date-fns";
 import { io } from "socket.io-client";
-import { toZonedTime } from "date-fns-tz";
-import { da } from "date-fns/locale";
 import { User } from "../../../types/user.ts";
 import userProfileService from "../../../services/userProfileService.ts";
 import PlayerInfoDialog from "../../../components/matchFinder/misc/PlayerInfoDialog.tsx";
 import { XIcon } from "lucide-react";
 import { MatchInvitedPlayersDialog } from "../../../components/matchFinder/misc/MatchInvitePlayersDialog.tsx";
+import { safeFormatDate } from "../../../utils/dateUtils.ts";
 
 export const ViewMatchPage = () => {
   const { user } = useUser();
@@ -164,7 +162,6 @@ export const ViewMatchPage = () => {
           return;
         }
         const matchData = await communityApi.getMatchById(matchId);
-        console.log("Fetched match data:", matchData);
         if (
           !matchData ||
           !Array.isArray(matchData.participants) ||
@@ -182,17 +179,6 @@ export const ViewMatchPage = () => {
     };
     fetchMatch().then();
   }, [matchId]);
-
-  const safeFormatDate = (dateString: string, formatString: string): string => {
-    try {
-      const utcDate = new Date(dateString);
-      const zoned = toZonedTime(utcDate, "UTC");
-
-      return format(zoned, formatString, { locale: da });
-    } catch {
-      return "Ugyldig dato";
-    }
-  };
 
   const handleJoinMatch = async () => {
     if (
@@ -303,6 +289,26 @@ export const ViewMatchPage = () => {
       setError("Fejl ved afvisning");
     }
   };
+
+  const handleCancelJoinRequest = async (username: string) => {
+    if (!match) return;
+    try {
+      const updatedMatch = await communityApi.playerCancelJoinMatch(
+        match.id,
+        username
+      );
+      if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
+        setError("Invalid match data returned");
+        alert("Der opstod en fejl – prøv igen.");
+      }
+      alert("Tilmelding annulleret!");
+      setMatch(updatedMatch);
+    } catch (error: any) {
+      console.error("Error confirming join:", error);
+      alert(error.response?.data?.message || "Fejl ved annullering");
+      setError("Fejl ved annullering");
+    }
+  }
 
   const handleRemovePlayerFromMatch = async (username: string) => {
     if (!match) return;
@@ -450,12 +456,12 @@ export const ViewMatchPage = () => {
                     className="flex items-center gap-2 w-full pr-1 truncate"
                   >
                     <UserCircleIcon className="h-14" />
+
                     <div className="flex flex-col gap-2">
                       <h1>{profile.fullName}</h1>
-                      <h1 className="text-gray-500 italic">
-                        {profile.username}
-                      </h1>
+                      <h1>{profile.username}</h1>
                     </div>
+
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -484,14 +490,21 @@ export const ViewMatchPage = () => {
             match.reservedSpots.map((reserved) => (
               <div
                 key={reserved.name}
-                className="border rounded flex items-center px-1"
+                className="border rounded flex items-center px-1 w-full py-3"
               >
-                <UserCircleIcon className="h-20" />
-                <div className="w-full pr-1 truncate">
+                <div className="flex items-center gap-2 w-full pr-1 truncate">
+                <UserCircleIcon className="h-14" />
+
+                <div className="flex flex-col gap-2">
                   <h1>{reserved.name}</h1>
                 </div>
+                </div>
+
+                <div className="flex items-center gap-2">
                 <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-12 h-12">
                   {reserved.level}
+                </div>
+                  <StarIcon className="size-6 text-gray-500" />
                 </div>
               </div>
             ))}
@@ -618,25 +631,24 @@ export const ViewMatchPage = () => {
 
           {/* Action buttons */}
 
-          {user?.username &&
-            match.username !== user?.username &&
-            !match.participants.includes(user?.username) &&
-              !match.invitedPlayers.includes(user.username) &&
-            !isMatchFull && (
+          {user?.username && match.username !== user.username && !match.participants.includes(user.username) && !match.invitedPlayers.includes(user.username) &&
+            !isMatchFull && !match.joinRequests.includes(user.username) && (
               <button
                 onClick={handleJoinMatch}
-                className={`bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white ${
-                  match.joinRequests.includes(user?.username)
-                    ? "bg-gray-700 animate-pulse"
-                    : ""
-                }`}
-                disabled={match.joinRequests.includes(user?.username)}
+                className="bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white"
               >
-                {match.joinRequests.includes(user?.username)
-                  ? "Anmodning sendt"
-                  : "Tilmeld kamp"}
+                Tilmeld kamp
               </button>
             )}
+
+          {user?.username && match.username !== user.username && match.joinRequests.includes(user.username) && (
+            <button
+              onClick={() => handleCancelJoinRequest(user.username)}
+              className="bg-red-500 hover:bg-red-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+            >
+              Fjern tilmeldingsanmodning
+            </button>
+          )}
 
           {match.username === user?.username && (
             <>

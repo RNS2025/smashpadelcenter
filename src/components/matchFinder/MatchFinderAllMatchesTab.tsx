@@ -3,13 +3,12 @@ import { useEffect, useState } from "react";
 import { PadelMatch } from "../../types/PadelMatch";
 import communityApi from "../../services/makkerborsService";
 import LoadingSpinner from "../misc/LoadingSpinner";
-import { format } from "date-fns";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
 import {useNavigate, useOutletContext} from "react-router-dom";
-import { toZonedTime } from "date-fns-tz";
 import { registerLocale } from "react-datepicker";
 import { da } from "date-fns/locale";
 import {useUser} from "../../context/UserContext.tsx";
+import {calculateTimeDifference, safeFormatDate} from "../../utils/dateUtils.ts";
 registerLocale("da", da);
 
 type OutletContextType = {
@@ -34,7 +33,7 @@ export const MatchFinderAllMatchesTab = () => {
 
         const sortedData = data
             .filter((match) => {
-              const matchDate = new Date(match.matchDateTime);
+              const matchDate = new Date(match.deadline ? match.deadline : match.matchDateTime);
               return matchDate >= now;
             })
             .filter((match) => {
@@ -58,21 +57,8 @@ export const MatchFinderAllMatchesTab = () => {
     };
 
     fetchMatches().then();
-  }, []);
+  }, [user]);
 
-
-
-
-  const safeFormatDate = (dateString: string, formatString: string): string => {
-    try {
-      const utcDate = new Date(dateString);
-      const zoned = toZonedTime(utcDate, "Europe/Copenhagen");
-
-      return format(zoned, formatString, { locale: da });
-    } catch {
-      return "Ugyldig dato";
-    }
-  };
 
   if (loading) {
     return <LoadingSpinner />;
@@ -116,6 +102,11 @@ export const MatchFinderAllMatchesTab = () => {
             <h1 className="font-semibold">
               {safeFormatDate(match.matchDateTime, "EEEE | dd. MMMM | HH:mm").toUpperCase()} - {safeFormatDate(match.endTime, "HH:mm")}
             </h1>
+            {match.deadline && (
+            <h1 className="text-gray-500 italic">
+              Deadline: {calculateTimeDifference(match.matchDateTime, match.deadline).hours > 1 ? `${calculateTimeDifference(match.matchDateTime, match.deadline).hours} timer før` : `${calculateTimeDifference(match.matchDateTime, match.deadline).hours} time før`}
+            </h1>
+            )}
             <div className="flex justify-between border-b border-gray-600">
               <p>{match.location}</p>
               <p>{match.matchType}</p>

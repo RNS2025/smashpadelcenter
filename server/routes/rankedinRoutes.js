@@ -341,4 +341,16 @@ router.get("/GetOnGoingMatchAndUpcommingMatch", async (req, res) => {
   }
 });
 
+router.get("/search-player", async (req, res) => {
+  const { searchTerm, rankingId, rankingType, ageGroup, rankingDate } = req.query;
+
+  try {
+    const players = await rankedInService.searchPlayer(searchTerm, rankingId, rankingType, ageGroup, rankingDate);
+    res.json(players);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+
 module.exports = router;

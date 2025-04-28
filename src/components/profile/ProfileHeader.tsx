@@ -1,7 +1,9 @@
 import { User } from "../../types/user.ts";
 import {EnvelopeIcon, PhoneIcon} from "@heroicons/react/24/outline";
+import rankedinLogo from "../../assets/rankedin_logo.png";
+import RankedInPlayerSearchResult from "../../types/RankedInProfile.ts";
 
-export const ProfileHeader = ({ profile }: { profile: User | null }) => {
+export const ProfileHeader = ({ profile, rankedInProfile }: { profile: User | null; rankedInProfile?: RankedInPlayerSearchResult; }) => {
     if (!profile) return null;
 
     const isAdmin = profile.role === "admin";
@@ -21,16 +23,24 @@ export const ProfileHeader = ({ profile }: { profile: User | null }) => {
                     <h1 className="text-3xl font-bold text-gray-800">
                         {profile.fullName}
                     </h1>
-
                     <p className="text-gray-600">@{profile.username}</p>
                     </div>
-
 
 
                     <div className="flex gap-2">
                         <EnvelopeIcon className="h-6 text-gray-600" />
                         <p className="text-gray-600">{profile.email}</p>
                     </div>
+
+                    {rankedInProfile && (
+                    <div className="flex gap-2">
+                        <img src={rankedinLogo} alt={rankedinLogo} className="h-6 w-6" />
+                        <div>
+                        <a target={"_blank"} href={`https://rankedin.com${rankedInProfile.participantUrl}`} className="text-blue-600">{rankedInProfile.participantName}</a>
+                        <h1 className="text-blue-600">(#{rankedInProfile.standing}) {rankedInProfile.points} point</h1>
+                        </div>
+                    </div>
+                    )}
 
                     {profile.phoneNumber && (
                     <div className="flex gap-2">

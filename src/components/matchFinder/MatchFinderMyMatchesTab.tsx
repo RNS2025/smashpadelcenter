@@ -3,13 +3,12 @@ import { useEffect, useState } from "react";
 import { PadelMatch } from "../../types/PadelMatch";
 import communityApi from "../../services/makkerborsService";
 import LoadingSpinner from "../misc/LoadingSpinner";
-import { format } from "date-fns";
 import { UserCircleIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../../context/UserContext";
 import { registerLocale } from "react-datepicker";
 import { da } from "date-fns/locale";
-import { toZonedTime } from "date-fns-tz";
+import {calculateTimeDifference, isMatchDeadlinePassed, safeFormatDate} from "../../utils/dateUtils";
 registerLocale("da", da);
 
 export const MatchFinderMyMatchesTab = () => {
@@ -27,7 +26,7 @@ export const MatchFinderMyMatchesTab = () => {
           const data = await communityApi.getMatches();
 
           const sortedData = data.filter((match ) => {
-            const matchDate = new Date(match.matchDateTime);
+            const matchDate = new Date(match.endTime);
             return matchDate >= new Date();
           }).filter((match) => match.username === user.username || (match.participants.includes(user.username) || match.invitedPlayers.includes(user.username)))
               .sort((a, b) => {
@@ -65,21 +64,10 @@ export const MatchFinderMyMatchesTab = () => {
     return <div>{error}</div>;
   }
 
-  const safeFormatDate = (dateString: string, formatString: string): string => {
-    try {
-      const utcDate = new Date(dateString);
-      const zoned = toZonedTime(utcDate, "Europe/Copenhagen");
-
-      return format(zoned, formatString, { locale: da });
-    } catch {
-      return "Ugyldig dato";
-    }
-  };
-
   return (
     <>
       <Helmet>
-        <title>Tilmeldt</title>
+        <title>Mine kampe</title>
       </Helmet>
 
       <div className="text-sm">
@@ -88,17 +76,21 @@ export const MatchFinderMyMatchesTab = () => {
         ) : (
             matches.map((match) => (
           <div
-            onClick={() => navigate(`/makkerbørs/${match.id}`)}
-            key={match.id}
-            className="border p-4 rounded-lg space-y-1.5 hover:bg-gray-700 mb-5"
+              onClick={() => {
+                if (!match.deadline || !isMatchDeadlinePassed(match.deadline)) {
+                  navigate(`/makkerbørs/${match.id}`);
+                }
+              }}
+
+              key={match.id}
+            className={`border p-4 rounded-lg space-y-1.5 hover:bg-gray-700 mb-5 ${match.deadline && isMatchDeadlinePassed(match.deadline) ? "opacity-70 border-red-500" : ""}`}
           >
             <div className="flex justify-between">
               <h1 className="font-semibold">
-                {safeFormatDate(
-                  match.matchDateTime,
-                  "EEEE | dd. MMMM | HH:mm"
-                ).toUpperCase()}{" "}
-                - {safeFormatDate(match.endTime, "HH:mm")}
+                {match.deadline && isMatchDeadlinePassed(match.deadline)
+                    ? `(${safeFormatDate(match.matchDateTime, "dd/MM - HH:mm")}) Kamp annulleret: Deadline nået.`
+                    : `${safeFormatDate(match.matchDateTime, "EEEE | dd. MMMM | HH:mm").toUpperCase()} - ${safeFormatDate(match.endTime, "HH:mm")}`
+                }
               </h1>
               {match.joinRequests.length > 0 &&
                 user?.username === match.username && (
@@ -107,6 +99,12 @@ export const MatchFinderMyMatchesTab = () => {
                   </h1>
                 )}
             </div>
+
+            {match.deadline && (
+                <h1 className="text-gray-500 italic">
+                  Deadline: {calculateTimeDifference(match.matchDateTime, match.deadline).hours > 1 ? `${calculateTimeDifference(match.matchDateTime, match.deadline).hours} timer før` : `${calculateTimeDifference(match.matchDateTime, match.deadline).hours} time før`}
+                </h1>
+            )}
 
             <div className="flex justify-between border-b border-gray-600">
               <p>{match.location}</p>

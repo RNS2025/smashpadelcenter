@@ -652,8 +652,9 @@ const getNextMatchAndUpcommingOnCourt = async (
     const courtNameLower = courtName.toLowerCase();
     // Filter matches for the specified court (case insensitive)
     const courtMatches = matches.filter(
-      (match) => match.Court && match.Court.toLowerCase() === courtNameLower
+        (match) => match.Court && match.Court.toLowerCase().includes(courtNameLower)
     );
+
     // Since we don't have EndTime, we'll estimate each match takes 1 hour
     const MATCH_DURATION_MS = 60 * 60 * 1000; // 1 hour in milliseconds
     // Find ongoing match
@@ -677,6 +678,56 @@ const getNextMatchAndUpcommingOnCourt = async (
   }
 };
 
+const searchPlayer = async (searchTerm, rankingId, rankingType, ageGroup, rankingDate) => {
+  try {
+    const response = await axios.get(`${API_BASE_URL}Ranking/SearchRankingPlayersAsync`, {
+      params: {
+        rankingId,
+        rankingType,
+        ageGroup,
+        rankingDate,
+        weekFromNow: 1,
+        language: "en",
+        searchTerm,
+        skip: 0,
+        take: 10,
+        _: Date.now(),
+      },
+    });
+
+    const payload = response.data.Payload || [];
+
+    let selectedPlayers = payload;
+
+
+    if (payload.length > 1) {
+      selectedPlayers = payload.filter(player => player.HomeClubName &&
+          player.HomeClubName.toLowerCase().includes("smash padelcenter" ||
+              player.HomeClubName.toLowerCase().includes("horsens") ||
+              player.HomeClubName.toLowerCase().includes("8700"))
+      );
+    }
+
+    const players = selectedPlayers.map(player => ({
+      participantId: player.Participant.Id,
+      participantName: player.Name,
+      points: player.ParticipantPoints?.Points ?? 0,
+      standing: player.ParticipantPoints?.Standing ?? 0,
+      participantUrl: player.ParticipantUrl,
+    }));
+
+    logger.info(`RankedInService: Found ${players.length} players after conditional filtering.`);
+
+    return players;
+  } catch (error) {
+    logger.error("RankedInService: Error searching player", { error: error.message });
+    throw new Error("Could not search player: " + error.message);
+  }
+};
+
+
+
+
 module.exports = {
   getAvailableTournaments,
   getAllMatches,
@@ -690,4 +741,5 @@ module.exports = {
   API_BASE_URL,
   OrganisationIdSmashHorsens,
   OrganisationIdSmashStensballe,
+  searchPlayer,
 };

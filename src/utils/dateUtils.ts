@@ -37,3 +37,26 @@ export const handleHiddenTimes = (time: Date) => {
 
     return totalMinutes >= 330 && totalMinutes <= 1380 ? "" : "hidden";
 };
+
+export const calculateTimeDifference = (matchDateTime: string, matchDeadline: string) => {
+    const timeDifference = new Date(matchDateTime).getTime() - new Date(matchDeadline).getTime();
+    return { hours: Math.floor(timeDifference / 3600000) };
+};
+
+export const isMatchDeadlinePassed = (matchDeadline: string) => {
+    const deadlineDate = new Date(matchDeadline);
+
+    return new Date() > deadlineDate;
+}
+
+export const getLastMonday = () => {
+    const today = new Date();
+    const day = today.getDay();
+
+    const diff = (day === 0 ? 6 : day - 1);
+    const lastMonday = new Date(today);
+    lastMonday.setDate(today.getDate() - diff);
+    lastMonday.setHours(0, 0, 0, 0);
+
+    return lastMonday;
+};

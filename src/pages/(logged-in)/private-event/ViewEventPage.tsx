@@ -387,7 +387,7 @@ export const ViewEventPage = () => {
             (_, index) => (
                 <div
                     key={`empty-${index}`}
-                    className="border border-gray-500 rounded flex items-center"
+                    className="border border-gray-500 rounded flex items-center px-1"
                 >
                   <UserCircleIcon className="h-20 text-gray-500" />
                   <div className="w-full pr-1 truncate">

@@ -69,10 +69,7 @@ export const CourtMapPage = () => {
         setOnGoingMatch(null); // Reset previous match data
         setUpcommingMatch(null); // Reset previous match data
 
-        const { ongoingMatch, upcomingMatch } =
-          await rankedInService.getOnGoingMatchAndUpcommingMatch(
-            selectedCourtLabel
-          );
+        const { ongoingMatch, upcomingMatch } = await rankedInService.getOnGoingMatchAndUpcommingMatch(upcomingTournamentEventId, selectedCourtLabel);
 
         console.log("Fetched matches for court:", ongoingMatch, upcomingMatch);
         setOnGoingMatch(ongoingMatch);
@@ -88,7 +85,7 @@ export const CourtMapPage = () => {
       }
     };
 
-    fetchMatchesForCourt();
+    fetchMatchesForCourt().then();
   }, [selectedCourtLabel, upcomingTournamentEventId]);
 
   const renderMatchInfo = (match: DpfMatch | null, title: string) => {

@@ -18,6 +18,13 @@ const communityApi = {
     return response.data;
   },
 
+  playerCancelJoinMatch: async (matchId: string, username: string): Promise<PadelMatch> => {
+    const response = await api.post(`/matches/${matchId}/player-cancel`, {
+      username,
+    });
+    return response.data;
+  },
+
   rejectJoinMatch: async (
     matchId: string,
     username: string

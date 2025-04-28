@@ -106,12 +106,14 @@ const OverviewTab = () => {
                               </div>
 
                                   <div className="grid grid-cols-2 gap-2">
-                                  {match.participants.map((participant, index) => (
-                                      <p key={index}>
-                                          {participant}
-                                      </p>
-                                  ))}
+                                      {[...match.participants, ...match.reservedSpots.map(reserved => reserved.name)].map((name, index) => (
+                                          <p key={index}>
+                                              {name}
+                                          </p>
+                                      ))}
                                   </div>
+
+
                               </div>
                           </li>
                       ))}

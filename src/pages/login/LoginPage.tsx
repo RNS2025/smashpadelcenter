@@ -84,6 +84,11 @@ export const LoginPage = () => {
               </h2>
 
               <p className="mt-4 leading-relaxed">Din nye klubapp.</p>
+
+              <div onClick={() => navigate("/turneringer")} className="flex items-center gap-2 mt-4 border border-white rounded-lg p-2">
+                <img src={DPFLogo} alt="DPF Logo" className="size-16" />
+                <h1>Gå direkte til centerets DPF-central</h1>
+              </div>
             </div>
           </section>
 
@@ -92,11 +97,11 @@ export const LoginPage = () => {
               <div className="relative -mt-16 block lg:hidden">
                 <a href="/public" className="block">
                   <span className="sr-only">Home</span>
-                  <div className="relative inline-block bg-gray-900 p-4 rounded-full">
+                  <div className="relative inline-block bg-gray-900 px-4 py-6 rounded-full">
                     <img
                       src="https://www.smash.dk/wp-content/uploads/2021/05/SMASH-neg-udenby@4x.png"
                       alt="Home"
-                      className="h-12 sm:h-12"
+                      className="h-10 sm:h-12"
                     />
                   </div>
                 </a>

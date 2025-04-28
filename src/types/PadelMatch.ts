@@ -19,4 +19,5 @@ export interface PadelMatch {
   winningTeam?: string[];
   losingTeam?: string[];
   result?: "win" | "loss" | "pending" | "unknown";
+  deadline?: string;
 }

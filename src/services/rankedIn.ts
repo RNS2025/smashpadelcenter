@@ -9,6 +9,7 @@ import CheckInUpdateRequest from "../types/CheckInUpdateRequest";
 import BulkCheckInUpdateRequest from "../types/BulkCheckInUpdateRequest";
 import PlayerData from "../types/PlayerData.ts";
 import DpfMatch from "../types/DpfMatch.ts";
+import {getLastMonday} from "../utils/dateUtils.ts";
 
 const rankedInService = {
   // Fetch all available tournaments
@@ -250,8 +251,8 @@ const rankedInService = {
     }
   },
   getOnGoingMatchAndUpcommingMatch: async (
-    tournamentId: string = "45804",
-    courtName: string = "maxus"
+    tournamentId: string,
+    courtName: string
   ): Promise<{
     ongoingMatch: DpfMatch | null;
     upcomingMatch: DpfMatch | null;
@@ -275,7 +276,7 @@ const rankedInService = {
       // Find matches for the specified court
       const courtMatches = matches.filter(
         (match: any) =>
-          match.Court && match.Court.toLowerCase() === courtName.toLowerCase()
+          match.Court && match.Court.toLowerCase().includes(courtName.toLowerCase())
       );
 
       // Determine current match and next match
@@ -307,11 +308,10 @@ const rankedInService = {
         !upcomingMatch &&
         response.data.upcomingMatch &&
         response.data.upcomingMatch.Court &&
-        response.data.upcomingMatch.Court.toLowerCase() ===
-          courtName.toLowerCase()
+        response.data.upcomingMatch.Court.toLowerCase().includes(courtName.toLowerCase())
       ) {
         return {
-          ongoingMatch: null,
+            ongoingMatch: null,
           upcomingMatch: response.data.upcomingMatch,
         };
       }
@@ -322,6 +322,32 @@ const rankedInService = {
       throw error;
     }
   },
+
+  searchPlayer: async (searchTerm: string) => {
+    try {
+      const response = await api.get("/search-player", {
+        params: {
+          searchTerm,
+          rankingId: 2032,
+          rankingType: 3,
+          ageGroup: 82,
+          rankingDate: getLastMonday().toISOString().split("T")[0],
+        },
+      });
+
+      return response.data.map((player: any) => ({
+        participantId: player.participantId,
+        participantName: player.participantName,
+        points: player.points,
+        standing: player.standing,
+        participantUrl: player.participantUrl,
+      }));
+    } catch (error) {
+      console.error("Error searching player:", error);
+      throw error;
+    }
+  },
+
 };
 
 export default rankedInService;

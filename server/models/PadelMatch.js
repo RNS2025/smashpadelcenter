@@ -81,6 +81,10 @@ const padelMatchSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  deadline: {
+    type: String,
+    required: false,
+  },
 });
 
 const PadelMatch = mongoose.model("PadelMatch", padelMatchSchema);

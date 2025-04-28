@@ -203,6 +203,52 @@ router.post("/:id/join", async (req, res) => {
   }
 });
 
+// POST /api/v1/matches/:id/player-cancel - Cancel a join request
+router.post("/:id/player-cancel", async (req, res) => {
+    try {
+        if (!req.isAuthenticated()) {
+        logger.warn("Unauthenticated user attempted to cancel a join request");
+        return res.status(401).json({ message: "Not authenticated" });
+        }
+        const { username } = req.body;
+        const match = await padelMatchService.getMatchById(req.params.id);
+        if (!match) {
+        logger.warn("Attempted to cancel join for non-existent match", {
+            matchId: req.params.id,
+        });
+        return res.status(404).json({ message: "Match not found" });
+        }
+        if (match.username === req.user.username) {
+        logger.warn("Match creator attempted to cancel their own join request", {
+            matchId: req.params.id,
+            username,
+        });
+        return res
+            .status(403)
+            .json({ message: "Match creator cannot cancel their own join" });
+        }
+        const updatedMatch = await padelMatchService.playerCancelJoinMatch(
+        req.params.id,
+        username
+        );
+        const io = req.app.get("socketio");
+        logger.info("Emitting matchUpdated event", { matchId: updatedMatch.id });
+        io.to(req.params.id).emit("matchUpdated", updatedMatch);
+
+        logger.info("Successfully cancelled user join", {
+        matchId: req.params.id,
+        username,
+        });
+        res.json(updatedMatch);
+    } catch (error) {
+        logger.error("Error cancelling join", {
+        matchId: req.params.id,
+        error: error.message,
+        });
+        res.status(400).json({ message: error.message });
+    }
+});
+
 // POST /api/v1/matches/:id/confirm - Confirm a join request
 router.post("/:id/confirm", async (req, res) => {
   try {

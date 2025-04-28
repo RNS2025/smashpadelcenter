@@ -23,6 +23,7 @@ export const CreateMatchForm = () => {
   const [selectedMatchType, setSelectedMatchType] = useState<string>("Herre");
   const [location, setLocation] = useState<string>("SMASH Padelcenter Horsens");
   const [description, setDescription] = useState<string>("");
+  const [deadline, setDeadline] = useState<number>(0);
 
   const [reservedPlayers, setReservedPlayers] = useState(
     [] as { name: string; level: number }[]
@@ -73,6 +74,7 @@ export const CreateMatchForm = () => {
         matchType: selectedMatchType,
         score: "",
         result: "pending",
+        deadline: deadline != 0 ? new Date(selectedDate.getTime() - (deadline * 60) * 60 * 1000).toISOString() : undefined,
       };
 
       await communityApi.createMatch(matchData);
@@ -106,6 +108,7 @@ export const CreateMatchForm = () => {
     <div className="w-full bg-white rounded-xl p-4 text-gray-900">
       <form className="space-y-10" onSubmit={handleCreateMatch}>
         <div className="lg:grid grid-cols-3 gap-4 max-lg:flex max-lg:flex-col">
+
           <div>
             <label className="font-semibold" htmlFor="center">
               Vælg center
@@ -148,6 +151,31 @@ export const CreateMatchForm = () => {
           </div>
 
           <div>
+            <label className="font-semibold" htmlFor="deadline">
+              Deadline
+            </label>
+            <select
+                className="w-full rounded-lg border-gray-900 h-12 pr-1 text-sm"
+                id="center"
+                value={deadline}
+                onChange={(e) => setDeadline(parseInt(e.target.value))}
+            >
+              <option value={0}>
+                Ingen deadline
+              </option>
+              <option value={1}>
+                1 time før
+              </option>
+              <option value={2}>
+                2 timer før
+              </option>
+              <option value={3}>
+                3 timer før
+              </option>
+            </select>
+          </div>
+
+          <div>
             <label className="font-semibold" htmlFor="spilletid">
               Spilletid
             </label>
@@ -170,6 +198,8 @@ export const CreateMatchForm = () => {
               </div>
             </div>
           </div>
+
+
 
           <div>
             <label className="font-semibold" htmlFor="reserverede">
