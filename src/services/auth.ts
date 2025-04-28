@@ -60,7 +60,15 @@ export const changeUserRole = async (username: string, role: string) => {
 };
 
 export const loginWithProvider = (provider: string) => {
-  window.location.href = `https://localhost:3001/api/v1/auth/${provider}`;
+  const ENV = import.meta.env.MODE;
+  const BACKEND_URL =
+    ENV === "production"
+      ? "https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net"
+      : "http://localhost:3001";
+
+  console.log(`Auth service using API at: ${BACKEND_URL}`);
+
+  window.location.href = `${BACKEND_URL}/api/v1/auth/${provider}`;
 };
 
 export const register = async (username: string, password: string) => {

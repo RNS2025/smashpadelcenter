@@ -28,6 +28,7 @@ function setupSocketIO(server) {
         "https://localhost:5173",
         "https://rns2025.github.io",
         "https://rns-apps.dk",
+        "https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net",
       ], // Frontend URL
       methods: ["GET", "POST"],
       credentials: true,

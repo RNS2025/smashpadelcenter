@@ -6,7 +6,19 @@ import path from "path";
 
 // Load environment variables
 const isHttpsEnabled = process.env.VITE_HTTPS === "false"; // Toggle HTTPS via env variable
-const apiOrigin = process.env.VITE_API_ORIGIN || "http://localhost:3001"; // API origin for development
+// Determine environment and set API origin
+const isDev = process.env.NODE_ENV !== "production";
+const apiOrigin =
+  process.env.VITE_API_ORIGIN ||
+  (isDev
+    ? "http://localhost:3001"
+    : "https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net/api/v1");
+
+console.log(
+  `Running in ${
+    isDev ? "development" : "production"
+  } mode with API: ${apiOrigin}`
+);
 const isProduction = process.env.NODE_ENV === "production";
 
 export default defineConfig({

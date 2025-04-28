@@ -327,7 +327,7 @@ const CourtSchedule: React.FC = () => {
 
       {/* Send notification and Select All buttons */}
       {/* Only show for admins */}
-      {role === "admin" && (
+      {user?.role === "admin" && (
         <Box mt={2} display="flex" justifyContent="center" gap={2}>
           {/* Buttons for sending notifications and selecting all times */}
           <Button

@@ -86,10 +86,17 @@ export const ViewMatchPage = () => {
   useEffect(() => {
     if (!matchId) return;
 
-    // Create socket connection
-    const socket = io("https://localhost:3001", {
+    // Create socket connection based on environment
+    const ENV = import.meta.env.MODE;
+    const SOCKET_URL =
+      ENV === "production"
+        ? "https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net"
+        : "http://localhost:3001";
+
+    console.log(`ViewMatchPage connecting to socket at: ${SOCKET_URL}`);
+
+    const socket = io(SOCKET_URL, {
       path: "/socket.io/",
-      rejectUnauthorized: false, // Only use this for development with self-signed certs
       withCredentials: true,
       transports: ["websocket", "polling"],
       reconnection: true,
@@ -465,9 +472,9 @@ export const ViewMatchPage = () => {
                   </div>
 
                   <div className="flex items-center gap-2">
-                  <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-12 h-12">
-                    {profile.skillLevel.toFixed(1)}
-                  </div>
+                    <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-12 h-12">
+                      {profile.skillLevel.toFixed(1)}
+                    </div>
 
                     <div>
                       {match.username === profile.username ? (

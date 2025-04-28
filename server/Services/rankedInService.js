@@ -626,14 +626,12 @@ const getNextMatchAndUpcommingOnCourt = async (
   courtName,
   language = "en"
 ) => {
-  if (!tournamentId || !courtName) {
-    logger.warn(
-      "Skipping getNextMatchOnCourt: invalid tournamentId or courtName"
-    );
-    return { ongoingMatch: null, upcomingMatch: null };
-  }
   try {
-    const response = await axios.get(
+    console.log(
+      `Fetching next match and upcoming match on court ${courtName} for tournamentId ${tournamentId}`
+    );
+
+    /*const response = await axios.get(
       `${API_BASE_URL}tournament/GetMatchesSectionAsync`,
       {
         params: {
@@ -642,7 +640,14 @@ const getNextMatchAndUpcommingOnCourt = async (
           IsReadonly: true,
         },
       }
+    );*/
+
+    const response = await axios.get(
+      "https://api.rankedin.com/v1/tournament/GetMatchesSectionAsync?Id=44703&LanguageCode=en&IsReadonly=true"
     );
+
+    console.log("Response:", response.data);
+
     const matches = response.data.Matches || [];
     if (!matches || matches.length === 0) {
       logger.info(`No matches found for tournamentId ${tournamentId}`);
@@ -668,6 +673,8 @@ const getNextMatchAndUpcommingOnCourt = async (
     const upcomingMatch = courtMatches
       .filter((match) => match.Date && new Date(match.Date) > now)
       .sort((a, b) => new Date(a.Date) - new Date(b.Date))[0];
+    console.log("Ongoing Match:", ongoingMatch);
+    console.log("Upcoming Match:", upcomingMatch);
     return { ongoingMatch, upcomingMatch };
   } catch (error) {
     logger.error(

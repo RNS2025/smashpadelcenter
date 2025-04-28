@@ -33,7 +33,13 @@ const BookTraining: React.FC = () => {
   });
 
   useEffect(() => {
-    const apiUrl = import.meta.env.VITE_API_URL || "https://localhost:3001";
+    const ENV = import.meta.env.MODE;
+    const apiUrl =
+      ENV === "production"
+        ? "https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net"
+        : "http://localhost:3001";
+
+    console.log(`BookTraining connecting to socket at: ${apiUrl}`);
     socketRef.current = io(apiUrl, {
       path: "/socket.io/",
       auth: { username },

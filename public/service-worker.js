@@ -1,6 +1,14 @@
-const logger = require("../server/config/logger");
-
 // service-worker.js
+
+// Create a simple logger for the service worker
+const logger = {
+  info: (message, data) => {
+    console.log(message, data);
+  },
+  error: (message, data) => {
+    console.error(message, data);
+  },
+};
 
 // Dynamic URL mapping based on notification categories
 const preferenceUrlMap = {
