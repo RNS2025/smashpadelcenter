@@ -35,12 +35,16 @@ const logger = require("./config/logger");
 dotenv.config({ path: path.resolve(__dirname, ".env") });
 
 const app = express();
-const PORT = process.env.PORT || 3001;
-const HTTP_PORT = process.env.HTTP_PORT || 3000;
+const PORT = process.env.PORT;
 const ENV = process.env.NODE_ENV || "development";
 const SESSION_SECRET = process.env.SESSION_SECRET || "default_secret_key";
-const MONGODB_URI =
-  process.env.MONGODB_URI || "mongodb://localhost:27017/smashpadel";
+const isDev = process.env.NODE_ENV === "dev";
+const MONGODB_URI = isDev
+  ? process.env.MONGODB_URI || "mongodb://localhost:27017/smashpadel"
+  : "mongodb+srv://admin:Rise%40ndShine@cluster0.108ujbh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0&ssl=true&tls=true";
+
+// Log which environment and database we're using
+logger.info(`Using ${isDev ? "development" : "production"} database`);
 
 // Middleware
 app.use(express.json());
@@ -51,29 +55,28 @@ app.use((req, res, next) => {
   next();
 });
 
-// Load SSL certificates
-let httpsServer;
 let httpServer = http.createServer(app);
-if (ENV === "production") {
-  const privateKey = fs.readFileSync("/path/to/privkey.pem", "utf8");
-  const certificate = fs.readFileSync("/path/to/cert.pem", "utf8");
-  const ca = fs.readFileSync("/path/to/chain.pem", "utf8");
-  const credentials = { key: privateKey, cert: certificate, ca: ca };
-  httpsServer = https.createServer(credentials, app);
-} else {
-  const privateKey = fs.readFileSync("certs/server.key", "utf8");
-  const certificate = fs.readFileSync("certs/server.cert", "utf8");
-  const credentials = { key: privateKey, cert: certificate };
-  httpsServer = https.createServer(credentials, app);
-}
+// let httpsServer = http.createServer(app);
+// if (ENV === "production") {
+//   const privateKey = fs.readFileSync("/path/to/privkey.pem", "utf8");
+//   const certificate = fs.readFileSync("/path/to/cert.pem", "utf8");
+//   const ca = fs.readFileSync("/path/to/chain.pem", "utf8");
+//   const credentials = { key: privateKey, cert: certificate, ca: ca };
+//   httpsServer = https.createServer(credentials, app);
+// } else {
+//   const privateKey = fs.readFileSync("certs/server.key", "utf8");
+//   const certificate = fs.readFileSync("certs/server.cert", "utf8");
+//   const credentials = { key: privateKey, cert: certificate };
+//   httpsServer = https.createServer(credentials, app);
+// }
 
 // Setup Socket.IO (use HTTPS server for Socket.IO)
-const io = setupSocketIO(httpsServer);
+const io = setupSocketIO(httpServer);
 
 // CORS configuration
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://localhost:5173"],
+    origin: true,
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
@@ -180,15 +183,16 @@ async function startServer() {
     await createTenUsers();
 
     // Start HTTP server
-    httpServer.listen(HTTP_PORT, () => {
-      logger.info(`HTTP Server is running on http://localhost:${HTTP_PORT}`);
-    });
-
-    // Start HTTPS server
-    httpsServer.listen(PORT, () => {
-      logger.info(`HTTPS Server is running on https://localhost:${PORT}`);
+    httpServer.listen(PORT, () => {
+      logger.info(`HTTP Server is running on http://localhost:${PORT}`);
       updateAllData();
     });
+
+    // // Start HTTPS server
+    // httpsServer.listen(PORT, () => {
+    //   logger.info(`HTTPS Server is running on https://localhost:${PORT}`);
+    //   updateAllData();
+    // });
   } catch (err) {
     logger.error("Failed to start server:", err);
     process.exit(1);

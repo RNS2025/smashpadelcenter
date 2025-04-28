@@ -24,10 +24,15 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
+const ENV = import.meta.env.MODE;
 const BACKEND_URL =
-  import.meta.env.VITE_BACKEND_URL ||
-  import.meta.env.REACT_APP_BACKEND_URL ||
-  "http://localhost:3000";
+  ENV === "production"
+    ? "https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net"
+    : ENV === "development"
+    ? "http://localhost:3001"
+    : "http://localhost:3000";
+
+console.log(`UserContext using API at: ${BACKEND_URL}`);
 
 const isRouteWhitelisted = (pathname: string, whitelist: string[]): boolean => {
   return whitelist.some((route) => {

@@ -4,8 +4,8 @@
   "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js",
-    "dev": "nodemon server"
+    "dev": "cross-env NODE_ENV=dev nodemon server.js",
+    "start": "cross-env NODE_ENV=prod node server.js"
   },
   "keywords": [],
   "author": "",
@@ -45,6 +45,7 @@
     "winston": "^3.17.0"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "nodemon": "^3.1.10"
   }
 }

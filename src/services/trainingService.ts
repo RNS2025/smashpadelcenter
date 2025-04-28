@@ -2,11 +2,22 @@ import api from "../api/api";
 import { Trainer } from "../types/Trainer";
 import { io } from "socket.io-client";
 
-const socket = io("https://localhost:3001", {
+// Set up the socket connection based on environment
+const ENV = import.meta.env.MODE;
+const SOCKET_URL =
+  ENV === "production"
+    ? "https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net"
+    : ENV === "development"
+    ? "http://localhost:3001"
+    : "http://localhost:3000";
+
+console.log(`TrainingService connecting to socket at: ${SOCKET_URL}`);
+
+const socket = io(SOCKET_URL, {
   path: "/socket.io/",
-  rejectUnauthorized: false, // Only use this for development with self-signed certs
   transports: ["polling", "websocket"],
   withCredentials: true,
+  reconnection: true,
 });
 
 export const getAllTrainers = async (): Promise<Trainer[]> => {
