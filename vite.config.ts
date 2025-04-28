@@ -10,9 +10,7 @@ const isHttpsEnabled = process.env.VITE_HTTPS === "false"; // Toggle HTTPS via e
 const isDev = process.env.NODE_ENV !== "production";
 const apiOrigin =
   process.env.VITE_API_ORIGIN ||
-  (isDev
-    ? "http://localhost:3001"
-    : "https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net/api/v1");
+  (isDev ? "http://localhost:3001" : "http://backend.rns-apps.dk/api/v1");
 
 console.log(
   `Running in ${

@@ -315,7 +315,7 @@ export const ViewMatchPage = () => {
       alert(error.response?.data?.message || "Fejl ved annullering");
       setError("Fejl ved annullering");
     }
-  }
+  };
 
   const handleRemovePlayerFromMatch = async (username: string) => {
     if (!match) return;
@@ -468,7 +468,6 @@ export const ViewMatchPage = () => {
                       <h1>{profile.fullName}</h1>
                       <h1>{profile.username}</h1>
                     </div>
-
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -484,7 +483,10 @@ export const ViewMatchPage = () => {
                           onClick={() =>
                             handleRemovePlayerFromMatch(profile.username)
                           }
-                          className={`size-6 text-red-500 ${match.username !== user?.username ? "hidden" : ""}`} />
+                          className={`size-6 text-red-500 ${
+                            match.username !== user?.username ? "hidden" : ""
+                          }`}
+                        />
                       )}
                     </div>
                   </div>
@@ -500,17 +502,17 @@ export const ViewMatchPage = () => {
                 className="border rounded flex items-center px-1 w-full py-3"
               >
                 <div className="flex items-center gap-2 w-full pr-1 truncate">
-                <UserCircleIcon className="h-14" />
+                  <UserCircleIcon className="h-14" />
 
-                <div className="flex flex-col gap-2">
-                  <h1>{reserved.name}</h1>
-                </div>
+                  <div className="flex flex-col gap-2">
+                    <h1>{reserved.name}</h1>
+                  </div>
                 </div>
 
                 <div className="flex items-center gap-2">
-                <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-12 h-12">
-                  {reserved.level}
-                </div>
+                  <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-12 h-12">
+                    {reserved.level}
+                  </div>
                   <StarIcon className="size-6 text-gray-500" />
                 </div>
               </div>
@@ -533,41 +535,43 @@ export const ViewMatchPage = () => {
               </div>
 
               <div className="flex items-center gap-2">
-              <div className="bg-gray-500 text-white rounded-full flex items-center justify-center w-12 h-12">
-                ?
-              </div>
-                <div>
+                <div className="bg-gray-500 text-white rounded-full flex items-center justify-center w-12 h-12">
+                  ?
                 </div>
-            </div>
+                <div></div>
+              </div>
             </div>
           ))}
 
           {/* Join requests (visible to creator) */}
           {match.username === user?.username &&
-              Array.isArray(match.joinRequests) &&
-              match.joinRequests.length > 0 && (
-                  <>
-                    <h2 className="font-semibold">Tilmeldingsanmodninger</h2>
-                    {joinRequestProfiles.map((requester, index) => (
-                        <div
-                            key={index}
-                            className="border rounded flex flex-col p-2 gap-2"
+            Array.isArray(match.joinRequests) &&
+            match.joinRequests.length > 0 && (
+              <>
+                <h2 className="font-semibold">Tilmeldingsanmodninger</h2>
+                {joinRequestProfiles.map((requester, index) => (
+                  <div
+                    key={index}
+                    className="border rounded flex flex-col p-2 gap-2"
                   >
-                    <div onClick={() => {
-                            setSelectedUser(requester);
-                            setInfoDialogVisible(true);
-                          }} className="flex items-center">
-                            <UserCircleIcon className="h-20" />
-                            <div className="flex flex-col w-full pr-1 truncate">
-                              <h1>{requester.username}</h1>
-                              <h1 className="text-gray-500">Afventer bekræftelse</h1>
-                            </div>
-                      <div className="flex items-center gap-2">
-                            <div className="bg-yellow-600 text-white rounded-full flex items-center justify-center w-12 h-12">
-                              {requester.skillLevel.toFixed(1)}
-                            </div>
+                    <div
+                      onClick={() => {
+                        setSelectedUser(requester);
+                        setInfoDialogVisible(true);
+                      }}
+                      className="flex items-center"
+                    >
+                      <UserCircleIcon className="h-20" />
+                      <div className="flex flex-col w-full pr-1 truncate">
+                        <h1>{requester.username}</h1>
+                        <h1 className="text-gray-500">Afventer bekræftelse</h1>
                       </div>
-                          </div>
+                      <div className="flex items-center gap-2">
+                        <div className="bg-yellow-600 text-white rounded-full flex items-center justify-center w-12 h-12">
+                          {requester.skillLevel.toFixed(1)}
+                        </div>
+                      </div>
+                    </div>
 
                     <div className="flex justify-center gap-4">
                       <XMarkIcon
@@ -584,7 +588,9 @@ export const ViewMatchPage = () => {
               </>
             )}
 
-          {user && match.invitedPlayers && match.invitedPlayers.includes(user.username) && (
+          {user &&
+            match.invitedPlayers &&
+            match.invitedPlayers.includes(user.username) && (
               <div className="flex justify-between items-center border border-yellow-500 p-4 rounded-lg animate-pulse">
                 <h1>{match.username} har inviteret dig!</h1>
                 <div className="flex gap-2">
@@ -595,10 +601,10 @@ export const ViewMatchPage = () => {
                   <CheckIcon
                     className="size-8 text-green-500"
                     onClick={() => handleAcceptJoin(user.username)}
-                  /></div>
-          </div>
-          )}
-
+                  />
+                </div>
+              </div>
+            )}
 
           {/* Match details */}
 
@@ -638,8 +644,12 @@ export const ViewMatchPage = () => {
 
           {/* Action buttons */}
 
-          {user?.username && match.username !== user.username && !match.participants.includes(user.username) && !match.invitedPlayers.includes(user.username) &&
-            !isMatchFull && !match.joinRequests.includes(user.username) && (
+          {user?.username &&
+            match.username !== user.username &&
+            !match.participants.includes(user.username) &&
+            !match.invitedPlayers.includes(user.username) &&
+            !isMatchFull &&
+            !match.joinRequests.includes(user.username) && (
               <button
                 onClick={handleJoinMatch}
                 className="bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white"
@@ -648,14 +658,16 @@ export const ViewMatchPage = () => {
               </button>
             )}
 
-          {user?.username && match.username !== user.username && match.joinRequests.includes(user.username) && (
-            <button
-              onClick={() => handleCancelJoinRequest(user.username)}
-              className="bg-red-500 hover:bg-red-600 transition duration-300 rounded-lg py-2 px-4 text-white"
-            >
-              Fjern tilmeldingsanmodning
-            </button>
-          )}
+          {user?.username &&
+            match.username !== user.username &&
+            match.joinRequests.includes(user.username) && (
+              <button
+                onClick={() => handleCancelJoinRequest(user.username)}
+                className="bg-red-500 hover:bg-red-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+              >
+                Fjern tilmeldingsanmodning
+              </button>
+            )}
 
           {match.username === user?.username && (
             <>

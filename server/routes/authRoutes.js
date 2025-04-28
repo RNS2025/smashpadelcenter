@@ -1,22 +1,14 @@
 const express = require("express");
-const passport = require("../config/passport");
-const user = require("../config/roles");
+const { passport, generateToken } = require("../config/passport");
+const { verifyJWT, checkRole } = require("../middleware/jwt");
 const databaseService = require("../Services/databaseService");
-const logger = require("../config/logger"); // Add logger import
+const logger = require("../config/logger");
 
 const router = express.Router();
 
-const ensureSession = (req, res, next) => {
-  if (!req.isAuthenticated()) {
-    logger.warn("Unauthorized access attempt", { path: req.originalUrl });
-    return res.status(401).json({ error: "Authentication failed" });
-  }
-  next();
-};
-
 router.post("/login", (req, res, next) => {
   logger.debug("Login attempt", { username: req.body.username });
-  passport.authenticate("local", (err, user, info) => {
+  passport.authenticate("local", { session: false }, (err, user, info) => {
     if (err) {
       logger.error("Login error", { error: err.message });
       return res.status(500).json({ error: err.message });
@@ -30,19 +22,19 @@ router.post("/login", (req, res, next) => {
         .status(401)
         .json({ error: info.message || "Invalid credentials" });
     }
-    req.logIn(user, (err) => {
-      if (err) {
-        logger.error("Session creation error", { error: err.message });
-        return res.status(500).json({ error: err.message });
-      }
-      logger.info("User logged in successfully", {
-        username: user.username,
-        role: user.role,
-      });
-      return res.status(200).json({
-        message: "Login successful",
-        user: { username: user.username, role: user.role },
-      });
+    const token = generateToken(user);
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    });
+    logger.info("User logged in successfully", {
+      username: user.username,
+      role: user.role,
+    });
+    return res.status(200).json({
+      message: "Login successful",
+      user: { username: user.username, role: user.role },
     });
   })(req, res, next);
 });
@@ -53,34 +45,25 @@ router.get(
     logger.debug("Google OAuth login attempt");
     next();
   },
-  passport.authenticate("google", { scope: ["profile", "email"] })
+  passport.authenticate("google", {
+    scope: ["profile", "email"],
+    session: false,
+  })
 );
-
-router.get("/auth/check", async (req, res) => {
-  logger.debug("Auth check request");
-  if (req.isAuthenticated()) {
-    try {
-      const profile = await databaseService.getProfileWithMatches(req.user._id);
-      logger.debug("Auth check successful", { userId: req.user._id });
-      res.status(200).json({
-        isAuthenticated: true,
-        user: profile,
-      });
-    } catch (error) {
-      logger.error("Error fetching user profile", { error: error.message });
-      res.status(500).json({ message: error.message });
-    }
-  } else {
-    logger.debug("Auth check - user not authenticated");
-    res.status(200).json({ isAuthenticated: false, user: null });
-  }
-});
 
 router.get(
   "/auth/google/callback",
-  passport.authenticate("google", { failureRedirect: "/login" }),
-  ensureSession,
+  passport.authenticate("google", {
+    session: false,
+    failureRedirect: "/login",
+  }),
   (req, res) => {
+    const token = generateToken(req.user);
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 24 * 60 * 60 * 1000,
+    });
     logger.info("Google OAuth login successful", {
       username: req.user.username,
     });
@@ -88,22 +71,23 @@ router.get(
   }
 );
 
-router.get("/users", async (req, res) => {
+router.get("/auth/check", verifyJWT, async (req, res) => {
+  logger.debug("Auth check request");
   try {
-    if (!req.user) {
-      logger.warn("Unauthorized users list access attempt");
-      return res
-        .status(401)
-        .json({ message: "Unauthorized - No user logged in" });
-    }
-    if (req.user.role !== "admin") {
-      logger.warn("Forbidden users list access", {
-        username: req.user.username,
-        role: req.user.role,
-      });
-      return res.status(403).json({ message: "Forbidden - Admins only" });
-    }
+    const profile = await databaseService.getProfileWithMatches(req.user._id);
+    logger.debug("Auth check successful", { userId: req.user._id });
+    res.status(200).json({
+      isAuthenticated: true,
+      user: profile,
+    });
+  } catch (error) {
+    logger.error("Error fetching user profile", { error: error.message });
+    res.status(500).json({ message: error.message });
+  }
+});
 
+router.get("/users", verifyJWT, checkRole(["admin"]), async (req, res) => {
+  try {
     logger.info("Admin fetching users list", { adminUser: req.user.username });
     const users = await databaseService.getAllUsers();
     res.status(200).json(users);
@@ -113,26 +97,30 @@ router.get("/users", async (req, res) => {
   }
 });
 
-router.post("/change-role", user.can("access admin page"), async (req, res) => {
-  const { username, role } = req.body;
-  logger.info("Role change attempt", {
-    adminUser: req.user.username,
-    targetUser: username,
-    newRole: role,
-  });
-
-  try {
-    const updatedUser = await databaseService.updateUserRole(username, role);
-    logger.info("User role updated successfully", {
-      username: updatedUser.username,
-      newRole: updatedUser.role,
+router.post(
+  "/change-role",
+  verifyJWT,
+  checkRole(["admin"]),
+  async (req, res) => {
+    const { username, role } = req.body;
+    logger.info("Role change attempt", {
+      adminUser: req.user.username,
+      targetUser: username,
+      newRole: role,
     });
-    res.status(200).json({ message: "Role updated", user: updatedUser });
-  } catch (err) {
-    logger.error("Role update failed", { username, error: err.message });
-    res.status(400).json({ error: err.message });
+    try {
+      const updatedUser = await databaseService.updateUserRole(username, role);
+      logger.info("User role updated successfully", {
+        username: updatedUser.username,
+        newRole: updatedUser.role,
+      });
+      res.status(200).json({ message: "Role updated", user: updatedUser });
+    } catch (err) {
+      logger.error("Role update failed", { username, error: err.message });
+      res.status(400).json({ error: err.message });
+    }
   }
-});
+);
 
 router.get("/user-profiles", async (req, res) => {
   try {
@@ -144,63 +132,26 @@ router.get("/user-profiles", async (req, res) => {
   }
 });
 
-router.get("/role", (req, res) => {
-  try {
-    if (!req.user) {
-      logger.warn("Unauthorized role check attempt");
-      return res
-        .status(401)
-        .json({ message: "Unauthorized - No user logged in" });
-    }
-    logger.debug("User role check", { username: req.user.username });
-    res.json({ role: req.user.role });
-  } catch (err) {
-    logger.error("Error in role check", { error: err.message });
-    res.status(500).json({ message: "Internal Server Error" });
-  }
+router.get("/role", verifyJWT, (req, res) => {
+  logger.debug("User role check", { username: req.user.username });
+  res.json({ role: req.user.role });
 });
 
-router.get("/username", (req, res) => {
-  try {
-    if (!req.user) {
-      logger.warn("Unauthorized username check attempt");
-      return res
-        .status(401)
-        .json({ message: "Unauthorized - No user logged in" });
-    }
-    logger.debug("Username check", { userId: req.user._id });
-    res.status(200).json({ username: req.user.username });
-  } catch (err) {
-    logger.error("Error in username check", { error: err.message });
-    res.status(500).json({ message: "Internal Server Error" });
-  }
+router.get("/username", verifyJWT, (req, res) => {
+  logger.debug("Username check", { userId: req.user._id });
+  res.status(200).json({ username: req.user.username });
 });
 
-router.post("/logout", (req, res) => {
-  const username = req.user?.username;
-  logger.info("Logout attempt", { username });
-
-  req.logout((err) => {
-    if (err) {
-      logger.error("Error logging out", { username, error: err.message });
-      return res.status(500).json({ message: "Internal Server Error" });
-    }
-    req.session.destroy((err) => {
-      if (err) {
-        logger.error("Error destroying session", { error: err.message });
-        return res.status(500).json({ message: "Internal Server Error" });
-      }
-      logger.info("User logged out successfully", { username });
-      res.clearCookie("connect.sid");
-      res.status(200).json({ message: "Logged out successfully" });
-    });
-  });
+router.post("/logout", verifyJWT, (req, res) => {
+  logger.info("Logout attempt", { username: req.user.username });
+  res.clearCookie("token");
+  logger.info("User logged out successfully", { username: req.user.username });
+  res.status(200).json({ message: "Logged out successfully" });
 });
 
 router.post("/register", async (req, res) => {
   const { username, email } = req.body;
   logger.info("Registration attempt", { username, email });
-
   try {
     const { username, password, email, fullName } = req.body;
     if (!username || !password) {
@@ -226,20 +177,15 @@ router.post("/register", async (req, res) => {
       username,
       userId: newUser._id,
     });
-
-    req.login(newUser, (err) => {
-      if (err) {
-        logger.error("Error during auto-login after registration", {
-          username,
-          error: err.message,
-        });
-        return res.status(500).json({ error: err.message });
-      }
-      logger.info("New user logged in automatically", { username });
-      return res.status(201).json({
-        message: "Registration successful",
-        user: { username: newUser.username, role: newUser.role },
-      });
+    const token = generateToken(newUser);
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+    return res.status(201).json({
+      message: "Registration successful",
+      user: { username: newUser.username, role: newUser.role },
     });
   } catch (err) {
     logger.error("Registration error", { username, error: err.message });

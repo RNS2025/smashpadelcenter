@@ -3,7 +3,7 @@ const router = express.Router();
 const Friend = require("../models/Friend");
 const User = require("../models/user");
 const NotificationHistory = require("../models/NotificationHistory");
-const user = require("../config/roles"); // Import roles middleware
+const { verifyJWT, checkRole } = require("../middleware/jwt");
 const logger = require("../config/logger"); // Import logger
 
 /**
@@ -29,68 +29,73 @@ const logger = require("../config/logger"); // Import logger
  *       500:
  *         description: Server error
  */
-router.post("/add", user.can("access protected"), async (req, res) => {
-  logger.debug("Processing friend request", { username: req.body.username });
-  try {
-    const { username } = req.body;
-    const user = await User.findById(req.user.id);
-    const friend = await User.findOne({ username });
+router.post(
+  "/add",
+  verifyJWT,
+  checkRole(["user", "admin", "trainer"]),
+  async (req, res) => {
+    logger.debug("Processing friend request", { username: req.body.username });
+    try {
+      const { username } = req.body;
+      const user = await User.findById(req.user.id);
+      const friend = await User.findOne({ username });
 
-    if (!friend) {
-      logger.info("Friend request failed - user not found", { username });
-      return res.status(400).json({ error: "Bruger ikke fundet." });
-    }
-    if (friend._id.equals(user._id)) {
-      logger.info("Friend request failed - user tried to add themselves", {
-        userId: user._id,
+      if (!friend) {
+        logger.info("Friend request failed - user not found", { username });
+        return res.status(400).json({ error: "Bruger ikke fundet." });
+      }
+      if (friend._id.equals(user._id)) {
+        logger.info("Friend request failed - user tried to add themselves", {
+          userId: user._id,
+        });
+        return res
+          .status(400)
+          .json({ error: "Du kan ikke tilføje dig selv som ven." });
+      }
+
+      const existingRequest = await Friend.findOne({
+        $or: [
+          { userId: user._id, friendId: friend._id },
+          { userId: friend._id, friendId: user._id },
+        ],
       });
-      return res
-        .status(400)
-        .json({ error: "Du kan ikke tilføje dig selv som ven." });
-    }
+      if (existingRequest) {
+        logger.info("Friend request failed - request already exists", {
+          userId: user._id,
+          friendId: friend._id,
+        });
+        return res.status(400).json({
+          error:
+            "Venanmodning eksisterer allerede eller brugeren er allerede en ven.",
+        });
+      }
 
-    const existingRequest = await Friend.findOne({
-      $or: [
-        { userId: user._id, friendId: friend._id },
-        { userId: friend._id, friendId: user._id },
-      ],
-    });
-    if (existingRequest) {
-      logger.info("Friend request failed - request already exists", {
+      await Friend.create({
         userId: user._id,
         friendId: friend._id,
+        status: "pending",
       });
-      return res.status(400).json({
-        error:
-          "Venanmodning eksisterer allerede eller brugeren er allerede en ven.",
+
+      // Notify the friend
+      await NotificationHistory.create({
+        userId: friend._id.toString(),
+        notificationId: require("uuid").v4(),
+        title: "Ny venanmodning",
+        body: `${user.username} har sendt dig en venanmodning.`,
+        category: "friends",
       });
+
+      logger.info("Friend request sent successfully", {
+        from: user.username,
+        to: friend.username,
+      });
+      res.status(201).json({ message: "Venanmodning sendt." });
+    } catch (error) {
+      logger.error("Error sending friend request", { error: error.message });
+      res.status(500).json({ error: "Serverfejl." });
     }
-
-    await Friend.create({
-      userId: user._id,
-      friendId: friend._id,
-      status: "pending",
-    });
-
-    // Notify the friend
-    await NotificationHistory.create({
-      userId: friend._id.toString(),
-      notificationId: require("uuid").v4(),
-      title: "Ny venanmodning",
-      body: `${user.username} har sendt dig en venanmodning.`,
-      category: "friends",
-    });
-
-    logger.info("Friend request sent successfully", {
-      from: user.username,
-      to: friend.username,
-    });
-    res.status(201).json({ message: "Venanmodning sendt." });
-  } catch (error) {
-    logger.error("Error sending friend request", { error: error.message });
-    res.status(500).json({ error: "Serverfejl." });
   }
-});
+);
 
 /**
  * @swagger
@@ -118,62 +123,67 @@ router.post("/add", user.can("access protected"), async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.post("/respond", user.can("access protected"), async (req, res) => {
-  logger.debug("Processing friend request response", {
-    friendId: req.body.friendId,
-    status: req.body.status,
-  });
-  try {
-    const { friendId, status } = req.body;
-    const userId = req.user.id;
-
-    const friendRequest = await Friend.findOne({
-      userId: friendId,
-      friendId: userId,
-      status: "pending",
+router.post(
+  "/respond",
+  verifyJWT,
+  checkRole(["user", "admin", "trainer"]),
+  async (req, res) => {
+    logger.debug("Processing friend request response", {
+      friendId: req.body.friendId,
+      status: req.body.status,
     });
+    try {
+      const { friendId, status } = req.body;
+      const userId = req.user.id;
 
-    if (!friendRequest) {
-      logger.info("Friend request response failed - request not found", {
-        friendId,
-        userId,
+      const friendRequest = await Friend.findOne({
+        userId: friendId,
+        friendId: userId,
+        status: "pending",
       });
-      return res.status(400).json({ error: "Venanmodning ikke fundet." });
+
+      if (!friendRequest) {
+        logger.info("Friend request response failed - request not found", {
+          friendId,
+          userId,
+        });
+        return res.status(400).json({ error: "Venanmodning ikke fundet." });
+      }
+
+      friendRequest.status = status;
+      await friendRequest.save();
+
+      if (status === "accepted") {
+        // Create mutual friend relationship
+        await Friend.create({ userId, friendId, status: "accepted" });
+        // Notify the requester
+        await NotificationHistory.create({
+          userId: friendId.toString(),
+          notificationId: require("uuid").v4(),
+          title: "Venanmodning accepteret",
+          body: `${req.user.username} har accepteret din venanmodning.`,
+          category: "friends",
+        });
+        logger.info("Friend request accepted", {
+          by: req.user.username,
+          friendId,
+        });
+      } else {
+        logger.info("Friend request rejected", {
+          by: req.user.username,
+          friendId,
+        });
+      }
+
+      res.status(200).json({ message: `Venanmodning ${status}.` });
+    } catch (error) {
+      logger.error("Error responding to friend request", {
+        error: error.message,
+      });
+      res.status(500).json({ error: "Serverfejl." });
     }
-
-    friendRequest.status = status;
-    await friendRequest.save();
-
-    if (status === "accepted") {
-      // Create mutual friend relationship
-      await Friend.create({ userId, friendId, status: "accepted" });
-      // Notify the requester
-      await NotificationHistory.create({
-        userId: friendId.toString(),
-        notificationId: require("uuid").v4(),
-        title: "Venanmodning accepteret",
-        body: `${req.user.username} har accepteret din venanmodning.`,
-        category: "friends",
-      });
-      logger.info("Friend request accepted", {
-        by: req.user.username,
-        friendId,
-      });
-    } else {
-      logger.info("Friend request rejected", {
-        by: req.user.username,
-        friendId,
-      });
-    }
-
-    res.status(200).json({ message: `Venanmodning ${status}.` });
-  } catch (error) {
-    logger.error("Error responding to friend request", {
-      error: error.message,
-    });
-    res.status(500).json({ error: "Serverfejl." });
   }
-});
+);
 
 /**
  * @swagger
@@ -196,48 +206,53 @@ router.post("/respond", user.can("access protected"), async (req, res) => {
  *       500:
  *         description: Server error
  */
-router.get("/", user.can("access protected"), async (req, res) => {
-  logger.debug("Fetching friends list", {
-    userId: req.user.id,
-    requestedUserId: req.query.userId,
-  });
-  try {
-    let targetUserId = req.user.id;
-    const isAdmin = req.user.role === "admin";
-
-    // Allow admins to specify a userId
-    if (isAdmin && req.query.userId) {
-      const requestedUser = await User.findById(req.query.userId);
-      if (!requestedUser) {
-        logger.info("Friends list request failed - user not found", {
-          requestedUserId: req.query.userId,
-        });
-        return res.status(400).json({ error: "Bruger ikke fundet." });
-      }
-      targetUserId = requestedUser._id;
-    }
-
-    const friends = await Friend.find({
-      $or: [{ userId: targetUserId }, { friendId: targetUserId }],
-      status: "accepted",
-    }).populate("userId friendId", "username");
-
-    const pendingRequests = await Friend.find({
-      friendId: targetUserId,
-      status: "pending",
-    }).populate("userId", "username");
-
-    logger.info("Friends list retrieved successfully", {
+router.get(
+  "/",
+  verifyJWT,
+  checkRole(["user", "admin", "trainer"]),
+  async (req, res) => {
+    logger.debug("Fetching friends list", {
       userId: req.user.id,
-      targetUserId,
-      friendsCount: friends.length,
-      pendingCount: pendingRequests.length,
+      requestedUserId: req.query.userId,
     });
-    res.status(200).json({ friends, pendingRequests });
-  } catch (error) {
-    logger.error("Error fetching friends list", { error: error.message });
-    res.status(500).json({ error: "Serverfejl." });
+    try {
+      let targetUserId = req.user.id;
+      const isAdmin = req.user.role === "admin";
+
+      // Allow admins to specify a userId
+      if (isAdmin && req.query.userId) {
+        const requestedUser = await User.findById(req.query.userId);
+        if (!requestedUser) {
+          logger.info("Friends list request failed - user not found", {
+            requestedUserId: req.query.userId,
+          });
+          return res.status(400).json({ error: "Bruger ikke fundet." });
+        }
+        targetUserId = requestedUser._id;
+      }
+
+      const friends = await Friend.find({
+        $or: [{ userId: targetUserId }, { friendId: targetUserId }],
+        status: "accepted",
+      }).populate("userId friendId", "username");
+
+      const pendingRequests = await Friend.find({
+        friendId: targetUserId,
+        status: "pending",
+      }).populate("userId", "username");
+
+      logger.info("Friends list retrieved successfully", {
+        userId: req.user.id,
+        targetUserId,
+        friendsCount: friends.length,
+        pendingCount: pendingRequests.length,
+      });
+      res.status(200).json({ friends, pendingRequests });
+    } catch (error) {
+      logger.error("Error fetching friends list", { error: error.message });
+      res.status(500).json({ error: "Serverfejl." });
+    }
   }
-});
+);
 
 module.exports = router;
