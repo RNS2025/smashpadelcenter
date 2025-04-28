@@ -27,14 +27,6 @@ router.post("/:id/reject", async (req, res) => {
       });
       return res.status(404).json({ message: "Match not found" });
     }
-    // Check if user is invited to the match
-    if (!match.invitedPlayers.includes(username)) {
-      logger.warn("User not invited to match", {
-        matchId: req.params.id,
-        username,
-      });
-      return res.status(403).json({ message: "User not invited to match" });
-    }
 
     const updatedMatch = await padelMatchService.rejectJoin(
       req.params.id,

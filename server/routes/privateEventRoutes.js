@@ -105,16 +105,6 @@ router.post("/:eventId/confirm", async (req, res) => {
       return res.status(401).json({ message: "Not authenticated" });
     }
     const { username } = req.body;
-    if (username !== req.user.username) {
-      logger.warn("User attempted to confirm as another user", {
-        eventId: req.params.eventId,
-        actualUser: req.user.username,
-        attemptedAs: username,
-      });
-      return res
-        .status(403)
-        .json({ message: "Cannot confirm event as another user" });
-    }
     const updatedEvent = await privateEventService.confirmAcceptPrivateEvent(
       req.params.eventId,
       username
@@ -146,15 +136,31 @@ router.post("/:eventId/decline", async (req, res) => {
       return res.status(401).json({ message: "Not authenticated" });
     }
     const { username } = req.body;
-    if (username !== req.user.username) {
-      logger.warn("User attempted to decline as another user", {
+    const event = await PrivateEvent.findById(req.params.eventId);
+    if (!event) {
+      logger.warn("Attempted to decline non-existent event", {
+        eventId: req.params.eventId,
+      });
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    // Allow either the event owner or the invited user to decline
+    if (
+      username !== req.user.username &&
+      event.username !== req.user.username
+    ) {
+      logger.warn("User attempted to decline without proper permissions", {
         eventId: req.params.eventId,
         actualUser: req.user.username,
         attemptedAs: username,
+        eventOwner: event.username,
       });
       return res
         .status(403)
-        .json({ message: "Cannot decline event as another user" });
+        .json({
+          message:
+            "Only the invited user or event owner can decline this invitation",
+        });
     }
     const updatedEvent = await privateEventService.confirmDeclinePrivateEvent(
       req.params.eventId,
@@ -382,7 +388,7 @@ router.post("/:eventId/confirm", async (req, res) => {
         .status(403)
         .json({ message: "Only the event creator can confirm joins" });
     }
-    const updatedEvent = await privateEventService.confirmJoinPrivateEvent(
+    const updatedEvent = await privateEventService.joinPrivateEvent(
       req.params.eventId,
       username
     );

@@ -27,14 +27,11 @@ const privateEventService = {
     try {
       const event = await PrivateEvent.findById(eventId);
       if (!event) throw new Error("Event not found");
-      if (!event.participants.includes(username)) {
-        throw new Error("User is not a participant of this event");
-      }
-      if (!event.invitedPlayers.includes(username)) {
-        throw new Error("User is not invited to this event");
-      }
-      if (!event.joinRequests.includes(username)) {
-        throw new Error("User has not requested to join this event");
+      if (
+        event.invitedPlayers.includes(username) ||
+        event.joinRequests.includes(username)
+      ) {
+        throw new Error("User is not in this event");
       }
       // Remove user from participants and invitedPlayers list
       event.invitedPlayers = event.invitedPlayers.filter((u) => u !== username);
@@ -70,7 +67,7 @@ const privateEventService = {
       const event = await PrivateEvent.findById(eventId);
       if (!event) throw new Error("Event not found");
 
-      if (!event.invitedPlayers.includes(username)) {
+      if (event.invitedPlayers.includes(username)) {
         throw new Error("User is not invited to this event");
       }
 

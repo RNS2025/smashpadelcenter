@@ -74,14 +74,29 @@ const padelMatchService = {
       const match = await PadelMatch.findById(matchId);
       if (!match) throw new Error("Match not found");
 
-      if (!match.invitedPlayers.includes(username)) {
-        throw new Error("No invitation found for this user");
+      // Check if user exists in any list
+      const userExists =
+        match.invitedPlayers.includes(username) ||
+        match.joinRequests.includes(username);
+
+      if (!userExists) {
+        throw new Error("User not found in match");
       }
 
-      // Remove the user from invitedPlayers
-      match.invitedPlayers = match.invitedPlayers.filter(
-        (player) => player !== username
-      );
+      // Remove the user from invitedPlayers if present
+      if (match.invitedPlayers.includes(username)) {
+        match.invitedPlayers = match.invitedPlayers.filter(
+          (player) => player !== username
+        );
+      }
+
+      // Remove the user from joinRequests if present
+      if (match.joinRequests.includes(username)) {
+        match.joinRequests = match.joinRequests.filter(
+          (player) => player !== username
+        );
+      }
+
       await match.save();
 
       const updatedMatch = {
