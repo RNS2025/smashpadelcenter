@@ -48,26 +48,6 @@ const communityApi = {
     return response.data;
   },
 
-  confirmAcceptPrivateEvent: async (
-    eventId: string,
-    username: string
-  ): Promise<PrivateEvent> => {
-    const response = await api.post(`/private-event/${eventId}/confirm`, {
-      username,
-    });
-    return response.data;
-  },
-
-  confirmDeclinePrivateEvent: async (
-    eventId: string,
-    username: string
-  ): Promise<PrivateEvent> => {
-    const response = await api.post(`/private-event/${eventId}/decline`, {
-      username,
-    });
-    return response.data;
-  },
-
   removePlayer: async (
     matchId: string,
     username: string
@@ -171,7 +151,17 @@ const communityApi = {
     return response.data;
   },
 
-  declineJoinEvent: async (
+  confirmAcceptPrivateEvent: async (
+      eventId: string,
+      username: string
+  ): Promise<PrivateEvent> => {
+    const response = await api.post(`/private-event/${eventId}/confirm`, {
+      username,
+    });
+    return response.data;
+  },
+
+  confirmDeclinePrivateEvent: async (
       eventId: string,
       username: string
   ): Promise<PrivateEvent> => {

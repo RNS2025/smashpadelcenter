@@ -1,8 +1,8 @@
 import {Helmet} from "react-helmet-async";
-import HomeBar from "../../../components/misc/HomeBar.tsx";
+import HomeBar from "../../components/misc/HomeBar.tsx";
 import {useEffect, useState} from "react";
-import Tournament from "../../../types/Tournament.ts";
-import rankedInService from "../../../services/rankedIn.ts";
+import Tournament from "../../types/Tournament.ts";
+import rankedInService from "../../services/rankedIn.ts";
 
 export const TournamentsResultsPage = () => {
 

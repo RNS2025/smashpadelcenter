@@ -2,6 +2,7 @@ import { Helmet } from "react-helmet-async";
 import {useState, useEffect, FormEvent} from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { login, loginWithProvider } from "../../services/auth.ts";
+import DPFLogo from "../../assets/DPF_Logo.png";
 
 interface LocationState {
   message?: string;
@@ -79,7 +80,7 @@ export const LoginPage = () => {
               </a>
 
               <h2 className="mt-6 text-2xl font-bold sm:text-3xl md:text-4xl">
-                SMASH Padelcenter 🎾
+                SMASH Padelcenter
               </h2>
 
               <p className="mt-4 leading-relaxed">Din nye klubapp.</p>
@@ -101,12 +102,17 @@ export const LoginPage = () => {
                 </a>
 
                 <h1 className="mt-2 text-2xl font-bold sm:text-3xl md:text-4xl">
-                  SMASH Padelcenter 🎾
+                  SMASH Padelcenter
                 </h1>
 
                 <p className="leading-relaxed text-gray-400">
                   Din nye klubapp.
                 </p>
+
+                <div onClick={() => navigate("/turneringer")} className="flex items-center gap-2 mt-4 border border-white rounded-lg p-2">
+                <img src={DPFLogo} alt="DPF Logo" className="size-16" />
+                  <h1>Gå direkte til centerets DPF-central</h1>
+                </div>
               </div>
 
               <div className="mt-6 flex flex-col gap-6 xl:gap-5">

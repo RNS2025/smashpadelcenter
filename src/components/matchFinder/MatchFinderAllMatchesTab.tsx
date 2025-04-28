@@ -38,7 +38,9 @@ export const MatchFinderAllMatchesTab = () => {
               return matchDate >= now;
             })
             .filter((match) => {
-              return match.username != user?.username;
+              if (user) {
+              return !match.participants.includes(user?.username);
+              }
             })
             .sort((a, b) => {
               const aDate = new Date(a.matchDateTime).getTime();
