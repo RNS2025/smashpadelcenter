@@ -7,7 +7,7 @@ if (ENV === "prod") {
   API_BASE_URL =
     "https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net/api/v1";
 } else if (ENV === "dev") {
-  API_BASE_URL = "http://localhost:3000/api/v1";
+  API_BASE_URL = "http://localhost:3001/api/v1";
 } else {
   throw new Error("Invalid environment configuration");
 }

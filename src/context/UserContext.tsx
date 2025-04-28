@@ -28,9 +28,7 @@ const ENV = import.meta.env.MODE;
 const BACKEND_URL =
   ENV === "production"
     ? "https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net"
-    : ENV === "development"
-    ? "http://localhost:3001"
-    : "http://localhost:3000";
+    : "http://localhost:3001";
 
 console.log(`UserContext using API at: ${BACKEND_URL}`);
 

@@ -35,7 +35,7 @@ const logger = require("./config/logger");
 dotenv.config({ path: path.resolve(__dirname, ".env") });
 
 const app = express();
-const PORT = process.env.PORT;
+const PORT = process.env.PORT || 3001;
 const ENV = process.env.NODE_ENV || "development";
 const SESSION_SECRET = process.env.SESSION_SECRET || "default_secret_key";
 const isDev = process.env.NODE_ENV === "dev";

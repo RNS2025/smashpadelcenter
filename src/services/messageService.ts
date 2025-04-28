@@ -5,9 +5,9 @@ const ENV = import.meta.env.MODE;
 const API_BASE_URL =
   ENV === "production"
     ? "https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net/api/v1"
-    : ENV === "development"
-    ? "http://localhost:3001/api/v1"
-    : "http://localhost:3000/api/v1";
+    : "http://localhost:3001/api/v1";
+
+console.log(`MessageService using API at: ${API_BASE_URL}`);
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -48,9 +48,7 @@ export class MessageService {
     const SOCKET_URL =
       ENV === "production"
         ? "https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net"
-        : ENV === "development"
-        ? "http://localhost:3001"
-        : "http://localhost:3000";
+        : "http://localhost:3001";
 
     console.log(`MessageService connecting to socket at: ${SOCKET_URL}`);
 

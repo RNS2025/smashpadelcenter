@@ -64,9 +64,9 @@ export const loginWithProvider = (provider: string) => {
   const BACKEND_URL =
     ENV === "production"
       ? "https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net"
-      : ENV === "development"
-      ? "http://localhost:3001"
-      : "http://localhost:3000";
+      : "http://localhost:3001";
+
+  console.log(`Auth service using API at: ${BACKEND_URL}`);
 
   window.location.href = `${BACKEND_URL}/api/v1/auth/${provider}`;
 };
