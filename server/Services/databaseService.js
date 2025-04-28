@@ -86,10 +86,7 @@ module.exports = {
         };
       });
 
-      return {
-        users: formattedUsers,
-        totalCount: formattedUsers.length,
-      };
+      return formattedUsers;
     } catch (err) {
       logger.error("DatabaseService: Error fetching all user profiles", {
         error: err.message,

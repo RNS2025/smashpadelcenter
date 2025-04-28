@@ -15,7 +15,7 @@ import {
   CheckCircleIcon,
   CheckIcon,
   DocumentDuplicateIcon,
-  MapPinIcon,
+  MapPinIcon, StarIcon,
   UserCircleIcon,
   UserGroupIcon,
   XCircleIcon,
@@ -23,6 +23,7 @@ import {
 import mockEvents from "../../../utils/mock/mockEvents.ts";
 import userProfileService from "../../../services/userProfileService.ts";
 import EventInvitedPlayersDialog from "../../../components/private-event/misc/EventInvitePlayersDialog.tsx";
+import {XIcon} from "lucide-react";
 
 export const ViewEventPage = () => {
   const { user } = useUser();
@@ -31,6 +32,7 @@ export const ViewEventPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [participantProfiles, setParticipantProfiles] = useState<User[]>([]);
+  const [joinRequestProfiles, setJoinRequestProfiles] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [infoDialogVisible, setInfoDialogVisible] = useState(false);
   const [inviteDialogVisible, setInviteDialogVisible] = useState(false);
@@ -67,6 +69,28 @@ export const ViewEventPage = () => {
 
     fetchEvent().then();
   }, [eventId, useMockData, user?.username]);
+
+  useEffect(() => {
+    const fetchJoinRequests = async () => {
+      if (!event || event.joinRequests.length === 0) return;
+
+      try {
+        const profiles = await Promise.all(
+            event.joinRequests.map((username) =>
+                userProfileService.getOrCreateUserProfile(username)
+            )
+        );
+        setJoinRequestProfiles(profiles);
+      } catch (err) {
+        console.error(
+            "Fejl ved hentning af tilmeldingsanmodningsprofiler:",
+            err
+        );
+      }
+    };
+
+    fetchJoinRequests().then();
+  }, [event]);
 
   useEffect(() => {
     const fetchParticipantProfiles = async () => {
@@ -134,6 +158,24 @@ export const ViewEventPage = () => {
     }
   };
 
+  const handleDeclineJoin = async (username: string) => {
+    if (!event) return;
+    try {
+      const updatedEvent = await communityApi.confirmDeclinePrivateEvent(event.id, username);
+      console.log("Updated event after confirm:", updatedEvent);
+      if (!updatedEvent || !Array.isArray(updatedEvent.participants)) {
+        setError("Invalid match data returned");
+        alert("Der opstod en fejl – prøv igen.");
+      }
+      alert("Tilmelding afvist!");
+      setEvent(updatedEvent);
+    } catch (error: any) {
+      console.error("Error confirming join:", error);
+      alert(error.response?.data?.message || "Fejl ved afvisning");
+      setError("Fejl ved afvisning");
+    }
+  };
+
   const handleDeleteEvent = async () => {
     if (!event) return;
     try {
@@ -191,22 +233,32 @@ export const ViewEventPage = () => {
     }
   };
 
-  const handleInvitedPlayers = async (usernames: string[]) => {
-    if (!event || !user?.username) return;
+  const handleInvitedPlayers = async () => {
     try {
-      const updatedEvent = await communityApi.invitedPlayersToEvent(
-        event.id,
-        usernames
-      );
-      console.log("Updated event after inviting players:", updatedEvent);
-      alert("Spillere inviteret!");
-      setEvent(updatedEvent);
-    } catch (error: any) {
-      console.error("Error inviting players:", error);
-      alert(error.response?.data?.message || "Fejl ved invitation");
-      setError("Fejl ved invitation");
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 10000);
+    } catch (err) {
+      console.error("Kunne ikke kopiere link:", err);
     }
   };
+
+  const handleRemovePlayerFromEvent = async (username: string) => {
+    if (!event || !user?.username) return;
+    try {
+      const updatedEvent = await communityApi.removePlayerFromEvent(
+        event.id,
+        username
+      );
+      console.log("Updated event after removing player:", updatedEvent);
+      alert("Spiller fjernet fra arrangement!");
+      setEvent(updatedEvent);
+    } catch (error: any) {
+      console.error("Error removing player from event:", error);
+      alert(error.response?.data?.message || "Fejl ved fjernelse");
+      setError("Fejl ved fjernelse");
+    }
+  }
 
   if (!eventId) {
     return <Navigate to="/privat-arrangementer" replace />;
@@ -256,7 +308,6 @@ export const ViewEventPage = () => {
         }`}
       >
         <EventInvitedPlayersDialog
-          user={user!}
           event={event}
           onInvite={async () => {
             setInviteDialogVisible(false);
@@ -301,8 +352,19 @@ export const ViewEventPage = () => {
               <div className="w-full pr-1 truncate">
                 <h1>{profile.username}</h1>
               </div>
-              <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-20 h-12">
+
+              <div className="flex items-center gap-2">
+              <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-12 h-12">
                 {profile.skillLevel.toFixed(1)}
+              </div>
+
+              <div>
+                {event.username === profile.username ? (
+                    <StarIcon className="size-6 text-yellow-500" />
+                ) : (
+                    <XIcon onClick={() => handleRemovePlayerFromEvent(profile.username)} className={`size-6 text-red-500 ${event.username !== user?.username ? "hidden" : ""}`} />
+                )}
+              </div>
               </div>
             </div>
           ))}
@@ -327,31 +389,38 @@ export const ViewEventPage = () => {
 
           {/* Join requests (visible to creator) */}
           {event.username === user?.username &&
-            Array.isArray(event.joinRequests) &&
-            event.joinRequests.length > 0 && (
-              <>
-                <h2 className="font-semibold">Tilmeldingsanmodninger</h2>
-                {event.joinRequests.map((requester, index) => (
-                  <div
-                    key={index}
-                    className="border rounded flex items-center px-1"
-                  >
-                    <UserCircleIcon className="h-20" />
-                    <div className="w-full pr-1 truncate">
-                      <h1>{requester}</h1>
-                      <h1 className="text-gray-500">Afventer bekræftelse</h1>
-                    </div>
-                    <button
-                      onClick={() => handleConfirmJoin(requester)}
-                      className="bg-cyan-500 text-white rounded-lg px-2 py-1"
-                      disabled={isEventFull}
+              Array.isArray(event.joinRequests) &&
+              event.joinRequests.length > 0 && (
+                  <>
+                    <h2 className="font-semibold">Tilmeldingsanmodninger</h2>
+                {joinRequestProfiles.map((requester, index) => (
+                    <div
+                        key={index}
+                        className="border rounded flex flex-col p-2 gap-2"
                     >
-                      Bekræft
-                    </button>
-                  </div>
+                      <div onClick={() => {
+                        setSelectedUser(requester);
+                        setInfoDialogVisible(true);
+                      }} className="flex items-center">
+                        <UserCircleIcon className="h-20" />
+                        <div className="flex flex-col w-full pr-1 truncate">
+                          <h1>{requester.username}</h1>
+                          <h1 className="text-gray-500">Afventer bekræftelse</h1>
+                        </div>
+                        <div className="bg-yellow-600 text-white rounded-full flex items-center justify-center w-20 h-12">
+                          {requester.skillLevel.toFixed(1)}
+                        </div>
+                      </div>
+
+
+                      <div className="flex justify-center gap-4">
+                        <XIcon onClick={() => handleDeclineJoin(requester.username)} className="size-8 text-red-500" />
+                        <CheckIcon onClick={() => handleConfirmJoin(requester.username)} className="size-8 text-green-500" />
+                      </div>
+                    </div>
                 ))}
-              </>
-            )}
+                  </>
+              )}
 
           {user &&
             event.invitedPlayers &&
@@ -421,7 +490,7 @@ export const ViewEventPage = () => {
           {event.username !== user?.username &&
             user?.username &&
             !event.participants.includes(user?.username) &&
-            !event.joinRequests.includes(user?.username) &&
+            !event.joinRequests.includes(user?.username) && !event.invitedPlayers?.includes(user?.username) &&
             !isEventFull && (
               <button
                 onClick={handleJoinEvent}

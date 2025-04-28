@@ -25,8 +25,7 @@ export const MatchFinderAwaitingTab = () => {
       try {
         const data = await communityApi.getMatches();
         const awaitingMatches = data.filter(
-          (match) =>
-            user?.username && match.joinRequests.includes(user?.username) && new Date(match.matchDateTime) >= new Date()
+          (match) => (user?.username && new Date(match.matchDateTime) >= new Date() && (match.joinRequests.includes(user?.username) || match.invitedPlayers.includes(user.username)))
         ).sort((a, b) => {
             const aDate = new Date(a.matchDateTime).getTime();
             const bDate = new Date(b.matchDateTime).getTime();

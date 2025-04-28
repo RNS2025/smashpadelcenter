@@ -1,22 +1,21 @@
 import { useEffect, useState } from "react";
-import { User } from "../../../types/user.ts";
 import { mockUsers } from "../../../utils/mock/mockUsers.ts";
 import userProfileService from "../../../services/userProfileService.ts";
 import communityApi from "../../../services/makkerborsService.ts";
 import { PadelMatch } from "../../../types/PadelMatch.ts";
 import { DaoGroupUser } from "../../../types/daoGroupAllUsers.ts";
+import { useUser } from "../../../context/UserContext.tsx";
 
 export const MatchInvitedPlayersDialog = ({
-  user,
   match,
   onInvite,
   onClose,
 }: {
-  user: User;
   match: PadelMatch;
   onInvite: (match: PadelMatch) => void;
   onClose: () => void;
 }) => {
+  const {user} = useUser();
   const [allUsers, setAllUsers] = useState<DaoGroupUser[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<DaoGroupUser[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -31,8 +30,8 @@ export const MatchInvitedPlayersDialog = ({
       } else {
         try {
           const response = await userProfileService.getAllUsers();
-          const filteredResponse = (response.users || []).filter(
-            (u) => u.username !== user.username
+          const filteredResponse = (response || []).filter(
+            (u) => u.username !== user?.username
           );
           setAllUsers(filteredResponse);
         } catch (error) {
@@ -42,7 +41,7 @@ export const MatchInvitedPlayersDialog = ({
       }
     };
     fetchUsers().then();
-  }, [useMockData]);
+  }, [useMockData, user]);
 
   const handleInvitedPlayers = async () => {
     if (!match || selectedUsers.length === 0) return;
@@ -72,13 +71,13 @@ export const MatchInvitedPlayersDialog = ({
       !selectedUsers.some((member: DaoGroupUser) => member.id === u.id)
   );
 
-  const handleSelectUser = (user: User) => {
+  const handleSelectUser = (user: DaoGroupUser) => {
     setSelectedUsers((prev) => [...prev, user]);
     setSearchQuery("");
   };
 
   const handleGroupSelect = (groupId: string) => {
-    const group = user.groups?.find((g) => g.id === groupId);
+    const group = user!.groups?.find((g) => g.id === groupId);
     if (!group) return;
 
     const groupMembers = allUsers.filter((u) =>
@@ -164,7 +163,7 @@ export const MatchInvitedPlayersDialog = ({
             {selectedUsers.length > 0 && (
               <>
                 <div className="mt-4">
-                  <h2 className="font-semibold mb-2">Valgte medlemmer:</h2>
+                  <h2 className="font-semibold mb-2">Valgte spillere:</h2>
                   <div className="flex flex-wrap gap-2">
                     {selectedUsers.map((member) => (
                       <div

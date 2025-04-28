@@ -1,22 +1,21 @@
-import { User } from "../../../types/user.ts";
 import { useEffect, useState } from "react";
 import { mockUsers } from "../../../utils/mock/mockUsers.ts";
 import userProfileService from "../../../services/userProfileService.ts";
 import communityApi from "../../../services/makkerborsService.ts";
 import { PrivateEvent } from "../../../types/PrivateEvent.ts";
 import { DaoGroupUser } from "../../../types/daoGroupAllUsers.ts";
+import { useUser } from "../../../context/UserContext.tsx";
 
 export const EventInvitedPlayersDialog = ({
-  user,
   event,
   onInvite,
   onClose,
 }: {
-  user: User;
   event: PrivateEvent;
   onInvite: (event: PrivateEvent) => void;
   onClose: () => void;
 }) => {
+  const {user} = useUser();
   const [allUsers, setAllUsers] = useState<DaoGroupUser[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<DaoGroupUser[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -31,8 +30,8 @@ export const EventInvitedPlayersDialog = ({
       } else {
         try {
           const response = await userProfileService.getAllUsers();
-          const filteredResponse = (response.users || []).filter(
-            (u) => u.username !== user.username
+          const filteredResponse = (response || []).filter(
+            (u) => u.username !== user?.username
           );
           setAllUsers(filteredResponse);
         } catch (error) {
@@ -42,7 +41,7 @@ export const EventInvitedPlayersDialog = ({
       }
     };
     fetchUsers().then();
-  }, [useMockData]);
+  }, [useMockData, user?.username]);
 
   const handleInvitedPlayers = async () => {
     if (!event || selectedUsers.length === 0) return;
@@ -69,7 +68,7 @@ export const EventInvitedPlayersDialog = ({
     (u) =>
       (u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
         u.fullName?.toLowerCase().includes(searchQuery.toLowerCase())) &&
-      !selectedUsers.some((member: DaoGroupUser) => member.id === u.id)
+      !selectedUsers.some((member) => member.id === u.id)
   );
 
   const handleSelectUser = (user: DaoGroupUser) => {
@@ -78,7 +77,7 @@ export const EventInvitedPlayersDialog = ({
   };
 
   const handleGroupSelect = (groupId: string) => {
-    const group = user.groups?.find((g) => g.id === groupId);
+    const group = user?.groups?.find((g) => g.id === groupId);
     if (!group) return;
 
     const groupMembers = allUsers.filter((u) =>
@@ -112,7 +111,7 @@ export const EventInvitedPlayersDialog = ({
                 onChange={(e) => handleGroupSelect(e.target.value)}
               >
                 <option value="">Ingen gruppe</option>
-                {user.groups?.map((group) => (
+                {user?.groups?.map((group) => (
                   <option key={group.id} value={group.id}>
                     {group.name}
                   </option>
@@ -161,7 +160,7 @@ export const EventInvitedPlayersDialog = ({
             {selectedUsers.length > 0 && (
               <>
                 <div className="mt-4">
-                  <h2 className="font-semibold mb-2">Valgte medlemmer:</h2>
+                  <h2 className="font-semibold mb-2">Valgte spillere:</h2>
                   <div className="flex flex-wrap gap-2">
                     {selectedUsers.map((member) => (
                       <div

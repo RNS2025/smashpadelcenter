@@ -5,7 +5,7 @@ import { User } from "../types/user";
 const getAllUsers = async (): Promise<DaoGroupUser[]> => {
   try {
     const response = await api.get("/user-profiles");
-    console.log("Fetched users:", response.data); // Debugging line
+    console.log("Fetched users:", response.data);
     return response.data;
   } catch (error) {
     console.error("Error fetching users:", error);

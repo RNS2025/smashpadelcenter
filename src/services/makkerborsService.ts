@@ -78,16 +78,6 @@ const communityApi = {
     return response.data;
   },
 
-  removePlayerFromEvent: async (
-    eventId: string,
-    username: string
-  ): Promise<PrivateEvent> => {
-    const response = await api.post(`/private-event/${eventId}/remove-player`, {
-      username,
-    });
-    return response.data;
-  },
-
   invitedPlayersToMatch: async (
     matchId: string,
     usernames: string[]
@@ -152,6 +142,15 @@ const communityApi = {
     const response = await api.patch(`/private-event/${eventId}`, update);
     return response.data;
   },
+  removePlayerFromEvent: async (
+      eventId: string,
+      username: string
+  ): Promise<PrivateEvent> => {
+    const response = await api.post(`/private-event/${eventId}/remove-player`, {
+      username,
+    });
+    return response.data;
+  },
   joinEvent: async (
     eventId: string,
     username: string
@@ -171,6 +170,17 @@ const communityApi = {
     });
     return response.data;
   },
+
+  declineJoinEvent: async (
+      eventId: string,
+      username: string
+  ): Promise<PrivateEvent> => {
+    const response = await api.post(`/private-event/${eventId}/decline`, {
+      username,
+    });
+    return response.data;
+  },
+
   deleteEvent: async (eventId: string): Promise<PrivateEvent[]> => {
     const response = await api.delete(`/private-event/${eventId}`);
     return response.data;
