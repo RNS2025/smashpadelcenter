@@ -49,7 +49,9 @@ import AllEventsTab from "./components/private-event/AllEventsTab.tsx";
 import GroupsTab from "./components/profile/tabs/groups/GroupsTab.tsx";
 import CreateGroupTab from "./components/profile/tabs/groups/CreateGroupTab.tsx";
 import EditGroupTab from "./components/profile/tabs/groups/EditGroupTab.tsx";
-import TournamentRulesPage from "./pages/tournament/TournamentRulesPage.tsx";
+import TournamentInfoPage from "./pages/tournament/TournamentInfoPage.tsx";
+import {TournamentRegulationsTab} from "./components/tournaments/info/TournamentRegulationsTab.tsx";
+import TournamentBriefingTab from "./components/tournaments/info/TournamentBriefingTab.tsx";
 
 function App() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -138,10 +140,14 @@ function App() {
               path="/turneringer/baneoversigt"
               element={<CourtMapPage />}
             />
-            <Route
-              path="/turneringer/regler"
-              element={<TournamentRulesPage />}
-            />
+            <Route path="/turneringer/info" element={<TournamentInfoPage />}>
+
+              <Route index element={<Navigate to="briefing" replace />}/>
+              <Route path="briefing" element={<TournamentBriefingTab />} />
+              <Route path="generelt" element={<TournamentRegulationsTab />} />
+            </Route>
+
+
             <Route path="/turneringer" element={<TournamentTabs />} />
 
             <Route path="/player/:playerId/:rowId" element={<PlayerPage />} />

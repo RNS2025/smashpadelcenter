@@ -7,10 +7,12 @@ import {useProfileContext} from "../../../context/ProfileContext.tsx";
 import {useEffect, useState} from "react";
 import RankedInPlayerSearchResult from "../../../types/RankedInProfile.ts";
 import rankedInService from "../../../services/rankedIn.ts";
+import * as console from "node:console";
 
 const ProfilePage = () => {
   const { profile } = useProfileContext();
   const [rankedInProfile, setRankedInProfile] = useState<RankedInPlayerSearchResult>({} as RankedInPlayerSearchResult);
+
 
 
     useEffect(() => {

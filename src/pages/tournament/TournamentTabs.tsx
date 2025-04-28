@@ -36,7 +36,7 @@ export const TournamentTabs = () => {
               }
               title="Regler og informationer"
               description="Læs turneringsreglerne og informationer"
-              link="turneringer/regler"
+              link="/turneringer/info"
             />
             <HomeScreenCard
               icon={
@@ -44,13 +44,13 @@ export const TournamentTabs = () => {
               }
               title="Indtjekning"
               description="Tjek ind til DPF-turneringer"
-              link="turneringer/check-in"
+              link="/turneringer/check-in"
             />
             <HomeScreenCard
               icon={<MapIcon className="h-10 w-10" aria-hidden="true" />}
               title="Baneoversigt"
               description="Se hvor kampene bliver afviklet"
-              link="turneringer/baneoversigt"
+              link="/turneringer/baneoversigt"
             />
             {user?.role === "admin" && (
               <HomeScreenCard
@@ -62,7 +62,7 @@ export const TournamentTabs = () => {
                 }
                 title="Resultater"
                 description="Indtast resultater for DPF-kampe"
-                link="turneringer/resultater"
+                link="/turneringer/resultater"
               />
             )}
           </div>

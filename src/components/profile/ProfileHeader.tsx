@@ -32,9 +32,9 @@ export const ProfileHeader = ({ profile, rankedInProfile }: { profile: User | nu
                         <p className="text-gray-600">{profile.email}</p>
                     </div>
 
-                    {rankedInProfile && (
+                    {rankedInProfile && rankedInProfile.points > 0 && (
                     <div className="flex gap-2">
-                        <img src={rankedinLogo} alt={rankedinLogo} className="h-6 w-6" />
+                        <img src={rankedinLogo} alt={rankedinLogo} className="h-6 w-6 rounded-lg" />
                         <div>
                         <a target={"_blank"} href={`https://rankedin.com${rankedInProfile.participantUrl}`} className="text-blue-600">{rankedInProfile.participantName}</a>
                         <h1 className="text-blue-600">(#{rankedInProfile.standing}) {rankedInProfile.points} point</h1>

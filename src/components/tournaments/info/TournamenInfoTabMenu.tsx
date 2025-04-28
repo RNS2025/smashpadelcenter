@@ -1,0 +1,42 @@
+import {NavLink, useLocation} from "react-router-dom";
+
+export const TournamentInfoTabMenu = () => {
+    const location = useLocation();
+
+    return (
+        <div>
+            <div className="block">
+                <div className="">
+                    <nav className="flex gap-6 text-lg font-medium" aria-label="Tabs">
+
+                        <NavLink
+                            to={`briefing`}
+                            className={`inline-flex shrink-0 items-center gap-2 border-b-2 px-1 pb-4
+                                ${location.pathname.includes("briefing")
+                                ? "border-cyan-500 text-cyan-500"
+                                : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 transition duration-300"}
+                            `}
+                        >
+                            Briefing
+                        </NavLink>
+
+
+                        <NavLink
+                            to={`generelt`}
+                            className={`inline-flex shrink-0 items-center gap-2 border-b-2 px-1 pb-4
+                                ${location.pathname.includes("generelt")
+                                ? "border-cyan-500 text-cyan-500"
+                                : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 transition duration-300"}
+                            `}
+                        >
+                            Generelt
+                        </NavLink>
+
+                    </nav>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default TournamentInfoTabMenu;
