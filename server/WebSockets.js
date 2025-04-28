@@ -30,6 +30,7 @@ function setupSocketIO(server) {
         "https://backend.rns-apps.dk",
         "http://backend.rns-apps.dk",
         "http://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net",
+        "https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net",
         "https://rns-apps.dk",
         "http://rns-apps.dk",
         "https://*.azurewebsites.net",

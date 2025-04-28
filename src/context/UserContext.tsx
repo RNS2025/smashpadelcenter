@@ -26,7 +26,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 const ENV = import.meta.env.MODE;
 const BACKEND_URL =
   ENV === "production"
-    ? "http://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net"
+    ? "https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net"
     : "http://localhost:3001";
 
 const isRouteWhitelisted = (pathname: string, whitelist: string[]): boolean => {
