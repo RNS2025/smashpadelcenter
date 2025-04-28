@@ -542,9 +542,11 @@ export const ViewMatchPage = () => {
                               <h1>{requester.username}</h1>
                               <h1 className="text-gray-500">Afventer bekræftelse</h1>
                             </div>
-                            <div className="bg-yellow-600 text-white rounded-full flex items-center justify-center w-20 h-12">
+                      <div className="flex items-center gap-2">
+                            <div className="bg-yellow-600 text-white rounded-full flex items-center justify-center w-12 h-12">
                               {requester.skillLevel.toFixed(1)}
                             </div>
+                      </div>
                           </div>
 
                     <div className="flex justify-center gap-4">
