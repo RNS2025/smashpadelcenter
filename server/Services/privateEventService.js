@@ -23,6 +23,123 @@ const privateEventService = {
     }
   },
 
+  removePlayerFromEvent: async (eventId, username) => {
+    try {
+      const event = await PrivateEvent.findById(eventId);
+      if (!event) throw new Error("Event not found");
+      if (
+        event.invitedPlayers.includes(username) ||
+        event.joinRequests.includes(username)
+      ) {
+        throw new Error("User is not in this event");
+      }
+      // Remove user from participants and invitedPlayers list
+      event.invitedPlayers = event.invitedPlayers.filter((u) => u !== username);
+      event.participants = event.participants.filter((u) => u !== username);
+      event.joinRequests = event.joinRequests.filter((u) => u !== username);
+      await event.save();
+      await User.updateOne(
+        { username },
+        { $pull: { eventHistory: event._id } }
+      );
+      logger.info("PrivateEventService: Removed user from event", {
+        eventId,
+        username,
+      });
+      return {
+        ...event.toObject(),
+        id: event._id.toString(),
+        participants: event.participants || [],
+        joinRequests: event.joinRequests || [],
+      };
+    } catch (error) {
+      logger.error("PrivateEventService: Error removing user from event", {
+        eventId,
+        username,
+        error: error.message,
+      });
+      throw new Error("Error removing user from event: " + error.message);
+    }
+  },
+
+  confirmAcceptPrivateEvent: async (eventId, username) => {
+    try {
+      const event = await PrivateEvent.findById(eventId);
+      if (!event) throw new Error("Event not found");
+
+      if (event.invitedPlayers.includes(username)) {
+        throw new Error("User is not invited to this event");
+      }
+
+      // Remove user from invitedPlayers list and add to participants
+      event.invitedPlayers = event.invitedPlayers.filter((u) => u !== username);
+      event.participants.push(username);
+
+      await event.save();
+
+      // Update user's event history
+      await User.updateOne(
+        { username },
+        { $push: { eventHistory: event._id } }
+      );
+
+      logger.info("PrivateEventService: User accepted event invitation", {
+        eventId,
+        username,
+      });
+
+      return {
+        ...event.toObject(),
+        id: event._id.toString(),
+        participants: event.participants || [],
+        joinRequests: event.joinRequests || [],
+        invitedPlayers: event.invitedPlayers || [],
+      };
+    } catch (error) {
+      logger.error("PrivateEventService: Error accepting event invitation", {
+        eventId,
+        username,
+        error: error.message,
+      });
+      throw new Error("Error accepting invitation: " + error.message);
+    }
+  },
+
+  confirmDeclinePrivateEvent: async (eventId, username) => {
+    try {
+      const event = await PrivateEvent.findById(eventId);
+      if (!event) throw new Error("Event not found");
+
+      if (!event.invitedPlayers.includes(username)) {
+        throw new Error("User is not invited to this event");
+      }
+
+      // Remove user from invitedPlayers list
+      event.invitedPlayers = event.invitedPlayers.filter((u) => u !== username);
+      await event.save();
+
+      logger.info("PrivateEventService: User declined event invitation", {
+        eventId,
+        username,
+      });
+
+      return {
+        ...event.toObject(),
+        id: event._id.toString(),
+        participants: event.participants || [],
+        joinRequests: event.joinRequests || [],
+        invitedPlayers: event.invitedPlayers || [],
+      };
+    } catch (error) {
+      logger.error("PrivateEventService: Error declining event invitation", {
+        eventId,
+        username,
+        error: error.message,
+      });
+      throw new Error("Error declining invitation: " + error.message);
+    }
+  },
+
   getPrivateEventsByUser: async (username) => {
     try {
       const events = await PrivateEvent.find({ username });
@@ -104,6 +221,47 @@ const privateEventService = {
         error: error.message,
       });
       throw new Error("Error creating event: " + error.message);
+    }
+  },
+
+  invitedPlayers: async (eventId, usernames) => {
+    try {
+      const event = await PrivateEvent.findById(eventId);
+      if (!event) throw new Error("Event not found");
+
+      // Validate usernames (ensure they exist in the User collection)
+      const validUsers = await User.find({ username: { $in: usernames } });
+      const validUsernames = validUsers.map((user) => user.username);
+      const invalidUsernames = usernames.filter(
+        (username) => !validUsernames.includes(username)
+      );
+      if (invalidUsernames.length > 0) {
+        throw new Error(`Invalid usernames: ${invalidUsernames.join(", ")}`);
+      }
+
+      // Filter out usernames already in participants or invitedPlayers
+      const newInviteRequests = validUsernames.filter(
+        (username) =>
+          !event.participants.includes(username) &&
+          !event.invitedPlayers.includes(username)
+      );
+
+      event.invitedPlayers.push(...newInviteRequests);
+      await event.save();
+      return {
+        ...event.toObject(),
+        id: event._id.toString(),
+        participants: event.participants || [],
+        joinRequests: event.joinRequests || [],
+        invitedPlayers: event.invitedPlayers || [],
+      };
+    } catch (error) {
+      logger.error("PrivateEventService: Error inviting players", {
+        eventId,
+        usernames,
+        error: error.message,
+      });
+      throw new Error("Error inviting players: " + error.message);
     }
   },
 

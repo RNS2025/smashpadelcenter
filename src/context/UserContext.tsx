@@ -24,10 +24,15 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
+const ENV = import.meta.env.MODE;
 const BACKEND_URL =
-  import.meta.env.VITE_BACKEND_URL ||
-  import.meta.env.REACT_APP_BACKEND_URL ||
-  "https://localhost:3001";
+  ENV === "production"
+    ? "https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net"
+    : ENV === "development"
+    ? "http://localhost:3001"
+    : "http://localhost:3000";
+
+console.log(`UserContext using API at: ${BACKEND_URL}`);
 
 const isRouteWhitelisted = (pathname: string, whitelist: string[]): boolean => {
   return whitelist.some((route) => {
@@ -51,63 +56,69 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const handleUnauthenticated = useCallback((currentPath: string) => {
-    if (
-      !isRouteWhitelisted(currentPath, WHITELIST_ROUTES) &&
-      !isLogoutRef.current
-    ) {
-      if (!isLoginPage(currentPath)) {
-        setError("Adgang nægtet - Log ind for at se denne side");
-        navigate("/", {
-          state: {
-            message: "Log venligst ind for at få adgang til denne side",
-            from: currentPath,
-          },
-          replace: true,
-        });
-      } else {
-        setError(null);
+  const handleUnauthenticated = useCallback(
+    (currentPath: string) => {
+      if (
+        !isRouteWhitelisted(currentPath, WHITELIST_ROUTES) &&
+        !isLogoutRef.current
+      ) {
+        if (!isLoginPage(currentPath)) {
+          setError("Adgang nægtet - Log ind for at se denne side");
+          navigate("/", {
+            state: {
+              message: "Log venligst ind for at få adgang til denne side",
+              from: currentPath,
+            },
+            replace: true,
+          });
+        } else {
+          setError(null);
+        }
       }
-    }
-  }, [navigate]);
+    },
+    [navigate]
+  );
 
-  const fetchUserData = useCallback(async (currentPath: string) => {
-    if ( isLogoutRef.current) return;
-    setLoading(true);
-    try {
-      const response = await axios.get(
+  const fetchUserData = useCallback(
+    async (currentPath: string) => {
+      if (isLogoutRef.current) return;
+      setLoading(true);
+      try {
+        const response = await axios.get(
           `${BACKEND_URL}/api/v1/user-profiles/by-username/me`,
           {
             withCredentials: true,
           }
-      );
-      if (response.data && response.data.username) {
-        setUser(response.data);
-        setIsAuthenticated(true);
-        setError(null);
-        isLogoutRef.current = false;
-        sessionStorage.setItem("isAuthenticated", "true");
-        if (isLoginPage(currentPath)) {
-          navigate("/hjem", { replace: true });
+        );
+        if (response.data && response.data.username) {
+          setUser(response.data);
+          setIsAuthenticated(true);
+          setError(null);
+          isLogoutRef.current = false;
+          sessionStorage.setItem("isAuthenticated", "true");
+          if (isLoginPage(currentPath)) {
+            navigate("/hjem", { replace: true });
+          }
+        } else {
+          return new Error("Invalid user data received");
         }
-      } else {
-        return new Error("Invalid user data received");
+      } catch (err: any) {
+        if (isLogoutRef.current) {
+          console.log("Ignoring fetch error during logout");
+          return;
+        }
+        console.error("Auth check error:", err);
+        setUser(null);
+        setIsAuthenticated(false);
+        setError("Kunne ikke hente brugerdata.");
+        sessionStorage.removeItem("isAuthenticated");
+        handleUnauthenticated(currentPath);
+      } finally {
+        setLoading(false);
       }
-    } catch (err: any) {
-      if (isLogoutRef.current) {
-        console.log("Ignoring fetch error during logout");
-        return;
-      }
-      console.error("Auth check error:", err);
-      setUser(null);
-      setIsAuthenticated(false);
-      setError("Kunne ikke hente brugerdata.");
-      sessionStorage.removeItem("isAuthenticated");
-      handleUnauthenticated(currentPath);
-    } finally {
-      setLoading(false);
-    }
-  }, [handleUnauthenticated, navigate]);
+    },
+    [handleUnauthenticated, navigate]
+  );
 
   const fetchUser = async () => {
     await fetchUserData(location.pathname);

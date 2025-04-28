@@ -3,6 +3,7 @@ const router = express.Router();
 const databaseService = require("../Services/databaseService");
 const logger = require("../config/logger"); // Import logger
 
+
 router.get("/by-username/:username", async (req, res) => {
   try {
     const username =

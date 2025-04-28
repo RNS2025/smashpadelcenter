@@ -10,6 +10,7 @@ import {
   XCircleIcon,
   DocumentDuplicateIcon,
   CheckIcon,
+  StarIcon,
 } from "@heroicons/react/24/outline";
 import { useUser } from "../../../context/UserContext";
 import { useEffect, useState } from "react";
@@ -24,17 +25,22 @@ import { da } from "date-fns/locale";
 import { User } from "../../../types/user.ts";
 import userProfileService from "../../../services/userProfileService.ts";
 import PlayerInfoDialog from "../../../components/matchFinder/misc/PlayerInfoDialog.tsx";
+import { XIcon } from "lucide-react";
+import { MatchInvitedPlayersDialog } from "../../../components/matchFinder/misc/MatchInvitePlayersDialog.tsx";
 
 export const ViewMatchPage = () => {
-  const { user, loading: userLoading } = useUser();
+  const { user } = useUser();
   const { matchId } = useParams<{ matchId: string }>();
   const [match, setMatch] = useState<PadelMatch | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [socketConnected, setSocketConnected] = useState(false);
   const [participantProfiles, setParticipantProfiles] = useState<User[]>([]);
+  const [joinRequestProfiles, setJoinRequestProfiles] = useState<User[]>([]);
+
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [infoDialogVisible, setInfoDialogVisible] = useState(false);
+  const [inviteDialogVisible, setInviteDialogVisible] = useState(false);
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
@@ -56,14 +62,43 @@ export const ViewMatchPage = () => {
     fetchParticipants().then();
   }, [match]);
 
+  useEffect(() => {
+    const fetchJoinRequests = async () => {
+      if (!match || match.joinRequests.length === 0) return;
+
+      try {
+        const profiles = await Promise.all(
+          match.joinRequests.map((username) =>
+            userProfileService.getOrCreateUserProfile(username)
+          )
+        );
+        setJoinRequestProfiles(profiles);
+      } catch (err) {
+        console.error(
+          "Fejl ved hentning af tilmeldingsanmodningsprofiler:",
+          err
+        );
+      }
+    };
+
+    fetchJoinRequests().then();
+  }, [match]);
+
   // Initialize Socket.IO
   useEffect(() => {
     if (!matchId) return;
 
-    // Create socket connection
-    const socket = io("https://localhost:3001", {
+    // Create socket connection based on environment
+    const ENV = import.meta.env.MODE;
+    const SOCKET_URL =
+      ENV === "production"
+        ? "https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net"
+        : "http://localhost:3000";
+
+    console.log(`ViewMatchPage connecting to socket at: ${SOCKET_URL}`);
+
+    const socket = io(SOCKET_URL, {
       path: "/socket.io/",
-      rejectUnauthorized: false, // Only use this for development with self-signed certs
       withCredentials: true,
       transports: ["websocket", "polling"],
       reconnection: true,
@@ -136,6 +171,7 @@ export const ViewMatchPage = () => {
           return;
         }
         const matchData = await communityApi.getMatchById(matchId);
+        console.log("Fetched match data:", matchData);
         if (
           !matchData ||
           !Array.isArray(matchData.participants) ||
@@ -191,12 +227,54 @@ export const ViewMatchPage = () => {
     }
   };
 
-  const handleConfirmJoin = async (participant: string) => {
+  const handleAcceptJoin = async (username: string) => {
+    if (!match) return;
+    try {
+      const updatedMatch = await communityApi.acceptJoinMatch(
+        match.id,
+        username
+      );
+      console.log("Updated match after confirm:", updatedMatch);
+      if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
+        setError("Invalid match data returned");
+        alert("Der opstod en fejl – prøv igen.");
+      }
+      alert("Tilmelding accepteret!");
+      setMatch(updatedMatch);
+    } catch (error: any) {
+      console.error("Error confirming join:", error);
+      alert(error.response?.data?.message || "Fejl ved bekræftelse");
+      setError("Fejl ved bekræftelse");
+    }
+  };
+
+  const handleRejectJoin = async (username: string) => {
+    if (!match) return;
+    try {
+      const updatedMatch = await communityApi.rejectJoinMatch(
+        match.id,
+        username
+      );
+      console.log("Updated match after confirm:", updatedMatch);
+      if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
+        setError("Invalid match data returned");
+        alert("Der opstod en fejl – prøv igen.");
+      }
+      alert("Tilmelding afvist!");
+      setMatch(updatedMatch);
+    } catch (error: any) {
+      console.error("Error confirming join:", error);
+      alert(error.response?.data?.message || "Fejl ved bekræftelse");
+      setError("Fejl ved bekræftelse");
+    }
+  };
+
+  const handleConfirmJoin = async (username: string) => {
     if (!match) return;
     try {
       const updatedMatch = await communityApi.confirmJoinMatch(
         match.id,
-        participant
+        username
       );
       console.log("Updated match after confirm:", updatedMatch);
       if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
@@ -209,6 +287,45 @@ export const ViewMatchPage = () => {
       console.error("Error confirming join:", error);
       alert(error.response?.data?.message || "Fejl ved bekræftelse");
       setError("Fejl ved bekræftelse");
+    }
+  };
+
+  const handleDeclineJoin = async (username: string) => {
+    if (!match) return;
+    try {
+      const updatedMatch = await communityApi.rejectJoinMatch(
+        match.id,
+        username
+      );
+      console.log("Updated match after confirm:", updatedMatch);
+      if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
+        setError("Invalid match data returned");
+        alert("Der opstod en fejl – prøv igen.");
+      }
+      alert("Tilmelding afvist!");
+      setMatch(updatedMatch);
+    } catch (error: any) {
+      console.error("Error confirming join:", error);
+      alert(error.response?.data?.message || "Fejl ved afvisning");
+      setError("Fejl ved afvisning");
+    }
+  };
+
+  const handleRemovePlayerFromMatch = async (username: string) => {
+    if (!match) return;
+    try {
+      const updatedMatch = await communityApi.removePlayer(match.id, username);
+      console.log("Updated match after confirm:", updatedMatch);
+      if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
+        setError("Invalid match data returned");
+        alert("Der opstod en fejl – prøv igen.");
+      }
+      alert("Tilmelding afvist!");
+      setMatch(updatedMatch);
+    } catch (error: any) {
+      console.error("Error confirming join:", error);
+      alert(error.response?.data?.message || "Fejl ved afvisning");
+      setError("Fejl ved afvisning");
     }
   };
 
@@ -225,7 +342,7 @@ export const ViewMatchPage = () => {
     }
   };
 
-  const handleInvitePlayers = async () => {
+  const handleInvitedPlayers = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
       setCopied(true);
@@ -277,9 +394,25 @@ export const ViewMatchPage = () => {
         <PlayerInfoDialog user={selectedUser!} />
       </div>
 
-      <Animation>
-        <HomeBar />
+      <div
+        className={`min-h-screen fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center ${
+          !inviteDialogVisible ? "hidden" : ""
+        }`}
+      >
+        <MatchInvitedPlayersDialog
+          match={match}
+          onInvite={async () => {
+            setInviteDialogVisible(false);
+            await communityApi.getMatchById(matchId);
+          }}
+          onClose={() => {
+            setInviteDialogVisible(false);
+          }}
+        />
+      </div>
 
+      <HomeBar />
+      <Animation>
         <div className="mx-4 my-10 space-y-4 text-sm">
           <h1
             className={`justify-self-center font-semibold ${
@@ -298,7 +431,7 @@ export const ViewMatchPage = () => {
           </h1>
 
           <h1 className="text-center text-gray-500 italic text-sm">
-            Tryk på et spillernavn for at se mere information.
+            Tryk på et spillernavn for at se mere information
           </h1>
 
           {!socketConnected && (
@@ -310,25 +443,51 @@ export const ViewMatchPage = () => {
 
           {/* Participants */}
           {participantProfiles.map((profile) => (
-            <div
-              onClick={() => {
-                setSelectedUser(profile);
-                setInfoDialogVisible(true);
-              }}
-              key={profile.username}
-              className="border rounded flex items-center px-1"
-            >
-              <UserCircleIcon className="h-20" />
-              <div className="w-full pr-1 truncate">
-                <h1>{profile.username}</h1>
+            <>
+              <div className="flex items-center gap-2">
+                <div
+                  key={profile.username}
+                  className="border rounded flex items-center px-1 w-full py-3"
+                >
+                  <div
+                    onClick={() => {
+                      setSelectedUser(profile);
+                      setInfoDialogVisible(true);
+                    }}
+                    className="flex items-center gap-2 w-full pr-1 truncate"
+                  >
+                    <UserCircleIcon className="h-14" />
+                    <div className="flex flex-col gap-2">
+                      <h1>{profile.fullName}</h1>
+                      <h1 className="text-gray-500 italic">
+                        {profile.username}
+                      </h1>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                  <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-12 h-12">
+                    {profile.skillLevel.toFixed(1)}
+                  </div>
+
+                    <div>
+                      {match.username === profile.username ? (
+                        <StarIcon className="size-6 text-yellow-500" />
+                      ) : (
+                        <XIcon
+                          onClick={() =>
+                            handleRemovePlayerFromMatch(profile.username)
+                          }
+                          className={`size-6 text-red-500 ${match.username !== user?.username ? "hidden" : ""}`} />
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-20 h-12">
-                {profile.skillLevel.toFixed(1)}
-              </div>
-            </div>
+            </>
           ))}
 
-          {match.reservedSpots.length > 0 ? (
+          {match.reservedSpots.length > 0 &&
             match.reservedSpots.map((reserved) => (
               <div
                 key={reserved.name}
@@ -338,14 +497,11 @@ export const ViewMatchPage = () => {
                 <div className="w-full pr-1 truncate">
                   <h1>{reserved.name}</h1>
                 </div>
-                <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-20 h-12">
+                <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-12 h-12">
                   {reserved.level}
                 </div>
               </div>
-            ))
-          ) : (
-            <p>Ingen deltagere endnu.</p>
-          )}
+            ))}
 
           {/* Empty spots */}
           {[
@@ -362,39 +518,76 @@ export const ViewMatchPage = () => {
               <div className="w-full pr-1 truncate">
                 <h1 className="text-xl text-gray-500">Ledig plads</h1>
               </div>
-              <div className="bg-gray-500 text-white rounded-full flex items-center justify-center w-20 h-12">
+
+              <div className="flex items-center gap-2">
+              <div className="bg-gray-500 text-white rounded-full flex items-center justify-center w-12 h-12">
                 ?
               </div>
+                <div>
+                </div>
+            </div>
             </div>
           ))}
 
           {/* Join requests (visible to creator) */}
           {match.username === user?.username &&
-            Array.isArray(match.joinRequests) &&
-            match.joinRequests.length > 0 && (
-              <>
-                <h2 className="font-semibold">Tilmeldingsanmodninger</h2>
-                {match.joinRequests.map((requester, index) => (
-                  <div
-                    key={index}
-                    className="border rounded flex items-center px-1"
+              Array.isArray(match.joinRequests) &&
+              match.joinRequests.length > 0 && (
+                  <>
+                    <h2 className="font-semibold">Tilmeldingsanmodninger</h2>
+                    {joinRequestProfiles.map((requester, index) => (
+                        <div
+                            key={index}
+                            className="border rounded flex flex-col p-2 gap-2"
                   >
-                    <UserCircleIcon className="h-20" />
-                    <div className="w-full pr-1 truncate">
-                      <h1>{requester}</h1>
-                      <h1 className="text-gray-500">Afventer bekræftelse</h1>
+                    <div onClick={() => {
+                            setSelectedUser(requester);
+                            setInfoDialogVisible(true);
+                          }} className="flex items-center">
+                            <UserCircleIcon className="h-20" />
+                            <div className="flex flex-col w-full pr-1 truncate">
+                              <h1>{requester.username}</h1>
+                              <h1 className="text-gray-500">Afventer bekræftelse</h1>
+                            </div>
+                      <div className="flex items-center gap-2">
+                            <div className="bg-yellow-600 text-white rounded-full flex items-center justify-center w-12 h-12">
+                              {requester.skillLevel.toFixed(1)}
+                            </div>
+                      </div>
+                          </div>
+
+                    <div className="flex justify-center gap-4">
+                      <XIcon
+                        onClick={() => handleDeclineJoin(requester.username)}
+                        className="size-8 text-red-500"
+                      />
+                      <CheckIcon
+                        onClick={() => handleConfirmJoin(requester.username)}
+                        className="size-8 text-green-500"
+                      />
                     </div>
-                    <button
-                      onClick={() => handleConfirmJoin(requester)}
-                      className="bg-cyan-500 text-white rounded-lg px-2 py-1"
-                      disabled={isMatchFull}
-                    >
-                      Bekræft
-                    </button>
                   </div>
                 ))}
               </>
             )}
+
+          {user && match.invitedPlayers && match.invitedPlayers.includes(user.username) && (
+              <div className="flex justify-between items-center border border-yellow-500 p-4 rounded-lg animate-pulse">
+                <h1>{match.username} har inviteret dig!</h1>
+                <div className="flex gap-2">
+                  <XIcon
+                    className="size-8 text-red-500"
+                    onClick={() => handleRejectJoin(user.username)}
+                  />
+                  <CheckIcon
+                    className="size-8 text-green-500"
+                    onClick={() => handleAcceptJoin(user.username)}
+                  /></div>
+          </div>
+          )}
+
+
+          {/* Match details */}
 
           <div className="grid grid-cols-2 text-center text-black gap-3">
             <div className="bg-white rounded flex justify-center items-center gap-1 py-4">
@@ -431,45 +624,62 @@ export const ViewMatchPage = () => {
           </div>
 
           {/* Action buttons */}
-          {match.username !== user?.username &&
-            user?.username &&
+
+          {user?.username &&
+            match.username !== user?.username &&
             !match.participants.includes(user?.username) &&
-            !match.joinRequests.includes(user?.username) &&
+              !match.invitedPlayers.includes(user.username) &&
             !isMatchFull && (
               <button
                 onClick={handleJoinMatch}
-                className="bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                className={`bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white ${
+                  match.joinRequests.includes(user?.username)
+                    ? "bg-gray-700 animate-pulse"
+                    : ""
+                }`}
+                disabled={match.joinRequests.includes(user?.username)}
               >
-                Tilmeld kamp
+                {match.joinRequests.includes(user?.username)
+                  ? "Anmodning sendt"
+                  : "Tilmeld kamp"}
               </button>
             )}
 
           {match.username === user?.username && (
-            <div className="flex justify-between">
-              <button
-                onClick={handleDeleteMatch}
-                className="bg-red-500 hover:bg-red-600 transition duration-300 rounded-lg py-2 px-4 text-white"
-              >
-                Slet kamp
-              </button>
+            <>
+              <div className="flex flex-col w-full gap-4 text-lg">
+                <button
+                  onClick={() => setInviteDialogVisible(true)}
+                  className="bg-green-500 hover:bg-green-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                >
+                  Inviter spillere
+                </button>
 
-              <div
-                onClick={handleInvitePlayers}
-                className="bg-green-500 hover:bg-green-600 transition duration-300 rounded-lg py-2 px-4 text-white flex"
-              >
-                {!copied ? (
-                  <>
-                    <DocumentDuplicateIcon className="h-5" />
-                    <h1>Kopier kamplink</h1>
-                  </>
-                ) : (
-                  <>
-                    <CheckIcon className="h-5" />
-                    <h1>Link kopieret!</h1>
-                  </>
-                )}
+                <div
+                  onClick={handleInvitedPlayers}
+                  className="flex justify-center hidden bg-green-500 hover:bg-green-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                >
+                  {!copied ? (
+                    <>
+                      <DocumentDuplicateIcon className="h-5" />
+                      <h1>Kopier kamplink</h1>
+                    </>
+                  ) : (
+                    <>
+                      <CheckIcon className="h-5" />
+                      <h1>Link kopieret!</h1>
+                    </>
+                  )}
+                </div>
+
+                <button
+                  onClick={handleDeleteMatch}
+                  className="bg-red-500 hover:bg-red-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                >
+                  Slet kamp
+                </button>
               </div>
-            </div>
+            </>
           )}
         </div>
       </Animation>

@@ -24,8 +24,9 @@ const ProfilePage = () => {
           <ProfileTabMenu />
           </div>
 
-
-          <Outlet/>
+            <div className="mt-6">
+                <Outlet/>
+            </div>
 
 
         </div>

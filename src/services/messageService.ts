@@ -1,7 +1,13 @@
 import { io, Socket } from "socket.io-client";
 import axios from "axios";
 
-const API_BASE_URL = "https://localhost:3001/api/v1";
+const ENV = import.meta.env.MODE;
+const API_BASE_URL =
+  ENV === "production"
+    ? "https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net/api/v1"
+    : ENV === "development"
+    ? "http://localhost:3001/api/v1"
+    : "http://localhost:3000/api/v1";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -39,7 +45,16 @@ export class MessageService {
 
   constructor(userId: string) {
     this.userId = userId;
-    this.socket = io("https://localhost:3001", {
+    const SOCKET_URL =
+      ENV === "production"
+        ? "https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net"
+        : ENV === "development"
+        ? "http://localhost:3001"
+        : "http://localhost:3000";
+
+    console.log(`MessageService connecting to socket at: ${SOCKET_URL}`);
+
+    this.socket = io(SOCKET_URL, {
       withCredentials: true,
       path: "/socket.io/",
     });

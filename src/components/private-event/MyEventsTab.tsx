@@ -11,7 +11,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
 import { safeFormatDate } from "../../utils/dateUtils.ts";
-import mockEvents from "../../utils/mockEvents.ts";
+import mockEvents from "../../utils/mock/mockEvents.ts";
 
 export const MyEventsTab = () => {
   const navigate = useNavigate();
@@ -38,12 +38,10 @@ export const MyEventsTab = () => {
       try {
         if (useMockData) {
           const filteredEvents = mockEvents
-            .filter(
-              (e) =>
-                e.username === user.username ||
-                e.participants.includes(user.username)
-            )
-            .sort((a, b) => {
+              .filter((e) =>
+                  new Date(e.eventDateTime) > new Date() &&
+                  (e.username === user.username || (e.participants.includes(user.username)) || e.invitedPlayers?.includes(user.username)))
+              .sort((a, b) => {
               return (
                 new Date(a.eventDateTime).getTime() -
                 new Date(b.eventDateTime).getTime()
@@ -51,13 +49,12 @@ export const MyEventsTab = () => {
             });
           setPrivateEvents(filteredEvents);
         } else {
-          const response = await communityApi.getPrivateEventsForUser(user.username);
+          const response = await communityApi.getPrivateEvents();
           const filteredEvents = response
             .filter(
               (e: PrivateEvent) =>
-                e.username === user.username ||
-                e.participants.includes(user.username)
-            )
+                  new Date(e.eventDateTime) > new Date() &&
+                  (e.username === user.username || (e.participants.includes(user.username)) || e.invitedPlayers?.includes(user.username)))
             .sort((a: PrivateEvent, b: PrivateEvent) => {
               return (
                 new Date(a.eventDateTime).getTime() -
@@ -117,12 +114,7 @@ export const MyEventsTab = () => {
                 navigate(`/privat-arrangementer/${event.username}/${event.id}`)
               }
               key={event.id}
-              className={`border p-4 rounded-lg space-y-1.5 hover:bg-gray-700 mb-5
-                         ${
-                           new Date(event.eventDateTime) < new Date()
-                             ? "opacity-70"
-                             : ""
-                         }`}
+              className={`border p-4 rounded-lg space-y-1.5 hover:bg-gray-700 mb-5`}
             >
               <h1 className="font-semibold text-lg">{event.title}</h1>
               <h1>
@@ -169,6 +161,13 @@ export const MyEventsTab = () => {
                             : "Lukket tilmelding"}
                       </p>
                     </div>
+                    {user && event.invitedPlayers?.includes(user?.username) && (
+                        <div className="flex justify-between">
+                          <p className="text-yellow-500 italic">
+                            Du er inviteret til dette arrangement
+                          </p>
+                        </div>
+                    )}
                   </div>
               ) : (
                   <div className="flex flex-col gap-y-2">
@@ -211,10 +210,7 @@ export const MyEventsTab = () => {
                     </div>
                     <div className="flex justify-between">
                       <p className="text-gray-500 italic">
-                        Oprettet af{" "}
-                        {event.username === user?.username
-                            ? "dig"
-                            : `${event.username}`}
+                        Oprettet af {event.username === user?.username ? "dig" : `${event.username}`}
                       </p>
                       <p className="text-gray-500 italic">
                         {event.openRegistration

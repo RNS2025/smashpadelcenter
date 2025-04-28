@@ -1,4 +1,5 @@
 import { User } from "../../types/user.ts";
+import {EnvelopeIcon, PhoneIcon} from "@heroicons/react/24/outline";
 
 export const ProfileHeader = ({ profile }: { profile: User | null }) => {
     if (!profile) return null;
@@ -14,16 +15,37 @@ export const ProfileHeader = ({ profile }: { profile: User | null }) => {
                     className="w-24 h-24 rounded-full object-cover"
                 />
                 <div>
-                    <h1 className="text-3xl font-bold text-gray-800 mb-2">
+
+
+                    <div className="flex flex-col mb-2">
+                    <h1 className="text-3xl font-bold text-gray-800">
                         {profile.fullName}
                     </h1>
+
                     <p className="text-gray-600">@{profile.username}</p>
+                    </div>
+
+
+
+                    <div className="flex gap-2">
+                        <EnvelopeIcon className="h-6 text-gray-600" />
+                        <p className="text-gray-600">{profile.email}</p>
+                    </div>
+
+                    {profile.phoneNumber && (
+                    <div className="flex gap-2">
+                        <PhoneIcon className="h-6 text-gray-600" />
+                        <p className="text-gray-600">{profile.phoneNumber}</p>
+                    </div>
+                    )}
+
+
                     <div className="mt-2 flex items-center gap-2">
-                        <span className="bg-cyan-100 text-cyan-800 px-2 py-1 rounded text-sm font-medium">
+                        <span className="bg-cyan-100 text-cyan-800 px-2 py-1 rounded font-medium">
                             Niveau {profile.skillLevel}
                         </span>
                         {isAdmin && (
-                            <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded text-sm font-medium">
+                            <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded font-medium">
                                 Admin
                             </span>
                         )}

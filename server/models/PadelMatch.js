@@ -1,20 +1,23 @@
 // models/PadelMatch.js
 const mongoose = require("mongoose");
 
-const reservedSpotSchema = new mongoose.Schema({
-  id: {
-    type: String,
-    required: false,
+const reservedSpotSchema = new mongoose.Schema(
+  {
+    id: {
+      type: String,
+      required: false,
+    },
+    name: {
+      type: String,
+      required: true,
+    },
+    level: {
+      type: String,
+      required: true,
+    },
   },
-  name: {
-    type: String,
-    required: true,
-  },
-  level: {
-    type: String,
-    required: true,
-  },
-}, { _id: false });
+  { _id: false }
+);
 
 const padelMatchSchema = new mongoose.Schema({
   username: {
@@ -41,6 +44,10 @@ const padelMatchSchema = new mongoose.Schema({
     type: [reservedSpotSchema],
     default: [],
   },
+  invitedPlayers: {
+    type: [String],
+    default: [],
+  },
   totalSpots: {
     type: Number,
     default: 4,
@@ -65,6 +72,7 @@ const padelMatchSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+
   location: {
     type: String,
     required: true,
@@ -72,7 +80,7 @@ const padelMatchSchema = new mongoose.Schema({
   matchType: {
     type: String,
     required: true,
-  }
+  },
 });
 
 const PadelMatch = mongoose.model("PadelMatch", padelMatchSchema);

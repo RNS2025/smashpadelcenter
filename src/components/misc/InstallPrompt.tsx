@@ -39,11 +39,11 @@ const InstallPrompt: React.FC<InstallPromptProps> = ({
             className="w-16 h-16 mb-4"
           />
           <h2 className="text-xl font-bold text-gray-800 mb-2">
-            Install SMASH Padel
+            Installer SMASH Padel-app
           </h2>
           <p className="text-gray-600 text-center mb-4">
-            Get the SMASH Padel app for quick access to tournaments and player
-            profiles, even offline!
+            Få hurtigere adgang til SMASH Padelcenter med vores app. Installer den nu
+            for at få en bedre oplevelse!
           </p>
           <div className="flex space-x-4">
             <button

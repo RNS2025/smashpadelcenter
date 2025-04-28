@@ -17,6 +17,16 @@ export const ProfileTabMenu = () => {
                 </NavLink>
 
                 <NavLink
+                    to={`/profil/grupper`}
+                    className={`font-semibold inline-flex items-center justify-center h-8 shrink-0 rounded-full gap-2 px-2 text-sm max-sm:text-xs
+                      ${location.pathname.includes("grupper")
+                        ? "bg-cyan-100 text-cyan-600"
+                        : "text-gray-500 hover:border-gray-300 hover:text-gray-700 transition duration-300"}`}
+                >
+                    Grupper
+                </NavLink>
+
+                <NavLink
                     to={`/profil/rediger`}
                     className={`font-semibold inline-flex items-center justify-center h-8 shrink-0 rounded-full gap-2 px-2 text-sm max-sm:text-xs
                       ${location.pathname.includes("rediger")

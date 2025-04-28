@@ -23,7 +23,7 @@ const MatchFinderPage: FC = () => {
         const data = await communityApi.getMatches();
         const myMatches = data.filter(
             (match) => match.username === user?.username
-        );
+        ).filter((match) => new Date(match.matchDateTime) > new Date());
         const totalJoinRequests = myMatches.reduce(
             (sum, match) => sum + (match.joinRequests?.length || 0),
             0
@@ -43,8 +43,8 @@ const MatchFinderPage: FC = () => {
           <title>Makkerbørs</title>
         </Helmet>
 
+        <HomeBar backPage="/hjem" />
         <Animation>
-          <HomeBar backPage="/hjem" />
 
           <div className="sm:mx-20 my-10">
             <div className="justify-self-center mb-5">

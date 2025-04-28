@@ -7,8 +7,8 @@ import InstallPrompt from "./components/misc/InstallPrompt.tsx"; // Adjust path 
 import LoginPage from "./pages/login/LoginPage.tsx";
 import HomePage from "./pages/(logged-in)/HomePage.tsx";
 import AdminPage from "./pages/(logged-in)/misc/AdminPage.tsx";
-import CheckInPage from "./pages/CheckInPage.tsx";
-import PlayerPage from "./pages/(logged-in)/tournament/PlayerPage.tsx";
+import CheckInPage from "./pages/tournament/CheckInPage.tsx";
+import PlayerPage from "./pages/tournament/PlayerPage.tsx";
 import BookCourtPage from "./pages/(logged-in)/BookingOfCourt.tsx";
 import BookTrainingPage from "./pages/(logged-in)/BookTraining.tsx";
 import MatchFinderPage from "./pages/(logged-in)/matchFinder/MatchFinderPage.tsx";
@@ -22,9 +22,9 @@ import ProfilePage from "./pages/(logged-in)/ProfilePage/ProfilePage.tsx";
 import FeedbackPage from "./pages/(logged-in)/FeedbackPage.tsx";
 import RegisterPage from "./pages/login/RegisterUserPage.tsx";
 import CourtTimes from "./pages/court-times.tsx";
-import TournamentTabs from "./pages/(logged-in)/tournament/TournamentTabs.tsx";
-import CourtMapPage from "./pages/(logged-in)/tournament/CourtMapPage.tsx";
-import TournamentsResultsPage from "./pages/(logged-in)/tournament/TournamentsResultsPage.tsx";
+import TournamentTabs from "./pages/tournament/TournamentTabs.tsx";
+import CourtMapPage from "./pages/tournament/CourtMapPage.tsx";
+import TournamentsResultsPage from "./pages/tournament/TournamentsResultsPage.tsx";
 import LunarTeamsTab from "./components/lunar/LunarTeamsTab.tsx";
 import LunarTeamsWomenTab from "./components/lunar/LunarTeamsWomenTab.tsx";
 import HHTeamsTab from "./components/lunar/HHTeamsTab.tsx";
@@ -39,7 +39,6 @@ import MatchFinderMyMatchesTab from "./components/matchFinder/MatchFinderMyMatch
 import MatchFinderAwaitingTab from "./components/matchFinder/MatchFinderAwaitingTab.tsx";
 import ViewMatchPage from "./pages/(logged-in)/matchFinder/ViewMatchPage.tsx";
 import OverviewTab from "./components/profile/tabs/OverviewTab.tsx";
-import MatchesTab from "./components/profile/tabs/MatchesTab.tsx";
 import EditTab from "./components/profile/tabs/EditTab.tsx";
 import "./App.css";
 import PrivateEventPage from "./pages/(logged-in)/private-event/PrivateEventPage.tsx";
@@ -47,6 +46,10 @@ import MyEventsTab from "./components/private-event/MyEventsTab.tsx";
 import CreateEventPage from "./pages/(logged-in)/private-event/CreateEventPage.tsx";
 import ViewEventPage from "./pages/(logged-in)/private-event/ViewEventPage.tsx";
 import AllEventsTab from "./components/private-event/AllEventsTab.tsx";
+import GroupsTab from "./components/profile/tabs/groups/GroupsTab.tsx";
+import CreateGroupTab from "./components/profile/tabs/groups/CreateGroupTab.tsx";
+import EditGroupTab from "./components/profile/tabs/groups/EditGroupTab.tsx";
+import TournamentRulesPage from "./pages/tournament/TournamentRulesPage.tsx";
 
 function App() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -119,7 +122,7 @@ function App() {
 
   return (
     <HelmetProvider>
-      <BrowserRouter basename="/smashpadelcenter">
+      <BrowserRouter>
         <UserProvider>
           {shouldShowPrompt && (
             <InstallPrompt
@@ -135,16 +138,32 @@ function App() {
               path="/turneringer/baneoversigt"
               element={<CourtMapPage />}
             />
+            <Route
+              path="/turneringer/regler"
+              element={<TournamentRulesPage />}
+            />
+            <Route path="/turneringer" element={<TournamentTabs />} />
+
             <Route path="/player/:playerId/:rowId" element={<PlayerPage />} />
             <Route path="/court-times" element={<CourtTimes />} />
             <Route path="/register" element={<RegisterPage />} />
 
             {/* Protected Routes */}
-            <Route path="/profil" element={<ProfileProvider><ProfilePage /></ProfileProvider>}>
+            <Route
+              path="/profil"
+              element={
+                <ProfileProvider>
+                  <ProfilePage />
+                </ProfileProvider>
+              }
+            >
               <Route index element={<Navigate to="overblik" replace />} />
               <Route path="overblik" element={<OverviewTab />} />
               <Route path="rediger" element={<EditTab />} />
-              <Route path="kampe" element={<MatchesTab />} />
+
+              <Route path="grupper" element={<GroupsTab />} />
+              <Route path="grupper/opretgruppe" element={<CreateGroupTab />} />
+              <Route path="grupper/:groupId" element={<EditGroupTab />} />
             </Route>
 
             <Route path="/hjem" element={<HomePage />} />
@@ -162,14 +181,22 @@ function App() {
             <Route path="/makkerbørs/opretkamp" element={<CreateMatchPage />} />
 
             <Route path="/privat-arrangementer" element={<PrivateEventPage />}>
-              <Route index element={<Navigate to="minearrangementer" replace />} />
+              <Route
+                index
+                element={<Navigate to="minearrangementer" replace />}
+              />
               <Route path="minearrangementer" element={<MyEventsTab />} />
               <Route path="allearrangementer" element={<AllEventsTab />} />
             </Route>
-            <Route path="/privat-arrangementer/opretarrangement" element={<CreateEventPage />} />
-            <Route path="/privat-arrangementer/:username/:eventId" element={<ViewEventPage />} />
+            <Route
+              path="/privat-arrangementer/opretarrangement"
+              element={<CreateEventPage />}
+            />
+            <Route
+              path="/privat-arrangementer/:username/:eventId"
+              element={<ViewEventPage />}
+            />
 
-            <Route path="/turneringer" element={<TournamentTabs />} />
             <Route
               path="/turneringer/resultater"
               element={<TournamentsResultsPage />}

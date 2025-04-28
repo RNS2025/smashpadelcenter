@@ -11,6 +11,178 @@ const isBrowser = (req) => {
   return /Mozilla|Chrome|Safari|Edge|Firefox/i.test(userAgent);
 };
 
+// POST /api/v1/private-event/:eventId/invite - Invite players to a private event
+router.post("/:eventId/invite", async (req, res) => {
+  try {
+    const { usernames } = req.body;
+    const event = await PrivateEvent.findById(req.params.eventId);
+    if (!event) {
+      logger.warn("Attempted to invite players to non-existent event", {
+        eventId: req.params.eventId,
+      });
+      return res.status(404).json({ message: "Event not found" });
+    }
+    if (event.username !== req.user.username) {
+      logger.warn("Unauthorized invite attempt", {
+        eventId: req.params.eventId,
+        eventCreator: event.username,
+        attemptedBy: req.user.username,
+      });
+      return res
+        .status(403)
+        .json({ message: "Only the event creator can invite players" });
+    }
+    const updatedEvent = await privateEventService.invitedPlayers(
+      req.params.eventId,
+      usernames
+    );
+    const io = req.app.get("socketio");
+    io.to(req.params.eventId).emit("eventUpdated", updatedEvent);
+    logger.info("Players invited to private event", {
+      eventId: req.params.eventId,
+      usernames,
+    });
+    res.json(updatedEvent);
+  } catch (error) {
+    logger.error("Error inviting players to private event", {
+      eventId: req.params.eventId,
+      usernames: req.body.usernames,
+      error: error.message,
+    });
+    res.status(400).json({ message: error.message });
+  }
+});
+
+// POST /api/v1/private-event/:eventId/remove-player - Remove a player from a private event
+router.post("/:eventId/remove-player", async (req, res) => {
+  try {
+    const { username } = req.body;
+    const event = await PrivateEvent.findById(req.params.eventId);
+    if (!event) {
+      logger.warn("Attempted to remove player from non-existent event", {
+        eventId: req.params.eventId,
+      });
+      return res.status(404).json({ message: "Event not found" });
+    }
+    if (event.username !== req.user.username) {
+      logger.warn("Unauthorized remove player attempt", {
+        eventId: req.params.eventId,
+        eventCreator: event.username,
+        attemptedBy: req.user.username,
+      });
+      return res
+        .status(403)
+        .json({ message: "Only the event creator can remove players" });
+    }
+    const updatedEvent = await privateEventService.removePlayerFromEvent(
+      req.params.eventId,
+      username
+    );
+    const io = req.app.get("socketio");
+    io.to(req.params.eventId).emit("eventUpdated", updatedEvent);
+    logger.info("Player removed from private event", {
+      eventId: req.params.eventId,
+      username,
+    });
+    res.json(updatedEvent);
+  } catch (error) {
+    logger.error("Error removing player from private event", {
+      eventId: req.params.eventId,
+      username: req.body.username,
+      error: error.message,
+    });
+    res.status(400).json({ message: error.message });
+  }
+});
+
+// POST /api/v1/private-event/:eventId/confirm - Confirm acceptance of a private event
+router.post("/:eventId/confirm", async (req, res) => {
+  try {
+    if (!req.isAuthenticated()) {
+      logger.warn("Unauthenticated user attempted to confirm event", {
+        eventId: req.params.eventId,
+      });
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    const { username } = req.body;
+    const updatedEvent = await privateEventService.confirmAcceptPrivateEvent(
+      req.params.eventId,
+      username
+    );
+    const io = req.app.get("socketio");
+    io.to(req.params.eventId).emit("eventUpdated", updatedEvent);
+    logger.info("User confirmed acceptance of private event", {
+      eventId: req.params.eventId,
+      username,
+    });
+    res.json(updatedEvent);
+  } catch (error) {
+    logger.error("Error confirming acceptance of private event", {
+      eventId: req.params.eventId,
+      username: req.body.username,
+      error: error.message,
+    });
+    res.status(400).json({ message: error.message });
+  }
+});
+
+// POST /api/v1/private-event/:eventId/decline - Decline a private event
+router.post("/:eventId/decline", async (req, res) => {
+  try {
+    if (!req.isAuthenticated()) {
+      logger.warn("Unauthenticated user attempted to decline event", {
+        eventId: req.params.eventId,
+      });
+      return res.status(401).json({ message: "Not authenticated" });
+    }
+    const { username } = req.body;
+    const event = await PrivateEvent.findById(req.params.eventId);
+    if (!event) {
+      logger.warn("Attempted to decline non-existent event", {
+        eventId: req.params.eventId,
+      });
+      return res.status(404).json({ message: "Event not found" });
+    }
+
+    // Allow either the event owner or the invited user to decline
+    if (
+      username !== req.user.username &&
+      event.username !== req.user.username
+    ) {
+      logger.warn("User attempted to decline without proper permissions", {
+        eventId: req.params.eventId,
+        actualUser: req.user.username,
+        attemptedAs: username,
+        eventOwner: event.username,
+      });
+      return res
+        .status(403)
+        .json({
+          message:
+            "Only the invited user or event owner can decline this invitation",
+        });
+    }
+    const updatedEvent = await privateEventService.confirmDeclinePrivateEvent(
+      req.params.eventId,
+      username
+    );
+    const io = req.app.get("socketio");
+    io.to(req.params.eventId).emit("eventUpdated", updatedEvent);
+    logger.info("User declined private event", {
+      eventId: req.params.eventId,
+      username,
+    });
+    res.json(updatedEvent);
+  } catch (error) {
+    logger.error("Error declining private event", {
+      eventId: req.params.eventId,
+      username: req.body.username,
+      error: error.message,
+    });
+    res.status(400).json({ message: error.message });
+  }
+});
+
 // GET /api/v1/private-event - Get all private events
 router.get("/", async (req, res) => {
   try {
@@ -216,7 +388,7 @@ router.post("/:eventId/confirm", async (req, res) => {
         .status(403)
         .json({ message: "Only the event creator can confirm joins" });
     }
-    const updatedEvent = await privateEventService.confirmJoinPrivateEvent(
+    const updatedEvent = await privateEventService.joinPrivateEvent(
       req.params.eventId,
       username
     );

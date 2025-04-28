@@ -3,7 +3,7 @@ import { useNavigate, useOutletContext } from "react-router-dom";
 import { useUser } from "../../context/UserContext.tsx";
 import { useEffect, useState } from "react";
 import { PrivateEvent } from "../../types/PrivateEvent.ts";
-import mockEvents from "../../utils/mockEvents.ts";
+import mockEvents from "../../utils/mock/mockEvents.ts";
 import communityApi from "../../services/makkerborsService.ts";
 import LoadingSpinner from "../misc/LoadingSpinner.tsx";
 import { safeFormatDate } from "../../utils/dateUtils.ts";
@@ -81,7 +81,12 @@ export const AllEventsTab = () => {
             .filter(
               (e) =>
                 e.username !== user?.username &&
-                e.eventDateTime > new Date().toISOString()
+                e.eventDateTime > new Date().toISOString() &&
+                !(
+                  e.invitedPlayers &&
+                  user?.username &&
+                  e.invitedPlayers.includes(user.username)
+                )
             )
             .map((event) => (
               <div
@@ -110,96 +115,93 @@ export const AllEventsTab = () => {
                   <p>{event.location}</p>
                 </div>
 
-
                 {!event.level && event.joinRequests.length === 0 ? (
-                    <div className="flex flex-col gap-y-2">
-                      <div className="flex justify-between">
-                        <p>{event.eventFormat}</p>
-                        <div className="flex items-center gap-1">
-                          <UserCircleIcon
-                              className={`h-5 ${
-                                  event.participants.length === event.totalSpots
-                                      ? "text-cyan-500"
-                                      : "text-gray-500"
-                              }`}
-                          />
+                  <div className="flex flex-col gap-y-2">
+                    <div className="flex justify-between">
+                      <p>{event.eventFormat}</p>
+                      <div className="flex items-center gap-1">
+                        <UserCircleIcon
+                          className={`h-5 ${
+                            event.participants.length === event.totalSpots
+                              ? "text-cyan-500"
+                              : "text-gray-500"
+                          }`}
+                        />
 
-                          <p className="h-4">
-                            {event.participants.length}/{event.totalSpots}
-                          </p>
-                        </div>
-                      </div>
-
-                      <div className="flex justify-between">
-                        <p className="text-gray-500 italic">
-                          Oprettet af{" "}
-                          {event.username === user?.username
-                              ? "dig"
-                              : `${event.username}`}
-                        </p>
-                        <p className="text-gray-500 italic">
-                          {event.openRegistration
-                              ? "Åben tilmelding"
-                              : "Lukket tilmelding"}
+                        <p className="h-4">
+                          {event.participants.length}/{event.totalSpots}
                         </p>
                       </div>
                     </div>
+
+                    <div className="flex justify-between">
+                      <p className="text-gray-500 italic">
+                        Oprettet af{" "}
+                        {event.username === user?.username
+                          ? "dig"
+                          : `${event.username}`}
+                      </p>
+                      <p className="text-gray-500 italic">
+                        {event.openRegistration
+                          ? "Åben tilmelding"
+                          : "Lukket tilmelding"}
+                      </p>
+                    </div>
+                  </div>
                 ) : (
-                    <div className="flex flex-col gap-y-2">
-                      <div className="flex justify-between">
-                        {event.joinRequests.length > 0 ? (
-                            <div className="flex items-center gap-1">
-                              <QuestionMarkCircleIcon
-                                  className={`h-5 text-yellow-500 ${
-                                      event.username === user?.username
-                                          ? "animate-pulse"
-                                          : ""
-                                  }`}
-                              />
-                              <p>
-                                {event.joinRequests.length}{" "}
-                                {event.joinRequests.length === 1
-                                    ? "anmodning"
-                                    : "anmodninger"}
-                              </p>
-                            </div>
-                        ) : (
-                            <span></span>
-                        )}
+                  <div className="flex flex-col gap-y-2">
+                    <div className="flex justify-between">
+                      {event.joinRequests.length > 0 ? (
                         <div className="flex items-center gap-1">
-                          <UserCircleIcon
-                              className={`h-5 ${
-                                  event.participants.length === event.totalSpots
-                                      ? "text-cyan-500"
-                                      : "text-gray-500"
-                              }`}
+                          <QuestionMarkCircleIcon
+                            className={`h-5 text-yellow-500 ${
+                              event.username === user?.username
+                                ? "animate-pulse"
+                                : ""
+                            }`}
                           />
                           <p>
-                            {event.participants.length}/{event.totalSpots}
+                            {event.joinRequests.length}{" "}
+                            {event.joinRequests.length === 1
+                              ? "anmodning"
+                              : "anmodninger"}
                           </p>
                         </div>
-                      </div>
-                      <div className="flex justify-between">
-                        <p>{event.level ? `Niveau ${event.level}` : ""}</p>
-                        <p>{event.eventFormat}</p>
-                      </div>
-                      <div className="flex justify-between">
-                        <p className="text-gray-500 italic">
-                          Oprettet af{" "}
-                          {event.username === user?.username
-                              ? "dig"
-                              : `${event.username}`}
-                        </p>
-                        <p className="text-gray-500 italic">
-                          {event.openRegistration
-                              ? "Åben tilmelding"
-                              : "Lukket tilmelding"}
+                      ) : (
+                        <span></span>
+                      )}
+                      <div className="flex items-center gap-1">
+                        <UserCircleIcon
+                          className={`h-5 ${
+                            event.participants.length === event.totalSpots
+                              ? "text-cyan-500"
+                              : "text-gray-500"
+                          }`}
+                        />
+                        <p>
+                          {event.participants.length}/{event.totalSpots}
                         </p>
                       </div>
                     </div>
+                    <div className="flex justify-between">
+                      <p>{event.level ? `Niveau ${event.level}` : ""}</p>
+                      <p>{event.eventFormat}</p>
+                    </div>
+                    <div className="flex justify-between">
+                      <p className="text-gray-500 italic">
+                        Oprettet af{" "}
+                        {event.username === user?.username
+                          ? "dig"
+                          : `${event.username}`}
+                      </p>
+                      <p className="text-gray-500 italic">
+                        {event.openRegistration
+                          ? "Åben tilmelding"
+                          : "Lukket tilmelding"}
+                      </p>
+                    </div>
+                  </div>
                 )}
-
-
               </div>
             ))
         )}

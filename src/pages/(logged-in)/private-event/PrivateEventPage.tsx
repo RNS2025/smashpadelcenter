@@ -5,7 +5,7 @@ import PrivateEventTabMenu from "../../../components/private-event/PrivateEventT
 import { useEffect, useState } from "react";
 import communityApi from "../../../services/makkerborsService.ts";
 import { useUser } from "../../../context/UserContext.tsx";
-import mockEvents from "../../../utils/mockEvents.ts";
+import mockEvents from "../../../utils/mock/mockEvents.ts";
 import { LockClosedIcon, LockOpenIcon } from "@heroicons/react/24/outline";
 
 export const PrivateEventPage = () => {
@@ -30,7 +30,8 @@ export const PrivateEventPage = () => {
             if (!tournaments || tournaments.length === 0) {
                 return;
             }
-          const total = tournaments.reduce(
+            const filteredTournaments = tournaments.filter((t) => new Date(t.eventDateTime) > new Date());
+          const total = filteredTournaments.reduce(
             (sum: number, t: any) => sum + (t.joinRequests?.length || 0),
             0
           );

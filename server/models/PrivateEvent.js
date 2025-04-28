@@ -59,6 +59,10 @@ const privateEventSchema = new mongoose.Schema({
     type: [String],
     default: [],
   },
+  invitedPlayers: {
+    type: [String],
+    default: [],
+  },
   createdAt: {
     type: String,
     default: () => new Date().toISOString(),

@@ -1,4 +1,4 @@
-import { PrivateEvent } from "../types/PrivateEvent.ts";
+import { PrivateEvent } from "../../types/PrivateEvent.ts";
 
 const mockEvents: PrivateEvent[] = [
     {

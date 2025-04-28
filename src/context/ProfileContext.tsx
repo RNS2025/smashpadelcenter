@@ -67,6 +67,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
 
       const formerMatches = userMatches
           .filter((match) => new Date(match.matchDateTime) <= now)
+          .filter((match => match.participants.length === match.totalSpots))
           .sort(
               (a, b) =>
                   new Date(b.matchDateTime).getTime() -

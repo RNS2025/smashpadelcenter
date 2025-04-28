@@ -15,13 +15,15 @@ import {
   CheckCircleIcon,
   CheckIcon,
   DocumentDuplicateIcon,
-  MapPinIcon,
+  MapPinIcon, StarIcon,
   UserCircleIcon,
   UserGroupIcon,
   XCircleIcon,
 } from "@heroicons/react/24/outline";
-import mockEvents from "../../../utils/mockEvents.ts";
+import mockEvents from "../../../utils/mock/mockEvents.ts";
 import userProfileService from "../../../services/userProfileService.ts";
+import EventInvitedPlayersDialog from "../../../components/private-event/misc/EventInvitePlayersDialog.tsx";
+import {XIcon} from "lucide-react";
 
 export const ViewEventPage = () => {
   const { user } = useUser();
@@ -30,8 +32,10 @@ export const ViewEventPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [participantProfiles, setParticipantProfiles] = useState<User[]>([]);
+  const [joinRequestProfiles, setJoinRequestProfiles] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [infoDialogVisible, setInfoDialogVisible] = useState(false);
+  const [inviteDialogVisible, setInviteDialogVisible] = useState(false);
 
   const [copied, setCopied] = useState(false);
 
@@ -65,6 +69,28 @@ export const ViewEventPage = () => {
 
     fetchEvent().then();
   }, [eventId, useMockData, user?.username]);
+
+  useEffect(() => {
+    const fetchJoinRequests = async () => {
+      if (!event || event.joinRequests.length === 0) return;
+
+      try {
+        const profiles = await Promise.all(
+            event.joinRequests.map((username) =>
+                userProfileService.getOrCreateUserProfile(username)
+            )
+        );
+        setJoinRequestProfiles(profiles);
+      } catch (err) {
+        console.error(
+            "Fejl ved hentning af tilmeldingsanmodningsprofiler:",
+            err
+        );
+      }
+    };
+
+    fetchJoinRequests().then();
+  }, [event]);
 
   useEffect(() => {
     const fetchParticipantProfiles = async () => {
@@ -132,6 +158,24 @@ export const ViewEventPage = () => {
     }
   };
 
+  const handleDeclineJoin = async (username: string) => {
+    if (!event) return;
+    try {
+      const updatedEvent = await communityApi.confirmDeclinePrivateEvent(event.id, username);
+      console.log("Updated event after confirm:", updatedEvent);
+      if (!updatedEvent || !Array.isArray(updatedEvent.participants)) {
+        setError("Invalid match data returned");
+        alert("Der opstod en fejl – prøv igen.");
+      }
+      alert("Tilmelding afvist!");
+      setEvent(updatedEvent);
+    } catch (error: any) {
+      console.error("Error confirming join:", error);
+      alert(error.response?.data?.message || "Fejl ved afvisning");
+      setError("Fejl ved afvisning");
+    }
+  };
+
   const handleDeleteEvent = async () => {
     if (!event) return;
     try {
@@ -147,7 +191,49 @@ export const ViewEventPage = () => {
     }
   };
 
-  const handleInvitePlayers = async () => {
+  const handleRejectJoin = async (username: string) => {
+    if (!event) return;
+    try {
+      const updatedEvent = await communityApi.confirmDeclinePrivateEvent(
+        event.id,
+        username
+      );
+      console.log("Updated event after reject:", updatedEvent);
+      if (!updatedEvent || !Array.isArray(updatedEvent.participants)) {
+        setError("Invalid event data returned");
+        alert("Der opstod en fejl – prøv igen.");
+      }
+      alert("Tilmelding afvist!");
+      setEvent(updatedEvent);
+    } catch (error: any) {
+      console.error("Error rejecting join:", error);
+      alert(error.response?.data?.message || "Fejl ved afvisning");
+      setError("Fejl ved afvisning");
+    }
+  };
+
+  const handleAcceptJoin = async (username: string) => {
+    if (!event) return;
+    try {
+      const updatedEvent = await communityApi.confirmAcceptPrivateEvent(
+        event.id,
+        username
+      );
+      console.log("Updated event after accept:", updatedEvent);
+      if (!updatedEvent || !Array.isArray(updatedEvent.participants)) {
+        setError("Invalid event data returned");
+        alert("Der opstod en fejl – prøv igen.");
+      }
+      alert("Tilmelding accepteret!");
+      setEvent(updatedEvent);
+    } catch (error: any) {
+      console.error("Error accepting join:", error);
+      alert(error.response?.data?.message || "Fejl ved accept");
+      setError("Fejl ved accept");
+    }
+  };
+
+  const handleInvitedPlayers = async () => {
     try {
       await navigator.clipboard.writeText(window.location.href);
       setCopied(true);
@@ -156,6 +242,23 @@ export const ViewEventPage = () => {
       console.error("Kunne ikke kopiere link:", err);
     }
   };
+
+  const handleRemovePlayerFromEvent = async (username: string) => {
+    if (!event || !user?.username) return;
+    try {
+      const updatedEvent = await communityApi.removePlayerFromEvent(
+        event.id,
+        username
+      );
+      console.log("Updated event after removing player:", updatedEvent);
+      alert("Spiller fjernet fra arrangement!");
+      setEvent(updatedEvent);
+    } catch (error: any) {
+      console.error("Error removing player from event:", error);
+      alert(error.response?.data?.message || "Fejl ved fjernelse");
+      setError("Fejl ved fjernelse");
+    }
+  }
 
   if (!eventId) {
     return <Navigate to="/privat-arrangementer" replace />;
@@ -199,9 +302,25 @@ export const ViewEventPage = () => {
         <PlayerInfoDialog user={selectedUser!} />
       </div>
 
-      <Animation>
-        <HomeBar />
+      <div
+        className={`min-h-screen fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center ${
+          !inviteDialogVisible ? "hidden" : ""
+        }`}
+      >
+        <EventInvitedPlayersDialog
+          event={event}
+          onInvite={async () => {
+            setInviteDialogVisible(false);
+            await communityApi.getEventById(eventId);
+          }}
+          onClose={() => {
+            setInviteDialogVisible(false);
+          }}
+        />
+      </div>
 
+      <HomeBar />
+      <Animation>
         <div className="mx-4 my-10 space-y-4 text-sm">
           <h1
             className={`justify-self-center font-semibold ${
@@ -221,68 +340,125 @@ export const ViewEventPage = () => {
 
           {/* Participants */}
           {participantProfiles.map((profile) => (
-            <div
-              onClick={() => {
-                setSelectedUser(profile);
-                setInfoDialogVisible(true);
-              }}
-              key={profile.username}
-              className="border rounded flex items-center px-1"
-            >
-              <UserCircleIcon className="h-20" />
-              <div className="w-full pr-1 truncate">
-                <h1>{profile.username}</h1>
-              </div>
-              <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-20 h-12">
-                {profile.skillLevel.toFixed(1)}
-              </div>
-            </div>
+              <>
+                <div className="flex items-center gap-2">
+                  <div
+                      key={profile.username}
+                      className="border rounded flex items-center px-1 w-full py-3"
+                  >
+                    <div
+                        onClick={() => {
+                          setSelectedUser(profile);
+                          setInfoDialogVisible(true);
+                        }}
+                        className="flex items-center gap-2 w-full pr-1 truncate"
+                    >
+                      <UserCircleIcon className="h-14" />
+                      <div className="flex flex-col gap-2">
+                        <h1>{profile.fullName}</h1>
+                        <h1>{profile.username}</h1>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-12 h-12">
+                        {profile.skillLevel.toFixed(1)}
+                      </div>
+
+                      <div>
+                        {event.username === profile.username ? (
+                            <StarIcon className="size-6 text-yellow-500" />
+                        ) : (
+                            <XIcon
+                                onClick={() =>
+                                    handleRemovePlayerFromEvent(profile.username)
+                                }
+                                className={`size-6 text-red-500 ${event.username !== user?.username ? "hidden" : ""}`} />
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </>
           ))}
 
           {/* Empty spots */}
           {[...Array(event.totalSpots - event.participants.length)].map(
             (_, index) => (
-              <div
-                key={`empty-${index}`}
-                className="border border-gray-500 rounded flex items-center px-1"
-              >
-                <UserCircleIcon className="h-20 text-gray-500" />
-                <div className="w-full pr-1 truncate">
-                  <h1 className="text-xl text-gray-500">Ledig plads</h1>
+                <div
+                    key={`empty-${index}`}
+                    className="border border-gray-500 rounded flex items-center"
+                >
+                  <UserCircleIcon className="h-20 text-gray-500" />
+                  <div className="w-full pr-1 truncate">
+                    <h1 className="text-xl text-gray-500">Ledig plads</h1>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <div className="bg-gray-500 text-white rounded-full flex items-center justify-center w-12 h-12">
+                      ?
+                    </div>
+                    <div>
+                    </div>
+                  </div>
                 </div>
-                <div className="bg-gray-500 text-white rounded-full flex items-center justify-center w-20 h-12">
-                  ?
-                </div>
-              </div>
-            )
-          )}
+            ))}
 
           {/* Join requests (visible to creator) */}
           {event.username === user?.username &&
-            Array.isArray(event.joinRequests) &&
-            event.joinRequests.length > 0 && (
-              <>
-                <h2 className="font-semibold">Tilmeldingsanmodninger</h2>
-                {event.joinRequests.map((requester, index) => (
-                  <div
-                    key={index}
-                    className="border rounded flex items-center px-1"
-                  >
-                    <UserCircleIcon className="h-20" />
-                    <div className="w-full pr-1 truncate">
-                      <h1>{requester}</h1>
-                      <h1 className="text-gray-500">Afventer bekræftelse</h1>
-                    </div>
-                    <button
-                      onClick={() => handleConfirmJoin(requester)}
-                      className="bg-cyan-500 text-white rounded-lg px-2 py-1"
-                      disabled={isEventFull}
+              Array.isArray(event.joinRequests) &&
+              event.joinRequests.length > 0 && (
+                  <>
+                    <h2 className="font-semibold">Tilmeldingsanmodninger</h2>
+                {joinRequestProfiles.map((requester, index) => (
+                    <div
+                        key={index}
+                        className="border rounded flex flex-col p-2 gap-2"
                     >
-                      Bekræft
-                    </button>
-                  </div>
+                      <div onClick={() => {
+                        setSelectedUser(requester);
+                        setInfoDialogVisible(true);
+                      }} className="flex items-center">
+                        <UserCircleIcon className="h-20" />
+                        <div className="flex flex-col w-full pr-1 truncate">
+                          <h1>{requester.username}</h1>
+                          <h1 className="text-gray-500">Afventer bekræftelse</h1>
+                        </div>
+
+
+                        <div className="flex items-center gap-2">
+                        <div className="bg-yellow-600 text-white rounded-full flex items-center justify-center w-12 h-12">
+                          {requester.skillLevel.toFixed(1)}
+                        </div>
+                        </div>
+                      </div>
+
+
+                      <div className="flex justify-center gap-4">
+                        <XIcon onClick={() => handleDeclineJoin(requester.username)} className="size-8 text-red-500" />
+                        <CheckIcon onClick={() => handleConfirmJoin(requester.username)} className="size-8 text-green-500" />
+                      </div>
+                    </div>
                 ))}
-              </>
+                  </>
+              )}
+
+          {user &&
+            event.invitedPlayers &&
+            event.invitedPlayers.includes(user.username) && (
+              <div className="flex justify-between items-center border border-yellow-500 p-4 rounded-lg animate-pulse">
+                <h1>{event.username} har inviteret dig!</h1>
+                <div className="flex gap-2">
+                  <XCircleIcon
+                    className="size-8 text-red-500"
+                    onClick={() => handleRejectJoin(user.username)}
+                  />
+                  <CheckIcon
+                    className="size-8 text-green-500"
+                    onClick={() => handleAcceptJoin(user.username)}
+                  />
+                </div>
+              </div>
             )}
 
           <div className="grid grid-cols-2 text-center text-black gap-3">
@@ -334,43 +510,58 @@ export const ViewEventPage = () => {
           {/* Action buttons */}
           {event.username !== user?.username &&
             user?.username &&
-            !event.participants.includes(user?.username) &&
-            !event.joinRequests.includes(user?.username) &&
+            !event.participants.includes(user?.username) && !event.invitedPlayers?.includes(user?.username) &&
             !isEventFull && (
               <button
                 onClick={handleJoinEvent}
-                className="bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                className={`bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white ${
+                    event.joinRequests.includes(user?.username)
+                        ? "bg-gray-700 animate-pulse"
+                        : ""
+                }`}
+                disabled={event.joinRequests.includes(user?.username)}
               >
-                Tilmeld arrangement
+                {event.joinRequests.includes(user?.username)
+                    ? "Anmodning sendt"
+                    : "Tilmeld arrangement"}
               </button>
             )}
 
           {event.username === user?.username && (
-            <div className="flex justify-between">
-              <button
-                onClick={handleDeleteEvent}
-                className="bg-red-500 hover:bg-red-600 transition duration-300 rounded-lg py-4 px-2 text-white"
-              >
-                Slet arrangement
-              </button>
+            <>
+              <div className="flex flex-col w-full gap-4 text-lg">
+                <button
+                  onClick={() => setInviteDialogVisible(true)}
+                  className="bg-green-500 hover:bg-green-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                >
+                  Inviter spillere
+                </button>
 
-              <div
-                onClick={handleInvitePlayers}
-                className="bg-green-500 hover:bg-green-600 transition duration-300 rounded-lg py-4 px-2 text-white flex"
-              >
-                {!copied ? (
-                  <>
-                    <DocumentDuplicateIcon className="h-5" />
-                    <h1>Kopier arrangementslink</h1>
-                  </>
-                ) : (
-                  <>
-                    <CheckIcon className="h-5" />
-                    <h1>Link kopieret!</h1>
-                  </>
-                )}
+                <div
+                  onClick={handleInvitedPlayers}
+                  className="hidden flex justify-center bg-green-500 hover:bg-green-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                >
+                  {!copied ? (
+                    <>
+                      <DocumentDuplicateIcon className="h-5" />
+                      <h1>Kopier kamplink</h1>
+                    </>
+                  ) : (
+                    <>
+                      <CheckIcon className="h-5" />
+                      <h1>Link kopieret!</h1>
+                    </>
+                  )}
+                </div>
+
+                <button
+                  onClick={handleDeleteEvent}
+                  className="bg-red-500 hover:bg-red-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                >
+                  Slet kamp
+                </button>
               </div>
-            </div>
+            </>
           )}
         </div>
       </Animation>

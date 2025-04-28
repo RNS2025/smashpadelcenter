@@ -1,13 +1,13 @@
 import { Helmet } from "react-helmet-async";
 import { useState, useEffect } from "react";
 import { getUsers, changeUserRole } from "../../../services/auth.ts";
-import User from "../../../types/user.ts";
+import { User } from "../../../types/user.ts";
 import HomeBar from "../../../components/misc/HomeBar.tsx";
 import { useUser } from "../../../context/UserContext.tsx";
 import CourtSchedule from "../../../components/CourtSchedule.tsx";
 
 export const AdminPage = () => {
-  const { error } = useUser();
+  const { user, error } = useUser();
   const [users, setUsers] = useState<User[]>([]);
 
   useEffect(() => {
@@ -44,7 +44,8 @@ export const AdminPage = () => {
       </Helmet>
       <div>
         <h1>Admin Page</h1>
-        {error && <p className="text-red-500">{error}</p>} <h2>Users</h2>
+        {user && error && <p className="text-red-500">{error}</p>}{" "}
+        <h2>Users</h2>
         <table>
           <thead>
             <tr>

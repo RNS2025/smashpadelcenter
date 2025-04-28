@@ -1,17 +1,17 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Player from "../types/Player";
-import Row from "../types/Row";
-import Tournament from "../types/Tournament";
-import RowSelector from "../components/tournaments/check-in/RowSelector.tsx";
-import PlayerCheckInList from "../components/tournaments/check-in/PlayerCheckInList.tsx";
-import AlertMessage from "../components/tournaments/check-in/AlertMessage.tsx";
-import { useUser } from "../context/UserContext";
-import Animation from "../components/misc/Animation.tsx";
-import HomeBar from "../components/misc/HomeBar.tsx";
-import useTournaments from "../hooks/useTournaments";
-import rankedInService from "../services/rankedIn";
-import TournamentSelector from "../components/tournaments/check-in/TournamentSelector.tsx";
+import Player from "../../types/Player.ts";
+import Row from "../../types/Row.ts";
+import Tournament from "../../types/Tournament.ts";
+import RowSelector from "../../components/tournaments/check-in/RowSelector.tsx";
+import PlayerCheckInList from "../../components/tournaments/check-in/PlayerCheckInList.tsx";
+import AlertMessage from "../../components/tournaments/check-in/AlertMessage.tsx";
+import { useUser } from "../../context/UserContext.tsx";
+import Animation from "../../components/misc/Animation.tsx";
+import HomeBar from "../../components/misc/HomeBar.tsx";
+import useTournaments from "../../hooks/useTournaments.ts";
+import rankedInService from "../../services/rankedIn.ts";
+import TournamentSelector from "../../components/tournaments/check-in/TournamentSelector.tsx";
 
 const CheckInPage = () => {
   const { user, error: authError, refreshUser } = useUser();

@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import rankedInService from "../../../services/rankedIn";
-import Match from "../../../types/Match";
-import PlayerData from "../../../types/PlayerData";
+import rankedInService from "../../services/rankedIn.ts";
+import Match from "../../types/Match.ts";
+import PlayerData from "../../types/PlayerData.ts";
 import { format } from "date-fns";
 import { da } from "date-fns/locale";
-import Animation from "../../../components/misc/Animation";
-import HomeBar from "../../../components/misc/HomeBar";
+import Animation from "../../components/misc/Animation.tsx";
+import HomeBar from "../../components/misc/HomeBar.tsx";
 
 const PlayerPage = () => {
   const { playerId, rowId } = useParams<{

@@ -4,6 +4,8 @@ export const WHITELIST_ROUTES = [
   "/player/:playerId/:rowId, /court-times",
   "/register",
   "/login",
+  "/turneringer",
+  "/turneringer/regler",
   "/",
   "/player/:playerId/:rowId",
   "/player/:playerId",

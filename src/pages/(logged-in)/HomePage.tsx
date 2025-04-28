@@ -53,7 +53,7 @@ export const HomePage = () => {
       }
     };
 
-    initializeNotifications();
+    initializeNotifications().then();
 
     // Cleanup timeout on unmount
     return () => {
@@ -67,11 +67,11 @@ export const HomePage = () => {
         <title>Hjem</title>
       </Helmet>
 
+      <HomeBar />
       <Animation>
-        <HomeBar />
 
-        <div className="flex mt-5 items-center justify-center">
-          <div className="grid gap-8 grid-cols-4 max-lg:grid-cols-3 max-md:grid-cols-2">
+        <div className="flex my-5 items-center justify-center">
+          <div className="grid gap-8 lg:gap-20 grid-cols-4 max-lg:grid-cols-3 max-md:grid-cols-1">
             {user?.role === "admin" && (
               <HomeScreenCard
                 icon={<CalendarIcon className="h-10 w-10" aria-hidden="true" />}
@@ -113,16 +113,17 @@ export const HomePage = () => {
             />
 
             <HomeScreenCard
+                icon={<MoonIcon className="h-10 w-10" aria-hidden="true" />}
+                title="Holdligaer"
+                description="Overblik over ligaholdene tilknyttet SMASH"
+                link="holdligaer"
+            />
+
+            <HomeScreenCard
               icon={<TrophyIcon className="h-10 w-10" aria-hidden="true" />}
               title="DPF-turneringer"
               description="Deltag i spændende turneringer"
               link="turneringer"
-            />
-            <HomeScreenCard
-              icon={<MoonIcon className="h-10 w-10" aria-hidden="true" />}
-              title="Holdligaer"
-              description="Overblik over ligaholdene tilknyttet SMASH"
-              link="holdligaer"
             />
             {user?.role === "admin" && (
               <HomeScreenCard

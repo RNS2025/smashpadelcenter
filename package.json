@@ -6,7 +6,9 @@
   "homepage": "https://luu-og-jens.github.io/smashpadelcenter/",
   "scripts": {
     "dev": "vite",
+    "dev:prod": "cross-env NODE_ENV=production vite",
     "build": "tsc -noEmit && vite build",
+    "build:dev": "cross-env NODE_ENV=development vite build",
     "lint": "eslint .",
     "preview": "vite preview",
     "predeploy": "npm run build",
@@ -44,6 +46,7 @@
     "@types/socket.io-client": "^3.0.0",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
+    "cross-env": "^7.0.3",
     "eslint": "^9.15.0",
     "eslint-plugin-react-hooks": "^5.0.0",
     "eslint-plugin-react-refresh": "^0.4.14",

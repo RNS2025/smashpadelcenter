@@ -18,12 +18,52 @@ const communityApi = {
     return response.data;
   },
 
+  rejectJoinMatch: async (
+    matchId: string,
+    username: string
+  ): Promise<PadelMatch> => {
+    const response = await api.post(`/matches/${matchId}/reject`, {
+      username,
+    });
+    return response.data;
+  },
+
+  acceptJoinMatch: async (
+    matchId: string,
+    username: string
+  ): Promise<PadelMatch> => {
+    const response = await api.post(`/matches/${matchId}/accept`, {
+      username,
+    });
+    return response.data;
+  },
+
   confirmJoinMatch: async (
     matchId: string,
     username: string
   ): Promise<PadelMatch> => {
     const response = await api.post(`/matches/${matchId}/confirm`, {
       username,
+    });
+    return response.data;
+  },
+
+  removePlayer: async (
+    matchId: string,
+    username: string
+  ): Promise<PadelMatch> => {
+    const response = await api.post(`/matches/${matchId}/remove-player`, {
+      username,
+    });
+    return response.data;
+  },
+
+  invitedPlayersToMatch: async (
+    matchId: string,
+    usernames: string[]
+  ): Promise<PadelMatch> => {
+    const response = await api.post(`/matches/${matchId}/invite`, {
+      usernames,
     });
     return response.data;
   },
@@ -82,6 +122,15 @@ const communityApi = {
     const response = await api.patch(`/private-event/${eventId}`, update);
     return response.data;
   },
+  removePlayerFromEvent: async (
+      eventId: string,
+      username: string
+  ): Promise<PrivateEvent> => {
+    const response = await api.post(`/private-event/${eventId}/remove-player`, {
+      username,
+    });
+    return response.data;
+  },
   joinEvent: async (
     eventId: string,
     username: string
@@ -101,8 +150,38 @@ const communityApi = {
     });
     return response.data;
   },
+
+  confirmAcceptPrivateEvent: async (
+      eventId: string,
+      username: string
+  ): Promise<PrivateEvent> => {
+    const response = await api.post(`/private-event/${eventId}/confirm`, {
+      username,
+    });
+    return response.data;
+  },
+
+  confirmDeclinePrivateEvent: async (
+      eventId: string,
+      username: string
+  ): Promise<PrivateEvent> => {
+    const response = await api.post(`/private-event/${eventId}/decline`, {
+      username,
+    });
+    return response.data;
+  },
+
   deleteEvent: async (eventId: string): Promise<PrivateEvent[]> => {
     const response = await api.delete(`/private-event/${eventId}`);
+    return response.data;
+  },
+  invitedPlayersToEvent: async (
+    eventId: string,
+    usernames: string[]
+  ): Promise<PrivateEvent> => {
+    const response = await api.post(`/private-event/${eventId}/invite`, {
+      usernames,
+    });
     return response.data;
   },
 };

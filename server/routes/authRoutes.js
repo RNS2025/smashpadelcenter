@@ -84,7 +84,7 @@ router.get(
     logger.info("Google OAuth login successful", {
       username: req.user.username,
     });
-    res.redirect(`${process.env.FRONTEND_URL}/smashpadelcenter/hjem`);
+    res.redirect(`${process.env.FRONTEND_URL}/hjem`);
   }
 );
 
@@ -131,6 +131,16 @@ router.post("/change-role", user.can("access admin page"), async (req, res) => {
   } catch (err) {
     logger.error("Role update failed", { username, error: err.message });
     res.status(400).json({ error: err.message });
+  }
+});
+
+router.get("/user-profiles", async (req, res) => {
+  try {
+    const userProfiles = await databaseService.getAllUserProfiles();
+    res.status(200).json(userProfiles);
+  } catch (err) {
+    logger.error("Error fetching all user profiles", { error: err.message });
+    res.status(500).json({ error: err.message });
   }
 });
 
