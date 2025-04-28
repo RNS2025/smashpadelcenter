@@ -309,8 +309,51 @@ router.patch("/:id/reserve", async (req, res) => {
   }
 });
 
+// Remove player from match
+router.post("/:id/remove-player", async (req, res) => {
+  try {
+    const { username } = req.body;
+    const match = await padelMatchService.getMatchById(req.params.id);
+    if (!match) {
+      logger.warn("Attempted to remove player from non-existent match", {
+        matchId: req.params.id,
+      });
+      return res.status(404).json({ message: "Match not found" });
+    }
+    if (match.username !== req.user.username) {
+      logger.warn("Non-creator attempted to remove player", {
+        matchId: req.params.id,
+        requestUser: req.user.username,
+        matchCreator: match.username,
+      });
+      return res
+        .status(403)
+        .json({ message: "Only the match creator can remove players" });
+    }
+    const updatedMatch = await padelMatchService.removePlayer(
+      req.params.id,
+      username
+    );
+    const io = req.app.get("socketio");
+    logger.info("Emitting matchUpdated event", { matchId: updatedMatch.id });
+    io.to(req.params.id).emit("matchUpdated", updatedMatch);
+
+    logger.info("Successfully removed player from match", {
+      matchId: req.params.id,
+      username,
+    });
+    res.json(updatedMatch);
+  } catch (error) {
+    logger.error("Error removing player from match", {
+      matchId: req.params.id,
+      error: error.message,
+    });
+    res.status(400).json({ message: error.message });
+  }
+});
+
 // DELETE /api/v1/matches/:id - Delete a match
-router.post("/:id/remove", async (req, res) => {
+router.delete("/:id/", async (req, res) => {
   try {
     const match = await padelMatchService.getMatchById(req.params.id);
     if (!match) {

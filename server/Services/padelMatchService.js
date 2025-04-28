@@ -21,6 +21,54 @@ const padelMatchService = {
     }
   },
 
+  removePlayer: async (matchId, username) => {
+    try {
+      const match = await PadelMatch.findById(matchId);
+      if (!match) throw new Error("Match not found");
+      if (!match.participants.includes(username)) {
+        throw new Error("User not a participant in this match");
+      }
+      // Remove the user from participants
+      match.participants = match.participants.filter(
+        (player) => player !== username
+      );
+
+      // Remove the user from invitedPlayers if present
+      match.invitedPlayers = match.invitedPlayers.filter(
+        (player) => player !== username
+      );
+
+      // Remove the user from joinRequests and reservedSpots if present
+      match.joinRequests = match.joinRequests.filter(
+        (player) => player !== username
+      );
+      match.reservedSpots = match.reservedSpots.filter(
+        (spot) => spot !== username
+      );
+      await match.save();
+      const updatedMatch = {
+        ...match.toObject(),
+        id: match._id.toString(),
+        participants: match.participants || [],
+        joinRequests: match.joinRequests || [],
+        reservedSpots: match.reservedSpots || [],
+        totalSpots: match.totalSpots || 4,
+      };
+      logger.debug("PadelMatchService: Player removed from match", {
+        matchId,
+        username,
+      });
+      return updatedMatch;
+    } catch (error) {
+      logger.error("PadelMatchService: Error removing player from match", {
+        matchId,
+        username,
+        error: error.message,
+      });
+      throw new Error("Error removing player: " + error.message);
+    }
+  },
+
   rejectJoin: async (matchId, username) => {
     try {
       const match = await PadelMatch.findById(matchId);

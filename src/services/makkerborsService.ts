@@ -82,7 +82,17 @@ const communityApi = {
     matchId: string,
     username: string
   ): Promise<PadelMatch> => {
-    const response = await api.post(`/matches/${matchId}/remove`, {
+    const response = await api.post(`/matches/${matchId}/remove-player`, {
+      username,
+    });
+    return response.data;
+  },
+
+  removePlayerFromEvent: async (
+    eventId: string,
+    username: string
+  ): Promise<PrivateEvent> => {
+    const response = await api.post(`/private-event/${eventId}/remove-player`, {
       username,
     });
     return response.data;

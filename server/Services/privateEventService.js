@@ -23,6 +23,48 @@ const privateEventService = {
     }
   },
 
+  removePlayerFromEvent: async (eventId, username) => {
+    try {
+      const event = await PrivateEvent.findById(eventId);
+      if (!event) throw new Error("Event not found");
+      if (!event.participants.includes(username)) {
+        throw new Error("User is not a participant of this event");
+      }
+      if (!event.invitedPlayers.includes(username)) {
+        throw new Error("User is not invited to this event");
+      }
+      if (!event.joinRequests.includes(username)) {
+        throw new Error("User has not requested to join this event");
+      }
+      // Remove user from participants and invitedPlayers list
+      event.invitedPlayers = event.invitedPlayers.filter((u) => u !== username);
+      event.participants = event.participants.filter((u) => u !== username);
+      event.joinRequests = event.joinRequests.filter((u) => u !== username);
+      await event.save();
+      await User.updateOne(
+        { username },
+        { $pull: { eventHistory: event._id } }
+      );
+      logger.info("PrivateEventService: Removed user from event", {
+        eventId,
+        username,
+      });
+      return {
+        ...event.toObject(),
+        id: event._id.toString(),
+        participants: event.participants || [],
+        joinRequests: event.joinRequests || [],
+      };
+    } catch (error) {
+      logger.error("PrivateEventService: Error removing user from event", {
+        eventId,
+        username,
+        error: error.message,
+      });
+      throw new Error("Error removing user from event: " + error.message);
+    }
+  },
+
   confirmAcceptPrivateEvent: async (eventId, username) => {
     try {
       const event = await PrivateEvent.findById(eventId);

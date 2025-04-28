@@ -149,13 +149,62 @@ export const ViewEventPage = () => {
     }
   };
 
-  const handleInvitedPlayers = async () => {
+  const handleRejectJoin = async (username: string) => {
+    if (!event) return;
     try {
-      await navigator.clipboard.writeText(window.location.href);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 10000);
-    } catch (err) {
-      console.error("Kunne ikke kopiere link:", err);
+      const updatedEvent = await communityApi.confirmDeclinePrivateEvent(
+        event.id,
+        username
+      );
+      console.log("Updated event after reject:", updatedEvent);
+      if (!updatedEvent || !Array.isArray(updatedEvent.participants)) {
+        setError("Invalid event data returned");
+        alert("Der opstod en fejl – prøv igen.");
+      }
+      alert("Tilmelding afvist!");
+      setEvent(updatedEvent);
+    } catch (error: any) {
+      console.error("Error rejecting join:", error);
+      alert(error.response?.data?.message || "Fejl ved afvisning");
+      setError("Fejl ved afvisning");
+    }
+  };
+
+  const handleAcceptJoin = async (username: string) => {
+    if (!event) return;
+    try {
+      const updatedEvent = await communityApi.confirmAcceptPrivateEvent(
+        event.id,
+        username
+      );
+      console.log("Updated event after accept:", updatedEvent);
+      if (!updatedEvent || !Array.isArray(updatedEvent.participants)) {
+        setError("Invalid event data returned");
+        alert("Der opstod en fejl – prøv igen.");
+      }
+      alert("Tilmelding accepteret!");
+      setEvent(updatedEvent);
+    } catch (error: any) {
+      console.error("Error accepting join:", error);
+      alert(error.response?.data?.message || "Fejl ved accept");
+      setError("Fejl ved accept");
+    }
+  };
+
+  const handleInvitedPlayers = async (usernames: string[]) => {
+    if (!event || !user?.username) return;
+    try {
+      const updatedEvent = await communityApi.invitedPlayersToEvent(
+        event.id,
+        usernames
+      );
+      console.log("Updated event after inviting players:", updatedEvent);
+      alert("Spillere inviteret!");
+      setEvent(updatedEvent);
+    } catch (error: any) {
+      console.error("Error inviting players:", error);
+      alert(error.response?.data?.message || "Fejl ved invitation");
+      setError("Fejl ved invitation");
     }
   };
 
@@ -302,6 +351,24 @@ export const ViewEventPage = () => {
                   </div>
                 ))}
               </>
+            )}
+
+          {user &&
+            event.invitedPlayers &&
+            event.invitedPlayers.includes(user.username) && (
+              <div className="flex justify-between items-center border border-yellow-500 p-4 rounded-lg animate-pulse">
+                <h1>{event.username} har inviteret dig!</h1>
+                <div className="flex gap-2">
+                  <XCircleIcon
+                    className="size-8 text-red-500"
+                    onClick={() => handleRejectJoin(user.username)}
+                  />
+                  <CheckIcon
+                    className="size-8 text-green-500"
+                    onClick={() => handleAcceptJoin(user.username)}
+                  />
+                </div>
+              </div>
             )}
 
           <div className="grid grid-cols-2 text-center text-black gap-3">

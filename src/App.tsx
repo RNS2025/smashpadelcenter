@@ -138,12 +138,25 @@ function App() {
               path="/turneringer/baneoversigt"
               element={<CourtMapPage />}
             />
+            <Route
+              path="/turneringer/regler"
+              element={<TournamentRulesPage />}
+            />
+            <Route path="/turneringer" element={<TournamentTabs />} />
+
             <Route path="/player/:playerId/:rowId" element={<PlayerPage />} />
             <Route path="/court-times" element={<CourtTimes />} />
             <Route path="/register" element={<RegisterPage />} />
 
             {/* Protected Routes */}
-            <Route path="/profil" element={<ProfileProvider><ProfilePage /></ProfileProvider>}>
+            <Route
+              path="/profil"
+              element={
+                <ProfileProvider>
+                  <ProfilePage />
+                </ProfileProvider>
+              }
+            >
               <Route index element={<Navigate to="overblik" replace />} />
               <Route path="overblik" element={<OverviewTab />} />
               <Route path="rediger" element={<EditTab />} />
@@ -151,8 +164,6 @@ function App() {
               <Route path="grupper" element={<GroupsTab />} />
               <Route path="grupper/opretgruppe" element={<CreateGroupTab />} />
               <Route path="grupper/:groupId" element={<EditGroupTab />} />
-
-
             </Route>
 
             <Route path="/hjem" element={<HomePage />} />
@@ -170,16 +181,26 @@ function App() {
             <Route path="/makkerbørs/opretkamp" element={<CreateMatchPage />} />
 
             <Route path="/privat-arrangementer" element={<PrivateEventPage />}>
-              <Route index element={<Navigate to="minearrangementer" replace />} />
+              <Route
+                index
+                element={<Navigate to="minearrangementer" replace />}
+              />
               <Route path="minearrangementer" element={<MyEventsTab />} />
               <Route path="allearrangementer" element={<AllEventsTab />} />
             </Route>
-            <Route path="/privat-arrangementer/opretarrangement" element={<CreateEventPage />} />
-            <Route path="/privat-arrangementer/:username/:eventId" element={<ViewEventPage />} />
+            <Route
+              path="/privat-arrangementer/opretarrangement"
+              element={<CreateEventPage />}
+            />
+            <Route
+              path="/privat-arrangementer/:username/:eventId"
+              element={<ViewEventPage />}
+            />
 
-            <Route path="/turneringer" element={<TournamentTabs />} />
-            <Route path="/turneringer/resultater" element={<TournamentsResultsPage />} />
-            <Route path="/turneringer/regler" element={<TournamentRulesPage />} />
+            <Route
+              path="/turneringer/resultater"
+              element={<TournamentsResultsPage />}
+            />
 
             <Route path="/holdligaer" element={<LunarLigaPage />}>
               <Route

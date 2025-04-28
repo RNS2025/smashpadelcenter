@@ -53,6 +53,48 @@ router.post("/:eventId/invite", async (req, res) => {
   }
 });
 
+// POST /api/v1/private-event/:eventId/remove-player - Remove a player from a private event
+router.post("/:eventId/remove-player", async (req, res) => {
+  try {
+    const { username } = req.body;
+    const event = await PrivateEvent.findById(req.params.eventId);
+    if (!event) {
+      logger.warn("Attempted to remove player from non-existent event", {
+        eventId: req.params.eventId,
+      });
+      return res.status(404).json({ message: "Event not found" });
+    }
+    if (event.username !== req.user.username) {
+      logger.warn("Unauthorized remove player attempt", {
+        eventId: req.params.eventId,
+        eventCreator: event.username,
+        attemptedBy: req.user.username,
+      });
+      return res
+        .status(403)
+        .json({ message: "Only the event creator can remove players" });
+    }
+    const updatedEvent = await privateEventService.removePlayerFromEvent(
+      req.params.eventId,
+      username
+    );
+    const io = req.app.get("socketio");
+    io.to(req.params.eventId).emit("eventUpdated", updatedEvent);
+    logger.info("Player removed from private event", {
+      eventId: req.params.eventId,
+      username,
+    });
+    res.json(updatedEvent);
+  } catch (error) {
+    logger.error("Error removing player from private event", {
+      eventId: req.params.eventId,
+      username: req.body.username,
+      error: error.message,
+    });
+    res.status(400).json({ message: error.message });
+  }
+});
+
 // POST /api/v1/private-event/:eventId/confirm - Confirm acceptance of a private event
 router.post("/:eventId/confirm", async (req, res) => {
   try {
