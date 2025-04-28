@@ -1,14 +1,14 @@
 import { Helmet } from "react-helmet-async";
-import HomeScreenCard from "../../../components/HomeScreen/HomeScreenCard.tsx";
+import HomeScreenCard from "../../components/HomeScreen/HomeScreenCard.tsx";
 import {
   CheckCircleIcon,
   InformationCircleIcon,
   MapIcon,
   RectangleGroupIcon,
 } from "@heroicons/react/24/outline";
-import Animation from "../../../components/misc/Animation.tsx";
-import HomeBar from "../../../components/misc/HomeBar.tsx";
-import { useUser } from "../../../context/UserContext.tsx";
+import Animation from "../../components/misc/Animation.tsx";
+import HomeBar from "../../components/misc/HomeBar.tsx";
+import { useUser } from "../../context/UserContext.tsx";
 
 export const TournamentTabs = () => {
   const { user } = useUser();

@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react";
 import {Helmet} from "react-helmet-async";
-import HomeBar from "../../../components/misc/HomeBar.tsx";
-import Animation from "../../../components/misc/Animation.tsx";
+import HomeBar from "../../components/misc/HomeBar.tsx";
+import Animation from "../../components/misc/Animation.tsx";
 
 export const TournamentRulesPage = () => {
     const [rules, setRules] = useState<string>("");

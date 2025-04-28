@@ -1,11 +1,11 @@
 import { Helmet } from "react-helmet-async";
-import CourtsMap from "../../../components/tournaments/map/CourtsMap.tsx";
-import Animation from "../../../components/misc/Animation.tsx";
+import CourtsMap from "../../components/tournaments/map/CourtsMap.tsx";
+import Animation from "../../components/misc/Animation.tsx";
 import { useEffect, useState } from "react";
-import HomeBar from "../../../components/misc/HomeBar.tsx";
-import rankedInService from "../../../services/rankedIn.ts";
-import LoadingSpinner from "../../../components/misc/LoadingSpinner.tsx";
-import DpfMatch from "../../../types/DpfMatch.ts";
+import HomeBar from "../../components/misc/HomeBar.tsx";
+import rankedInService from "../../services/rankedIn.ts";
+import LoadingSpinner from "../../components/misc/LoadingSpinner.tsx";
+import DpfMatch from "../../types/DpfMatch.ts";
 
 export const CourtMapPage = () => {
   const [selectedCourtLabel, setSelectedCourtLabel] = useState<string | null>(

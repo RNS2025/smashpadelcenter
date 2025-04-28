@@ -7,8 +7,8 @@ import InstallPrompt from "./components/misc/InstallPrompt.tsx"; // Adjust path 
 import LoginPage from "./pages/login/LoginPage.tsx";
 import HomePage from "./pages/(logged-in)/HomePage.tsx";
 import AdminPage from "./pages/(logged-in)/misc/AdminPage.tsx";
-import CheckInPage from "./pages/CheckInPage.tsx";
-import PlayerPage from "./pages/(logged-in)/tournament/PlayerPage.tsx";
+import CheckInPage from "./pages/tournament/CheckInPage.tsx";
+import PlayerPage from "./pages/tournament/PlayerPage.tsx";
 import BookCourtPage from "./pages/(logged-in)/BookingOfCourt.tsx";
 import BookTrainingPage from "./pages/(logged-in)/BookTraining.tsx";
 import MatchFinderPage from "./pages/(logged-in)/matchFinder/MatchFinderPage.tsx";
@@ -22,9 +22,9 @@ import ProfilePage from "./pages/(logged-in)/ProfilePage/ProfilePage.tsx";
 import FeedbackPage from "./pages/(logged-in)/FeedbackPage.tsx";
 import RegisterPage from "./pages/login/RegisterUserPage.tsx";
 import CourtTimes from "./pages/court-times.tsx";
-import TournamentTabs from "./pages/(logged-in)/tournament/TournamentTabs.tsx";
-import CourtMapPage from "./pages/(logged-in)/tournament/CourtMapPage.tsx";
-import TournamentsResultsPage from "./pages/(logged-in)/tournament/TournamentsResultsPage.tsx";
+import TournamentTabs from "./pages/tournament/TournamentTabs.tsx";
+import CourtMapPage from "./pages/tournament/CourtMapPage.tsx";
+import TournamentsResultsPage from "./pages/tournament/TournamentsResultsPage.tsx";
 import LunarTeamsTab from "./components/lunar/LunarTeamsTab.tsx";
 import LunarTeamsWomenTab from "./components/lunar/LunarTeamsWomenTab.tsx";
 import HHTeamsTab from "./components/lunar/HHTeamsTab.tsx";
@@ -49,7 +49,7 @@ import AllEventsTab from "./components/private-event/AllEventsTab.tsx";
 import GroupsTab from "./components/profile/tabs/groups/GroupsTab.tsx";
 import CreateGroupTab from "./components/profile/tabs/groups/CreateGroupTab.tsx";
 import EditGroupTab from "./components/profile/tabs/groups/EditGroupTab.tsx";
-import TournamentRulesPage from "./pages/(logged-in)/tournament/TournamentRulesPage.tsx";
+import TournamentRulesPage from "./pages/tournament/TournamentRulesPage.tsx";
 
 function App() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
