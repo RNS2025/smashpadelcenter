@@ -45,24 +45,11 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: [
-      "http://localhost:3001",
-      "http://localhost:5173",
-      "https://rns-apps.dk",
-      "http://rns-apps.dk",
-      "https://backend.rns-apps.dk",
-      "http://backend.rns-apps.dk",
-      "http://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net",
-      "https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net",
-      "https://*.azurewebsites.net",
-      "http://*.azurewebsites.net",
-      "https://smashpadelcenter.onrender.com/",
-      "http://smashpadelcenter.onrender.com/",
-      "https://smashpadelcenter-api.onrender.com",
-      "http://smashpadelcenter-api.onrender.com",
-    ],
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    origin: function (origin, callback) {
+      callback(null, true); // Allow any origin
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
     credentials: true,
   })
 );

@@ -136,18 +136,17 @@ function App() {
           <Routes>
             {/* Whitelisted Routes */}
             <Route path="/" element={<LoginPage />} />
+            <Route path="/" element={<Navigate to="/turneringer" replace />} />
             <Route path="/turneringer/check-in" element={<CheckInPage />} />
             <Route
               path="/turneringer/baneoversigt"
               element={<CourtMapPage />}
             />
             <Route path="/turneringer/info" element={<TournamentInfoPage />}>
-
-              <Route index element={<Navigate to="briefing" replace />}/>
+              <Route index element={<Navigate to="briefing" replace />} />
               <Route path="briefing" element={<TournamentBriefingTab />} />
               <Route path="generelt" element={<TournamentRegulationsTab />} />
             </Route>
-
 
             <Route path="/turneringer" element={<TournamentTabs />} />
 

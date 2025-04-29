@@ -98,12 +98,6 @@ router.post("/:eventId/remove-player", async (req, res) => {
 // POST /api/v1/private-event/:eventId/confirm - Confirm acceptance of a private event
 router.post("/:eventId/confirm", async (req, res) => {
   try {
-    if (!req.isAuthenticated()) {
-      logger.warn("Unauthenticated user attempted to confirm event", {
-        eventId: req.params.eventId,
-      });
-      return res.status(401).json({ message: "Not authenticated" });
-    }
     const { username } = req.body;
     const updatedEvent = await privateEventService.confirmAcceptPrivateEvent(
       req.params.eventId,
@@ -129,12 +123,6 @@ router.post("/:eventId/confirm", async (req, res) => {
 // POST /api/v1/private-event/:eventId/decline - Decline a private event
 router.post("/:eventId/decline", async (req, res) => {
   try {
-    if (!req.isAuthenticated()) {
-      logger.warn("Unauthenticated user attempted to decline event", {
-        eventId: req.params.eventId,
-      });
-      return res.status(401).json({ message: "Not authenticated" });
-    }
     const { username } = req.body;
     const event = await PrivateEvent.findById(req.params.eventId);
     if (!event) {
@@ -155,12 +143,10 @@ router.post("/:eventId/decline", async (req, res) => {
         attemptedAs: username,
         eventOwner: event.username,
       });
-      return res
-        .status(403)
-        .json({
-          message:
-            "Only the invited user or event owner can decline this invitation",
-        });
+      return res.status(403).json({
+        message:
+          "Only the invited user or event owner can decline this invitation",
+      });
     }
     const updatedEvent = await privateEventService.confirmDeclinePrivateEvent(
       req.params.eventId,
@@ -188,7 +174,7 @@ router.get("/", async (req, res) => {
   try {
     const events = await privateEventService.getAllPrivateEvents();
     // Filter out events with openRegistration: false for non-authenticated users
-    const filteredEvents = req.isAuthenticated()
+    const filteredEvents = req.user
       ? events
       : events.filter((event) => event.openRegistration);
     logger.info("Successfully fetched private events");
@@ -202,11 +188,10 @@ router.get("/", async (req, res) => {
 // GET /api/v1/private-event/:username - Get private events for a user
 router.get("/:username", async (req, res) => {
   try {
-    if (!req.isAuthenticated() || req.user.username !== req.params.username) {
+    if (req.user.username !== req.params.username) {
       logger.warn("Unauthorized access attempt to user events", {
         requestedUsername: req.params.username,
-        authenticated: req.isAuthenticated(),
-        user: req.isAuthenticated() ? req.user.username : null,
+        user: req.user.username,
       });
       return res.status(403).json({ message: "Access denied" });
     }
@@ -249,10 +234,6 @@ router.get("/event/:eventId", async (req, res) => {
 // POST /api/v1/private-event - Create a new private event
 router.post("/", async (req, res) => {
   try {
-    if (!req.isAuthenticated()) {
-      logger.warn("Unauthenticated user attempted to create event");
-      return res.status(401).json({ message: "Not authenticated" });
-    }
     const eventData = {
       ...req.body,
       username: req.user.username,
@@ -267,7 +248,7 @@ router.post("/", async (req, res) => {
     res.status(201).json(newEvent);
   } catch (error) {
     logger.error("Error creating private event", {
-      username: req.isAuthenticated() ? req.user.username : null,
+      username: req.user ? req.user.username : null,
       error: error.message,
     });
     res.status(400).json({ message: error.message });
@@ -277,12 +258,6 @@ router.post("/", async (req, res) => {
 // PATCH /api/v1/private-event/:eventId - Update a private event
 router.patch("/:eventId", async (req, res) => {
   try {
-    if (!req.isAuthenticated()) {
-      logger.warn("Unauthenticated user attempted to update event", {
-        eventId: req.params.eventId,
-      });
-      return res.status(401).json({ message: "Not authenticated" });
-    }
     const event = await PrivateEvent.findById(req.params.eventId);
     if (!event) {
       logger.warn("Attempted to update non-existent event", {
@@ -323,12 +298,6 @@ router.patch("/:eventId", async (req, res) => {
 // POST /api/v1/private-event/:eventId/join - Join a private event
 router.post("/:eventId/join", async (req, res) => {
   try {
-    if (!req.isAuthenticated()) {
-      logger.warn("Unauthenticated user attempted to join event", {
-        eventId: req.params.eventId,
-      });
-      return res.status(401).json({ message: "Not authenticated" });
-    }
     const { username } = req.body;
     if (username !== req.user.username) {
       logger.warn("User attempted to join as another user", {
@@ -364,12 +333,6 @@ router.post("/:eventId/join", async (req, res) => {
 // POST /api/v1/private-event/:eventId/confirm - Confirm a join request
 router.post("/:eventId/confirm", async (req, res) => {
   try {
-    if (!req.isAuthenticated()) {
-      logger.warn("Unauthenticated user attempted to confirm join", {
-        eventId: req.params.eventId,
-      });
-      return res.status(401).json({ message: "Not authenticated" });
-    }
     const { username } = req.body;
     const event = await PrivateEvent.findById(req.params.eventId);
     if (!event) {
@@ -412,12 +375,6 @@ router.post("/:eventId/confirm", async (req, res) => {
 // DELETE /api/v1/private-event/:eventId - Delete a private event
 router.delete("/:eventId", async (req, res) => {
   try {
-    if (!req.isAuthenticated()) {
-      logger.warn("Unauthenticated user attempted to delete event", {
-        eventId: req.params.eventId,
-      });
-      return res.status(401).json({ message: "Not authenticated" });
-    }
     const event = await PrivateEvent.findById(req.params.eventId);
     if (!event) {
       logger.warn("Attempted to delete non-existent event", {

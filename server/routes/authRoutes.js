@@ -25,7 +25,8 @@ router.post("/login", (req, res, next) => {
     const token = generateToken(user);
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: true, // Always use secure for cross-domain
+      sameSite: "none", // Required for cross-origin requests
       maxAge: 24 * 60 * 60 * 1000, // 1 day
     });
     logger.info("User logged in successfully", {
@@ -61,7 +62,8 @@ router.get(
     const token = generateToken(req.user);
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: true, // Always use secure for cross-domain
+      sameSite: "none", // Required for cross-origin requests
       maxAge: 24 * 60 * 60 * 1000,
     });
     logger.info("Google OAuth login successful", {
@@ -72,7 +74,9 @@ router.get(
 );
 
 router.get("/auth/check", verifyJWT, async (req, res) => {
-  logger.debug("Auth check request");
+  logger.debug("Auth check request", {
+    user: req.user ? req.user._id : "unknown",
+  });
   try {
     const profile = await databaseService.getProfileWithMatches(req.user._id);
     logger.debug("Auth check successful", { userId: req.user._id });
@@ -144,7 +148,11 @@ router.get("/username", verifyJWT, (req, res) => {
 
 router.post("/logout", verifyJWT, (req, res) => {
   logger.info("Logout attempt", { username: req.user.username });
-  res.clearCookie("token");
+  res.clearCookie("token", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+  });
   logger.info("User logged out successfully", { username: req.user.username });
   res.status(200).json({ message: "Logged out successfully" });
 });
@@ -180,7 +188,8 @@ router.post("/register", async (req, res) => {
     const token = generateToken(newUser);
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
+      secure: true, // Always use secure for cross-domain
+      sameSite: "none", // Required for cross-origin requests
       maxAge: 24 * 60 * 60 * 1000,
     });
     return res.status(201).json({

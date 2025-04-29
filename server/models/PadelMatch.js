@@ -1,4 +1,3 @@
-// models/PadelMatch.js
 const mongoose = require("mongoose");
 
 const reservedSpotSchema = new mongoose.Schema(
@@ -14,6 +13,10 @@ const reservedSpotSchema = new mongoose.Schema(
     level: {
       type: String,
       required: true,
+    },
+    deadline: {
+      type: String,
+      required: false,
     },
   },
   { _id: false }
@@ -57,7 +60,7 @@ const padelMatchSchema = new mongoose.Schema({
     default: Date.now,
   },
   matchDateTime: {
-    type: Date,
+    type: String,
     required: true,
   },
   startTime: {
@@ -72,7 +75,6 @@ const padelMatchSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-
   location: {
     type: String,
     required: true,
@@ -84,6 +86,35 @@ const padelMatchSchema = new mongoose.Schema({
   deadline: {
     type: String,
     required: false,
+  },
+  score: {
+    type: String,
+    required: false,
+  },
+  winningTeam: {
+    type: [String],
+    default: [],
+  },
+  losingTeam: {
+    type: [String],
+    default: [],
+  },
+  result: {
+    type: String,
+    enum: ["win", "loss", "pending", "unknown"],
+    default: "pending",
+  },
+});
+
+// Transform _id to id in JSON responses
+padelMatchSchema.set("toJSON", {
+  transform: (doc, ret) => {
+    ret.id = ret._id.toString();
+    delete ret._id;
+    delete ret.__v;
+    // Ensure createdAt is returned as ISO string
+    ret.createdAt = ret.createdAt.toISOString();
+    return ret;
   },
 });
 
