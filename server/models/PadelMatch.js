@@ -14,6 +14,10 @@ const reservedSpotSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    deadline: {
+      type: String,
+      required: false,
+    },
   },
   { _id: false }
 );
