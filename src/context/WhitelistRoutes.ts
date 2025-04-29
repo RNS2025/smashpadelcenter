@@ -1,11 +1,15 @@
 // Routes that should NOT trigger a redirect even if the user is not authenticated
 export const WHITELIST_ROUTES = [
+  "/turneringer",
   "/turneringer/check-in",
+  "/turneringer/info",
+  "/turneringer/info/briefing",
+  "/turneringer/info/generelt",
+  "/turneringer/regler",
+  "/turneringer/baneoversigt",
   "/player/:playerId/:rowId, /court-times",
   "/register",
   "/login",
-  "/turneringer",
-  "/turneringer/regler",
   "/",
   "/player/:playerId/:rowId",
   "/player/:playerId",

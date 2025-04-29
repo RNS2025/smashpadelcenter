@@ -49,9 +49,10 @@ import AllEventsTab from "./components/private-event/AllEventsTab.tsx";
 import GroupsTab from "./components/profile/tabs/groups/GroupsTab.tsx";
 import CreateGroupTab from "./components/profile/tabs/groups/CreateGroupTab.tsx";
 import EditGroupTab from "./components/profile/tabs/groups/EditGroupTab.tsx";
-import TournamentInfoPage from "./pages/tournament/TournamentInfoPage.tsx";
+import TournamentInfoPage from "./pages/tournament/info/TournamentInfoPage.tsx";
 import {TournamentRegulationsTab} from "./components/tournaments/info/TournamentRegulationsTab.tsx";
 import TournamentBriefingTab from "./components/tournaments/info/TournamentBriefingTab.tsx";
+import TournamentEditBriefingPage from "./pages/tournament/info/TournamentEditBriefingPage.tsx";
 
 function App() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -203,10 +204,8 @@ function App() {
               element={<ViewEventPage />}
             />
 
-            <Route
-              path="/turneringer/resultater"
-              element={<TournamentsResultsPage />}
-            />
+            <Route path="/turneringer/resultater" element={<TournamentsResultsPage />}/>
+            <Route path="/turneringer/info/briefing/redigerbriefing/:briefingId" element={<TournamentEditBriefingPage />} />
 
             <Route path="/holdligaer" element={<LunarLigaPage />}>
               <Route

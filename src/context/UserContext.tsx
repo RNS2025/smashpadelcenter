@@ -88,7 +88,6 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
           throw new Error("Invalid user data received");
         }
       } catch (err: any) {
-        console.error("Auth check error:", err);
         setUser(null);
         setIsAuthenticated(false);
         setError("Kunne ikke hente brugerdata.");

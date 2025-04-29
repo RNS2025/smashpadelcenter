@@ -90,5 +90,5 @@ module.exports = {
   League: mongoose.model("League", LeagueSchema),
   Team: mongoose.model("Team", TeamSchema),
   Match: mongoose.model("Match", MatchSchema),
-    RankedInPlayerSearchResult: mongoose.model("RankedInPlayerSearchResult", RankedInPlayerSearchResultSchema),
+  RankedInPlayerSearchResult: mongoose.model("RankedInPlayerSearchResult", RankedInPlayerSearchResultSchema),
 };
