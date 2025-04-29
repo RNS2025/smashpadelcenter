@@ -27,22 +27,18 @@ function setupSocketIO(server) {
         "http://localhost:5173",
         "https://rns-apps.dk",
         "http://rns-apps.dk",
+        "https://www.rns-apps.dk", // Added www subdomain
+        "http://www.rns-apps.dk", // Added www subdomain
         "https://backend.rns-apps.dk",
         "http://backend.rns-apps.dk",
-        "https://www.rns-apps.dk",
-        "http://www.rns-apps.dk",
         "http://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net",
         "https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net",
-        "https://rns-apps.dk",
-        "http://rns-apps.dk",
-        "https://*.azurewebsites.net",
-        "http://*.azurewebsites.net",
-        "https://*.smashpadelcenter-api.onrender.com",
-        "http://*.smashpadelcenter-api.onrender.com",
-        "https://*.smashpadelcenter.onrender.com/",
-        "http://*.smashpadelcenter.onrender.com/",
+        "https://smashpadelcenter.onrender.com", // Removed trailing slash
+        "http://smashpadelcenter.onrender.com", // Removed trailing slash
+        "https://smashpadelcenter-api.onrender.com",
+        "http://smashpadelcenter-api.onrender.com",
       ],
-      methods: ["GET", "POST"],
+      methods: ["GET", "POST", "PUT", "DELETE"],
       allowedHeaders: ["*"], // Allow all headers
       credentials: true,
     },
