@@ -8,11 +8,9 @@ import path from "path";
 const isHttpsEnabled = process.env.VITE_HTTPS === "false"; // Toggle HTTPS via env variable
 // Determine environment and set API origin
 const isDev = process.env.NODE_ENV !== "production";
-const apiOrigin =
-  process.env.VITE_API_ORIGIN ||
-  (isDev
-    ? "http://localhost:3001"
-    : "https://smashpadelcenter-api.onrender.com/api/v1");
+const apiOrigin = isDev
+  ? "http://localhost:3001"
+  : "https://smashpadelcenter-api.onrender.com/api/v1";
 
 console.log(
   `Running in ${

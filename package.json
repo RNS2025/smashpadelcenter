@@ -5,9 +5,9 @@
   "type": "module",
   "homepage": "https://luu-og-jens.github.io/smashpadelcenter/",
   "scripts": {
-    "dev": "vite",
-    "dev:prod": "cross-env NODE_ENV=production vite",
-    "build": "tsc -noEmit && vite build",
+    "dev": "vite --mode development",
+    "dev:prod": "cross-env NODE_ENV=production vite --mode production",
+    "build": "cross-env NODE_ENV=production tsc -noEmit && vite build --mode production",
     "build:dev": "cross-env NODE_ENV=development vite build",
     "lint": "eslint .",
     "preview": "vite preview",
