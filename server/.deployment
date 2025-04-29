@@ -9,4 +9,4 @@ GOOGLE_CLIENT_SECRET=GOCSPX-2nxkkaxLqzk5uwwcu4E2MxSFa
 DEBUG_MODE=false
 NODE_ENV=prod
 FRONTEND_URL=https://rns-apps.dk
-BACKEND_URL=https://backend.rns-apps.dk
+BACKEND_URL=https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net
