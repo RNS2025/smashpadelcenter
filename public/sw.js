@@ -1,5 +1,8 @@
 // sw.js
 
+// Set environment flag
+const isProduction = self.location.hostname !== "localhost";
+
 // Create a simple logger for the service worker
 const logger = {
   info: (message, data) => {
