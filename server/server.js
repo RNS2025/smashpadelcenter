@@ -35,9 +35,6 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 const ENV = process.env.NODE_ENV || "development";
 const isDev = ENV === "development";
-const MONGODB_URI = isDev
-  ? process.env.MONGODB_URI || "mongodb://localhost:27017/smashpadel"
-  : "mongodb+srv://admin:Rise%40ndShine@cluster0.108ujbh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0&ssl=true&tls=true";
 
 // Log which environment and database we're using
 logger.info(`Using ${isDev ? "development" : "production"} database`);
