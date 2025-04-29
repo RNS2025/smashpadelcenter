@@ -134,6 +134,7 @@ function App() {
           )}
           <Routes>
             {/* Whitelisted Routes */}
+            <Route path="*" element={<Navigate to="/turneringer" replace />} />
             <Route path="/" element={<LoginPage />} />
             <Route path="/" element={<Navigate to="/turneringer" replace />} />
             <Route path="/turneringer/check-in" element={<CheckInPage />} />
