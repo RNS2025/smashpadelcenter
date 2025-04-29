@@ -10,7 +10,7 @@ export default defineConfig({
       registerType: "autoUpdate",
       injectRegister: "auto",
       srcDir: "src",
-      filename: "../public/sw.js",
+      filename: "sw.js",
       strategies: "injectManifest",
       injectManifest: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2}"],
