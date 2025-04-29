@@ -22,24 +22,11 @@ const onlineUsers = new Map();
 function setupSocketIO(server) {
   const io = new Server(server, {
     cors: {
-      origin: [
-        "http://localhost:3001",
-        "http://localhost:5173",
-        "https://rns-apps.dk",
-        "http://rns-apps.dk",
-        "https://www.rns-apps.dk", // Added www subdomain
-        "http://www.rns-apps.dk", // Added www subdomain
-        "https://backend.rns-apps.dk",
-        "http://backend.rns-apps.dk",
-        "http://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net",
-        "https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net",
-        "https://smashpadelcenter.onrender.com", // Removed trailing slash
-        "http://smashpadelcenter.onrender.com", // Removed trailing slash
-        "https://smashpadelcenter-api.onrender.com",
-        "http://smashpadelcenter-api.onrender.com",
-      ],
-      methods: ["GET", "POST", "PUT", "DELETE"],
-      allowedHeaders: ["*"], // Allow all headers
+      origin: function (origin, callback) {
+        callback(null, true); // Allow requests from any origin
+      },
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      allowedHeaders: ["*"],
       credentials: true,
     },
   });
