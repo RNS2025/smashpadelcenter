@@ -409,9 +409,7 @@ router.get("/:id", async (req, res) => {
 router.get("/player/:username", async (req, res) => {
   try {
     const username =
-      req.params.username === "me" && req.isAuthenticated()
-        ? req.user.username
-        : req.params.username;
+      req.params.username === "me" ? req.user.username : req.params.username;
     const matches = await padelMatchService.getMatchesByPlayer(username);
     logger.info("Successfully fetched matches for player", { username });
     res.json(matches);

@@ -3,11 +3,10 @@ const router = express.Router();
 const databaseService = require("../Services/databaseService");
 const logger = require("../config/logger"); // Import logger
 
-
 router.get("/by-username/:username", async (req, res) => {
   try {
     const username =
-      req.params.username === "me" && req.isAuthenticated()
+      req.params.username === "me" && req.user
         ? req.user.username
         : req.params.username;
     const profile = await databaseService.getProfileByUsername(username);
@@ -25,7 +24,7 @@ router.get("/by-username/:username", async (req, res) => {
 router.put("/by-username/:username", async (req, res) => {
   try {
     const username =
-      req.params.username === "me" && req.isAuthenticated()
+      req.params.username === "me" && req.user
         ? req.user.username
         : req.params.username;
     const updatedProfile = await databaseService.updateUserProfile(

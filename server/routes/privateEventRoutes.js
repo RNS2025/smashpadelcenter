@@ -174,7 +174,7 @@ router.get("/", async (req, res) => {
   try {
     const events = await privateEventService.getAllPrivateEvents();
     // Filter out events with openRegistration: false for non-authenticated users
-    const filteredEvents = req.isAuthenticated()
+    const filteredEvents = req.user
       ? events
       : events.filter((event) => event.openRegistration);
     logger.info("Successfully fetched private events");
@@ -188,11 +188,10 @@ router.get("/", async (req, res) => {
 // GET /api/v1/private-event/:username - Get private events for a user
 router.get("/:username", async (req, res) => {
   try {
-    if (!req.isAuthenticated() || req.user.username !== req.params.username) {
+    if (req.user.username !== req.params.username) {
       logger.warn("Unauthorized access attempt to user events", {
         requestedUsername: req.params.username,
-        authenticated: req.isAuthenticated(),
-        user: req.isAuthenticated() ? req.user.username : null,
+        user: req.user.username,
       });
       return res.status(403).json({ message: "Access denied" });
     }
@@ -249,7 +248,7 @@ router.post("/", async (req, res) => {
     res.status(201).json(newEvent);
   } catch (error) {
     logger.error("Error creating private event", {
-      username: req.isAuthenticated() ? req.user.username : null,
+      username: req.user ? req.user.username : null,
       error: error.message,
     });
     res.status(400).json({ message: error.message });
