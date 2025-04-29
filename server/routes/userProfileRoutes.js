@@ -2,6 +2,8 @@ const express = require("express");
 const router = express.Router();
 const databaseService = require("../Services/databaseService");
 const logger = require("../config/logger"); // Import logger
+const { verifyJWT } = require("../middleware/jwt");
+router.use(verifyJWT);
 
 router.get("/by-username/:username", async (req, res) => {
   try {

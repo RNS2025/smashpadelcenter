@@ -52,7 +52,7 @@ export const CreateMatchForm = () => {
 
     try {
       const matchData: Omit<PadelMatch, "id"> = {
-        username: user?.username ?? "Unknown",
+        username: user!.username,
         description: description || "Ingen bemærkninger",
         level: `${levelRange[0].toFixed(1)} - ${levelRange[1].toFixed(1)}`,
         participants: [],
