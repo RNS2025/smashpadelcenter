@@ -19,7 +19,7 @@ export default defineConfig({
         name: "SMASH Padelcenter Klubapp",
         short_name: "SMASH Klubapp",
         description: "SMASH Padelcenter Klubapp - Din digitale padelklub",
-        theme_color: "#1e3a8a",
+        theme_color: "#000000",
         background_color: "#ffffff",
         display: "standalone",
         start_url: "/",
