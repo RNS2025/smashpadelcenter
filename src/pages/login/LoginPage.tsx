@@ -70,14 +70,14 @@ export const LoginPage = () => {
             />
 
             <div className="hidden lg:relative lg:block lg:p-12">
-              <a href="/public" className="block">
+              <div className="block">
                 <span className="sr-only">Home</span>
                 <img
                   src="https://www.smash.dk/wp-content/uploads/2021/05/SMASH-neg-udenby@4x.png"
                   alt="Home"
                   className="h-24 sm:h-24"
                 />
-              </a>
+              </div>
 
               <h2 className="mt-6 text-2xl font-bold sm:text-3xl md:text-4xl">
                 SMASH Padelcenter
@@ -95,7 +95,7 @@ export const LoginPage = () => {
           <main className="flex items-center justify-center px-5 py-8 sm:px-12 lg:col-span-7 lg:px-16 lg:py-12 xl:col-span-5">
             <div className="w-full lg:max-w-sm">
               <div className="relative -mt-16 block lg:hidden">
-                <a href="/public" className="block">
+                <div className="block">
                   <span className="sr-only">Home</span>
                   <div className="relative inline-block bg-gray-900 px-4 py-6 rounded-full">
                     <img
@@ -104,7 +104,7 @@ export const LoginPage = () => {
                       className="h-10 sm:h-12"
                     />
                   </div>
-                </a>
+                </div>
 
                 <h1 className="mt-2 text-2xl font-bold sm:text-3xl md:text-4xl">
                   SMASH Padelcenter

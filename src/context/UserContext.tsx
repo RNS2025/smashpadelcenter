@@ -55,7 +55,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       if (!isRouteWhitelisted(currentPath, WHITELIST_ROUTES)) {
         if (!isLoginPage(currentPath)) {
           setError("Adgang nægtet - Log ind for at se denne side");
-          navigate("/turneringer", {
+          navigate("/hjem", {
             state: {
               message: "Log venligst ind for at få adgang til denne side",
               from: currentPath,
@@ -88,7 +88,6 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
           throw new Error("Invalid user data received");
         }
       } catch (err: any) {
-        console.error("Auth check error:", err);
         setUser(null);
         setIsAuthenticated(false);
         setError("Kunne ikke hente brugerdata.");

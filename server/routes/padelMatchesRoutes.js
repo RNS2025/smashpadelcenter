@@ -3,6 +3,8 @@ const router = express.Router();
 const padelMatchService = require("../Services/padelMatchService");
 const PadelMatch = require("../models/PadelMatch");
 const logger = require("../config/logger");
+const { verifyJWT } = require("../middleware/jwt");
+router.use(verifyJWT);
 
 // GET /api/v1/matches - Get all matches
 router.get("/", async (req, res) => {

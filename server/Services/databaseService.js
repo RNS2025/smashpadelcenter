@@ -287,7 +287,7 @@ module.exports = {
         .filter((m) => new Date(m.matchDateTime) <= now)
         .map((m) => ({
           id: m._id.toString(),
-          date: m.matchDateTime.toISOString(),
+          date: new Date(m.matchDateTime).toISOString(),
           opponent:
             m.participants.filter((p) => p !== user.username).join(", ") ||
             "Unknown",

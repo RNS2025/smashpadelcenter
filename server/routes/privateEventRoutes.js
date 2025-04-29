@@ -4,6 +4,8 @@ const router = express.Router();
 const privateEventService = require("../Services/privateEventService");
 const PrivateEvent = require("../models/PrivateEvent");
 const logger = require("../config/logger"); // Import logger
+const { verifyJWT } = require("../middleware/jwt");
+router.use(verifyJWT);
 
 // Middleware to detect if the request is from a browser
 const isBrowser = (req) => {

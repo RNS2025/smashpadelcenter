@@ -16,6 +16,7 @@ const LigaRoutes = require("./routes/LigaRoutes");
 const friendRoutes = require("./routes/friendRoutes");
 const messageRoutes = require("./routes/messageRoutes");
 const privateEventRoutes = require("./routes/privateEventRoutes");
+const briefingRoutes = require("./routes/briefingRoutes");
 const { swaggerUi, specs } = require("./config/swagger");
 const { connectDB, mongoose } = require("./config/database");
 const createAdmin = require("./scripts/createAdmin");
@@ -83,6 +84,7 @@ app.use("/api/v1/user-profiles", userProfileRoutes);
 app.use("/api/v1/friends", friendRoutes);
 app.use("/api/v1/messages", messageRoutes);
 app.use("/api/v1/private-event", privateEventRoutes);
+app.use("/api/v1/briefing", briefingRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {

@@ -8,12 +8,8 @@ import LoadingSpinner from "../../components/misc/LoadingSpinner.tsx";
 import DpfMatch from "../../types/DpfMatch.ts";
 
 export const CourtMapPage = () => {
-  const [selectedCourtLabel, setSelectedCourtLabel] = useState<string | null>(
-    null
-  );
-  const [upcomingTournamentEventId, setUpcomingTournamentEventId] = useState<
-    string | null
-  >(null);
+  const [selectedCourtLabel, setSelectedCourtLabel] = useState<string | null>(null);
+  const [upcomingTournamentEventId, setUpcomingTournamentEventId] = useState<string | null>(null);
   const [ongoingMatch, setOnGoingMatch] = useState<DpfMatch | null>(null);
   const [upcomingMatch, setUpcommingMatch] = useState<DpfMatch | null>(null);
   const [loadingTournament, setLoadingTournament] = useState(true);
@@ -55,7 +51,7 @@ export const CourtMapPage = () => {
       }
     };
 
-    fetchUpcomingTournament();
+    fetchUpcomingTournament().then();
   }, []);
 
   // Fetch matches when a court is selected
@@ -162,6 +158,7 @@ export const CourtMapPage = () => {
               </>
             ) : null}
           </div>
+
           <div className="lg:w-3/5">
             <CourtsMap onSelect={(label) => setSelectedCourtLabel(label)} />
           </div>
