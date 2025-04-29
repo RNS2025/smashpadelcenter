@@ -12,7 +12,7 @@ const apiOrigin =
   process.env.VITE_API_ORIGIN ||
   (isDev
     ? "http://localhost:3001"
-    : "https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net//api/v1");
+    : "https://smashpadelcenter-api.onrender.com/api/v1");
 
 console.log(
   `Running in ${

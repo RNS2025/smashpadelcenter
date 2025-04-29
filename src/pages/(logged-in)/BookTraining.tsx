@@ -36,7 +36,7 @@ const BookTraining: React.FC = () => {
     const ENV = import.meta.env.MODE;
     const apiUrl =
       ENV === "production"
-        ? "https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net"
+        ? "https://smashpadelcenter-api.onrender.com"
         : "http://localhost:3001";
 
     console.log(`BookTraining connecting to socket at: ${apiUrl}`);

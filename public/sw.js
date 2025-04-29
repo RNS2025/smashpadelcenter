@@ -1,4 +1,4 @@
-// service-worker.js
+// sw.js
 
 // Create a simple logger for the service worker
 const logger = {

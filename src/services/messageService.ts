@@ -4,7 +4,7 @@ import axios from "axios";
 const ENV = import.meta.env.MODE;
 const API_BASE_URL =
   ENV === "production"
-    ? "https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net/api/v1"
+    ? "https://smashpadelcenter-api.onrender.com/api/v1"
     : "http://localhost:3001/api/v1";
 
 console.log(`MessageService using API at: ${API_BASE_URL}`);
@@ -47,7 +47,7 @@ export class MessageService {
     this.userId = userId;
     const SOCKET_URL =
       ENV === "production"
-        ? "https://rnssmashapi-g6gde0fvefhchqb3.westeurope-01.azurewebsites.net"
+        ? "https://smashpadelcenter-api.onrender.com"
         : "http://localhost:3001";
 
     console.log(`MessageService connecting to socket at: ${SOCKET_URL}`);
