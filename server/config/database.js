@@ -1,7 +1,11 @@
 const mongoose = require("mongoose");
 const logger = require("./logger");
+const dotenv = require("dotenv");
+const path = require("path");
+// Load .env file
+dotenv.config({ path: path.resolve(__dirname, ".env") });
 // Set the MongoDB URI based on environment
-const isDev = process.env.NODE_ENV === "dev";
+const isDev = process.env.NODE_ENV === "developmemt";
 const MONGODB_URI = isDev
   ? process.env.MONGODB_URI || "mongodb://localhost:27017/smashpadel"
   : "mongodb+srv://admin:Rise%40ndShine@cluster0.108ujbh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
