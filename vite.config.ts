@@ -6,14 +6,14 @@ export default defineConfig({
   plugins: [
     react(),
     VitePWA({
-      base: '/',
-      registerType: 'autoUpdate',
-      injectRegister: 'auto',
-      srcDir: 'src',
-      filename: 'sw.js',
-      strategies: 'injectManifest',
+      base: "/",
+      registerType: "autoUpdate",
+      injectRegister: "auto",
+      srcDir: "src",
+      filename: "../public/sw.js",
+      strategies: "injectManifest",
       injectManifest: {
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2}'],
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2}"],
       },
       manifest: {
         name: "SMASH Padelcenter Klubapp",
@@ -22,22 +22,22 @@ export default defineConfig({
         theme_color: "#1e3a8a",
         background_color: "#ffffff",
         display: "standalone",
-        start_url: '/',
-        scope: '/',
+        start_url: "/",
+        scope: "/",
         icons: [
           {
-            src: 'icons/ikon_192',
-            sizes: '192x192',
-            type: 'image/png',
+            src: "icons/ikon_192",
+            sizes: "192x192",
+            type: "image/png",
           },
           {
-            src: 'icons/ikon_512',
-            sizes: '512x512',
-            type: 'image/png',
+            src: "icons/ikon_512",
+            sizes: "512x512",
+            type: "image/png",
           },
         ],
       },
     }),
   ],
-  base: '/',
+  base: "/",
 });
