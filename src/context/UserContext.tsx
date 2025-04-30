@@ -23,12 +23,6 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-const ENV = import.meta.env.MODE;
-const BACKEND_URL =
-  ENV === "production"
-    ? "https://smashpadelcenter-api.onrender.com"
-    : "http://localhost:3001";
-
 const isRouteWhitelisted = (pathname: string, whitelist: string[]): boolean => {
   return whitelist.some((route) => {
     if (!route.includes(":")) return route === pathname;
@@ -74,7 +68,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     async (currentPath: string) => {
       setLoading(true);
       try {
-        const response = await axios.get(`${BACKEND_URL}/api/v1/auth/check`, {
+        const response = await axios.get(`/api/v1/auth/check`, {
           withCredentials: true,
         });
         if (response.data && response.data.isAuthenticated) {
