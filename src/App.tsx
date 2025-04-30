@@ -147,7 +147,7 @@ function App() {
               <Route path="generelt" element={<TournamentRegulationsTab />} />
             </Route>
 
-            <Route path="/turneringer" element={<TournamentTabs />} />
+            <Route path="turneringer" element={<TournamentTabs />} />
 
             <Route path="/player/:playerId/:rowId" element={<PlayerPage />} />
             <Route path="/court-times" element={<CourtTimes />} />

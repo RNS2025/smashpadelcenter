@@ -123,7 +123,7 @@ export const HomePage = () => {
               icon={<TrophyIcon className="h-10 w-10" aria-hidden="true" />}
               title="DPF-turneringer"
               description="Deltag i spændende turneringer"
-              link="/turneringer"
+              link="turneringer"
             />
             {user?.role === "admin" && (
               <HomeScreenCard
