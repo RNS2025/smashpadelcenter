@@ -1,12 +1,17 @@
 import api from "../api/api";
 
-export const login = async (username: string, password: string) => {
+export const login = async (
+  username: string,
+  password: string
+): Promise<any> => {
   try {
     const response = await api.post("/login", { username, password });
+    const { token } = response.data;
+    localStorage.setItem("token", token); // Gem token i localStorage
     return response.data;
   } catch (error: any) {
     throw new Error(
-      error.response?.data?.error || "Failed to log in. Please try again."
+      error.response?.data?.error || "Login mislykkedes. Prøv igen senere."
     );
   }
 };
