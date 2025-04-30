@@ -91,6 +91,10 @@ const userSchema = new mongoose.Schema(
         members: [{ type: String, required: true }],
       },
     ],
+      rankedInId: {
+          type: String,
+          trim: true,
+      },
   },
   {
     autoIndex: false, // Disable auto-indexing for production

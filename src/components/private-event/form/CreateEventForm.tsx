@@ -100,7 +100,6 @@ export const CreateEventForm = () => {
       await communityApi.updatePrivateEvent(createdEvent.id, {
         accessUrl
       });
-      alert("Arrangement oprettet!");
       navigate("/privat-arrangementer/minearrangementer");
     } catch (error: any) {
       console.error("Fejl ved oprettelse af turnering:", error);

@@ -38,7 +38,8 @@ export const EditGroupTab = () => {
       } else {
         try {
           const response = await userProfileService.getAllUsers();
-          setAllUsers(response.users || []);
+          console.log("Respons fra konsol:", response)
+          setAllUsers(response || []);
         } catch (error) {
           console.error("Error fetching users:", error);
           setError("Der opstod en fejl under indlæsning af brugere.");
@@ -46,19 +47,24 @@ export const EditGroupTab = () => {
       }
 
       if (user && groupId) {
-        const group = user.groups?.find((g) => g.id === groupId);
+        const userGroups = user.groups || [];
+        const group = userGroups.find((g) => g.id === groupId);
+
         if (group) {
           setGroupName(group.name);
-          const members = mockUsers.filter((u) =>
-            group.members.includes(u.username)
+          const groupMembers = group.members || [];
+          const members = allUsers.filter((u) =>
+            groupMembers.includes(u.username)
           );
           setSelectedUsers(members);
+        } else {
+          setError("Gruppen blev ikke fundet.");
         }
       }
     };
 
     fetchUsersAndGroup().then();
-  }, [user, groupId, useMockData]);
+  }, [user, groupId, useMockData, allUsers]);
 
   const handleEditGroup = async (event: FormEvent) => {
     event.preventDefault();
@@ -85,7 +91,6 @@ export const EditGroupTab = () => {
       await userProfileService.updateUserProfile(user.username, {
         groups: updatedGroups,
       });
-      alert("Gruppe gemt!");
       navigate("/profil/grupper");
     } catch (error) {
       console.error("Error creating group:", error);
@@ -104,12 +109,13 @@ export const EditGroupTab = () => {
         (group) => group.id !== groupId
       );
 
+      const userConfirmed = confirm("Er du sikker på at du vil slette gruppen?");
+      if (userConfirmed) {
       await userProfileService.updateUserProfile(user.username, {
         groups: updatedGroups,
       });
-
-      alert("Gruppe slettet!");
       navigate("/profil/grupper");
+      }
     } catch (error) {
       console.error("Error deleting group:", error);
       setError("Kunne ikke slette gruppe.");
