@@ -34,7 +34,7 @@ export const LoginPage = () => {
 
     try {
       await login(username, password);
-      navigate("/hjem", { replace: true });
+      navigate("/hjem");
     } catch (err) {
       setError("Kunne ikke logge ind.");
       console.log(err);

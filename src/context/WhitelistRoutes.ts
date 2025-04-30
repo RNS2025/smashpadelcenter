@@ -9,7 +9,6 @@ export const WHITELIST_ROUTES = [
   "/turneringer/baneoversigt",
   "/player/:playerId/:rowId, /court-times",
   "/register",
-  "/login",
   "/turneringer",
   "/turneringer/info",
   "/turneringer/info/briefing",

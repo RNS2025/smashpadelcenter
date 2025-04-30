@@ -244,7 +244,6 @@ function App() {
             <Route path="/coupon" element={<CouponPage />} />
             <Route path="/partner" element={<PartnerPage />} />
             <Route path="/arrangement" element={<ArrangementPage />} />
-            <Route path="/login" element={<LoginPage />} />
             <Route path="/feedback" element={<FeedbackPage />} />
           </Routes>
         </UserProvider>

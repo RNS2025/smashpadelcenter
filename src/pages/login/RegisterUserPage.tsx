@@ -23,7 +23,7 @@ export default function RegisterPage() {
 
       return () => clearTimeout(timer);
     } else if (redirectCountdown === 0 && successMessage) {
-      navigate("/login", {
+      navigate("/", {
         state: {
           message: "Din konto er oprettet! Du kan nu logge ind.",
           from: "register",
@@ -86,7 +86,7 @@ export default function RegisterPage() {
 
   // Function to handle manual navigation
   const handleNavigateToLogin = () => {
-    navigate("/login", {
+    navigate("/", {
       state: {
         message: "Din konto er oprettet! Du kan nu logge ind.",
         from: "register",
@@ -286,7 +286,7 @@ export default function RegisterPage() {
                         Har du allerede en konto?{" "}
                         <button
                           type="button"
-                          onClick={() => navigate("/login")}
+                          onClick={() => navigate("/")}
                           className="text-blue-600 underline transition-colors duration-200 hover:text-blue-800"
                         >
                           Log ind

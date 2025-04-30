@@ -39,7 +39,7 @@ const isRouteWhitelisted = (pathname: string, whitelist: string[]): boolean => {
 };
 
 const isLoginPage = (pathname: string): boolean => {
-  return pathname === "/" || pathname === "/login";
+  return pathname === "/";
 };
 
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
@@ -55,7 +55,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       if (!isRouteWhitelisted(currentPath, WHITELIST_ROUTES)) {
         if (!isLoginPage(currentPath)) {
           setError("Adgang nægtet - Log ind for at se denne side");
-          navigate("/hjem", {
+          navigate("/", {
             state: {
               message: "Log venligst ind for at få adgang til denne side",
               from: currentPath,
@@ -82,7 +82,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
           setIsAuthenticated(true);
           setError(null);
           if (isLoginPage(currentPath)) {
-            navigate("/hjem", { replace: true });
+            navigate("/hjem");
           }
         } else {
           throw new Error("Invalid user data received");
@@ -117,7 +117,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       setUser(null);
       setIsAuthenticated(false);
       await authLogout();
-      navigate("/", { replace: true });
+      navigate("/");
     } catch (error) {
       console.error("Error during logout:", error);
       setError("Fejl ved udlogning. Prøv igen.");

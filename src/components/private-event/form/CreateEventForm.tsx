@@ -142,7 +142,7 @@ export const CreateEventForm = () => {
           {error}
           {error.includes("logget ind") && (
             <button
-              onClick={() => navigate("/login")}
+              onClick={() => navigate("/")}
               className="ml-2 bg-cyan-500 text-white rounded px-2 py-1"
             >
               Log ind

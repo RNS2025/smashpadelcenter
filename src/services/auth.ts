@@ -14,6 +14,9 @@ export const login = async (username: string, password: string) => {
 export const logout = async () => {
   try {
     await api.post("/logout");
+    localStorage.removeItem("token");
+    sessionStorage.removeItem("token");
+    document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
   } catch (error) {
     throw new Error("Failed to log out. Please try again later.");
   }
