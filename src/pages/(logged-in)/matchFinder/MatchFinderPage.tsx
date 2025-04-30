@@ -12,11 +12,12 @@ import {
   LockOpenIcon,
   NumberedListIcon,
 } from "@heroicons/react/24/outline";
+import LoadingSpinner from "../../../components/misc/LoadingSpinner.tsx";
 
 export const MatchFinderPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useUser();
+  const { user, isAuthenticated, loading } = useUser();
   const [joinRequestsCount, setJoinRequestsCount] = useState(0);
   const [showFullMatches, setShowFullMatches] = useState(false);
   const [isMyLevel, setIsMyLevel] = useState(false);
@@ -40,6 +41,14 @@ export const MatchFinderPage = () => {
 
     fetchJoinRequestCount().then();
   }, [user?.username]);
+
+  if (loading) {
+    return <LoadingSpinner />; // Vis en indlæsningsindikator eller returner null
+  }
+
+  if (!isAuthenticated) {
+    return <Redirect to="/turneringer" />;
+  }
 
   return (
     <>

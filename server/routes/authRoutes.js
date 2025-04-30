@@ -6,18 +6,35 @@ const logger = require("../config/logger");
 
 const router = express.Router();
 
-// Eksempel på login-rute
 router.post("/login", (req, res, next) => {
+  logger.debug("Login attempt", { username: req.body.username });
   passport.authenticate("local", { session: false }, (err, user, info) => {
-    if (err || !user) {
+    if (err) {
+      logger.error("Login error", { error: err.message });
+      return res.status(500).json({ error: err.message });
+    }
+    if (!user) {
+      logger.warn("Failed login attempt", {
+        username: req.body.username,
+        reason: info.message,
+      });
       return res
         .status(401)
         .json({ error: info.message || "Invalid credentials" });
     }
     const token = generateToken(user);
-    res.status(200).json({
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true, // Always use secure for cross-domain
+      sameSite: "none", // Required for cross-origin requests
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    });
+    logger.info("User logged in successfully", {
+      username: user.username,
+      role: user.role,
+    });
+    return res.status(200).json({
       message: "Login successful",
-      token: token,
       user: { username: user.username, role: user.role },
     });
   })(req, res, next);

@@ -20,13 +20,14 @@ const api = axios.create({
 // Request interceptor for logging
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      config.headers["Authorization"] = `Bearer ${token}`;
-    }
+    console.log(
+      `Request: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`,
+      { params: config.params, data: config.data }
+    );
     return config;
   },
   (error) => {
+    console.error("Request error:", error);
     return Promise.reject(error);
   }
 );
