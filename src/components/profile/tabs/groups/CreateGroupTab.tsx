@@ -68,8 +68,8 @@ export const CreateGroupTab = () => {
         }
       }
     };
-    fetchUsers();
-  }, [useMockData]);
+    fetchUsers().then();
+  }, [useMockData, user?.username]);
 
 
   const handleCreateGroup = async (event: FormEvent) => {
@@ -97,7 +97,6 @@ export const CreateGroupTab = () => {
       await userProfileService.updateUserProfile(user.username, {
         groups: [...(user.groups || []), newGroup],
       });
-      alert("Gruppe oprettet!");
       navigate("/profil/grupper");
     } catch (error) {
       console.error("Error creating group:", error);

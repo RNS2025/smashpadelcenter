@@ -18,6 +18,7 @@ module.exports = {
       playingStyle = "",
       equipment = "",
       groups = [],
+      rankedInId = "",
     } = userData;
     try {
       const existingUser = await User.findOne({ username });
@@ -45,6 +46,7 @@ module.exports = {
         playingStyle,
         equipment,
         groups: [],
+        rankedInId,
       });
       await newUser.save();
       return newUser;
@@ -171,7 +173,7 @@ module.exports = {
         .filter((m) => new Date(m.matchDateTime) <= now)
         .map((m) => ({
           id: m._id.toString(),
-          date: m.matchDateTime.toISOString(),
+          date: new Date(m.matchDateTime).toISOString(),
           opponent:
             m.participants.filter((p) => p !== user.username).join(", ") ||
             "Unknown",
@@ -199,6 +201,7 @@ module.exports = {
         pastMatches,
         stats,
         groups: user.groups || [],
+        rankedInId: user.rankedInId || "",
       };
     } catch (err) {
       console.error(`[DEBUG] Error updating profile for ${username}:`, err);
@@ -310,6 +313,7 @@ module.exports = {
         pastMatches,
         stats,
         groups: user.groups || [],
+        rankedInId: user.rankedInId || "",
       };
     } catch (err) {
       console.error("Error fetching profile with matches:", err.message);

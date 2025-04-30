@@ -128,7 +128,6 @@ export const ViewEventPage = () => {
         setError("Invalid event data returned");
         alert("Der opstod en fejl – prøv igen.");
       }
-      alert("Tilmelding sendt!");
       setEvent(updatedEvent);
     } catch (error: any) {
       console.error("Error joining event:", error);
@@ -149,7 +148,6 @@ export const ViewEventPage = () => {
         setError("Invalid event data returned");
         alert("Der opstod en fejl – prøv igen.");
       }
-      alert("Tilmelding bekræftet!");
       setEvent(updatedEvent);
     } catch (error: any) {
       console.error("Error confirming join:", error);
@@ -161,14 +159,16 @@ export const ViewEventPage = () => {
   const handleDeclineJoin = async (username: string) => {
     if (!event) return;
     try {
+      const userConfirmed = confirm("Er du sikker på at du vil afvise tilmeldingen?");
+      if (userConfirmed) {
       const updatedEvent = await communityApi.confirmDeclinePrivateEvent(event.id, username);
       console.log("Updated event after confirm:", updatedEvent);
       if (!updatedEvent || !Array.isArray(updatedEvent.participants)) {
         setError("Invalid match data returned");
         alert("Der opstod en fejl – prøv igen.");
       }
-      alert("Tilmelding afvist!");
       setEvent(updatedEvent);
+      }
     } catch (error: any) {
       console.error("Error confirming join:", error);
       alert(error.response?.data?.message || "Fejl ved afvisning");
@@ -179,9 +179,11 @@ export const ViewEventPage = () => {
   const handleDeleteEvent = async () => {
     if (!event) return;
     try {
+      const userConfirmed = confirm("Er du sikker på at du vil slette arrangementet?");
+      if (userConfirmed) {
       await communityApi.deleteEvent(event.id);
-      alert("Arrangement slettet!");
       window.history.back();
+      }
     } catch (error: any) {
       console.error("Error deleting event:", error);
       alert(
@@ -203,7 +205,6 @@ export const ViewEventPage = () => {
         setError("Invalid event data returned");
         alert("Der opstod en fejl – prøv igen.");
       }
-      alert("Tilmelding afvist!");
       setEvent(updatedEvent);
     } catch (error: any) {
       console.error("Error rejecting join:", error);
@@ -224,7 +225,6 @@ export const ViewEventPage = () => {
         setError("Invalid event data returned");
         alert("Der opstod en fejl – prøv igen.");
       }
-      alert("Tilmelding accepteret!");
       setEvent(updatedEvent);
     } catch (error: any) {
       console.error("Error accepting join:", error);
@@ -246,13 +246,15 @@ export const ViewEventPage = () => {
   const handleRemovePlayerFromEvent = async (username: string) => {
     if (!event || !user?.username) return;
     try {
+      const userConfirmed = confirm("Er du sikker på at du vil fjerne spilleren?");
+      if (userConfirmed) {
       const updatedEvent = await communityApi.removePlayerFromEvent(
         event.id,
         username
       );
       console.log("Updated event after removing player:", updatedEvent);
-      alert("Spiller fjernet fra arrangement!");
       setEvent(updatedEvent);
+      }
     } catch (error: any) {
       console.error("Error removing player from event:", error);
       alert(error.response?.data?.message || "Fejl ved fjernelse");

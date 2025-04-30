@@ -6,6 +6,7 @@ import HomeBar from "../../components/misc/HomeBar.tsx";
 import rankedInService from "../../services/rankedIn.ts";
 import LoadingSpinner from "../../components/misc/LoadingSpinner.tsx";
 import DpfMatch from "../../types/DpfMatch.ts";
+import {safeFormatDate} from "../../utils/dateUtils.ts";
 
 export const CourtMapPage = () => {
   const [selectedCourtLabel, setSelectedCourtLabel] = useState<string | null>(null);
@@ -88,29 +89,27 @@ export const CourtMapPage = () => {
     if (!match) return null;
 
     return (
-      <div className="rounded-lg p-2">
-        <p className="font-semibold max-sm:text-sm">{title}</p>
-        <div className="flex flex-col border border-black rounded-xl items-center mt-1 gap-2">
-          <p className="font-semibold max-sm:text-sm">
-            {match.Date
-              ? new Date(match.Date).toLocaleTimeString("da-DK", {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })
-              : "TBD"}
+      <div className="rounded-lg">
+          <p className="font-semibold mt-2">
+            {title} ({match.Date ? safeFormatDate(match.Date, "HH:mm") : "TBD"})
           </p>
-          <div className="flex max-sm:flex-col max-sm:items-center gap-2 font-semibold max-sm:text-sm">
-            <p>
-              {match.Challenger?.Name || "TBD"}
-              {match.Challenger?.Player2Name &&
-                ` / ${match.Challenger.Player2Name}`}
-            </p>
-            <p>vs</p>
-            <p>
-              {match.Challenged?.Name || "TBD"}
-              {match.Challenged?.Player2Name &&
-                ` / ${match.Challenged.Player2Name}`}
-            </p>
+        <div className="flex flex-col rounded-xl items-center mt-1 gap-2">
+          <div className="flex items-stretch gap-2 font-semibold max-sm:text-sm p-1 w-full">
+
+
+            <div className="grid grid-rows-2 text-center items-center w-full border rounded-lg border-blue-500 p-1">
+              <h1>{match.Challenger?.Name || "TBD"}</h1>
+              <h1>{match.Challenger?.Player2Name && match.Challenger.Player2Name}</h1>
+            </div>
+
+
+            <div className="grid grid-rows-2 text-center items-center w-full border rounded-lg border-red-500 p-1">
+              <h1>{match.Challenged?.Name || "TBD"}</h1>
+              <h1>{match.Challenged?.Player2Name && match.Challenged.Player2Name}</h1>
+            </div>
+
+
+
           </div>
         </div>
       </div>
@@ -127,7 +126,7 @@ export const CourtMapPage = () => {
       <Animation>
         <div className="mt-5 flex max-lg:flex-col sm:space-y-10 space-y-0 lg:justify-between lg:px-10 max-lg:px-5">
           <div className="bg-white text-black rounded-xl lg:w-2/5 h-fit p-4">
-            <p className="font-semibold max-sm:text-sm">
+            <p className="font-semibold text-center border-b border-black">
               {selectedCourtLabel ?? "Vælg en bane"}
             </p>
 
@@ -145,8 +144,8 @@ export const CourtMapPage = () => {
                   </div>
                 ) : (
                   <>
-                    {renderMatchInfo(ongoingMatch, "Nuværende Kamp")}
-                    {renderMatchInfo(upcomingMatch, "Næste Kamp")}
+                    {renderMatchInfo(ongoingMatch, "Nuværende kamp")}
+                    {renderMatchInfo(upcomingMatch, "Næste kamp")}
 
                     {!ongoingMatch && !upcomingMatch && (
                       <p className="mt-4">
