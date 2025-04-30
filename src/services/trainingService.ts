@@ -12,7 +12,7 @@ const SOCKET_URL =
 console.log(`TrainingService connecting to socket at: ${SOCKET_URL}`);
 
 const socket = io(SOCKET_URL, {
-  path: "/socket.io/",
+  path: "/api/v1/socket.io/",
   transports: ["polling", "websocket"],
   withCredentials: true,
   reconnection: true,

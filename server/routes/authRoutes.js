@@ -60,7 +60,7 @@ router.get(
   "/auth/google/callback",
   passport.authenticate("google", {
     session: false,
-    failureRedirect: "/login",
+    failureRedirect: "/",
   }),
   (req, res) => {
     const token = generateToken(req.user);

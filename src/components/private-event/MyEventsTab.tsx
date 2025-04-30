@@ -29,7 +29,7 @@ export const MyEventsTab = () => {
 
     if (!user || !user.username) {
       console.warn("User not authenticated, redirecting to login");
-      navigate("/login");
+      navigate("/");
       setLoading(false);
       return;
     }
@@ -88,7 +88,7 @@ export const MyEventsTab = () => {
         {error}
         {error.includes("Adgang nægtet") && (
           <button
-            onClick={() => navigate("/login")}
+            onClick={() => navigate("/")}
             className="mt-4 bg-cyan-500 text-white rounded px-4 py-2"
           >
             Log ind

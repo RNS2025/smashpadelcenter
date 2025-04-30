@@ -21,6 +21,7 @@ const onlineUsers = new Map();
 
 function setupSocketIO(server) {
   const io = new Server(server, {
+    path: "/api/v1/socket.io/",
     cors: {
       origin: function (origin, callback) {
         callback(null, true); // Allow requests from any origin

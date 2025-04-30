@@ -93,7 +93,7 @@ export const ViewMatchPage = () => {
     console.log(`ViewMatchPage connecting to socket at: ${SOCKET_URL}`);
 
     const socket = io(SOCKET_URL, {
-      path: "/socket.io/",
+      path: "/api/v1/socket.io/",
       withCredentials: true,
       transports: ["websocket", "polling"],
       reconnection: true,

@@ -1,17 +1,17 @@
 import axios from "axios";
 
-// const ENV =
-//   import.meta.env.NODE_ENV === "production" ? "production" : "development";
-const API_BASE_URL = "/api/v1";
+const ENV = import.meta.env.MODE; // Use import.meta.env.MODE for Vite
+let API_BASE_URL = "";
 
-// if (ENV === "production") {
-//   API_BASE_URL = "https://smashpadelcenter-api.onrender.com/api/v1";
-// } else if (ENV === "development") {
-//   API_BASE_URL = "http://localhost:3001/api/v1";
-// } else {
-//   throw new Error("Invalid environment configuration");
-// }
+if (ENV === "production") {
+  API_BASE_URL = "/api/v1";
+} else if (ENV === "development") {
+  API_BASE_URL = "http://localhost:3001/api/v1";
+} else {
+  throw new Error("Invalid environment configuration");
+}
 
+console.log("API_BASE_URL:", API_BASE_URL);
 const api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,
