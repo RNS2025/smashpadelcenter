@@ -26,12 +26,12 @@ export default defineConfig({
         scope: "/",
         icons: [
           {
-            src: "icons/ikon_192",
+            src: "icons/ikon_192.png",
             sizes: "192x192",
             type: "image/png",
           },
           {
-            src: "icons/ikon_512",
+            src: "icons/ikon_512.png",
             sizes: "512x512",
             type: "image/png",
           },
