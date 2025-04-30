@@ -54,7 +54,7 @@ export class MessageService {
 
     this.socket = io(SOCKET_URL, {
       withCredentials: true,
-      path: "/socket.io/",
+      path: "/api/v1/socket.io/",
     });
 
     this.socket.on("connect", () => {
