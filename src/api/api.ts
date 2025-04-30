@@ -2,7 +2,7 @@ import axios from "axios";
 
 // const ENV =
 //   import.meta.env.NODE_ENV === "production" ? "production" : "development";
-const API_BASE_URL = "https://smashpadelcenter-api.onrender.com/api/v1";
+const API_BASE_URL = "/api/v1";
 
 // if (ENV === "production") {
 //   API_BASE_URL = "https://smashpadelcenter-api.onrender.com/api/v1";
