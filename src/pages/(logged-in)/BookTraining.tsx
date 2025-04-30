@@ -41,7 +41,7 @@ const BookTraining: React.FC = () => {
 
     console.log(`BookTraining connecting to socket at: ${apiUrl}`);
     socketRef.current = io(apiUrl, {
-      path: "/socket.io/",
+      path: "/api/v1/socket.io/",
       auth: { username },
     });
 
