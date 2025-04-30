@@ -29,7 +29,7 @@ const HomeScreenCard: FC<HomeScreenCardProps> = ({
     >
       <a
         className={`${disabled ? "pointer-events-none" : ""}`}
-        onClick={() => navigate(`${link}`)}
+        onClick={() => (disabled ? undefined : navigate(`${link}`))}
       >
         <div className="text-cyan-500">{icon}</div>
 
