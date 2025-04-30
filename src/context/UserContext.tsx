@@ -91,13 +91,18 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(null);
         setIsAuthenticated(false);
         setError("Kunne ikke hente brugerdata.");
-        handleUnauthenticated(currentPath);
       } finally {
         setLoading(false);
       }
     },
-    [handleUnauthenticated, navigate]
+    [navigate]
   );
+
+  useEffect(() => {
+    if (!loading && !isAuthenticated) {
+      handleUnauthenticated(location.pathname);
+    }
+  }, [loading, isAuthenticated, location.pathname, handleUnauthenticated]);
 
   const fetchUser = async () => {
     await fetchUserData(location.pathname);

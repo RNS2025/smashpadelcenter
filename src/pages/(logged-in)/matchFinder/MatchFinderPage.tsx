@@ -1,15 +1,19 @@
-import { FC, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import Animation from "../../../components/misc/Animation.tsx";
 import HomeBar from "../../../components/misc/HomeBar.tsx";
 import "react-datepicker/dist/react-datepicker.css";
-import {Outlet, useLocation, useNavigate} from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import MatchFinderTabMenu from "../../../components/matchFinder/MatchFinderTabMenu.tsx";
 import { useUser } from "../../../context/UserContext";
 import communityApi from "../../../services/makkerborsService";
-import {LockClosedIcon, LockOpenIcon, NumberedListIcon} from "@heroicons/react/24/outline";
+import {
+  LockClosedIcon,
+  LockOpenIcon,
+  NumberedListIcon,
+} from "@heroicons/react/24/outline";
 
-const MatchFinderPage: FC = () => {
+export const MatchFinderPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user } = useUser();
@@ -21,12 +25,12 @@ const MatchFinderPage: FC = () => {
     const fetchJoinRequestCount = async () => {
       try {
         const data = await communityApi.getMatches();
-        const myMatches = data.filter(
-            (match) => match.username === user?.username
-        ).filter((match) => new Date(match.matchDateTime) > new Date());
+        const myMatches = data
+          .filter((match) => match.username === user?.username)
+          .filter((match) => new Date(match.matchDateTime) > new Date());
         const totalJoinRequests = myMatches.reduce(
-            (sum, match) => sum + (match.joinRequests?.length || 0),
-            0
+          (sum, match) => sum + (match.joinRequests?.length || 0),
+          0
         );
         setJoinRequestsCount(totalJoinRequests);
       } catch (err) {
@@ -38,33 +42,37 @@ const MatchFinderPage: FC = () => {
   }, [user?.username]);
 
   return (
-      <>
-        <Helmet>
-          <title>Makkerbørs</title>
-        </Helmet>
+    <>
+      <Helmet>
+        <title>Makkerbørs</title>
+      </Helmet>
 
-        <HomeBar backPage="/hjem" />
-        <Animation>
-
-          <div className="sm:mx-20 my-10">
-            <div className="justify-self-center mb-5">
-              <MatchFinderTabMenu joinRequestsCount={joinRequestsCount} />
-            </div>
-            <div className="flex justify-between items-center max-sm:mt-5 mx-4 mb-4">
+      <HomeBar backPage="/hjem" />
+      <Animation>
+        <div className="sm:mx-20 my-10">
+          <div className="justify-self-center mb-5">
+            <MatchFinderTabMenu joinRequestsCount={joinRequestsCount} />
+          </div>
+          <div className="flex justify-between items-center max-sm:mt-5 mx-4 mb-4">
             <button
-                onClick={() => navigate("opretkamp")}
-                className="bg-cyan-500 rounded px-2 py-2 text-white"
+              onClick={() => navigate("opretkamp")}
+              className="bg-cyan-500 rounded px-2 py-2 text-white"
             >
               Opret kamp
             </button>
-            </div>
+          </div>
 
-            <div className="flex flex-col max-sm:mt-5 mx-4 mb-4 gap-4">
-            <div onClick={() => setShowFullMatches(prevState => !prevState)} className={`flex items-center gap-1 ${!location.pathname.includes("allekampe") ? "hidden" : ""}`}>
+          <div className="flex flex-col max-sm:mt-5 mx-4 mb-4 gap-4">
+            <div
+              onClick={() => setShowFullMatches((prevState) => !prevState)}
+              className={`flex items-center gap-1 ${
+                !location.pathname.includes("allekampe") ? "hidden" : ""
+              }`}
+            >
               {showFullMatches ? (
-                  <LockClosedIcon className="h-5 w-5 text-yellow-500" />
+                <LockClosedIcon className="h-5 w-5 text-yellow-500" />
               ) : (
-                  <LockOpenIcon className="h-5 w-5 text-yellow-500" />
+                <LockOpenIcon className="h-5 w-5 text-yellow-500" />
               )}
 
               <label htmlFor="showClosedEvents" className="text-gray-500">
@@ -72,25 +80,32 @@ const MatchFinderPage: FC = () => {
               </label>
             </div>
 
-              <div onClick={() => setIsMyLevel(prevState => !prevState)} className={`flex items-center gap-1 ${!location.pathname.includes("allekampe") ? "hidden" : ""}`}>
-                {isMyLevel ? (
-                    <NumberedListIcon className="h-5 w-5 text-yellow-500" />
-                ) : (
-                    <NumberedListIcon className="h-5 w-5 text-gray-500" />
-                )}
+            <div
+              onClick={() => setIsMyLevel((prevState) => !prevState)}
+              className={`flex items-center gap-1 ${
+                !location.pathname.includes("allekampe") ? "hidden" : ""
+              }`}
+            >
+              {isMyLevel ? (
+                <NumberedListIcon className="h-5 w-5 text-yellow-500" />
+              ) : (
+                <NumberedListIcon className="h-5 w-5 text-gray-500" />
+              )}
 
-                <label htmlFor="showClosedEvents" className="text-gray-500">
-                  {!isMyLevel ? "Vis kun kampe inden for mit niveau" : "Vis alle kampe"}
-                </label>
-              </div>
-            </div>
-
-            <div className="mx-4">
-              <Outlet context={{showFullMatches, isMyLevel}} />
+              <label htmlFor="showClosedEvents" className="text-gray-500">
+                {!isMyLevel
+                  ? "Vis kun kampe inden for mit niveau"
+                  : "Vis alle kampe"}
+              </label>
             </div>
           </div>
-        </Animation>
-      </>
+
+          <div className="mx-4">
+            <Outlet context={{ showFullMatches, isMyLevel }} />
+          </div>
+        </div>
+      </Animation>
+    </>
   );
 };
 

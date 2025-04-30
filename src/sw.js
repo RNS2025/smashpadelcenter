@@ -3,14 +3,6 @@ import { precacheAndRoute } from "workbox-precaching";
 // Precache assets
 precacheAndRoute(self.__WB_MANIFEST);
 
-registerRoute(
-  ({ request }) => request.mode === "navigate",
-  new NetworkFirst({
-    cacheName: "html-cache",
-    networkTimeoutSeconds: 5,
-  })
-);
-
 // Optional: Install/Activate events
 self.addEventListener("install", (event) => self.skipWaiting());
 self.addEventListener("activate", (event) => self.clients.claim());

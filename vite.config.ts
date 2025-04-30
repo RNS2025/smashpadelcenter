@@ -13,10 +13,7 @@ export default defineConfig({
       filename: "sw.js",
       strategies: "injectManifest",
       injectManifest: {
-        globPatterns: [
-          "**/*.{js,css,html,ico,png,svg,woff,woff2}",
-          "index.html",
-        ],
+        globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2}"],
       },
       manifest: {
         name: "SMASH Padelcenter Klubapp",
