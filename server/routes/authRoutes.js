@@ -23,18 +23,22 @@ router.post("/login", (req, res, next) => {
         .json({ error: info.message || "Invalid credentials" });
     }
     const token = generateToken(user);
+    // Set HTTP-only cookie for security
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true, // Always use secure for cross-domain
-      sameSite: "none", // Required for cross-origin requests
+      secure: true,
+      sameSite: "none",
       maxAge: 24 * 60 * 60 * 1000, // 1 day
     });
+
     logger.info("User logged in successfully", {
       username: user.username,
       role: user.role,
     });
+    // Also return token in response for localStorage
     return res.status(200).json({
       message: "Login successful",
+      token: token,
       user: { username: user.username, role: user.role },
     });
   })(req, res, next);

@@ -88,10 +88,7 @@ export const ViewMatchPage = () => {
 
     // Create socket connection based on environment
     const ENV = import.meta.env.MODE;
-    const SOCKET_URL =
-      ENV === "production"
-        ? "https://smashpadelcenter-api.onrender.com"
-        : "http://localhost:3001";
+    const SOCKET_URL = ENV === "production" ? "/" : "http://localhost:3001";
 
     console.log(`ViewMatchPage connecting to socket at: ${SOCKET_URL}`);
 

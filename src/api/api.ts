@@ -24,6 +24,14 @@ api.interceptors.request.use(
       `Request: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`,
       { params: config.params, data: config.data }
     );
+
+    // Add token from localStorage to Authorization header if it exists
+    const token = localStorage.getItem("token");
+    if (token) {
+      config.headers = config.headers || {};
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
     return config;
   },
   (error) => {
