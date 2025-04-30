@@ -98,12 +98,6 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     [navigate]
   );
 
-  useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      handleUnauthenticated(location.pathname);
-    }
-  }, [loading, isAuthenticated, location.pathname, handleUnauthenticated]);
-
   const fetchUser = async () => {
     await fetchUserData(location.pathname);
   };
@@ -130,8 +124,12 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
-    fetchUserData(location.pathname).then();
-  }, [fetchUserData, location.pathname]);
+    if (loading) return;
+
+    if (!isAuthenticated) {
+      handleUnauthenticated(location.pathname);
+    }
+  }, [loading, isAuthenticated, location.pathname, handleUnauthenticated]);
 
   useEffect(() => {
     if (isLoginPage(location.pathname)) {
