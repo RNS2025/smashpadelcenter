@@ -3,6 +3,10 @@ import { precacheAndRoute } from "workbox-precaching";
 // Precache assets
 precacheAndRoute(self.__WB_MANIFEST);
 
+const handler = createHandlerBoundToURL("/index.html");
+const navigationRoute = new NavigationRoute(handler);
+registerRoute(navigationRoute);
+
 // Optional: Install/Activate events
 self.addEventListener("install", (event) => self.skipWaiting());
 self.addEventListener("activate", (event) => self.clients.claim());
