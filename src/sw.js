@@ -3,6 +3,14 @@ import { precacheAndRoute } from "workbox-precaching";
 // Precache assets
 precacheAndRoute(self.__WB_MANIFEST);
 
+registerRoute(
+  ({ request }) => request.mode === "navigate",
+  new NetworkFirst({
+    cacheName: "html-cache",
+    networkTimeoutSeconds: 5,
+  })
+);
+
 // Optional: Install/Activate events
 self.addEventListener("install", (event) => self.skipWaiting());
 self.addEventListener("activate", (event) => self.clients.claim());
@@ -90,25 +98,4 @@ self.addEventListener("notificationclick", (event) => {
         console.error("Error handling notification click:", error)
       )
   );
-});
-
-// Add this to your service worker file (sw.js)
-// This prevents the service worker from taking over some navigations
-
-self.addEventListener("fetch", (event) => {
-  // Check if this is a navigation request
-  if (event.request.mode === "navigate") {
-    // Don't hijack HTML navigation requests
-    if (
-      event.request.url.endsWith("/") ||
-      event.request.url.includes("html") ||
-      !event.request.url.includes(".")
-    ) {
-      // Let the browser handle it normally
-      return;
-    }
-  }
-
-  // Otherwise handle the request normally according to your caching strategy
-  // Your existing fetch handler logic goes here
 });
