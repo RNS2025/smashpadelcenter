@@ -27,7 +27,7 @@ const HomeScreenCard: FC<HomeScreenCardProps> = ({
           : "hover:border-cyan-500/10 hover:shadow-cyan-500/10"
       } h-60 w-60`}
     >
-      <a
+      <div
         className={`${disabled ? "pointer-events-none" : ""}`}
         onClick={() => navigate(`${link}`)}
       >
@@ -36,7 +36,7 @@ const HomeScreenCard: FC<HomeScreenCardProps> = ({
         <h2 className="mt-4 text-xl font-bold">{title}</h2>
 
         <p className="mt-4 text-sm text-gray-300 italic">{description}</p>
-      </a>
+      </div>
     </div>
   );
 };
