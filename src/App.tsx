@@ -158,6 +158,7 @@ function App() {
               path="/profil"
               element={
                 <ProfileProvider>
+                  {" "}
                   <ProfilePage />
                 </ProfileProvider>
               }

@@ -15,7 +15,8 @@ import {
   TicketIcon,
   BuildingOfficeIcon,
   TrophyIcon,
-  UsersIcon, CubeIcon,
+  UsersIcon,
+  CubeIcon,
 } from "@heroicons/react/24/outline";
 import { setupNotifications } from "../../utils/notifications";
 
@@ -69,7 +70,6 @@ export const HomePage = () => {
 
       <HomeBar />
       <Animation>
-
         <div className="flex my-5 items-center justify-center">
           <div className="grid gap-8 lg:gap-20 grid-cols-4 max-lg:grid-cols-3 max-md:grid-cols-1">
             {user?.role === "admin" && (
@@ -102,28 +102,28 @@ export const HomePage = () => {
               icon={<UsersIcon className="h-10 w-10" aria-hidden="true" />}
               title="Makkerbørs"
               description="Søg med- og modspillere"
-              link="makkerbørs"
+              link="/makkerbørs"
             />
 
             <HomeScreenCard
-                icon={<CubeIcon className="h-10 w-10" aria-hidden="true" />}
-                title="Privat-arrangementer"
-                description="Opret og administrer dine egne arrangementer"
-                link="privat-arrangementer"
+              icon={<CubeIcon className="h-10 w-10" aria-hidden="true" />}
+              title="Privat-arrangementer"
+              description="Opret og administrer dine egne arrangementer"
+              link="/privat-arrangementer"
             />
 
             <HomeScreenCard
-                icon={<MoonIcon className="h-10 w-10" aria-hidden="true" />}
-                title="Holdligaer"
-                description="Overblik over ligaholdene tilknyttet SMASH"
-                link="holdligaer"
+              icon={<MoonIcon className="h-10 w-10" aria-hidden="true" />}
+              title="Holdligaer"
+              description="Overblik over ligaholdene tilknyttet SMASH"
+              link="/holdligaer"
             />
 
             <HomeScreenCard
               icon={<TrophyIcon className="h-10 w-10" aria-hidden="true" />}
               title="DPF-turneringer"
               description="Deltag i spændende turneringer"
-              link="turneringer"
+              link="/turneringer"
             />
             {user?.role === "admin" && (
               <HomeScreenCard
