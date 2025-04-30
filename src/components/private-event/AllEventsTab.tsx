@@ -11,6 +11,7 @@ import {
   QuestionMarkCircleIcon,
   UserCircleIcon,
 } from "@heroicons/react/24/outline";
+import usePolling from "../../hooks/usePolling.ts";
 
 type OutletContextType = {
   showClosedEvents: boolean;
@@ -23,37 +24,50 @@ export const AllEventsTab = () => {
   const [privateEvents, setPrivateEvents] = useState<PrivateEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isPageVisible, setIsPageVisible] = useState(true);
 
   const useMockData = false;
 
+  // Track page visibility
   useEffect(() => {
-    if (useMockData) {
-      setPrivateEvents(mockEvents);
-      setLoading(false);
-      return;
-    }
-
-    const fetchPrivateEvents = async () => {
-      try {
-        const response = await communityApi.getPrivateEvents();
-        setPrivateEvents(
-          response.sort((a, b) => {
-            return (
-              new Date(a.eventDateTime).getTime() -
-              new Date(b.eventDateTime).getTime()
-            );
-          })
-        );
-      } catch (err) {
-        console.error("Fejl ved hentning af arrangementer:", err);
-        setError("Kunne ikke hente arrangementer");
-      } finally {
-        setLoading(false);
-      }
+    const handleVisibilityChange = () => {
+      setIsPageVisible(document.visibilityState === "visible");
     };
 
-    fetchPrivateEvents().then();
-  }, [useMockData]);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
+
+  // Polling for private events
+  const fetchPrivateEvents = async () => {
+    let events: PrivateEvent[];
+    if (useMockData) {
+      events = mockEvents;
+    } else {
+      const response = await communityApi.getPrivateEvents();
+      events = response.sort((a, b) => {
+        return (
+          new Date(a.eventDateTime).getTime() -
+          new Date(b.eventDateTime).getTime()
+        );
+      });
+    }
+    return events;
+  };
+
+  usePolling(
+    fetchPrivateEvents,
+    (events) => {
+      setPrivateEvents(events);
+      setLoading(false);
+    },
+    {
+      interval: 10000, // Poll every 10 seconds
+      enabled: isPageVisible,
+    }
+  );
 
   if (loading) {
     return <LoadingSpinner />;

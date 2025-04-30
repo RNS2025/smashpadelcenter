@@ -1,4 +1,3 @@
-// components/private-event/MyEventsTab.tsx
 import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { PrivateEvent } from "../../types/PrivateEvent.ts";
@@ -12,6 +11,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { safeFormatDate } from "../../utils/dateUtils.ts";
 import mockEvents from "../../utils/mock/mockEvents.ts";
+import usePolling from "../../hooks/usePolling.ts";
 
 export const MyEventsTab = () => {
   const navigate = useNavigate();
@@ -19,64 +19,86 @@ export const MyEventsTab = () => {
   const [privateEvents, setPrivateEvents] = useState<PrivateEvent[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isPageVisible, setIsPageVisible] = useState(true);
 
   const useMockData = false;
 
+  // Track page visibility
   useEffect(() => {
-    if (userLoading) {
-      return;
+    const handleVisibilityChange = () => {
+      setIsPageVisible(document.visibilityState === "visible");
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
+
+  // Polling for private events
+  const fetchPrivateEvents = async () => {
+    if (!user || !user.username) {
+      throw new Error("User not authenticated");
     }
+
+    let filteredEvents: PrivateEvent[];
+    if (useMockData) {
+      filteredEvents = mockEvents
+        .filter(
+          (e) =>
+            new Date(e.eventDateTime) > new Date() &&
+            (e.username === user.username ||
+              e.participants.includes(user.username) ||
+              e.invitedPlayers?.includes(user.username))
+        )
+        .sort((a, b) => {
+          return (
+            new Date(a.eventDateTime).getTime() -
+            new Date(b.eventDateTime).getTime()
+          );
+        });
+    } else {
+      const response = await communityApi.getPrivateEvents();
+      filteredEvents = response
+        .filter(
+          (e: PrivateEvent) =>
+            new Date(e.eventDateTime) > new Date() &&
+            (e.username === user.username ||
+              e.participants.includes(user.username) ||
+              e.invitedPlayers?.includes(user.username))
+        )
+        .sort((a: PrivateEvent, b: PrivateEvent) => {
+          return (
+            new Date(a.eventDateTime).getTime() -
+            new Date(b.eventDateTime).getTime()
+          );
+        });
+    }
+    return filteredEvents;
+  };
+
+  usePolling(
+    fetchPrivateEvents,
+    (events) => {
+      setPrivateEvents(events);
+      setLoading(false);
+    },
+    {
+      interval: 10000, // Poll every 10 seconds
+      enabled: !userLoading && !!user?.username && isPageVisible,
+    }
+  );
+
+  // Handle unauthenticated user
+  useEffect(() => {
+    if (userLoading) return;
 
     if (!user || !user.username) {
       console.warn("User not authenticated, redirecting to login");
       navigate("/");
       setLoading(false);
-      return;
     }
-
-    const fetchPrivateEvents = async () => {
-      try {
-        if (useMockData) {
-          const filteredEvents = mockEvents
-              .filter((e) =>
-                  new Date(e.eventDateTime) > new Date() &&
-                  (e.username === user.username || (e.participants.includes(user.username)) || e.invitedPlayers?.includes(user.username)))
-              .sort((a, b) => {
-              return (
-                new Date(a.eventDateTime).getTime() -
-                new Date(b.eventDateTime).getTime()
-              );
-            });
-          setPrivateEvents(filteredEvents);
-        } else {
-          const response = await communityApi.getPrivateEvents();
-          const filteredEvents = response
-            .filter(
-              (e: PrivateEvent) =>
-                  new Date(e.eventDateTime) > new Date() &&
-                  (e.username === user.username || (e.participants.includes(user.username)) || e.invitedPlayers?.includes(user.username)))
-            .sort((a: PrivateEvent, b: PrivateEvent) => {
-              return (
-                new Date(a.eventDateTime).getTime() -
-                new Date(b.eventDateTime).getTime()
-              );
-            });
-          setPrivateEvents(filteredEvents);
-        }
-      } catch (err: any) {
-        console.error("Fejl ved hentning af arrangementer:", err);
-        if (err.response?.status === 403) {
-          setError("Adgang nægtet. Prøv at logge ind igen.");
-        } else {
-          setError("Kunne ikke hente arrangementer");
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPrivateEvents().then();
-  }, [userLoading, user, useMockData, navigate]);
+  }, [userLoading, user, navigate]);
 
   if (userLoading || loading) {
     return <LoadingSpinner />;
@@ -128,99 +150,99 @@ export const MyEventsTab = () => {
                 <p>{event.location}</p>
               </div>
 
-
               {!event.level && event.joinRequests.length === 0 ? (
-                  <div className="flex flex-col gap-y-2">
+                <div className="flex flex-col gap-y-2">
                   <div className="flex justify-between">
                     <p>{event.eventFormat}</p>
                     <div className="flex items-center gap-1">
                       <UserCircleIcon
-                          className={`h-5 ${
-                              event.participants.length === event.totalSpots
-                                  ? "text-cyan-500"
-                                  : "text-gray-500"
-                          }`}
+                        className={`h-5 ${
+                          event.participants.length === event.totalSpots
+                            ? "text-cyan-500"
+                            : "text-gray-500"
+                        }`}
                       />
-
                       <p className="h-4">
                         {event.participants.length}/{event.totalSpots}
                       </p>
                     </div>
                   </div>
 
+                  <div className="flex justify-between">
+                    <p className="text-gray-500 italic">
+                      Oprettet af{" "}
+                      {event.username === user?.username
+                        ? "dig"
+                        : `${event.username}`}
+                    </p>
+                    <p className="text-gray-500 italic">
+                      {event.openRegistration
+                        ? "Åben tilmelding"
+                        : "Lukket tilmelding"}
+                    </p>
+                  </div>
+                  {user && event.invitedPlayers?.includes(user?.username) && (
                     <div className="flex justify-between">
-                      <p className="text-gray-500 italic">
-                        Oprettet af{" "}
-                        {event.username === user?.username
-                            ? "dig"
-                            : `${event.username}`}
-                      </p>
-                      <p className="text-gray-500 italic">
-                        {event.openRegistration
-                            ? "Åben tilmelding"
-                            : "Lukket tilmelding"}
+                      <p className="text-yellow-500 italic">
+                        Du er inviteret til dette arrangement
                       </p>
                     </div>
-                    {user && event.invitedPlayers?.includes(user?.username) && (
-                        <div className="flex justify-between">
-                          <p className="text-yellow-500 italic">
-                            Du er inviteret til dette arrangement
-                          </p>
-                        </div>
-                    )}
-                  </div>
+                  )}
+                </div>
               ) : (
-                  <div className="flex flex-col gap-y-2">
-                    <div className="flex justify-between">
-                      {event.joinRequests.length > 0 ? (
-                          <div className="flex items-center gap-1">
-                            <QuestionMarkCircleIcon
-                                className={`h-5 text-yellow-500 ${
-                                    event.username === user?.username
-                                        ? "animate-pulse"
-                                        : ""
-                                }`}
-                            />
-                            <p>
-                              {event.joinRequests.length}{" "}
-                              {event.joinRequests.length === 1
-                                  ? "anmodning"
-                                  : "anmodninger"}
-                            </p>
-                          </div>
-                      ) : (
-                          <span></span>
-                      )}
+                <div className="flex flex-col gap-y-2">
+                  <div className="flex justify-between">
+                    {event.joinRequests.length > 0 ? (
                       <div className="flex items-center gap-1">
-                        <UserCircleIcon
-                            className={`h-5 ${
-                                event.participants.length === event.totalSpots
-                                    ? "text-cyan-500"
-                                    : "text-gray-500"
-                            }`}
+                        <QuestionMarkCircleIcon
+                          className={`h-5 text-yellow-500 ${
+                            event.username === user?.username
+                              ? "animate-pulse"
+                              : ""
+                          }`}
                         />
                         <p>
-                          {event.participants.length}/{event.totalSpots}
+                          {event.joinRequests.length}{" "}
+                          {event.joinRequests.length === 1
+                            ? "anmodning"
+                            : "anmodninger"}
                         </p>
                       </div>
-                    </div>
-                    <div className="flex justify-between">
-                      <p>{event.level ? `Niveau ${event.level}` : ""}</p>
-                      <p>{event.eventFormat}</p>
-                    </div>
-                    <div className="flex justify-between">
-                      <p className="text-gray-500 italic">
-                        Oprettet af {event.username === user?.username ? "dig" : `${event.username}`}
-                      </p>
-                      <p className="text-gray-500 italic">
-                        {event.openRegistration
-                            ? "Åben tilmelding"
-                            : "Lukket tilmelding"}
+                    ) : (
+                      <span></span>
+                    )}
+                    <div className="flex items-center gap-1">
+                      <UserCircleIcon
+                        className={`h-5 ${
+                          event.participants.length === event.totalSpots
+                            ? "text-cyan-500"
+                            : "text-gray-500"
+                        }`}
+                      />
+                      <p>
+                        {event.participants.length}/{event.totalSpots}
                       </p>
                     </div>
                   </div>
+                  <div className="flex justify-between">
+                    <p>{event.level ? `Niveau ${event.level}` : ""}</p>
+                    <p>{event.eventFormat}</p>
+                  </div>
+                  <div className="flex justify-between">
+                    <p className="text-gray-500 italic">
+                      Oprettet af{" "}
+                      {event.username === user?.username
+                        ? "dig"
+                        : `${event.username}`}
+                    </p>
+                    <p className="text-gray-500 italic">
+                      {event.openRegistration
+                        ? "Åben tilmelding"
+                        : "Lukket tilmelding"}
+                    </p>
+                  </div>
+                </div>
               )}
-
             </div>
           ))
         )}
