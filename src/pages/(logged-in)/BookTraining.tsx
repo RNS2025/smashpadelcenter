@@ -6,7 +6,6 @@ import HomeBar from "../../components/misc/HomeBar";
 import Animation from "../../components/misc/Animation";
 import HomeScreenCard from "../../components/HomeScreen/HomeScreenCard";
 import { UserIcon, AcademicCapIcon } from "@heroicons/react/24/outline";
-import io, { Socket } from "socket.io-client";
 import { createTrainer } from "../../services/trainingService";
 
 const BookTraining: React.FC = () => {
@@ -19,7 +18,6 @@ const BookTraining: React.FC = () => {
   const [messages, setMessages] = useState<any[]>([]);
   const [newMessage, setNewMessage] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const socketRef = useRef<Socket | null>(null);
   const messageContainerRef = useRef<HTMLDivElement>(null);
   const processedMessageIds = useRef<Set<string>>(new Set());
 
@@ -31,94 +29,6 @@ const BookTraining: React.FC = () => {
     bio: "",
     availability: [],
   });
-
-  useEffect(() => {
-    const ENV = import.meta.env.MODE;
-    const apiUrl =
-      ENV === "production"
-        ? "https://smashpadelcenter-api.onrender.com"
-        : "http://localhost:3001";
-
-    console.log(`BookTraining connecting to socket at: ${apiUrl}`);
-    socketRef.current = io(apiUrl, {
-      path: "/api/v1/socket.io/",
-      auth: { username },
-    });
-
-    socketRef.current.on("connect", () => {
-      console.log("Connected to Socket.IO server");
-      socketRef.current?.emit("fetchTrainers");
-    });
-
-    socketRef.current.on("trainersData", (trainers: Trainer[]) => {
-      const uniqueTrainers = Array.from(
-        new Map(trainers.map((trainer) => [trainer._id, trainer])).values()
-      );
-      setTrainers(uniqueTrainers);
-    });
-
-    socketRef.current.on("trainerMessagesData", (messages: any[]) => {
-      setMessages((prev) => {
-        const newMessages = messages
-          .filter((msg) => !processedMessageIds.current.has(msg._id))
-          .sort(
-            (a, b) =>
-              new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-          );
-        newMessages.forEach((msg) => processedMessageIds.current.add(msg._id));
-        return [...prev, ...newMessages];
-      });
-    });
-
-    socketRef.current.on("newTrainerMessage", (message: any) => {
-      if (!processedMessageIds.current.has(message._id)) {
-        processedMessageIds.current.add(message._id);
-        setMessages((prev) => {
-          const newMessages = [...prev, message].sort(
-            (a, b) =>
-              new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-          );
-          return newMessages;
-        });
-      }
-    });
-
-    socketRef.current.on("trainerUpdated", (updatedTrainer: Trainer) => {
-      setTrainers((prev) =>
-        prev.map((trainer) =>
-          trainer._id === updatedTrainer._id ? updatedTrainer : trainer
-        )
-      );
-      if (selectedTrainer && selectedTrainer._id === updatedTrainer._id) {
-        setSelectedTrainer(updatedTrainer);
-      }
-    });
-
-    socketRef.current.on("error", (error: { message: string }) => {
-      setError(error.message);
-    });
-
-    socketRef.current.emit("fetchTrainers");
-
-    return () => {
-      socketRef.current?.disconnect();
-    };
-  }, [username]);
-
-  useEffect(() => {
-    if (selectedTrainer && username && socketRef.current) {
-      processedMessageIds.current.clear();
-      setMessages([]);
-      socketRef.current.emit("joinTrainerRoom", {
-        username,
-        trainerUsername: selectedTrainer.username,
-      });
-      socketRef.current.emit("fetchTrainerMessages", {
-        username,
-        trainerUsername: selectedTrainer.username,
-      });
-    }
-  }, [selectedTrainer, username]);
 
   useEffect(() => {
     if (messageContainerRef.current) {
@@ -142,23 +52,6 @@ const BookTraining: React.FC = () => {
       setError("Please select a date and time slot.");
       return;
     }
-
-    socketRef.current?.emit("bookTrainer", {
-      username,
-      trainerUsername: selectedTrainer.username,
-      date: selectedDate,
-      timeSlot: selectedTimeSlot,
-    });
-
-    socketRef.current?.once("newBooking", () => {
-      alert("Booking successful!");
-      setSelectedDate("");
-      setSelectedTimeSlot("");
-    });
-
-    socketRef.current?.once("error", (error: { message: string }) => {
-      setError(error.message);
-    });
   };
 
   const handleSendMessage = () => {
@@ -166,13 +59,6 @@ const BookTraining: React.FC = () => {
       setError("Please enter a message.");
       return;
     }
-
-    socketRef.current?.emit("sendTrainerMessage", {
-      senderUsername: username,
-      trainerUsername: selectedTrainer.username,
-      content: newMessage,
-    });
-
     setNewMessage("");
   };
 
@@ -199,7 +85,6 @@ const BookTraining: React.FC = () => {
         availability: [],
       });
       setShowAdminForm(false);
-      socketRef.current?.emit("fetchTrainers");
     } catch (err: any) {
       console.error("Failed to create trainer:", err);
       setError(err.message || "Failed to create trainer. Please try again.");

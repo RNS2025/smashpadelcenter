@@ -1,22 +1,5 @@
 import api from "../api/api";
 import { Trainer } from "../types/Trainer";
-import { io } from "socket.io-client";
-
-// Set up the socket connection based on environment
-const ENV = import.meta.env.MODE;
-const SOCKET_URL =
-  ENV === "production"
-    ? "https://smashpadelcenter-api.onrender.com"
-    : "http://localhost:3001";
-
-console.log(`TrainingService connecting to socket at: ${SOCKET_URL}`);
-
-const socket = io(SOCKET_URL, {
-  path: "/api/v1/socket.io/",
-  transports: ["polling", "websocket"],
-  withCredentials: true,
-  reconnection: true,
-});
 
 export const getAllTrainers = async (): Promise<Trainer[]> => {
   const response = await api.get<Trainer[]>("/trainers");
@@ -28,60 +11,45 @@ export const createTrainer = async (trainer: Trainer): Promise<Trainer> => {
   return response.data;
 };
 
-export const bookTrainer = (
+export const bookTrainer = async (
   username: string,
   trainerUsername: string,
   date: string,
   timeSlot: string
 ): Promise<any> => {
-  return new Promise((resolve, reject) => {
-    socket.emit("bookTrainer", { username, trainerUsername, date, timeSlot });
-    socket.on("newBooking", (booking) => resolve(booking));
-    socket.on("error", ({ message }) => reject(new Error(message)));
+  const response = await api.post("/trainer-bookings", {
+    username,
+    trainerUsername,
+    date,
+    timeSlot,
   });
+  return response.data;
 };
 
-export const sendTrainerMessage = (
+export const sendTrainerMessage = async (
   senderUsername: string,
   trainerUsername: string,
   content: string
 ): Promise<any> => {
-  return new Promise((resolve, reject) => {
-    socket.emit("sendTrainerMessage", {
-      senderUsername,
-      trainerUsername,
-      content,
-    });
-    socket.on("newTrainerMessage", (message) => resolve(message));
-    socket.on("error", ({ message }) => reject(new Error(message)));
+  const response = await api.post("/trainer-messages", {
+    senderUsername,
+    trainerUsername,
+    content,
   });
+  return response.data;
 };
 
-export const getUserBookings = (username: string): Promise<any[]> => {
-  return new Promise((resolve, reject) => {
-    socket.emit("fetchTrainerData", { username });
-    socket.on("trainerData", ({ bookings }) => resolve(bookings));
-    socket.on("error", ({ message }) => reject(new Error(message)));
-  });
+export const getUserBookings = async (username: string): Promise<any[]> => {
+  const response = await api.get(`/trainer-bookings/user/${username}`);
+  return response.data;
 };
 
-export const getTrainerMessages = (
+export const getTrainerMessages = async (
   username: string,
   trainerUsername: string
 ): Promise<any[]> => {
-  return new Promise((resolve, reject) => {
-    socket.emit("fetchTrainerData", { username });
-    socket.on("trainerData", ({ messages }) =>
-      resolve(
-        messages.filter(
-          (msg: any) =>
-            (msg.senderUsername === username &&
-              msg.trainerUsername === trainerUsername) ||
-            (msg.senderUsername === trainerUsername &&
-              msg.trainerUsername === username)
-        )
-      )
-    );
-    socket.on("error", ({ message }) => reject(new Error(message)));
-  });
+  const response = await api.get(
+    `/trainer-messages/${username}/${trainerUsername}`
+  );
+  return response.data;
 };

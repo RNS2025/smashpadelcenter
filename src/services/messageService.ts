@@ -43,12 +43,6 @@ export class MessageService {
 
   constructor(userId: string) {
     this.userId = userId;
-    const SOCKET_URL =
-      ENV === "production"
-        ? "https://smashpadelcenter-api.onrender.com"
-        : "http://localhost:3001";
-
-    console.log(`MessageService connecting to socket at: ${SOCKET_URL}`);
   }
 
   // onNewMessage(callback: (message: Message) => void) {
