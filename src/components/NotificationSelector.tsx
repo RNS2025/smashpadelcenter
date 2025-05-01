@@ -97,7 +97,7 @@ const NotificationSelector: React.FC<NotificationSelectorProps> = ({
             component="div"
             sx={{ display: "flex", alignItems: "center", gap: 1 }}
           >
-            <preferenceConfig.updates.icon size={20} />
+            <preferenceConfig.general.icon size={20} />
             Notifikationer
           </Typography>
         }

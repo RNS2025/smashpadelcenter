@@ -1,14 +1,4 @@
-import {
-  Bell,
-  MessageSquare,
-  Calendar,
-  ShoppingCart,
-  Users,
-  BarChart,
-  FileText,
-  Star,
-  LucideIcon,
-} from "lucide-react";
+import { Bell, Calendar, Users, Star, LucideIcon } from "lucide-react";
 
 // Define the Preferences type
 export type Preferences = {

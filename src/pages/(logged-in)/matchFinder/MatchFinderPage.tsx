@@ -65,7 +65,8 @@ export const MatchFinderPage = () => {
   }
 
   if (!isAuthenticated) {
-    return <Redirect to="/turneringer" />;
+    navigate("/turneringer");
+    return null;
   }
 
   return (

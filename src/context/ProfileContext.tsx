@@ -32,6 +32,10 @@ interface ProfileContextValue {
   ) => void;
   handleSubmit: (e: FormEvent<HTMLFormElement>) => void;
   isSubmitting: boolean;
+  setMatches: (matches: {
+    upcoming: PadelMatch[];
+    former: PadelMatch[];
+  }) => void;
 }
 
 const ProfileContext = createContext<ProfileContextValue | undefined>(
@@ -168,6 +172,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         handleInputChange,
         handleSubmit,
         isSubmitting,
+        setMatches,
       }}
     >
       {children}
