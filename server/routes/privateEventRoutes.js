@@ -438,7 +438,7 @@ router.post("/:eventId/confirm", async (req, res) => {
     );
 
     // Check if the event is now full (assuming maxPlayers is a field in the event)
-    if (updatedEvent.players.length >= updatedEvent.maxPlayers) {
+    if (updatedEvent.participants.length >= updatedEvent.totalSpots) {
       await sendPrivateEventNotification(
         "EVENT_FULL",
         {

@@ -300,7 +300,10 @@ router.post("/:id/confirm", async (req, res) => {
     );
 
     // Check if the match is now full (assuming maxPlayers is a field in the match)
-    if (updatedMatch.players.length >= updatedMatch.maxPlayers) {
+    if (
+      updatedMatch.participants.length + updatedMatch.reservedSpots.length >=
+      updatedMatch.totalSpots
+    ) {
       await sendPadelMatchNotification(
         "MATCH_FULL",
         {
