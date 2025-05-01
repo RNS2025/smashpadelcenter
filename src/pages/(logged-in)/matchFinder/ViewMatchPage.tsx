@@ -14,7 +14,7 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { useUser } from "../../../context/UserContext";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { PadelMatch } from "../../../types/PadelMatch";
 import communityApi from "../../../services/makkerborsService";
 import { Navigate, useParams } from "react-router-dom";
@@ -38,19 +38,148 @@ export const ViewMatchPage = () => {
   const [infoDialogVisible, setInfoDialogVisible] = useState(false);
   const [inviteDialogVisible, setInviteDialogVisible] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [isVisible, setIsVisible] = useState(
-    document.visibilityState === "visible"
-  );
+  const profileCache = useMemo(() => new Map<string, User>(), []);
 
+  // Move useMemo calls to top level
+  const participantList = useMemo(() => {
+    if (!match) return [];
+    return participantProfiles.map((profile) => (
+      <div key={profile.username} className="flex items-center gap-2">
+        <div className="border rounded flex items-center px-1 w-full py-3">
+          <div
+            onClick={() => {
+              setSelectedUser(profile);
+              setInfoDialogVisible(true);
+            }}
+            className="flex items-center gap-2 w-full pr-1 truncate"
+          >
+            <UserCircleIcon className="h-14" />
+            <div className="flex flex-col gap-2">
+              <h1>{profile.fullName}</h1>
+              <h1>{profile.username}</h1>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-12 h-12">
+              {profile.skillLevel.toFixed(1)}
+            </div>
+            <div>
+              {match.username === profile.username ? (
+                <StarIcon className="size-6 text-yellow-500" />
+              ) : (
+                <XMarkIcon
+                  onClick={() => handleRemovePlayerFromMatch(profile.username)}
+                  className={`size-6 text-red-500 ${
+                    match.username !== user?.username ? "hidden" : ""
+                  }`}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    ));
+  }, [participantProfiles, match, user]);
+
+  const reservedSpotsList = useMemo(() => {
+    if (!match) return [];
+    return match.reservedSpots.map((reserved) => (
+      <div
+        key={reserved.name}
+        className="border rounded flex items-center px-1 w-full py-3"
+      >
+        <div className="flex items-center gap-2 w-full pr-1 truncate">
+          <UserCircleIcon className="h-14" />
+          <div className="flex flex-col gap-2">
+            <h1>{reserved.name}</h1>
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-12 h-12">
+            {reserved.level}
+          </div>
+          <StarIcon className="size-6 text-gray-500" />
+        </div>
+      </div>
+    ));
+  }, [match]);
+
+  const emptySpotsList = useMemo(() => {
+    if (!match) return [];
+    return [
+      ...Array(
+        match.totalSpots -
+          (match.participants.length + (match.reservedSpots.length || 0))
+      ),
+    ].map((_, index) => (
+      <div
+        key={`empty-${index}`}
+        className="border border-gray-500 rounded flex items-center px-1"
+      >
+        <UserCircleIcon className="h-20 text-gray-500" />
+        <div className="w-full pr-1 truncate">
+          <h1 className="text-xl text-gray-500">Ledig plads</h1>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="bg-gray-500 text-white rounded-full flex items-center justify-center w-12 h-12">
+            ?
+          </div>
+          <div></div>
+        </div>
+      </div>
+    ));
+  }, [match]);
+
+  const joinRequestsList = useMemo(() => {
+    if (!match) return [];
+    return joinRequestProfiles.map((requester, index) => (
+      <div key={index} className="border rounded flex flex-col p-2 gap-2">
+        <div
+          onClick={() => {
+            setSelectedUser(requester);
+            setInfoDialogVisible(true);
+          }}
+          className="flex items-center"
+        >
+          <UserCircleIcon className="h-20" />
+          <div className="flex flex-col w-full pr-1 truncate">
+            <h1>{requester.username}</h1>
+            <h1 className="text-gray-500">Afventer bekræftelse</h1>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="bg-yellow-600 text-white rounded-full flex items-center justify-center w-12 h-12">
+              {requester.skillLevel.toFixed(1)}
+            </div>
+          </div>
+        </div>
+        <div className="flex justify-center gap-4">
+          <XMarkIcon
+            onClick={() => handleDeclineJoin(requester.username)}
+            className="size-8 text-red-500"
+          />
+          <CheckIcon
+            onClick={() => handleConfirmJoin(requester.username)}
+            className="size-8 text-green-500"
+          />
+        </div>
+      </div>
+    ));
+  }, [joinRequestProfiles]);
+
+  // Initial fetch
   useEffect(() => {
-    const handleVisibilityChange = () => {
-      setIsVisible(document.visibilityState === "visible");
+    const initialFetch = async () => {
+      try {
+        const matchData = await fetchMatch();
+        setMatch(matchData);
+        setLoading(false);
+      } catch (err: any) {
+        setError(err.message || "Kunne ikke indlæse kamp");
+        setLoading(false);
+      }
     };
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-    };
-  }, []);
+    initialFetch();
+  }, [matchId]);
 
   // Polling for match data
   const fetchMatch = async () => {
@@ -68,46 +197,96 @@ export const ViewMatchPage = () => {
     return matchData;
   };
 
+  // Compare match data to avoid unnecessary updates
+  const shouldUpdateMatch = (
+    newMatch: PadelMatch,
+    prevMatch: PadelMatch | null
+  ) => {
+    if (!prevMatch) return true;
+    return (
+      newMatch.id !== prevMatch.id ||
+      JSON.stringify(newMatch.participants) !==
+        JSON.stringify(prevMatch.participants) ||
+      JSON.stringify(newMatch.joinRequests) !==
+        JSON.stringify(prevMatch.joinRequests) ||
+      JSON.stringify(newMatch.invitedPlayers) !==
+        JSON.stringify(prevMatch.invitedPlayers) ||
+      newMatch.matchDateTime !== prevMatch.matchDateTime ||
+      newMatch.endTime !== prevMatch.endTime ||
+      newMatch.location !== prevMatch.location ||
+      newMatch.level !== prevMatch.level ||
+      newMatch.matchType !== prevMatch.matchType ||
+      newMatch.description !== prevMatch.description ||
+      newMatch.courtBooked !== prevMatch.courtBooked ||
+      JSON.stringify(newMatch.reservedSpots) !==
+        JSON.stringify(prevMatch.reservedSpots)
+    );
+  };
+
   usePolling(
     fetchMatch,
     (matchData) => {
+      console.log("Updating match:", matchData);
       setMatch(matchData);
-      setLoading(false);
     },
     {
       interval: 10000,
-      enabled: !!matchId && isVisible, // Only poll when matchId exists and page is visible
+      enabled: !!matchId,
+      shouldUpdate: shouldUpdateMatch,
     }
   );
 
+  // Fetch participant profiles
   useEffect(() => {
     const fetchParticipants = async () => {
-      if (!match || match.participants.length === 0) return;
+      if (!match || match.participants.length === 0) {
+        setParticipantProfiles([]);
+        return;
+      }
 
       try {
         const profiles = await Promise.all(
-          match.participants.map((username) =>
-            userProfileService.getOrCreateUserProfile(username)
-          )
+          match.participants.map(async (username) => {
+            if (profileCache.has(username)) {
+              return profileCache.get(username)!;
+            }
+            const profile = await userProfileService.getOrCreateUserProfile(
+              username
+            );
+            profileCache.set(username, profile);
+            return profile;
+          })
         );
         setParticipantProfiles(profiles);
       } catch (err) {
         console.error("Fejl ved hentning af deltagerprofiler:", err);
+        setError("Fejl ved hentning af spillerprofiler");
       }
     };
 
-    fetchParticipants().then();
-  }, [match]);
+    fetchParticipants();
+  }, [match?.participants, profileCache]);
 
+  // Fetch join request profiles
   useEffect(() => {
     const fetchJoinRequests = async () => {
-      if (!match || match.joinRequests.length === 0) return;
+      if (!match || match.joinRequests.length === 0) {
+        setJoinRequestProfiles([]);
+        return;
+      }
 
       try {
         const profiles = await Promise.all(
-          match.joinRequests.map((username) =>
-            userProfileService.getOrCreateUserProfile(username)
-          )
+          match.joinRequests.map(async (username) => {
+            if (profileCache.has(username)) {
+              return profileCache.get(username)!;
+            }
+            const profile = await userProfileService.getOrCreateUserProfile(
+              username
+            );
+            profileCache.set(username, profile);
+            return profile;
+          })
         );
         setJoinRequestProfiles(profiles);
       } catch (err) {
@@ -115,11 +294,12 @@ export const ViewMatchPage = () => {
           "Fejl ved hentning af tilmeldingsanmodningsprofiler:",
           err
         );
+        setError("Fejl ved hentning af anmodningsprofiler");
       }
     };
 
-    fetchJoinRequests().then();
-  }, [match]);
+    fetchJoinRequests();
+  }, [match?.joinRequests, profileCache]);
 
   const handleJoinMatch = async () => {
     if (
@@ -189,6 +369,7 @@ export const ViewMatchPage = () => {
   const handleConfirmJoin = async (username: string) => {
     if (!match) return;
     try {
+      console.log("Confirming join:", { matchId: match.id, username });
       const updatedMatch = await communityApi.confirmJoinMatch(
         match.id,
         username
@@ -200,7 +381,7 @@ export const ViewMatchPage = () => {
       }
       setMatch(updatedMatch);
     } catch (error: any) {
-      console.error("Error confirming join:", error);
+      console.error("Error confirming join:", error.response?.data);
       alert(error.response?.data?.message || "Fejl ved bekræftelse");
       setError("Fejl ved bekræftelse");
     }
@@ -284,6 +465,7 @@ export const ViewMatchPage = () => {
       setTimeout(() => setCopied(false), 10000);
     } catch (err) {
       console.error("Kunne ikke kopiere link:", err);
+      setError("Kunne ikke kopiere link");
     }
   };
 
@@ -295,7 +477,7 @@ export const ViewMatchPage = () => {
     return <LoadingSpinner />;
   }
 
-  if (error || !match) {
+  if (error && !match) {
     return (
       <>
         <Helmet>
@@ -303,16 +485,16 @@ export const ViewMatchPage = () => {
         </Helmet>
         <Animation>
           <HomeBar />
-          <div className="mx-4 my-10">{error || "Kamp ikke fundet"}</div>
+          <div className="mx-4 my-10">{error}</div>
         </Animation>
       </>
     );
   }
 
   const totalLength =
-    safeFormatDate(match.matchDateTime, "EEEE | dd. MMMM | HH:mm").length +
-    safeFormatDate(match.endTime, "HH:mm").length;
-  const isMatchFull = match.participants.length === 4;
+    safeFormatDate(match!.matchDateTime, "EEEE | dd. MMMM | HH:mm").length +
+    safeFormatDate(match!.endTime, "HH:mm").length;
+  const isMatchFull = match!.participants.length === 4;
 
   return (
     <>
@@ -335,10 +517,11 @@ export const ViewMatchPage = () => {
         }`}
       >
         <MatchInvitedPlayersDialog
-          match={match}
+          match={match!}
           onInvite={async () => {
             setInviteDialogVisible(false);
-            await communityApi.getMatchById(matchId);
+            const updatedMatch = await communityApi.getMatchById(matchId!);
+            setMatch(updatedMatch);
           }}
           onClose={() => {
             setInviteDialogVisible(false);
@@ -359,10 +542,10 @@ export const ViewMatchPage = () => {
             }`}
           >
             {safeFormatDate(
-              match.matchDateTime,
+              match!.matchDateTime,
               "EEEE | dd. MMMM | HH:mm"
             ).toUpperCase()}{" "}
-            - {safeFormatDate(match.endTime, "HH:mm")}
+            - {safeFormatDate(match!.endTime, "HH:mm")}
           </h1>
 
           <h1 className="text-center text-gray-500 italic text-sm">
@@ -370,151 +553,28 @@ export const ViewMatchPage = () => {
           </h1>
 
           {/* Participants */}
-          {participantProfiles.map((profile) => (
-            <>
-              <div className="flex items-center gap-2">
-                <div
-                  key={profile.username}
-                  className="border rounded flex items-center px-1 w-full py-3"
-                >
-                  <div
-                    onClick={() => {
-                      setSelectedUser(profile);
-                      setInfoDialogVisible(true);
-                    }}
-                    className="flex items-center gap-2 w-full pr-1 truncate"
-                  >
-                    <UserCircleIcon className="h-14" />
+          {participantList}
 
-                    <div className="flex flex-col gap-2">
-                      <h1>{profile.fullName}</h1>
-                      <h1>{profile.username}</h1>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-2">
-                    <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-12 h-12">
-                      {profile.skillLevel.toFixed(1)}
-                    </div>
-
-                    <div>
-                      {match.username === profile.username ? (
-                        <StarIcon className="size-6 text-yellow-500" />
-                      ) : (
-                        <XMarkIcon
-                          onClick={() =>
-                            handleRemovePlayerFromMatch(profile.username)
-                          }
-                          className={`size-6 text-red-500 ${
-                            match.username !== user?.username ? "hidden" : ""
-                          }`}
-                        />
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </>
-          ))}
-
-          {match.reservedSpots.length > 0 &&
-            match.reservedSpots.map((reserved) => (
-              <div
-                key={reserved.name}
-                className="border rounded flex items-center px-1 w-full py-3"
-              >
-                <div className="flex items-center gap-2 w-full pr-1 truncate">
-                  <UserCircleIcon className="h-14" />
-
-                  <div className="flex flex-col gap-2">
-                    <h1>{reserved.name}</h1>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-12 h-12">
-                    {reserved.level}
-                  </div>
-                  <StarIcon className="size-6 text-gray-500" />
-                </div>
-              </div>
-            ))}
+          {match!.reservedSpots.length > 0 && reservedSpotsList}
 
           {/* Empty spots */}
-          {[
-            ...Array(
-              match.totalSpots -
-                (match.participants.length + (match.reservedSpots.length || 0))
-            ),
-          ].map((_, index) => (
-            <div
-              key={`empty-${index}`}
-              className="border border-gray-500 rounded flex items-center px-1"
-            >
-              <UserCircleIcon className="h-20 text-gray-500" />
-              <div className="w-full pr-1 truncate">
-                <h1 className="text-xl text-gray-500">Ledig plads</h1>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <div className="bg-gray-500 text-white rounded-full flex items-center justify-center w-12 h-12">
-                  ?
-                </div>
-                <div></div>
-              </div>
-            </div>
-          ))}
+          {emptySpotsList}
 
           {/* Join requests (visible to creator) */}
-          {match.username === user?.username &&
-            Array.isArray(match.joinRequests) &&
-            match.joinRequests.length > 0 && (
+          {match!.username === user?.username &&
+            Array.isArray(match!.joinRequests) &&
+            match!.joinRequests.length > 0 && (
               <>
                 <h2 className="font-semibold">Tilmeldingsanmodninger</h2>
-                {joinRequestProfiles.map((requester, index) => (
-                  <div
-                    key={index}
-                    className="border rounded flex flex-col p-2 gap-2"
-                  >
-                    <div
-                      onClick={() => {
-                        setSelectedUser(requester);
-                        setInfoDialogVisible(true);
-                      }}
-                      className="flex items-center"
-                    >
-                      <UserCircleIcon className="h-20" />
-                      <div className="flex flex-col w-full pr-1 truncate">
-                        <h1>{requester.username}</h1>
-                        <h1 className="text-gray-500">Afventer bekræftelse</h1>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <div className="bg-yellow-600 text-white rounded-full flex items-center justify-center w-12 h-12">
-                          {requester.skillLevel.toFixed(1)}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex justify-center gap-4">
-                      <XMarkIcon
-                        onClick={() => handleDeclineJoin(requester.username)}
-                        className="size-8 text-red-500"
-                      />
-                      <CheckIcon
-                        onClick={() => handleConfirmJoin(requester.username)}
-                        className="size-8 text-green-500"
-                      />
-                    </div>
-                  </div>
-                ))}
+                {joinRequestsList}
               </>
             )}
 
           {user &&
-            match.invitedPlayers &&
-            match.invitedPlayers.includes(user.username) && (
-              <div className="flex justify-between items-center border border-yellow-500 p-4 rounded-lg animate-pulse">
-                <h1>{match.username} har inviteret dig!</h1>
+            match!.invitedPlayers &&
+            match!.invitedPlayers.includes(user.username) && (
+              <div className="flex justify-between items-center border border-yellow-500 p-4 rounded-lg">
+                <h1>{match!.username} har inviteret dig!</h1>
                 <div className="flex gap-2">
                   <XMarkIcon
                     className="size-8 text-red-500"
@@ -529,19 +589,18 @@ export const ViewMatchPage = () => {
             )}
 
           {/* Match details */}
-
           <div className="grid grid-cols-2 text-center text-black gap-3">
             <div className="bg-white rounded flex justify-center items-center gap-1 py-4">
               <BoltIcon className="h-6 text-yellow-500" />
-              <h1 className="h-5">{match.level}</h1>
+              <h1 className="h-5">{match!.level}</h1>
             </div>
 
             <div className="bg-white rounded flex justify-center items-center gap-1 py-4">
               <MapPinIcon className="h-6 text-red-500" />
-              <h1 className="h-5">{match.location.split(" ")[2]}</h1>
+              <h1 className="h-5">{match!.location.split(" ")[2]}</h1>
             </div>
 
-            {match.courtBooked ? (
+            {match!.courtBooked ? (
               <div className="bg-white rounded flex justify-center items-center gap-1 py-4">
                 <CheckCircleIcon className="h-6 rounded-lg text-green-500" />
                 <h1 className="h-5">Bane er booket</h1>
@@ -555,23 +614,22 @@ export const ViewMatchPage = () => {
 
             <div className="bg-white rounded flex justify-center items-center gap-1 py-4">
               <UserGroupIcon className="h-6 rounded-lg text-white bg-gradient-to-b from-sky-400 to-pink-400" />
-              <h1 className="h-5">{match.matchType}</h1>
+              <h1 className="h-5">{match!.matchType}</h1>
             </div>
           </div>
 
           <div className="bg-white rounded w-full text-black p-4 flex flex-col gap-2">
             <h1 className="font-semibold">Bemærkninger</h1>
-            <p>{match.description || "Ingen bemærkninger."}</p>
+            <p>{match!.description || "Ingen bemærkninger."}</p>
           </div>
 
           {/* Action buttons */}
-
           {user?.username &&
-            match.username !== user.username &&
-            !match.participants.includes(user.username) &&
-            !match.invitedPlayers.includes(user.username) &&
+            match!.username !== user.username &&
+            !match!.participants.includes(user.username) &&
+            !match!.invitedPlayers.includes(user.username) &&
             !isMatchFull &&
-            !match.joinRequests.includes(user.username) && (
+            !match!.joinRequests.includes(user.username) && (
               <button
                 onClick={handleJoinMatch}
                 className="bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white"
@@ -581,8 +639,8 @@ export const ViewMatchPage = () => {
             )}
 
           {user?.username &&
-            match.username !== user.username &&
-            match.joinRequests.includes(user.username) && (
+            match!.username !== user.username &&
+            match!.joinRequests.includes(user.username) && (
               <button
                 onClick={() => handleCancelJoinRequest(user.username)}
                 className="bg-red-500 hover:bg-red-600 transition duration-300 rounded-lg py-2 px-4 text-white"
@@ -591,7 +649,7 @@ export const ViewMatchPage = () => {
               </button>
             )}
 
-          {match.username === user?.username && (
+          {match!.username === user?.username && (
             <>
               <div className="flex flex-col w-full gap-4 text-lg">
                 <button

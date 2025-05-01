@@ -1,17 +1,24 @@
 import { useEffect, useRef, useState } from "react";
 
-interface UsePollingOptions {
-  interval?: number; // Polling interval in milliseconds
-  enabled?: boolean; // Whether polling is enabled
+interface UsePollingOptions<T> {
+  interval?: number;
+  enabled?: boolean;
+  shouldUpdate?: (newData: T, prevData: T | null) => boolean;
 }
 
 const usePolling = <T>(
   fetchFn: () => Promise<T>,
   callback: (data: T) => void,
-  { interval = 5000, enabled = true }: UsePollingOptions = {}
+  {
+    interval = 5000,
+    enabled = true,
+    shouldUpdate = () => true,
+  }: UsePollingOptions<T> = {}
 ) => {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const isMounted = useRef(true);
+  const lastPollTime = useRef<number>(0);
+  const prevData = useRef<T | null>(null);
   const [isVisible, setIsVisible] = useState(
     typeof document !== "undefined"
       ? document.visibilityState === "visible"
@@ -21,11 +28,12 @@ const usePolling = <T>(
   // Track visibility changes
   useEffect(() => {
     const handleVisibilityChange = () => {
-      setIsVisible(document.visibilityState === "visible");
+      const visible = document.visibilityState === "visible";
+      setIsVisible(visible);
+      console.log("Visibility changed:", visible);
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
-
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
@@ -42,21 +50,30 @@ const usePolling = <T>(
     };
   }, []);
 
-  // Start polling
+  // Polling logic
   useEffect(() => {
-    // Only poll if both enabled and page is visible
     if (!enabled || !isVisible) {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
+        console.log("Polling stopped: page hidden or disabled");
       }
       return;
     }
 
     const poll = async () => {
+      const now = Date.now();
+      if (now - lastPollTime.current < interval) {
+        return;
+      }
+
       try {
+        console.log("Polling match data");
         const data = await fetchFn();
-        if (isMounted.current) {
+        lastPollTime.current = now;
+
+        if (isMounted.current && shouldUpdate(data, prevData.current)) {
+          prevData.current = data;
           callback(data);
         }
       } catch (error) {
@@ -64,19 +81,15 @@ const usePolling = <T>(
       }
     };
 
-    // Execute immediately on mount or when visibility changes
-    poll();
-
-    // Set up interval
+    poll(); // Immediate poll on mount or visibility change
     intervalRef.current = setInterval(poll, interval);
 
-    // Cleanup interval on unmount or when enabled/isVisible changes
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
     };
-  }, [fetchFn, callback, interval, enabled, isVisible]);
+  }, [fetchFn, callback, interval, enabled, isVisible, shouldUpdate]);
 };
 
 export default usePolling;
