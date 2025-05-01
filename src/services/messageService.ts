@@ -1,4 +1,3 @@
-import { io, Socket } from "socket.io-client";
 import axios from "axios";
 
 const ENV = import.meta.env.MODE;
@@ -40,7 +39,6 @@ export interface FriendRequest {
 }
 
 export class MessageService {
-  private socket: Socket;
   private userId: string;
 
   constructor(userId: string) {
@@ -51,47 +49,37 @@ export class MessageService {
         : "http://localhost:3001";
 
     console.log(`MessageService connecting to socket at: ${SOCKET_URL}`);
-
-    this.socket = io(SOCKET_URL, {
-      withCredentials: true,
-      path: "/api/v1/socket.io/",
-    });
-
-    this.socket.on("connect", () => {
-      console.log("Forbundet til Socket.IO server");
-      this.socket.emit("join", userId);
-    });
   }
 
-  onNewMessage(callback: (message: Message) => void) {
-    this.socket.on("newMessage", callback);
-  }
+  // onNewMessage(callback: (message: Message) => void) {
+  //   this.socket.on("newMessage", callback);
+  // }
 
-  onMessageRead(
-    callback: (data: { messageId: string; friendId: string }) => void
-  ) {
-    this.socket.on("messageRead", callback);
-  }
+  // onMessageRead(
+  //   callback: (data: { messageId: string; friendId: string }) => void
+  // ) {
+  //   this.socket.on("messageRead", callback);
+  // }
 
-  onUserStatus(
-    callback: (data: { userId: string; status: "online" | "offline" }) => void
-  ) {
-    this.socket.on("userStatus", callback);
-  }
+  // onUserStatus(
+  //   callback: (data: { userId: string; status: "online" | "offline" }) => void
+  // ) {
+  //   this.socket.on("userStatus", callback);
+  // }
 
-  onFriendRequestSent(callback: (request: FriendRequest) => void) {
-    this.socket.on("friendRequestSent", callback);
-  }
+  // onFriendRequestSent(callback: (request: FriendRequest) => void) {
+  //   this.socket.on("friendRequestSent", callback);
+  // }
 
-  onFriendRequestResponded(
-    callback: (data: {
-      userId: { _id: string; username: string };
-      friendId: { _id: string; username: string };
-      status: "accepted" | "rejected";
-    }) => void
-  ) {
-    this.socket.on("friendRequestResponded", callback);
-  }
+  // onFriendRequestResponded(
+  //   callback: (data: {
+  //     userId: { _id: string; username: string };
+  //     friendId: { _id: string; username: string };
+  //     status: "accepted" | "rejected";
+  //   }) => void
+  // ) {
+  //   this.socket.on("friendRequestResponded", callback);
+  // }
 
   async getMessages(friendId: string): Promise<Message[]> {
     try {
@@ -118,8 +106,5 @@ export class MessageService {
       console.error("Fejl ved afsendelse af besked:", error);
       throw error;
     }
-  }
-  disconnect() {
-    this.socket.disconnect();
   }
 }

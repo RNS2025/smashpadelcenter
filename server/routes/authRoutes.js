@@ -6,6 +6,8 @@ const logger = require("../config/logger");
 
 const router = express.Router();
 
+const isProduction = process.env.NODE_ENV === "production";
+
 router.post("/login", (req, res, next) => {
   logger.debug("Login attempt", { username: req.body.username });
   passport.authenticate("local", { session: false }, (err, user, info) => {
@@ -26,8 +28,8 @@ router.post("/login", (req, res, next) => {
     // Set HTTP-only cookie for security
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true,
-      sameSite: "none",
+      secure: isProduction, // Only secure in production
+      sameSite: isProduction ? "none" : "lax", // "none" for cross-origin in production, "lax" for development
       maxAge: 24 * 60 * 60 * 1000, // 1 day
     });
 
@@ -64,10 +66,11 @@ router.get(
   }),
   (req, res) => {
     const token = generateToken(req.user);
+    // Set cookie options based on environment
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true, // Always use secure for cross-domain
-      sameSite: "none", // Required for cross-origin requests
+      secure: isProduction, // Only use secure in production
+      sameSite: isProduction ? "none" : "lax", // "none" for cross-origin in production, "lax" for development
       maxAge: 24 * 60 * 60 * 1000,
     });
     logger.info("Google OAuth login successful", {
@@ -81,6 +84,23 @@ router.get("/auth/check", verifyJWT, async (req, res) => {
   logger.debug("Auth check request", {
     user: req.user ? req.user._id : "unknown",
   });
+
+  if (process.env.NODE_ENV === "development") {
+    axios.interceptors.response.use((response) => {
+      if (response.config.url?.includes("/api/v1/auth/check")) {
+        return {
+          ...response,
+          data: {
+            isAuthenticated: true,
+            user: { id: "mock-user", name: "Mock User" },
+          },
+        };
+      }
+      console.log("Response:", response);
+      return response;
+    });
+  }
+
   try {
     const profile = await databaseService.getProfileWithMatches(req.user._id);
     logger.debug("Auth check successful", { userId: req.user._id });
@@ -154,8 +174,8 @@ router.post("/logout", verifyJWT, (req, res) => {
   logger.info("Logout attempt", { username: req.user.username });
   res.clearCookie("token", {
     httpOnly: true,
-    secure: true,
-    sameSite: "none",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax", // "none" for cross-origin in production, "lax" for development
   });
   logger.info("User logged out successfully", { username: req.user.username });
   res.status(200).json({ message: "Logged out successfully" });
@@ -192,8 +212,8 @@ router.post("/register", async (req, res) => {
     const token = generateToken(newUser);
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true, // Always use secure for cross-domain
-      sameSite: "none", // Required for cross-origin requests
+      secure: isProduction, // Always use secure for cross-domain
+      sameSite: isProduction ? "none" : "lax", // "none" for cross-origin in production, "lax" for development
       maxAge: 24 * 60 * 60 * 1000,
     });
     return res.status(201).json({

@@ -150,7 +150,7 @@ function App() {
             <Route path="/turneringer" element={<TournamentTabs />} />
 
             <Route path="/player/:playerId/:rowId" element={<PlayerPage />} />
-            <Route path="/court-times" element={<CourtTimes />} />
+            {/* <Route path="/court-times" element={<CourtTimes />} /> */}
             <Route path="/register" element={<RegisterPage />} />
 
             {/* Protected Routes */}
@@ -174,8 +174,8 @@ function App() {
 
             <Route path="/hjem" element={<HomePage />} />
             <Route path="/admin" element={<AdminPage />} />
-            <Route path="/book-court" element={<BookCourtPage />} />
-            <Route path="/book-training" element={<BookTrainingPage />} />
+            {/* <Route path="/book-court" element={<BookCourtPage />} />
+            <Route path="/book-training" element={<BookTrainingPage />} /> */}
 
             <Route path="/makkerbørs" element={<MatchFinderPage />}>
               <Route index element={<Navigate to="allekampe" replace />} />

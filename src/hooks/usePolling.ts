@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface UsePollingOptions {
   interval?: number; // Polling interval in milliseconds
@@ -12,6 +12,24 @@ const usePolling = <T>(
 ) => {
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const isMounted = useRef(true);
+  const [isVisible, setIsVisible] = useState(
+    typeof document !== "undefined"
+      ? document.visibilityState === "visible"
+      : true
+  );
+
+  // Track visibility changes
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsVisible(document.visibilityState === "visible");
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -26,7 +44,14 @@ const usePolling = <T>(
 
   // Start polling
   useEffect(() => {
-    if (!enabled) return;
+    // Only poll if both enabled and page is visible
+    if (!enabled || !isVisible) {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+      return;
+    }
 
     const poll = async () => {
       try {
@@ -39,19 +64,19 @@ const usePolling = <T>(
       }
     };
 
-    // Execute immediately on mount
+    // Execute immediately on mount or when visibility changes
     poll();
 
     // Set up interval
     intervalRef.current = setInterval(poll, interval);
 
-    // Cleanup interval on unmount or when enabled changes
+    // Cleanup interval on unmount or when enabled/isVisible changes
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
     };
-  }, [fetchFn, callback, interval, enabled]);
+  }, [fetchFn, callback, interval, enabled, isVisible]);
 };
 
 export default usePolling;

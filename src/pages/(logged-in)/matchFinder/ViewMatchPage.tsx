@@ -38,6 +38,19 @@ export const ViewMatchPage = () => {
   const [infoDialogVisible, setInfoDialogVisible] = useState(false);
   const [inviteDialogVisible, setInviteDialogVisible] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isVisible, setIsVisible] = useState(
+    document.visibilityState === "visible"
+  );
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      setIsVisible(document.visibilityState === "visible");
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
 
   // Polling for match data
   const fetchMatch = async () => {
@@ -62,8 +75,8 @@ export const ViewMatchPage = () => {
       setLoading(false);
     },
     {
-      interval: 10000, // Poll every 10 seconds
-      enabled: !!matchId,
+      interval: 10000,
+      enabled: !!matchId && isVisible, // Only poll when matchId exists and page is visible
     }
   );
 
