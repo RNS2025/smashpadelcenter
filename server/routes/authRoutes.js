@@ -96,7 +96,6 @@ router.get("/auth/check", verifyJWT, async (req, res) => {
           },
         };
       }
-      console.log("Response:", response);
       return response;
     });
   }

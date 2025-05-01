@@ -20,11 +20,6 @@ const api = axios.create({
 // Request interceptor for logging
 api.interceptors.request.use(
   (config) => {
-    console.log(
-      `Request: ${config.method?.toUpperCase()} ${config.baseURL}${config.url}`,
-      { params: config.params, data: config.data }
-    );
-
     // Add token from localStorage to Authorization header if it exists
     const token = localStorage.getItem("token");
     if (token) {
@@ -36,21 +31,6 @@ api.interceptors.request.use(
   },
   (error) => {
     console.error("Request error:", error);
-    return Promise.reject(error);
-  }
-);
-
-// Response interceptor for logging
-api.interceptors.response.use(
-  (response) => {
-    console.log(`Response from ${response.config.url}:`, {
-      status: response.status,
-      data: response.data,
-    });
-    return response;
-  },
-  (error) => {
-    console.error("Response error:", error.response || error);
     return Promise.reject(error);
   }
 );
