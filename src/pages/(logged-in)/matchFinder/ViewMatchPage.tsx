@@ -19,12 +19,12 @@ import { PadelMatch } from "../../../types/PadelMatch";
 import communityApi from "../../../services/makkerborsService";
 import { Navigate, useParams } from "react-router-dom";
 import LoadingSpinner from "../../../components/misc/LoadingSpinner";
-import { io } from "socket.io-client";
 import { User } from "../../../types/user.ts";
 import userProfileService from "../../../services/userProfileService.ts";
 import PlayerInfoDialog from "../../../components/matchFinder/misc/PlayerInfoDialog.tsx";
 import { MatchInvitedPlayersDialog } from "../../../components/matchFinder/misc/MatchInvitePlayersDialog.tsx";
 import { safeFormatDate } from "../../../utils/dateUtils.ts";
+import usePolling from "../../../hooks/usePolling.ts";
 
 export const ViewMatchPage = () => {
   const { user } = useUser();
@@ -35,11 +35,38 @@ export const ViewMatchPage = () => {
   const [socketConnected, setSocketConnected] = useState(false);
   const [participantProfiles, setParticipantProfiles] = useState<User[]>([]);
   const [joinRequestProfiles, setJoinRequestProfiles] = useState<User[]>([]);
-
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [infoDialogVisible, setInfoDialogVisible] = useState(false);
   const [inviteDialogVisible, setInviteDialogVisible] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  // Polling for match data
+  const fetchMatch = async () => {
+    if (!matchId) {
+      throw new Error("Kamp ID mangler");
+    }
+    const matchData = await communityApi.getMatchById(matchId);
+    if (
+      !matchData ||
+      !Array.isArray(matchData.participants) ||
+      !Array.isArray(matchData.joinRequests)
+    ) {
+      throw new Error("Fejl ved indlæsning af kampe");
+    }
+    return matchData;
+  };
+
+  usePolling(
+    fetchMatch,
+    (matchData) => {
+      setMatch(matchData);
+      setLoading(false);
+    },
+    {
+      interval: 10000, // Poll every 10 seconds
+      enabled: !!matchId,
+    }
+  );
 
   useEffect(() => {
     const fetchParticipants = async () => {
@@ -81,108 +108,6 @@ export const ViewMatchPage = () => {
 
     fetchJoinRequests().then();
   }, [match]);
-
-  // Initialize Socket.IO
-  useEffect(() => {
-    if (!matchId) return;
-
-    // Create socket connection based on environment
-    const ENV = import.meta.env.MODE;
-    const SOCKET_URL = ENV === "production" ? "/" : "http://localhost:3001";
-
-    console.log(`ViewMatchPage connecting to socket at: ${SOCKET_URL}`);
-
-    const socket = io(SOCKET_URL, {
-      path: "/api/v1/socket.io/",
-      withCredentials: true,
-      transports: ["websocket", "polling"],
-      reconnection: true,
-      reconnectionAttempts: 5,
-      reconnectionDelay: 1000,
-      timeout: 10000, // Increase timeout
-    });
-
-    // Connection event handlers
-    socket.on("connect", () => {
-      console.log("Connected to Socket.IO server");
-      setSocketConnected(true);
-      socket.emit("joinMatchRoom", matchId);
-    });
-
-    socket.on("matchUpdated", (updatedMatch: PadelMatch) => {
-      console.log("Received match update:", updatedMatch);
-      if (
-        updatedMatch &&
-        Array.isArray(updatedMatch.participants) &&
-        Array.isArray(updatedMatch.joinRequests) &&
-        Array.isArray(updatedMatch.reservedSpots)
-      ) {
-        setMatch(updatedMatch);
-      } else {
-        console.error("Invalid match update:", updatedMatch);
-        setError("Ugyldig kampopdatering modtaget");
-      }
-    });
-
-    socket.on("connect_error", (err) => {
-      console.error("Socket.IO connection error:", err.message);
-      setSocketConnected(false);
-      setError(`Realtidsopdateringer ikke tilgængelige: ${err.message}`);
-    });
-
-    socket.on("disconnect", (reason) => {
-      console.log(`Disconnected: ${reason}`);
-      setSocketConnected(false);
-    });
-
-    socket.on("reconnect", (attemptNumber) => {
-      console.log(`Reconnected after ${attemptNumber} attempts`);
-      setSocketConnected(true);
-      // Re-join the room after reconnection
-      socket.emit("joinMatchRoom", matchId);
-    });
-
-    // Clean up
-    return () => {
-      if (socket) {
-        socket.off("connect");
-        socket.off("disconnect");
-        socket.off("matchUpdated");
-        socket.off("connect_error");
-        socket.off("reconnect");
-        socket.disconnect();
-        console.log("Disconnected from Socket.IO server");
-      }
-    };
-  }, [matchId]);
-
-  // Fetch initial match data
-  useEffect(() => {
-    const fetchMatch = async () => {
-      try {
-        if (!matchId) {
-          setError("Kamp ID mangler");
-          setLoading(false);
-          return;
-        }
-        const matchData = await communityApi.getMatchById(matchId);
-        if (
-          !matchData ||
-          !Array.isArray(matchData.participants) ||
-          !Array.isArray(matchData.joinRequests)
-        ) {
-          setError("Fejl ved indlæsning af kampe");
-        }
-        setMatch(matchData);
-        setLoading(false);
-      } catch (err: any) {
-        console.error("Error fetching match:", err);
-        setError(err.response?.data?.message || "Fejl ved indlæsning af kamp");
-        setLoading(false);
-      }
-    };
-    fetchMatch().then();
-  }, [matchId]);
 
   const handleJoinMatch = async () => {
     if (

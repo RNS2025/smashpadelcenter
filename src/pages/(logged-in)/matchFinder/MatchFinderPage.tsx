@@ -13,6 +13,7 @@ import {
   NumberedListIcon,
 } from "@heroicons/react/24/outline";
 import LoadingSpinner from "../../../components/misc/LoadingSpinner.tsx";
+import usePolling from "../../../hooks/usePolling.ts";
 
 export const MatchFinderPage = () => {
   const location = useLocation();
@@ -21,29 +22,46 @@ export const MatchFinderPage = () => {
   const [joinRequestsCount, setJoinRequestsCount] = useState(0);
   const [showFullMatches, setShowFullMatches] = useState(false);
   const [isMyLevel, setIsMyLevel] = useState(false);
+  const [isPageVisible, setIsPageVisible] = useState(true);
 
+  // Track page visibility
   useEffect(() => {
-    const fetchJoinRequestCount = async () => {
-      try {
-        const data = await communityApi.getMatches();
-        const myMatches = data
-          .filter((match) => match.username === user?.username)
-          .filter((match) => new Date(match.matchDateTime) > new Date());
-        const totalJoinRequests = myMatches.reduce(
-          (sum, match) => sum + (match.joinRequests?.length || 0),
-          0
-        );
-        setJoinRequestsCount(totalJoinRequests);
-      } catch (err) {
-        console.error("Kunne ikke hente join requests", err);
-      }
+    const handleVisibilityChange = () => {
+      setIsPageVisible(document.visibilityState === "visible");
     };
 
-    fetchJoinRequestCount().then();
-  }, [user?.username]);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, []);
+
+  // Polling for join request count
+  const fetchJoinRequestCount = async () => {
+    const data = await communityApi.getMatches();
+    const myMatches = data
+      .filter((match) => match.username === user?.username)
+      .filter((match) => new Date(match.matchDateTime) > new Date());
+    const totalJoinRequests = myMatches.reduce(
+      (sum, match) => sum + (match.joinRequests?.length || 0),
+      0
+    );
+    return totalJoinRequests;
+  };
+
+  usePolling(
+    fetchJoinRequestCount,
+    (count) => {
+      setJoinRequestsCount(count);
+    },
+    {
+      interval: 10000, // Poll every 10 seconds
+      enabled: isAuthenticated && !!user?.username && isPageVisible,
+    }
+  );
 
   if (loading) {
-    return <LoadingSpinner />; // Vis en indlæsningsindikator eller returner null
+    return <LoadingSpinner />;
   }
 
   if (!isAuthenticated) {

@@ -25,7 +25,6 @@ const { updateAllData } = require("./scripts/dataScheduler");
 const { verifyJWT } = require("./middleware/jwt");
 const path = require("path");
 const http = require("http");
-const { setupSocketIO } = require("./WebSockets");
 const dotenv = require("dotenv");
 const logger = require("./config/logger");
 
@@ -99,8 +98,6 @@ app.use((err, req, res, next) => {
 
 // HTTP Server and Socket.IO setup
 const httpServer = http.createServer(app);
-const io = setupSocketIO(httpServer);
-app.set("socketio", io);
 
 // Health check
 app.get("/health", (req, res) => {
