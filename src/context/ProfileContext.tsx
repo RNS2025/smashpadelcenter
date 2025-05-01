@@ -6,7 +6,8 @@ import {
   ReactNode,
   ChangeEvent,
   FormEvent,
-  useCallback,
+  useCallback, Dispatch,
+  SetStateAction,
 } from "react";
 import { User } from "../types/user";
 import userProfileService from "../services/userProfileService";
@@ -25,6 +26,7 @@ interface ProfileContextValue {
   error: string;
   formData: Partial<User>;
   matches: MatchesData;
+  setMatches: Dispatch<SetStateAction<MatchesData>>;
   matchesLoading: boolean;
   refreshMatches: () => Promise<void>;
   handleInputChange: (
@@ -163,6 +165,7 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         error,
         formData,
         matches,
+        setMatches,
         matchesLoading,
         refreshMatches,
         handleInputChange,
