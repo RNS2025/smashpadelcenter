@@ -11,7 +11,7 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const [notificationsVisible, setNotificationsVisible] = useState(true);
+  const [notificationsVisible, setNotificationsVisible] = useState(false);
   const [dropdownVisible, setDropdownVisible] = useState(false);
 
   const handleLogout = async () => {
