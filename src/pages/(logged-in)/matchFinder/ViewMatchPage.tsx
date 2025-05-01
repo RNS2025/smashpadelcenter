@@ -38,9 +38,29 @@ export const ViewMatchPage = () => {
   const [infoDialogVisible, setInfoDialogVisible] = useState(false);
   const [inviteDialogVisible, setInviteDialogVisible] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [profilesLoading, setProfilesLoading] = useState(false);
   const profileCache = useMemo(() => new Map<string, User>(), []);
 
-  // Move useMemo calls to top level
+  // Retry helper function
+  const retry = async <T,>(
+    fn: () => Promise<T>,
+    retries: number,
+    delay: number
+  ): Promise<T | null> => {
+    for (let i = 0; i < retries; i++) {
+      try {
+        return await fn();
+      } catch (err) {
+        if (i < retries - 1) {
+          await new Promise((resolve) => setTimeout(resolve, delay));
+          console.warn(`Retry ${i + 1}/${retries} failed:`, err);
+        }
+      }
+    }
+    return null;
+  };
+
+  // Memoized lists
   const participantList = useMemo(() => {
     if (!match) return [];
     return participantProfiles.map((profile) => (
@@ -55,13 +75,13 @@ export const ViewMatchPage = () => {
           >
             <UserCircleIcon className="h-14" />
             <div className="flex flex-col gap-2">
-              <h1>{profile.fullName}</h1>
+              <h1>{profile.fullName || "Unknown"}</h1>
               <h1>{profile.username}</h1>
             </div>
           </div>
           <div className="flex items-center gap-2">
             <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-12 h-12">
-              {profile.skillLevel.toFixed(1)}
+              {profile.skillLevel?.toFixed(1) || "?"}
             </div>
             <div>
               {match.username === profile.username ? (
@@ -148,7 +168,7 @@ export const ViewMatchPage = () => {
           </div>
           <div className="flex items-center gap-2">
             <div className="bg-yellow-600 text-white rounded-full flex items-center justify-center w-12 h-12">
-              {requester.skillLevel.toFixed(1)}
+              {requester.skillLevel?.toFixed(1) || "?"}
             </div>
           </div>
         </div>
@@ -244,23 +264,38 @@ export const ViewMatchPage = () => {
         return;
       }
 
+      setProfilesLoading(true);
       try {
         const profiles = await Promise.all(
           match.participants.map(async (username) => {
             if (profileCache.has(username)) {
               return profileCache.get(username)!;
             }
-            const profile = await userProfileService.getOrCreateUserProfile(
-              username
+            const profile = await retry(
+              () => userProfileService.getOrCreateUserProfile(username),
+              3,
+              1000
             );
-            profileCache.set(username, profile);
-            return profile;
+            if (profile) {
+              profileCache.set(username, profile);
+              return profile;
+            }
+            console.warn(
+              `Failed to fetch profile for ${username} after retries`
+            );
+            return {
+              username,
+              fullName: "Unknown",
+              skillLevel: 0,
+            } as User;
           })
         );
         setParticipantProfiles(profiles);
       } catch (err) {
         console.error("Fejl ved hentning af deltagerprofiler:", err);
         setError("Fejl ved hentning af spillerprofiler");
+      } finally {
+        setProfilesLoading(false);
       }
     };
 
@@ -275,17 +310,30 @@ export const ViewMatchPage = () => {
         return;
       }
 
+      setProfilesLoading(true);
       try {
         const profiles = await Promise.all(
           match.joinRequests.map(async (username) => {
             if (profileCache.has(username)) {
               return profileCache.get(username)!;
             }
-            const profile = await userProfileService.getOrCreateUserProfile(
-              username
+            const profile = await retry(
+              () => userProfileService.getOrCreateUserProfile(username),
+              3,
+              1000
             );
-            profileCache.set(username, profile);
-            return profile;
+            if (profile) {
+              profileCache.set(username, profile);
+              return profile;
+            }
+            console.warn(
+              `Failed to fetch profile for ${username} after retries`
+            );
+            return {
+              username,
+              fullName: "Unknown",
+              skillLevel: 0,
+            } as User;
           })
         );
         setJoinRequestProfiles(profiles);
@@ -295,6 +343,8 @@ export const ViewMatchPage = () => {
           err
         );
         setError("Fejl ved hentning af anmodningsprofiler");
+      } finally {
+        setProfilesLoading(false);
       }
     };
 
@@ -553,7 +603,11 @@ export const ViewMatchPage = () => {
           </h1>
 
           {/* Participants */}
-          {participantList}
+          {profilesLoading ? (
+            <div className="text-center text-gray-500">Loading profiles...</div>
+          ) : (
+            participantList
+          )}
 
           {match!.reservedSpots.length > 0 && reservedSpotsList}
 
@@ -566,7 +620,13 @@ export const ViewMatchPage = () => {
             match!.joinRequests.length > 0 && (
               <>
                 <h2 className="font-semibold">Tilmeldingsanmodninger</h2>
-                {joinRequestsList}
+                {profilesLoading ? (
+                  <div className="text-center text-gray-500">
+                    Loading profiles...
+                  </div>
+                ) : (
+                  joinRequestsList
+                )}
               </>
             )}
 

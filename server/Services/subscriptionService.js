@@ -69,8 +69,57 @@ const saveSubscription = async (subscription, userId) => {
   }
 };
 
+// Check if a similar notification was sent recently to prevent duplicates
+const isDuplicateNotification = async (
+  userId,
+  title,
+  body,
+  category,
+  timeWindowMinutes = 5
+) => {
+  try {
+    // Look for similar notifications in the last X minutes
+    const timeWindow = new Date(Date.now() - timeWindowMinutes * 60 * 1000);
+
+    const existingNotification = await NotificationHistory.findOne({
+      userId,
+      title,
+      body,
+      category,
+      createdAt: { $gte: timeWindow },
+    });
+
+    return !!existingNotification;
+  } catch (error) {
+    logger.error(
+      "SubscriptionService: Error checking for duplicate notifications:",
+      {
+        error: error.message,
+      }
+    );
+    // If there's an error checking, we'll allow the notification to be sent
+    return false;
+  }
+};
+
 const sendNotification = async (userId, title, body, category) => {
   try {
+    // Check for duplicate notifications
+    const isDuplicate = await isDuplicateNotification(
+      userId,
+      title,
+      body,
+      category
+    );
+    if (isDuplicate) {
+      logger.info("SubscriptionService: Skipping duplicate notification", {
+        userId,
+        title,
+        category,
+      });
+      return;
+    }
+
     const image =
       "https://www.smash.dk/wp-content/uploads/2021/05/SMASH-neg-udenby@4x.png"; // Default image URL
     const filter = userId ? { userId } : {};
