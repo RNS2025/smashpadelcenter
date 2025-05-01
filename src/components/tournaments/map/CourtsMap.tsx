@@ -46,7 +46,7 @@ export const CourtsMap = ({ onSelect }: CourtsMapProps) => {
     <div>
       <svg
         viewBox="0 0 360 510"
-        className="h-[calc(100vh-100px)] max-lg:h-[calc(100vh-180px)] max-sm:h-[calc(100vh-300px)] w-full"
+        className="h-[calc(100vh-100px)] max-lg:h-[calc(100vh-180px)] max-sm:h-[calc(100vh-250px)] max-sm:mt-4 w-full"
       >
         {/* Hal 2 */}
         <rect

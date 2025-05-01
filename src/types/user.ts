@@ -8,6 +8,7 @@ export interface Match {
 
 export interface User {
   id: string;
+  rankedInId?: string;
   username: string;
   email: string;
   role: string;

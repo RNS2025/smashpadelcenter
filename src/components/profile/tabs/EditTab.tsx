@@ -1,5 +1,6 @@
 import { useProfileContext } from "../../../context/ProfileContext";
 import {Helmet} from "react-helmet-async";
+import {InformationCircleIcon} from "@heroicons/react/24/outline";
 
 const EditTab = () => {
   const { formData, isSubmitting, handleSubmit, handleInputChange } = useProfileContext();
@@ -16,12 +17,15 @@ const EditTab = () => {
           <form onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
+                <div className="flex gap-2">
                 <label
                     htmlFor="fullName"
                     className="block text-sm font-medium text-gray-600"
                 >
                   Fulde navn
                 </label>
+                <InformationCircleIcon onClick={() => alert("Din RankedIn-profil tilkobles automatisk, hvis dit fulde navn matcher navnet på din RankedIn-konto.")} className="h-5 text-[#2f3f7d]" />
+                </div>
                 <input
                     type="text"
                     name="fullName"
@@ -45,6 +49,22 @@ const EditTab = () => {
                     onChange={handleInputChange}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm text-gray-800 bg-gray-100 cursor-not-allowed"
                     disabled/>
+              </div>
+              <div>
+                <label
+                    htmlFor="rankedInId"
+                    className="block text-sm font-medium text-gray-600"
+                >
+                  RankedIn ID
+                </label>
+                <input
+                    type="text"
+                    name="rankedInId"
+                    id="rankedInId"
+                    value={formData.rankedInId || ""}
+                    onChange={handleInputChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm text-gray-800"
+                    />
               </div>
               <div>
                 <label

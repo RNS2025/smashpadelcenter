@@ -126,7 +126,6 @@ export const ViewMatchPage = () => {
         setError("Invalid match data returned");
         alert("Der opstod en fejl – prøv igen.");
       }
-      alert("Tilmelding sendt!");
       setMatch(updatedMatch);
     } catch (error: any) {
       console.error("Error joining match:", error);
@@ -147,7 +146,6 @@ export const ViewMatchPage = () => {
         setError("Invalid match data returned");
         alert("Der opstod en fejl – prøv igen.");
       }
-      alert("Tilmelding accepteret!");
       setMatch(updatedMatch);
     } catch (error: any) {
       console.error("Error confirming join:", error);
@@ -168,7 +166,6 @@ export const ViewMatchPage = () => {
         setError("Invalid match data returned");
         alert("Der opstod en fejl – prøv igen.");
       }
-      alert("Tilmelding afvist!");
       setMatch(updatedMatch);
     } catch (error: any) {
       console.error("Error confirming join:", error);
@@ -189,7 +186,6 @@ export const ViewMatchPage = () => {
         setError("Invalid match data returned");
         alert("Der opstod en fejl – prøv igen.");
       }
-      alert("Tilmelding bekræftet!");
       setMatch(updatedMatch);
     } catch (error: any) {
       console.error("Error confirming join:", error);
@@ -210,7 +206,6 @@ export const ViewMatchPage = () => {
         setError("Invalid match data returned");
         alert("Der opstod en fejl – prøv igen.");
       }
-      alert("Tilmelding afvist!");
       setMatch(updatedMatch);
     } catch (error: any) {
       console.error("Error confirming join:", error);
@@ -230,7 +225,6 @@ export const ViewMatchPage = () => {
         setError("Invalid match data returned");
         alert("Der opstod en fejl – prøv igen.");
       }
-      alert("Tilmelding annulleret!");
       setMatch(updatedMatch);
     } catch (error: any) {
       console.error("Error confirming join:", error);
@@ -248,7 +242,6 @@ export const ViewMatchPage = () => {
         setError("Invalid match data returned");
         alert("Der opstod en fejl – prøv igen.");
       }
-      alert("Tilmelding afvist!");
       setMatch(updatedMatch);
     } catch (error: any) {
       console.error("Error confirming join:", error);
@@ -260,9 +253,11 @@ export const ViewMatchPage = () => {
   const handleDeleteMatch = async () => {
     if (!match) return;
     try {
+      const userConfirm = confirm("Er du sikker på at du vil slette kampen?");
+      if (userConfirm) {
       await communityApi.deleteMatch(match.id);
-      alert("Kamp slettet!");
       window.history.back();
+      }
     } catch (error: any) {
       console.error("Error deleting match:", error);
       alert(error.response?.data?.message || "Fejl ved sletning af kamp");

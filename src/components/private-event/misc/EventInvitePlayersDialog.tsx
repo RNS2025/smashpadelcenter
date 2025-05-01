@@ -55,7 +55,6 @@ export const EventInvitedPlayersDialog = ({
       );
 
       console.log("Updated match after inviting players:", updatedEvent);
-      alert("Spillere inviteret!");
       onInvite(updatedEvent);
     } catch (error: any) {
       console.error("Error inviting players:", error);
