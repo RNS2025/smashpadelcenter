@@ -45,7 +45,7 @@ router.post("/:id/reject", async (req, res) => {
       {
         matchId: req.params.id,
         requesterId: username,
-        participantIds: updatedMatch.players,
+        participantIds: updatedMatch.participants,
       },
       [username]
     );
@@ -95,7 +95,7 @@ router.post("/:id/accept", async (req, res) => {
       {
         matchId: req.params.id,
         requesterId: username,
-        participantIds: updatedMatch.players,
+        participantIds: updatedMatch.participants,
       },
       [username]
     );
@@ -145,7 +145,7 @@ router.post("/:id/invite", async (req, res) => {
       "INVITATION_SENT",
       {
         matchId: req.params.id,
-        participantIds: updatedMatch.players,
+        participantIds: updatedMatch.participants,
       },
       usernames
     );
@@ -205,9 +205,9 @@ router.post("/:id/join", async (req, res) => {
       {
         matchId: req.params.id,
         requesterId: username,
-        participantIds: match.players,
+        participantIds: match.participants,
       },
-      match.players
+      match.participants
     );
 
     logger.info("User successfully joined match", {
@@ -294,9 +294,9 @@ router.post("/:id/confirm", async (req, res) => {
       "INVITATION_PROCESSED",
       {
         matchId: req.params.id,
-        participantIds: updatedMatch.players,
+        participantIds: updatedMatch.participants,
       },
-      updatedMatch.players
+      updatedMatch.participants
     );
 
     // Check if the match is now full (assuming maxPlayers is a field in the match)
@@ -308,9 +308,9 @@ router.post("/:id/confirm", async (req, res) => {
         "MATCH_FULL",
         {
           matchId: req.params.id,
-          participantIds: updatedMatch.players,
+          participantIds: updatedMatch.participants,
         },
-        updatedMatch.players
+        updatedMatch.participants
       );
     }
 
@@ -425,9 +425,9 @@ router.delete("/:id/", async (req, res) => {
       "MATCH_CANCELED_BY_MATCH",
       {
         matchId: req.params.id,
-        participantIds: match.players,
+        participantIds: match.participants,
       },
-      match.players
+      match.participants
     );
 
     const matches = await padelMatchService.deleteMatch(req.params.id);

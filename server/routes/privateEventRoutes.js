@@ -143,7 +143,7 @@ router.post("/:eventId/confirm", async (req, res) => {
         "EVENT_FULL",
         {
           eventId: req.params.eventId,
-          participantIds: updatedEvent.players,
+          participantIds: updatedEvent.participants,
         },
         updatedEvent.players
       );
@@ -370,7 +370,7 @@ router.post("/:eventId/join", async (req, res) => {
       {
         eventId: req.params.eventId,
         requesterId: username,
-        participantIds: event.players,
+        participantIds: event.participants,
       },
       event.players
     );
@@ -422,7 +422,7 @@ router.post("/:eventId/confirm", async (req, res) => {
       {
         eventId: req.params.eventId,
         requesterId: username,
-        participantIds: updatedEvent.players,
+        participantIds: updatedEvent.participants,
       },
       [username]
     );
@@ -432,18 +432,18 @@ router.post("/:eventId/confirm", async (req, res) => {
       "INVITATION_PROCESSED",
       {
         eventId: req.params.eventId,
-        participantIds: updatedEvent.players,
+        participantIds: updatedEvent.participants,
       },
-      updatedEvent.players
+      updatedEvent.participants
     );
 
-    // Check if the event is now full (assuming maxPlayers is a field in the event)
+    // Check if the event is now full (assuming totalSpots is a field in the event)
     if (updatedEvent.participants.length >= updatedEvent.totalSpots) {
       await sendPrivateEventNotification(
         "EVENT_FULL",
         {
           eventId: req.params.eventId,
-          participantIds: updatedEvent.players,
+          participantIds: updatedEvent.participants,
         },
         updatedEvent.players
       );
@@ -490,9 +490,9 @@ router.delete("/:eventId", async (req, res) => {
       "EVENT_CANCELED_BY_CREATOR",
       {
         eventId: req.params.eventId,
-        participantIds: event.players,
+        participantIds: event.participants,
       },
-      event.players
+      event.participants
     );
 
     const events = await privateEventService.deletePrivateEvent(
