@@ -119,7 +119,7 @@ const CourtSchedule: React.FC = () => {
           user?.username || "Unknown",
           "Available Court Times",
           notificationMessage,
-          "updates"
+          "general"
         );
       } catch (err) {
         console.error("Error in handleSendNotification:", err);

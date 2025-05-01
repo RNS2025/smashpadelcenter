@@ -1,10 +1,13 @@
-// routes/privateEventRoutes.js
 const express = require("express");
 const router = express.Router();
 const privateEventService = require("../Services/privateEventService");
 const PrivateEvent = require("../models/PrivateEvent");
 const logger = require("../config/logger");
 const { verifyJWT } = require("../middleware/jwt");
+const {
+  sendPrivateEventNotification,
+} = require("../Services/subscriptionService");
+
 router.use(verifyJWT);
 
 // Middleware to detect if the request is from a browser
@@ -36,6 +39,16 @@ router.post("/:eventId/invite", async (req, res) => {
     }
     const updatedEvent = await privateEventService.invitedPlayers(
       req.params.eventId,
+      usernames
+    );
+
+    // Notify the invited users
+    await sendPrivateEventNotification(
+      "INVITATION_SENT",
+      {
+        eventId: req.params.eventId,
+        participantIds: updatedEvent.players,
+      },
       usernames
     );
 
@@ -102,6 +115,40 @@ router.post("/:eventId/confirm", async (req, res) => {
       req.params.eventId,
       username
     );
+
+    // Notify the user who requested that their request was processed
+    await sendPrivateEventNotification(
+      "REQUEST_PROCESSED",
+      {
+        eventId: req.params.eventId,
+        requesterId: username,
+        participantIds: updatedEvent.players,
+      },
+      [username]
+    );
+
+    // Notify all participants that the invitation was processed
+    await sendPrivateEventNotification(
+      "INVITATION_PROCESSED",
+      {
+        eventId: req.params.eventId,
+        participantIds: updatedEvent.players,
+      },
+      updatedEvent.players
+    );
+
+    // Check if the event is now full (assuming maxPlayers is a field in the event)
+    if (updatedEvent.players.length >= updatedEvent.maxPlayers) {
+      await sendPrivateEventNotification(
+        "EVENT_FULL",
+        {
+          eventId: req.params.eventId,
+          participantIds: updatedEvent.players,
+        },
+        updatedEvent.players
+      );
+    }
+
     logger.info("User confirmed acceptance of private event", {
       eventId: req.params.eventId,
       username,
@@ -149,6 +196,18 @@ router.post("/:eventId/decline", async (req, res) => {
       req.params.eventId,
       username
     );
+
+    // Notify the user who requested that their request was processed
+    await sendPrivateEventNotification(
+      "REQUEST_PROCESSED",
+      {
+        eventId: req.params.eventId,
+        requesterId: username,
+        participantIds: updatedEvent.players,
+      },
+      [username]
+    );
+
     logger.info("User declined private event", {
       eventId: req.params.eventId,
       username,
@@ -304,6 +363,18 @@ router.post("/:eventId/join", async (req, res) => {
       req.params.eventId,
       username
     );
+
+    // Notify all participants (except the event itself) about the join request
+    await sendPrivateEventNotification(
+      "REQUEST_TO_JOIN_EVENT",
+      {
+        eventId: req.params.eventId,
+        requesterId: username,
+        participantIds: event.players,
+      },
+      event.players
+    );
+
     logger.info("User joined private event", {
       eventId: req.params.eventId,
       username,
@@ -344,6 +415,40 @@ router.post("/:eventId/confirm", async (req, res) => {
       req.params.eventId,
       username
     );
+
+    // Notify the user who requested that their request was processed
+    await sendPrivateEventNotification(
+      "REQUEST_PROCESSED",
+      {
+        eventId: req.params.eventId,
+        requesterId: username,
+        participantIds: updatedEvent.players,
+      },
+      [username]
+    );
+
+    // Notify all participants that the invitation was processed
+    await sendPrivateEventNotification(
+      "INVITATION_PROCESSED",
+      {
+        eventId: req.params.eventId,
+        participantIds: updatedEvent.players,
+      },
+      updatedEvent.players
+    );
+
+    // Check if the event is now full (assuming maxPlayers is a field in the event)
+    if (updatedEvent.players.length >= updatedEvent.maxPlayers) {
+      await sendPrivateEventNotification(
+        "EVENT_FULL",
+        {
+          eventId: req.params.eventId,
+          participantIds: updatedEvent.players,
+        },
+        updatedEvent.players
+      );
+    }
+
     logger.info("Join request confirmed", {
       eventId: req.params.eventId,
       confirmedUser: username,
@@ -379,6 +484,17 @@ router.delete("/:eventId", async (req, res) => {
         .status(403)
         .json({ message: "Only the event creator can delete the event" });
     }
+
+    // Notify all participants (except the event itself) about the cancellation
+    await sendPrivateEventNotification(
+      "EVENT_CANCELED_BY_CREATOR",
+      {
+        eventId: req.params.eventId,
+        participantIds: event.players,
+      },
+      event.players
+    );
+
     const events = await privateEventService.deletePrivateEvent(
       req.params.eventId
     );

@@ -165,7 +165,260 @@ const sendNotification = async (userId, title, body, category) => {
   }
 };
 
+// Function to handle padel match notifications
+const sendPadelMatchNotification = async (eventType, matchDetails, userIds) => {
+  try {
+    const { matchId, requesterId, participantIds = [] } = matchDetails;
+
+    const notificationScenarios = {
+      REQUEST_TO_JOIN_LEVEL: {
+        title: "Ny tilmeldingsanmodning",
+        body: `En spiller har anmodet om at deltage på dit niveau i kamp ${matchId}.`,
+        category: "makkerbors",
+        recipients: participantIds,
+      },
+      REQUEST_PROCESSED: {
+        title: "Anmodning behandlet",
+        body: `Din anmodning til kamp ${matchId} er blevet behandlet.`,
+        category: "makkerbors",
+        recipients: [requesterId],
+      },
+      INVITATION_SENT: {
+        title: "Ny invitation til kamp",
+        body: `Du er blevet inviteret til kamp ${matchId}.`,
+        category: "makkerbors",
+        recipients: userIds,
+      },
+      INVITATION_PROCESSED: {
+        title: "Invitation behandlet",
+        body: `Invitationen til kamp ${matchId} er blevet behandlet.`,
+        category: "makkerbors",
+        recipients: participantIds,
+      },
+      MATCH_FULL: {
+        title: "Kamp fyldt",
+        body: `Kamp ${matchId} er nu fyldt.`,
+        category: "makkerbors",
+        recipients: participantIds,
+      },
+      MATCH_CANCELED_DEADLINE: {
+        title: "Kamp aflyst pga. frist",
+        body: `Kamp ${matchId} er blevet aflyst på grund af fristen.`,
+        category: "makkerbors",
+        recipients: participantIds,
+      },
+      MATCH_CANCELED_BY_MATCH: {
+        title: "Kamp aflyst",
+        body: `Kamp ${matchId} er blevet aflyst af kampen.`,
+        category: "makkerbors",
+        recipients: participantIds,
+      },
+    };
+
+    if (!notificationScenarios[eventType]) {
+      throw new Error(`Invalid event type: ${eventType}`);
+    }
+
+    const { title, body, category, recipients } =
+      notificationScenarios[eventType];
+
+    if (!recipients || recipients.length === 0) {
+      logger.info("No recipients specified for notification", {
+        eventType,
+        matchId,
+      });
+      return;
+    }
+
+    const notificationPromises = recipients.map((userId) =>
+      sendNotification(userId, title, body, category)
+    );
+
+    await Promise.all(notificationPromises);
+    logger.info("Padel match notifications sent", {
+      eventType,
+      matchId,
+      recipients,
+    });
+  } catch (error) {
+    logger.error("Error in sendPadelMatchNotification", {
+      eventType,
+      matchId: matchDetails.matchId,
+      error: error.message,
+    });
+    throw error;
+  }
+};
+
+// Function to handle private event notifications
+const sendPrivateEventNotification = async (
+  eventType,
+  eventDetails,
+  userIds
+) => {
+  try {
+    const { eventId, requesterId, participantIds = [] } = eventDetails;
+
+    const notificationScenarios = {
+      REQUEST_TO_JOIN_EVENT: {
+        title: "Ny tilmeldingsanmodning",
+        body: `En bruger har anmodet om at deltage i dit private arrangement ${eventId}.`,
+        category: "events",
+        recipients: participantIds,
+      },
+      REQUEST_PROCESSED: {
+        title: "Anmodning behandlet",
+        body: `Din anmodning til arrangement ${eventId} er blevet behandlet.`,
+        category: "events",
+        recipients: [requesterId],
+      },
+      INVITATION_SENT: {
+        title: "Ny invitation til arrangement",
+        body: `Du er blevet inviteret til arrangement ${eventId}.`,
+        category: "events",
+        recipients: userIds,
+      },
+      INVITATION_PROCESSED: {
+        title: "Invitation behandlet",
+        body: `Invitationen til arrangement ${eventId} er blevet behandlet.`,
+        category: "events",
+        recipients: participantIds,
+      },
+      EVENT_FULL: {
+        title: "Arrangement fyldt",
+        body: `Arrangement ${eventId} er nu fyldt.`,
+        category: "events",
+        recipients: participantIds,
+      },
+      EVENT_CANCELED_DEADLINE: {
+        title: "Arrangement aflyst pga. frist",
+        body: `Arrangement ${eventId} er blevet aflyst på grund af fristen.`,
+        category: "events",
+        recipients: participantIds,
+      },
+      EVENT_CANCELED_BY_CREATOR: {
+        title: "Arrangement aflyst",
+        body: `Arrangement ${eventId} er blevet aflyst af arrangøren.`,
+        category: "events",
+        recipients: participantIds,
+      },
+    };
+
+    if (!notificationScenarios[eventType]) {
+      throw new Error(`Invalid event type: ${eventType}`);
+    }
+
+    const { title, body, category, recipients } =
+      notificationScenarios[eventType];
+
+    if (!recipients || recipients.length === 0) {
+      logger.info("No recipients specified for notification", {
+        eventType,
+        eventId,
+      });
+      return;
+    }
+
+    const notificationPromises = recipients.map((userId) =>
+      sendNotification(userId, title, body, category)
+    );
+
+    await Promise.all(notificationPromises);
+    logger.info("Private event notifications sent", {
+      eventType,
+      eventId,
+      recipients,
+    });
+  } catch (error) {
+    logger.error("Error in sendPrivateEventNotification", {
+      eventType,
+      eventId: eventDetails.eventId,
+      error: error.message,
+    });
+    throw error;
+  }
+};
+
+// New function to handle tournament check-in notifications
+const sendTournamentCheckInNotification = async (
+  eventType,
+  checkInDetails,
+  userIds
+) => {
+  try {
+    const {
+      tournamentId,
+      rowId,
+      playerId,
+      playerName,
+      adminIds = [],
+      opponentIds = [],
+      partnerIds = [],
+    } = checkInDetails;
+
+    const notificationScenarios = {
+      PLAYER_CHECKED_IN: {
+        title: "Tjekket ind",
+        body: `Du er nu tjekket ind til turnering ${tournamentId}, bane ${rowId}.`,
+        category: "turneringer",
+        recipients: partnerIds, // Notify the partner pair
+      },
+      PARTNER_CHECKED_IN: {
+        title: "Makkerpar tjekket ind",
+        body: `Makkerpar ${playerName} er tjekket ind til turnering ${tournamentId}, bane ${rowId}.`,
+        category: "turneringer",
+        recipients: adminIds, // Notify all admins
+      },
+      COURT_READY: {
+        title: "Bane klar til kamp",
+        body: `Banen er klar til kamp i turnering ${tournamentId}, bane ${rowId}.`,
+        category: "turneringer",
+        recipients: [...partnerIds, ...opponentIds], // Notify partner pair and opponents
+      },
+    };
+
+    if (!notificationScenarios[eventType]) {
+      throw new Error(`Invalid event type: ${eventType}`);
+    }
+
+    const { title, body, category, recipients } =
+      notificationScenarios[eventType];
+
+    if (!recipients || recipients.length === 0) {
+      logger.info("No recipients specified for notification", {
+        eventType,
+        tournamentId,
+        rowId,
+      });
+      return;
+    }
+
+    const notificationPromises = recipients.map((userId) =>
+      sendNotification(userId, title, body, category)
+    );
+
+    await Promise.all(notificationPromises);
+    logger.info("Tournament check-in notifications sent", {
+      eventType,
+      tournamentId,
+      rowId,
+      recipients,
+    });
+  } catch (error) {
+    logger.error("Error in sendTournamentCheckInNotification", {
+      eventType,
+      tournamentId,
+      rowId,
+      error: error.message,
+    });
+    throw error;
+  }
+};
+
 module.exports = {
   saveSubscription,
   sendNotification,
+  sendPadelMatchNotification,
+  sendPrivateEventNotification,
+  sendTournamentCheckInNotification,
 };

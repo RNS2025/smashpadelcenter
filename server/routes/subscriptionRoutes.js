@@ -215,10 +215,10 @@ router.get("/preferences/:userId", async (req, res) => {
       // Return default preferences if none exist
       return res.status(200).json({
         preferences: {
-          updates: true,
-          messages: true,
-          events: false,
-          promotions: false,
+          general: true,
+          events: true,
+          makkerbors: true,
+          turneringer: true,
         },
       });
     }

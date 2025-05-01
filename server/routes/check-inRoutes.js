@@ -1,7 +1,9 @@
 const express = require("express");
 const checkInService = require("../Services/checkInService");
-const { sendNotification } = require("../Services/subscriptionService");
-const logger = require("../config/logger"); // Add logger import
+const {
+  sendTournamentCheckInNotification,
+} = require("../Services/subscriptionService");
+const logger = require("../config/logger");
 
 const router = express.Router();
 
@@ -76,6 +78,16 @@ router.get("/check-in/status", async (req, res) => {
  *                 type: string
  *               checkedIn:
  *                 type: boolean
+ *               userId:
+ *                 type: string
+ *               partnerIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               adminIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
  *     responses:
  *       200:
  *         description: Check-in status updated successfully
@@ -89,8 +101,17 @@ router.post("/check-in/update", async (req, res) => {
     checkedIn: req.body.checkedIn,
   });
   try {
-    const { tournamentId, rowId, playerId, playerName, checkedIn, userId } =
-      req.body;
+    const {
+      tournamentId,
+      rowId,
+      playerId,
+      playerName,
+      checkedIn,
+      userId,
+      partnerIds = [],
+      adminIds = [],
+    } = req.body;
+
     // Update the check-in status
     await checkInService.updateCheckInStatus(
       tournamentId,
@@ -100,11 +121,32 @@ router.post("/check-in/update", async (req, res) => {
       checkedIn
     );
 
-    await sendNotification(
-      userId,
-      "Check-in Successful",
-      `${playerName} checked in!`,
-      "turneringer"
+    // Notify the partner pair (PLAYER_CHECKED_IN)
+    await sendTournamentCheckInNotification(
+      "PLAYER_CHECKED_IN",
+      {
+        tournamentId,
+        rowId,
+        playerId,
+        playerName,
+        partnerIds,
+        adminIds,
+      },
+      partnerIds
+    );
+
+    // Notify all admins (PARTNER_CHECKED_IN)
+    await sendTournamentCheckInNotification(
+      "PARTNER_CHECKED_IN",
+      {
+        tournamentId,
+        rowId,
+        playerId,
+        playerName,
+        partnerIds,
+        adminIds,
+      },
+      adminIds
     );
 
     logger.info("Check-in status updated successfully", {
@@ -149,6 +191,14 @@ router.post("/check-in/update", async (req, res) => {
  *                       type: string
  *                     playerName:
  *                       type: string
+ *                     partnerIds:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                     adminIds:
+ *                       type: array
+ *                       items:
+ *                         type: string
  *     responses:
  *       200:
  *         description: Check-in status updated successfully for all players
@@ -170,6 +220,40 @@ router.post("/check-in/bulk-update", async (req, res) => {
       checkedIn,
       players
     );
+
+    // Notify each player's partner pair and admins
+    for (const player of players) {
+      const { playerId, playerName, partnerIds = [], adminIds = [] } = player;
+
+      // Notify the partner pair (PLAYER_CHECKED_IN)
+      await sendTournamentCheckInNotification(
+        "PLAYER_CHECKED_IN",
+        {
+          tournamentId,
+          rowId,
+          playerId,
+          playerName,
+          partnerIds,
+          adminIds,
+        },
+        partnerIds
+      );
+
+      // Notify all admins (PARTNER_CHECKED_IN)
+      await sendTournamentCheckInNotification(
+        "PARTNER_CHECKED_IN",
+        {
+          tournamentId,
+          rowId,
+          playerId,
+          playerName,
+          partnerIds,
+          adminIds,
+        },
+        adminIds
+      );
+    }
+
     logger.info("Bulk check-in status updated successfully", {
       tournamentId,
       rowId,

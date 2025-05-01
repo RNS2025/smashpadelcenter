@@ -4,6 +4,10 @@ const padelMatchService = require("../Services/padelMatchService");
 const PadelMatch = require("../models/PadelMatch");
 const logger = require("../config/logger");
 const { verifyJWT } = require("../middleware/jwt");
+const {
+  sendPadelMatchNotification,
+} = require("../Services/subscriptionService");
+
 router.use(verifyJWT);
 
 // GET /api/v1/matches - Get all matches
@@ -33,6 +37,17 @@ router.post("/:id/reject", async (req, res) => {
     const updatedMatch = await padelMatchService.rejectJoin(
       req.params.id,
       username
+    );
+
+    // Notify the player who requested that their request was processed
+    await sendPadelMatchNotification(
+      "REQUEST_PROCESSED",
+      {
+        matchId: req.params.id,
+        requesterId: username,
+        participantIds: updatedMatch.players,
+      },
+      [username]
     );
 
     logger.info("Successfully rejected user join", {
@@ -74,6 +89,17 @@ router.post("/:id/accept", async (req, res) => {
       username
     );
 
+    // Notify the player who requested that their request was processed
+    await sendPadelMatchNotification(
+      "REQUEST_PROCESSED",
+      {
+        matchId: req.params.id,
+        requesterId: username,
+        participantIds: updatedMatch.players,
+      },
+      [username]
+    );
+
     logger.info("Successfully accepted user join", {
       matchId: req.params.id,
       username,
@@ -111,6 +137,16 @@ router.post("/:id/invite", async (req, res) => {
     }
     const updatedMatch = await padelMatchService.invitedPlayers(
       req.params.id,
+      usernames
+    );
+
+    // Notify the invited players
+    await sendPadelMatchNotification(
+      "INVITATION_SENT",
+      {
+        matchId: req.params.id,
+        participantIds: updatedMatch.players,
+      },
       usernames
     );
 
@@ -162,6 +198,17 @@ router.post("/:id/join", async (req, res) => {
         .json({ message: "Cannot join match as another user" });
     }
     const match = await padelMatchService.joinMatch(req.params.id, username);
+
+    // Notify all participants (except the match itself) about the join request
+    await sendPadelMatchNotification(
+      "REQUEST_TO_JOIN_LEVEL",
+      {
+        matchId: req.params.id,
+        requesterId: username,
+        participantIds: match.players,
+      },
+      match.players
+    );
 
     logger.info("User successfully joined match", {
       username,
@@ -241,6 +288,28 @@ router.post("/:id/confirm", async (req, res) => {
       req.params.id,
       username
     );
+
+    // Notify all participants that the invitation was processed
+    await sendPadelMatchNotification(
+      "INVITATION_PROCESSED",
+      {
+        matchId: req.params.id,
+        participantIds: updatedMatch.players,
+      },
+      updatedMatch.players
+    );
+
+    // Check if the match is now full (assuming maxPlayers is a field in the match)
+    if (updatedMatch.players.length >= updatedMatch.maxPlayers) {
+      await sendPadelMatchNotification(
+        "MATCH_FULL",
+        {
+          matchId: req.params.id,
+          participantIds: updatedMatch.players,
+        },
+        updatedMatch.players
+      );
+    }
 
     logger.info("Successfully confirmed user join", {
       matchId: req.params.id,
@@ -347,6 +416,17 @@ router.delete("/:id/", async (req, res) => {
       });
       return res.status(404).json({ message: "Match not found" });
     }
+
+    // Notify all participants (except the match itself) about the cancellation
+    await sendPadelMatchNotification(
+      "MATCH_CANCELED_BY_MATCH",
+      {
+        matchId: req.params.id,
+        participantIds: match.players,
+      },
+      match.players
+    );
+
     const matches = await padelMatchService.deleteMatch(req.params.id);
 
     logger.info("Successfully deleted match", { matchId: req.params.id });

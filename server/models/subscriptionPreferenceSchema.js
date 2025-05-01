@@ -8,13 +8,9 @@ const subscriptionPreferenceSchema = new mongoose.Schema({
     index: true,
   },
   preferences: {
-    updates: { type: Boolean, default: true },
-    messages: { type: Boolean, default: true },
+    general: { type: Boolean, default: true },
     events: { type: Boolean, default: false },
-    promotions: { type: Boolean, default: false },
     makkerbors: { type: Boolean, default: false },
-    rangliste: { type: Boolean, default: false },
-    nyheder: { type: Boolean, default: false },
     turneringer: { type: Boolean, default: false },
   },
   updatedAt: {

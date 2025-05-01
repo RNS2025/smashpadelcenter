@@ -314,6 +314,13 @@ const padelMatchService = {
         totalSpots: match.totalSpots || 4,
       };
       console.log("joinMatch updated match:", updatedMatch);
+
+      // Send notification to the match creator
+      const matchCreator = await User.findOne({ username:
+        match.username,
+      });
+      
+
       return updatedMatch;
     } catch (error) {
       console.error("Error joining match:", error.message);

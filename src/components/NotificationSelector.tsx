@@ -22,14 +22,10 @@ const NotificationSelector: React.FC<NotificationSelectorProps> = ({
   userId,
 }) => {
   const [preferences, setPreferences] = useState<Preferences>(() => ({
-    updates: false,
-    messages: false,
-    events: false,
-    promotions: false,
-    makkerbors: false,
-    rangliste: false,
-    nyheder: false,
-    turneringer: false,
+    general: true,
+    events: true,
+    makkerbors: true,
+    turneringer: true,
   }));
   const [loading, setLoading] = useState<boolean>(false);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>(null);
@@ -44,14 +40,10 @@ const NotificationSelector: React.FC<NotificationSelectorProps> = ({
         // Normalize API response to ensure all preference keys are present and boolean
         const fetchedPreferences = response.data.preferences || {};
         const normalizedPreferences: Preferences = {
-          updates: fetchedPreferences.updates ?? false,
-          messages: fetchedPreferences.messages ?? false,
-          events: fetchedPreferences.events ?? false,
-          promotions: fetchedPreferences.promotions ?? false,
-          makkerbors: fetchedPreferences.makkerbors ?? false,
-          rangliste: fetchedPreferences.rangliste ?? false,
-          nyheder: fetchedPreferences.nyheder ?? false,
-          turneringer: fetchedPreferences.turneringer ?? false,
+          general: fetchedPreferences.general ?? true,
+          events: fetchedPreferences.events ?? true,
+          makkerbors: fetchedPreferences.makkerbors ?? true,
+          turneringer: fetchedPreferences.turneringer ?? true,
         };
         setPreferences(normalizedPreferences);
       } catch (error) {
