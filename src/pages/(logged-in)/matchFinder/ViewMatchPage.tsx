@@ -32,7 +32,6 @@ export const ViewMatchPage = () => {
   const [match, setMatch] = useState<PadelMatch | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [socketConnected, setSocketConnected] = useState(false);
   const [participantProfiles, setParticipantProfiles] = useState<User[]>([]);
   const [joinRequestProfiles, setJoinRequestProfiles] = useState<User[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
@@ -255,8 +254,8 @@ export const ViewMatchPage = () => {
     try {
       const userConfirm = confirm("Er du sikker på at du vil slette kampen?");
       if (userConfirm) {
-      await communityApi.deleteMatch(match.id);
-      window.history.back();
+        await communityApi.deleteMatch(match.id);
+        window.history.back();
       }
     } catch (error: any) {
       console.error("Error deleting match:", error);
@@ -356,13 +355,6 @@ export const ViewMatchPage = () => {
           <h1 className="text-center text-gray-500 italic text-sm">
             Tryk på et spillernavn for at se mere information
           </h1>
-
-          {!socketConnected && (
-            <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-2 mb-4">
-              Realtidsopdateringer er ikke tilgængelige. Opdater siden for at se
-              de seneste ændringer.
-            </div>
-          )}
 
           {/* Participants */}
           {participantProfiles.map((profile) => (

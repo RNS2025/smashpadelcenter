@@ -15,15 +15,10 @@ const logger = {
 
 // Dynamic URL mapping
 const preferenceUrlMap = {
-  updates: "/court-times",
-  messages: "/messages",
-  events: "/events",
-  promotions: "/promotions",
+  events: "/private-events",
   makkerbors: "/makkerbors",
-  rangliste: "/rangliste",
-  nyheder: "/news",
   turneringer: "/turneringer",
-  general: "/hjem",
+  general: "/general",1
 };
 
 // Push event

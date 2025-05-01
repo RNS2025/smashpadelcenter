@@ -1,13 +1,7 @@
-/*const { Trainer, Booking, TrainerMessage } = require("../models/Trainer");
+const { Trainer, Booking, TrainerMessage } = require("../models/Trainer");
 const User = require("../models/user");
 const { updateUserRole } = require("./databaseService");
 const logger = require("../config/logger");
-
-let io; // Socket.IO instance
-function setIO(socketIO) {
-  io = socketIO;
-  logger.info("TrainerService: Socket.IO instance set");
-}>
 
 const getAllTrainers = async () => {
   try {
@@ -48,14 +42,6 @@ const createTrainer = async (trainerData) => {
     const trainer = new Trainer(trainerData);
     const savedTrainer = await trainer.save();
 
-    // Emit trainer creation event
-    if (io) {
-      io.to(`user_${trainerData.username}`).emit(
-        "trainerCreated",
-        savedTrainer
-      );
-    }
-
     logger.info("TrainerService: Trainer created successfully", {
       trainer: savedTrainer,
     });
@@ -91,13 +77,6 @@ const bookTrainer = async (username, trainerUsername, date, timeSlot) => {
       status: "pending",
     });
     const savedBooking = await booking.save();
-
-    // Emit booking event
-    if (io) {
-      io.to(`trainer_${trainerUsername}`)
-        .to(`user_${username}`)
-        .emit("newBooking", savedBooking);
-    }
 
     logger.info("TrainerService: Booking created successfully", {
       booking: savedBooking,
@@ -139,13 +118,6 @@ const sendTrainerMessage = async (senderUsername, trainerUsername, content) => {
       content,
     });
     const savedMessage = await message.save();
-
-    // Emit message event
-    if (io) {
-      io.to(`trainer_${trainerUsername}`)
-        .to(`user_${senderUsername}`)
-        .emit("newTrainerMessage", savedMessage);
-    }
 
     logger.info("TrainerService: Message sent successfully", {
       message: savedMessage,
@@ -239,14 +211,6 @@ const addTrainerAvailability = async (username, availabilityData) => {
 
     const updatedTrainer = await trainer.save();
 
-    // Emit availability update
-    if (io) {
-      io.to(`trainer_${username}`).emit(
-        "updatedAvailability",
-        updatedTrainer.availability
-      );
-    }
-
     logger.info("TrainerService: Trainer availability added successfully", {
       username,
       availability: updatedTrainer.availability,
@@ -270,14 +234,6 @@ const removeTrainerAvailability = async (username, date) => {
     );
 
     const updatedTrainer = await trainer.save();
-
-    // Emit availability update
-    if (io) {
-      io.to(`trainer_${username}`).emit(
-        "updatedAvailability",
-        updatedTrainer.availability
-      );
-    }
 
     logger.info("TrainerService: Trainer availability removed successfully", {
       username,
@@ -311,7 +267,6 @@ const getAllTrainerMessages = async (trainerUsername) => {
 };
 
 module.exports = {
-  setIO,
   getAllTrainers,
   createTrainer,
   bookTrainer,
@@ -323,4 +278,3 @@ module.exports = {
   removeTrainerAvailability,
   getAllTrainerMessages,
 };
-*/

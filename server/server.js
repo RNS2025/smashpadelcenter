@@ -96,13 +96,8 @@ app.use((err, req, res, next) => {
   res.status(500).json({ error: "Internal Server Error" });
 });
 
-// HTTP Server and Socket.IO setup
+// HTTP Server
 const httpServer = http.createServer(app);
-
-// Health check
-app.get("/health", (req, res) => {
-  res.status(200).json({ status: "Server is running", socketIo: !!io });
-});
 
 // Clean database function
 const cleanDatabase = async () => {

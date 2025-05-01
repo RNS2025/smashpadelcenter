@@ -7,14 +7,6 @@ const { verifyJWT, checkRole } = require("../middleware/jwt");
 const logger = require("../config/logger"); // Import logger
 
 /**
- * Middleware to inject io
- */
-router.use((req, res, next) => {
-  req.io = req.app.get("socketio");
-  next();
-});
-
-/**
  * @swagger
  * /api/v1/messages/{friendId}:
  *   get:

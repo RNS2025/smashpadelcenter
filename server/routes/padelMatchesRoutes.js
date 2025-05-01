@@ -34,9 +34,6 @@ router.post("/:id/reject", async (req, res) => {
       req.params.id,
       username
     );
-    const io = req.app.get("socketio");
-    logger.info("Emitting matchUpdated event", { matchId: updatedMatch.id });
-    io.to(req.params.id).emit("matchUpdated", updatedMatch);
 
     logger.info("Successfully rejected user join", {
       matchId: req.params.id,
@@ -76,9 +73,6 @@ router.post("/:id/accept", async (req, res) => {
       req.params.id,
       username
     );
-    const io = req.app.get("socketio");
-    logger.info("Emitting matchUpdated event", { matchId: updatedMatch.id });
-    io.to(req.params.id).emit("matchUpdated", updatedMatch);
 
     logger.info("Successfully accepted user join", {
       matchId: req.params.id,
@@ -119,9 +113,7 @@ router.post("/:id/invite", async (req, res) => {
       req.params.id,
       usernames
     );
-    const io = req.app.get("socketio");
-    logger.info("Emitting matchUpdated event", { matchId: updatedMatch.id });
-    io.to(req.params.id).emit("matchUpdated", updatedMatch);
+
     logger.info("Players invited to padel match", {
       matchId: req.params.id,
       usernames,
@@ -145,9 +137,6 @@ router.post("/", async (req, res) => {
       username: req.user.username, // Ensure creator is the authenticated user
     };
     const newMatch = await padelMatchService.createMatch(matchData);
-    const io = req.app.get("socketio");
-    logger.info("Emitting matchUpdated event", { matchId: newMatch.id });
-    io.to(newMatch.id).emit("matchUpdated", newMatch);
 
     logger.info("Successfully created new padel match", {
       matchId: newMatch.id,
@@ -173,9 +162,6 @@ router.post("/:id/join", async (req, res) => {
         .json({ message: "Cannot join match as another user" });
     }
     const match = await padelMatchService.joinMatch(req.params.id, username);
-    const io = req.app.get("socketio");
-    logger.info("Emitting matchUpdated event", { matchId: match.id });
-    io.to(req.params.id).emit("matchUpdated", match);
 
     logger.info("User successfully joined match", {
       username,
@@ -215,9 +201,6 @@ router.post("/:id/player-cancel", async (req, res) => {
       req.params.id,
       username
     );
-    const io = req.app.get("socketio");
-    logger.info("Emitting matchUpdated event", { matchId: updatedMatch.id });
-    io.to(req.params.id).emit("matchUpdated", updatedMatch);
 
     logger.info("Successfully cancelled user join", {
       matchId: req.params.id,
@@ -258,9 +241,6 @@ router.post("/:id/confirm", async (req, res) => {
       req.params.id,
       username
     );
-    const io = req.app.get("socketio");
-    logger.info("Emitting matchUpdated event", { matchId: updatedMatch.id });
-    io.to(req.params.id).emit("matchUpdated", updatedMatch);
 
     logger.info("Successfully confirmed user join", {
       matchId: req.params.id,
@@ -302,12 +282,6 @@ router.patch("/:id/reserve", async (req, res) => {
       spotIndex,
       reserve
     );
-    const io = req.app.get("socketio");
-    logger.info("Emitting matchUpdated event", { matchId: req.params.id });
-    io.to(req.params.id).emit(
-      "matchUpdated",
-      matches.find((m) => m.id === req.params.id)
-    );
 
     logger.info(`Successfully ${reserve ? "reserved" : "unreserved"} spot`, {
       matchId: req.params.id,
@@ -348,9 +322,6 @@ router.post("/:id/remove-player", async (req, res) => {
       req.params.id,
       username
     );
-    const io = req.app.get("socketio");
-    logger.info("Emitting matchUpdated event", { matchId: updatedMatch.id });
-    io.to(req.params.id).emit("matchUpdated", updatedMatch);
 
     logger.info("Successfully removed player from match", {
       matchId: req.params.id,
@@ -376,9 +347,6 @@ router.delete("/:id/", async (req, res) => {
       });
       return res.status(404).json({ message: "Match not found" });
     }
-    const io = req.app.get("socketio");
-    logger.info("Emitting matchDeleted event", { matchId: req.params.id });
-    io.to(req.params.id).emit("matchDeleted", req.params.id);
     const matches = await padelMatchService.deleteMatch(req.params.id);
 
     logger.info("Successfully deleted match", { matchId: req.params.id });

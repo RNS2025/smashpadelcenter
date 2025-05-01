@@ -81,7 +81,7 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
               />
               <BellIcon
                 onClick={() => setNotificationsVisible((prev) => !prev)}
-                className={`hidden h-8 cursor-pointer ${
+                className={`h-8 cursor-pointer ${
                   notificationsVisible ? "text-cyan-500" : "text-black"
                 }`}
               />

@@ -3,7 +3,7 @@ const express = require("express");
 const router = express.Router();
 const privateEventService = require("../Services/privateEventService");
 const PrivateEvent = require("../models/PrivateEvent");
-const logger = require("../config/logger"); // Import logger
+const logger = require("../config/logger");
 const { verifyJWT } = require("../middleware/jwt");
 router.use(verifyJWT);
 
@@ -38,8 +38,7 @@ router.post("/:eventId/invite", async (req, res) => {
       req.params.eventId,
       usernames
     );
-    const io = req.app.get("socketio");
-    io.to(req.params.eventId).emit("eventUpdated", updatedEvent);
+
     logger.info("Players invited to private event", {
       eventId: req.params.eventId,
       usernames,
@@ -80,8 +79,6 @@ router.post("/:eventId/remove-player", async (req, res) => {
       req.params.eventId,
       username
     );
-    const io = req.app.get("socketio");
-    io.to(req.params.eventId).emit("eventUpdated", updatedEvent);
     logger.info("Player removed from private event", {
       eventId: req.params.eventId,
       username,
@@ -105,8 +102,6 @@ router.post("/:eventId/confirm", async (req, res) => {
       req.params.eventId,
       username
     );
-    const io = req.app.get("socketio");
-    io.to(req.params.eventId).emit("eventUpdated", updatedEvent);
     logger.info("User confirmed acceptance of private event", {
       eventId: req.params.eventId,
       username,
@@ -154,8 +149,6 @@ router.post("/:eventId/decline", async (req, res) => {
       req.params.eventId,
       username
     );
-    const io = req.app.get("socketio");
-    io.to(req.params.eventId).emit("eventUpdated", updatedEvent);
     logger.info("User declined private event", {
       eventId: req.params.eventId,
       username,
@@ -241,8 +234,6 @@ router.post("/", async (req, res) => {
       username: req.user.username,
     };
     const newEvent = await privateEventService.createPrivateEvent(eventData);
-    const io = req.app.get("socketio");
-    io.to(newEvent.id).emit("eventUpdated", newEvent);
     logger.info("Private event created successfully", {
       eventId: newEvent._id,
       creator: req.user.username,
@@ -281,8 +272,6 @@ router.patch("/:eventId", async (req, res) => {
       req.params.eventId,
       req.body
     );
-    const io = req.app.get("socketio");
-    io.to(req.params.eventId).emit("eventUpdated", updatedEvent);
     logger.info("Private event updated successfully", {
       eventId: req.params.eventId,
       username: req.user.username,
@@ -315,8 +304,6 @@ router.post("/:eventId/join", async (req, res) => {
       req.params.eventId,
       username
     );
-    const io = req.app.get("socketio");
-    io.to(req.params.eventId).emit("eventUpdated", event);
     logger.info("User joined private event", {
       eventId: req.params.eventId,
       username,
@@ -357,8 +344,6 @@ router.post("/:eventId/confirm", async (req, res) => {
       req.params.eventId,
       username
     );
-    const io = req.app.get("socketio");
-    io.to(req.params.eventId).emit("eventUpdated", updatedEvent);
     logger.info("Join request confirmed", {
       eventId: req.params.eventId,
       confirmedUser: username,
@@ -397,8 +382,6 @@ router.delete("/:eventId", async (req, res) => {
     const events = await privateEventService.deletePrivateEvent(
       req.params.eventId
     );
-    const io = req.app.get("socketio");
-    io.to(req.params.eventId).emit("eventDeleted", req.params.eventId);
     logger.info("Private event deleted successfully", {
       eventId: req.params.eventId,
       username: req.user.username,
