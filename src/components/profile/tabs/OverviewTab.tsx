@@ -34,7 +34,8 @@ const OverviewTab = () => {
     const upcoming = filteredMatches.filter(
       (match: PadelMatch) => new Date(match.endTime) > new Date()
     );
-    const former = filteredMatches.filter(
+    const former = filteredMatches.filter((match) => match.participants.length === match.totalSpots)
+        .filter(
       (match: PadelMatch) => new Date(match.endTime) <= new Date()
     );
     return { upcoming, former };
@@ -144,7 +145,7 @@ const OverviewTab = () => {
                 </div>
                 <div className="flex justify-between text-sm pt-2">
                   <div className="flex items-center gap-4">
-                    {!match.result ? (
+                    {match.participants.length !== match.totalSpots ? (
                       <QuestionMarkCircleIcon className="h-10 text-gray-800" />
                     ) : (
                       <CheckCircleIcon className="h-10 text-green-800" />
@@ -154,7 +155,7 @@ const OverviewTab = () => {
                       <h1>{match.level}</h1>
                     </div>
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-2 gap-2 text-end">
                     {[
                       ...match.participants,
                       ...match.reservedSpots.map((reserved) => reserved.name),
@@ -204,7 +205,7 @@ const OverviewTab = () => {
                 </div>
                 <div className="flex justify-between text-sm pt-2">
                   <div className="flex items-center gap-4">
-                    {!match.result ? (
+                    {match.result === "pending" || match.result === "unknown" ? (
                       <QuestionMarkCircleIcon className="h-10 text-gray-800" />
                     ) : (
                       <CheckCircleIcon className="h-10 text-green-800" />

@@ -91,7 +91,7 @@ export const EditGroupTab = () => {
       await userProfileService.updateUserProfile(user.username, {
         groups: updatedGroups,
       });
-      navigate("/profil/grupper");
+      navigate(`/profil/${user.username}/grupper`);
     } catch (error) {
       console.error("Error creating group:", error);
       setError("Kunne ikke oprette gruppe.");
@@ -114,7 +114,7 @@ export const EditGroupTab = () => {
       await userProfileService.updateUserProfile(user.username, {
         groups: updatedGroups,
       });
-      navigate("/profil/grupper");
+      navigate(`/profil/${user.username}/grupper`);
       }
     } catch (error) {
       console.error("Error deleting group:", error);

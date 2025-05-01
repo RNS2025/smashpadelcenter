@@ -1,7 +1,6 @@
 const express = require('express');
 const router = express.Router();
 const briefingService = require('../Services/briefingService');
-const briefing = require('../models/Briefing');
 
 // POST /api/v1/briefing
 router.post('/', async (req, res) => {

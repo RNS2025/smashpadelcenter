@@ -97,7 +97,7 @@ export const CreateGroupTab = () => {
       await userProfileService.updateUserProfile(user.username, {
         groups: [...(user.groups || []), newGroup],
       });
-      navigate("/profil/grupper");
+      navigate(`/profil/${user.username}/grupper`);
     } catch (error) {
       console.error("Error creating group:", error);
       setError("Kunne ikke oprette gruppe.");

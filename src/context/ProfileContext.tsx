@@ -12,7 +12,6 @@ import {
 import { User } from "../types/user";
 import userProfileService from "../services/userProfileService";
 import communityApi from "../services/makkerborsService";
-import { useUser } from "./UserContext";
 import { PadelMatch } from "../types/PadelMatch";
 
 interface MatchesData {
@@ -40,8 +39,7 @@ const ProfileContext = createContext<ProfileContextValue | undefined>(
   undefined
 );
 
-export function ProfileProvider({ children }: { children: ReactNode }) {
-  const { user } = useUser();
+export function ProfileProvider({ children, username }: { children: ReactNode; username: string }) {
   const [profile, setProfile] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -54,10 +52,10 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
   const [matchesLoading, setMatchesLoading] = useState(true);
 
   const fetchMatches = useCallback(async () => {
-    if (!user?.username) return;
+    if (!username) return;
     try {
       setMatchesLoading(true);
-      const userMatches = await communityApi.getMatchesByUser(user.username);
+      const userMatches = await communityApi.getMatchesByUser(username);
       const now = new Date();
       const upcomingMatches = userMatches
         .filter((match) => new Date(match.matchDateTime) > now)
@@ -83,15 +81,15 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     } finally {
       setMatchesLoading(false);
     }
-  }, [user?.username]);
+  }, [username]);
 
   useEffect(() => {
     const fetchData = async () => {
-      if (!user?.username) return;
+      if (!username) return;
       try {
         setLoading(true);
         const profileData = await userProfileService.getOrCreateUserProfile(
-          user.username
+            username
         );
         setProfile(profileData);
         setFormData(profileData);
@@ -102,13 +100,13 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
         setLoading(false);
       }
     };
-    if (!user) return;
+    if (!username) return;
     fetchData().then();
-  }, [user]);
+  }, [username]);
 
   useEffect(() => {
     fetchMatches().then();
-  }, [fetchMatches, user?.username]);
+  }, [fetchMatches, username]);
 
   const refreshMatches = async () => {
     await fetchMatches();
@@ -137,11 +135,11 @@ export function ProfileProvider({ children }: { children: ReactNode }) {
     }
     console.log("Submitting formData:", formData);
     try {
-      if (user?.username) {
-        console.log("Updating profile for username:", user.username);
-        await userProfileService.updateUserProfile(user.username, formData);
+      if (username) {
+        console.log("Updating profile for username:", username);
+        await userProfileService.updateUserProfile(username, formData);
         const updated = await userProfileService.getOrCreateUserProfile(
-          user.username
+            username
         );
         console.log("Updated profile:", updated);
         setProfile(updated);

@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { UserProvider } from "./context/UserContext";
-import { ProfileProvider } from "./context/ProfileContext.tsx";
 import InstallPrompt from "./components/misc/InstallPrompt.tsx"; // Adjust path as needed
 import LoginPage from "./pages/login/LoginPage.tsx";
 import HomePage from "./pages/(logged-in)/HomePage.tsx";
@@ -18,8 +17,7 @@ import CouponPage from "./pages/(logged-in)/CuponPage.tsx";
 import LunarLigaPage from "./pages/(logged-in)/lunar/LunarLigaPage.tsx";
 import PartnerPage from "./pages/(logged-in)/PartnerPage.tsx";
 import ArrangementPage from "./pages/(logged-in)/ArrangementPage.tsx";
-import ProfilePage from "./pages/(logged-in)/ProfilePage/ProfilePage.tsx";
-import FeedbackPage from "./pages/(logged-in)/FeedbackPage.tsx";
+import FeedbackPage from "./pages/(logged-in)/misc/FeedbackPage.tsx";
 import RegisterPage from "./pages/login/RegisterUserPage.tsx";
 import CourtTimes from "./pages/court-times.tsx";
 import TournamentTabs from "./pages/tournament/TournamentTabs.tsx";
@@ -53,6 +51,7 @@ import TournamentInfoPage from "./pages/tournament/info/TournamentInfoPage.tsx";
 import { TournamentRegulationsTab } from "./components/tournaments/info/TournamentRegulationsTab.tsx";
 import TournamentBriefingTab from "./components/tournaments/info/TournamentBriefingTab.tsx";
 import TournamentEditBriefingPage from "./pages/tournament/info/TournamentEditBriefingPage.tsx";
+import ProfilePageWrapper from "./context/ProfilePageWrapper.tsx";
 
 function App() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -154,23 +153,15 @@ function App() {
             <Route path="/register" element={<RegisterPage />} />
 
             {/* Protected Routes */}
-            <Route
-              path="/profil"
-              element={
-                <ProfileProvider>
-                  {" "}
-                  <ProfilePage />
-                </ProfileProvider>
-              }
-            >
+            <Route path="/profil/:username" element={<ProfilePageWrapper />}>
               <Route index element={<Navigate to="overblik" replace />} />
               <Route path="overblik" element={<OverviewTab />} />
               <Route path="rediger" element={<EditTab />} />
-
               <Route path="grupper" element={<GroupsTab />} />
               <Route path="grupper/opretgruppe" element={<CreateGroupTab />} />
               <Route path="grupper/:groupId" element={<EditGroupTab />} />
             </Route>
+
 
             <Route path="/hjem" element={<HomePage />} />
             <Route path="/admin" element={<AdminPage />} />

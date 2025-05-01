@@ -8,9 +8,11 @@ import {useEffect, useState} from "react";
 import RankedInPlayerSearchResult from "../../../types/RankedInProfile.ts";
 import rankedInService from "../../../services/rankedIn.ts";
 import * as console from "node:console";
+import {useUser} from "../../../context/UserContext.tsx";
 
 const ProfilePage = () => {
   const { profile } = useProfileContext();
+  const { user } = useUser();
   const [rankedInProfile, setRankedInProfile] = useState<RankedInPlayerSearchResult>({} as RankedInPlayerSearchResult);
 
 
@@ -45,7 +47,7 @@ const ProfilePage = () => {
         {/* Tab Content */}
         <div className="bg-white shadow-md rounded-lg p-6 border border-gray-200">
           <div className="mb-2">
-          <ProfileTabMenu />
+          <ProfileTabMenu profile={profile} user={user} />
           </div>
 
             <div className="mt-6">

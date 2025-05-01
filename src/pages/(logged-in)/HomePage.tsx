@@ -16,7 +16,7 @@ import {
   BuildingOfficeIcon,
   TrophyIcon,
   UsersIcon,
-  CubeIcon,
+  CubeIcon, PresentationChartBarIcon,
 } from "@heroicons/react/24/outline";
 import { setupNotifications } from "../../utils/notifications";
 
@@ -74,7 +74,7 @@ export const HomePage = () => {
           <div className="grid gap-8 lg:gap-20 grid-cols-4 max-lg:grid-cols-3 max-md:grid-cols-1">
             {user?.role === "admin" && (
               <HomeScreenCard
-                icon={<CalendarIcon className="h-10 w-10" aria-hidden="true" />}
+                icon={<CalendarIcon className="size-10" aria-hidden="true" />}
                 title="Book Bane"
                 description="Reservér en bane til din næste kamp"
                 link="book-court"
@@ -83,7 +83,7 @@ export const HomePage = () => {
             {user?.role === "admin" && (
               <HomeScreenCard
                 icon={
-                  <AcademicCapIcon className="h-10 w-10" aria-hidden="true" />
+                  <AcademicCapIcon className="size-10" aria-hidden="true" />
                 }
                 title="Book Træning"
                 description="Tilmeld dig træningssessioner"
@@ -92,35 +92,35 @@ export const HomePage = () => {
             )}
             {user?.role === "admin" && (
               <HomeScreenCard
-                icon={<ChartBarIcon className="h-10 w-10" aria-hidden="true" />}
+                icon={<ChartBarIcon className="size-10" aria-hidden="true" />}
                 title="Arrangementer"
                 description="Organisér og se arrangementer"
                 link="arrangement"
               />
             )}
             <HomeScreenCard
-              icon={<UsersIcon className="h-10 w-10" aria-hidden="true" />}
+              icon={<UsersIcon className="size-10" aria-hidden="true" />}
               title="Makkerbørs"
               description="Søg med- og modspillere"
               link="/makkerbørs"
             />
 
             <HomeScreenCard
-              icon={<CubeIcon className="h-10 w-10" aria-hidden="true" />}
+              icon={<CubeIcon className="size-10" aria-hidden="true" />}
               title="Privat-arrangementer"
               description="Opret og administrer dine egne arrangementer"
               link="/privat-arrangementer"
             />
 
             <HomeScreenCard
-              icon={<MoonIcon className="h-10 w-10" aria-hidden="true" />}
+              icon={<MoonIcon className="size-10" aria-hidden="true" />}
               title="Holdligaer"
               description="Overblik over ligaholdene tilknyttet SMASH"
               link="/holdligaer"
             />
 
             <HomeScreenCard
-              icon={<TrophyIcon className="h-10 w-10" aria-hidden="true" />}
+              icon={<TrophyIcon className="size-10" aria-hidden="true" />}
               title="DPF-turneringer"
               description="Deltag i spændende turneringer"
               link="/turneringer"
@@ -128,7 +128,7 @@ export const HomePage = () => {
             {user?.role === "admin" && (
               <HomeScreenCard
                 icon={
-                  <ListBulletIcon className="h-10 w-10" aria-hidden="true" />
+                  <ListBulletIcon className="size-10" aria-hidden="true" />
                 }
                 title="Rangliste"
                 description="Stryg hele vejen til tops i ranglisten"
@@ -138,7 +138,7 @@ export const HomePage = () => {
             {user?.role === "admin" && (
               <HomeScreenCard
                 icon={
-                  <NewspaperIcon className="h-10 w-10" aria-hidden="true" />
+                  <NewspaperIcon className="size-10" aria-hidden="true" />
                 }
                 title="Nyheder"
                 description="Hold dig opdateret med seneste nyt"
@@ -147,7 +147,7 @@ export const HomePage = () => {
             )}
             {user?.role === "admin" && (
               <HomeScreenCard
-                icon={<TicketIcon className="h-10 w-10" aria-hidden="true" />}
+                icon={<TicketIcon className="size-10" aria-hidden="true" />}
                 title="Kuponer"
                 description="Udløs dine kuponer og tilbud"
                 link="coupon"
@@ -157,7 +157,7 @@ export const HomePage = () => {
               <HomeScreenCard
                 icon={
                   <BuildingOfficeIcon
-                    className="h-10 w-10"
+                    className="size-10"
                     aria-hidden="true"
                   />
                 }
@@ -168,11 +168,20 @@ export const HomePage = () => {
             )}
             {user?.role === "admin" && (
               <HomeScreenCard
-                icon={<CogIcon className="h-10 w-10" aria-hidden="true" />}
+                icon={<CogIcon className="size-10" aria-hidden="true" />}
                 title="Admin Panel"
                 description="Administrer platformen"
                 link="admin"
               />
+            )}
+
+            {user?.username === "admin" && (
+                <HomeScreenCard
+                    icon={<PresentationChartBarIcon className="size-10" aria-hidden="true" />}
+                    title="Feedback"
+                    description="Se og administrer feedback"
+                    link="/feedback"
+                />
             )}
           </div>
         </div>
