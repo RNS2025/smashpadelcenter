@@ -115,7 +115,11 @@ export const LoginPage = () => {
                   Din nye klubapp.
                 </p>
 
-                <div onClick={() => navigate("/turneringer")} className="flex items-center gap-2 mt-4 border border-white rounded-lg p-2">
+                <div onClick={() => {
+                  navigate("/turneringer")
+                  window.scrollTo(0, 0);
+                }}
+                     className="flex items-center gap-2 mt-4 border border-white rounded-lg p-2">
                 <img src={DPFLogo} alt="DPF Logo" className="size-16" />
                   <h1>Gå direkte til centerets DPF-central</h1>
                 </div>

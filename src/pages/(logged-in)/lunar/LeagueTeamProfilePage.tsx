@@ -85,7 +85,8 @@ export const LeagueTeamProfilePage = () => {
                   <dt className="font-semibold">Admin:</dt>
                   <dd>
                     <a
-                      href={initiator.PlayerUrl || "#"}
+                      href={`https://rankedin.com${initiator.PlayerUrl}`}
+                        target="_blank"
                       className="text-cyan-500 hover:underline"
                     >
                       {initiator.Name}
@@ -94,10 +95,11 @@ export const LeagueTeamProfilePage = () => {
                 </div>
               ))}
               <div className="flex gap-2">
-                <dt className="font-semibold">Club:</dt>
+                <dt className="font-semibold">Klub:</dt>
                 <dd>
                   <a
-                    href={team.HomeClub.Name || "#"}
+                    href={`https://rankedin.com${team.HomeClub.Url}`}
+                    target="_blank"
                     className="text-cyan-500 hover:underline"
                   >
                     {team.HomeClub.Name}

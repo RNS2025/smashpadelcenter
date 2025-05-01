@@ -15,8 +15,12 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
   const [dropdownVisible, setDropdownVisible] = useState(false);
 
   const handleLogout = async () => {
-    await logout();
-    navigate("/");
+    const userConfirmed = confirm("Er du sikker på, at du vil logge ud?");
+
+    if (userConfirmed) {
+      await logout();
+      navigate("/");
+    }
   };
 
   return (
@@ -30,10 +34,11 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
             src={smashLogoSort}
             alt="Smash Logo"
             className="h-14 cursor-pointer"
-            onClick={() => navigate("/hjem")}
+            onClick={() => user ? navigate("/hjem") : navigate("/")}
           />
         </div>
 
+        {user && (
         <div className="flex items-center gap-8">
           <nav aria-label="Global" className="hidden sm:block">
             <ul className="flex items-center gap-6">
@@ -94,15 +99,16 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
             </div>
           </div>
         </div>
+          )}
       </div>
 
-      {notificationsVisible && user?.username && (
+      {notificationsVisible && user && (
         <div className="absolute right-0 w-96 z-50 max-sm:w-full">
           <NotificationSelector userId={user.username} />
         </div>
       )}
 
-      {dropdownVisible && (
+      {dropdownVisible && user && (
         <div className="absolute right-0 z-10 mt-2 w-48 rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
           <div className="py-1" role="none">
             <h1

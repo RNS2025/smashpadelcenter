@@ -6,10 +6,10 @@ import React, {
   useCallback,
 } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import axios from "axios";
 import { logout as authLogout } from "../services/auth";
 import { WHITELIST_ROUTES } from "./WhitelistRoutes";
 import { User } from "../types/user";
+import api from "../api/api.ts";
 
 interface UserContextType {
   user: User | null;
@@ -22,6 +22,7 @@ interface UserContextType {
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
+
 
 const isRouteWhitelisted = (pathname: string, whitelist: string[]): boolean => {
   return whitelist.some((route) => {
@@ -43,6 +44,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
   const handleUnauthenticated = useCallback(
     (currentPath: string) => {
@@ -68,7 +70,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     async (currentPath: string) => {
       setLoading(true);
       try {
-        const response = await axios.get(`/api/v1/auth/check`, {
+        const response = await api.get(`/auth/check`, {
           withCredentials: true,
         });
         if (response.data && response.data.isAuthenticated) {
@@ -87,7 +89,9 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         setError("Kunne ikke hente brugerdata.");
       } finally {
         setLoading(false);
+        setInitialLoadComplete(true);
       }
+
     },
     [navigate]
   );
@@ -118,12 +122,13 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   useEffect(() => {
-    if (loading) return;
+    if (!initialLoadComplete) return;
 
     if (!isAuthenticated) {
       handleUnauthenticated(location.pathname);
     }
-  }, [loading, isAuthenticated, location.pathname, handleUnauthenticated]);
+  }, [isAuthenticated, location.pathname, handleUnauthenticated]);
+
 
   useEffect(() => {
     if (isLoginPage(location.pathname)) {

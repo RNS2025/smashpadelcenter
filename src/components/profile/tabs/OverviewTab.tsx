@@ -30,11 +30,12 @@ const OverviewTab = () => {
   // Polling for matches
   const fetchMatches = async () => {
     const allMatches = await communityApi.getMatches();
-    const upcoming = allMatches.filter(
-      (match: PadelMatch) => new Date(match.matchDateTime) > new Date()
+    const filteredMatches = allMatches.filter((match) => profile && match.participants.includes(profile.username) || profile && match.reservedSpots.map((reserved) => reserved.name).includes(profile.username));
+    const upcoming = filteredMatches.filter(
+      (match: PadelMatch) => new Date(match.endTime) > new Date()
     );
-    const former = allMatches.filter(
-      (match: PadelMatch) => new Date(match.matchDateTime) <= new Date()
+    const former = filteredMatches.filter(
+      (match: PadelMatch) => new Date(match.endTime) <= new Date()
     );
     return { upcoming, former };
   };
@@ -129,10 +130,7 @@ const OverviewTab = () => {
               >
                 <div className="flex justify-between text-xs border-b border-gray-600">
                   <h1>
-                    {safeFormatDate(
-                      match.matchDateTime,
-                      "dd. MMMM | HH:mm"
-                    ).toUpperCase()}
+                    {safeFormatDate(match.matchDateTime, "dd. MMMM | HH:mm").toUpperCase()} - {safeFormatDate(match.endTime, "HH:mm")}
                   </h1>
                   <div className="flex gap-1">
                     <p>
@@ -192,7 +190,7 @@ const OverviewTab = () => {
                     {safeFormatDate(
                       match.matchDateTime,
                       "dd. MMMM | HH:mm"
-                    ).toUpperCase()}
+                    ).toUpperCase()} - {safeFormatDate(match.endTime, "HH:mm")}
                   </h1>
                   <div className="flex gap-1">
                     <p>
