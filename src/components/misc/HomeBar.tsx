@@ -182,7 +182,10 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
                       filteredUsers.map((user) => (
                           <div
                               key={user.id}
-                              onClick={() => navigate(`/profil/${user.username}`)}
+                              onClick={() => {
+                                navigate(`/profil/${user.username}`)
+                                setActivePanel(null);
+                              }}
                               className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-black"
                           >
                             <h1 className="truncate">
