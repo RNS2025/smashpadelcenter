@@ -241,6 +241,13 @@ export const MyEventsTab = () => {
                         : "Lukket tilmelding"}
                     </p>
                   </div>
+                  {user && event.invitedPlayers?.includes(user?.username) && (
+                      <div className="flex justify-between">
+                        <p className="text-yellow-500 italic">
+                          Du er inviteret til dette arrangement
+                        </p>
+                      </div>
+                  )}
                 </div>
               )}
             </div>

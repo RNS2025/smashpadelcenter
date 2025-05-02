@@ -13,7 +13,7 @@ import { safeFormatDate } from "../../../utils/dateUtils.ts";
 import {
   BoltIcon,
   CheckCircleIcon,
-  CheckIcon,
+  CheckIcon, CurrencyDollarIcon,
   DocumentDuplicateIcon,
   MapPinIcon, StarIcon,
   UserCircleIcon,
@@ -33,6 +33,7 @@ export const ViewEventPage = () => {
   const [error, setError] = useState<string | null>(null);
   const [participantProfiles, setParticipantProfiles] = useState<User[]>([]);
   const [joinRequestProfiles, setJoinRequestProfiles] = useState<User[]>([]);
+  const [eventHost, setEventHost] = useState<User | null>(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [infoDialogVisible, setInfoDialogVisible] = useState(false);
   const [inviteDialogVisible, setInviteDialogVisible] = useState(false);
@@ -58,6 +59,7 @@ export const ViewEventPage = () => {
 
       try {
         const fetched = await communityApi.getEventById(eventId);
+        console.log(fetched);
         setEvent(fetched);
       } catch (err) {
         console.error("Fejl ved hentning af event:", err);
@@ -109,6 +111,23 @@ export const ViewEventPage = () => {
     };
 
     fetchParticipantProfiles().then();
+  }, [event]);
+
+  useEffect(() => {
+    const fetchEventHost = async () => {
+      if (!event || !event.username) return;
+
+      try {
+        const hostProfile = await userProfileService.getOrCreateUserProfile(
+          event.username
+        );
+        setEventHost(hostProfile);
+      } catch (err) {
+        console.error("Fejl ved hentning af værtprofil:", err);
+      }
+    };
+
+    fetchEventHost().then();
   }, [event]);
 
   const handleJoinEvent = async () => {
@@ -389,29 +408,50 @@ export const ViewEventPage = () => {
           ))}
 
           {/* Empty spots */}
-          <div className={`${event.totalSpots > 8 ? "grid grid-cols-2 gap-2" : ""}`}>
-          {[...Array(event.totalSpots - event.participants.length)].map(
-            (_, index) => (
-                <div
-                    key={`empty-${index}`}
-                    className="border border-gray-500 rounded flex items-center px-1 py-2"
-                >
-                  <UserCircleIcon className="size-10 text-gray-500" />
-                  <div className="w-full pr-1 truncate">
-                    <h1 className="text-sm text-gray-500">Ledig plads</h1>
-                  </div>
+          {event.totalSpots > 8 ? (
+              <div className="grid grid-cols-2 gap-2">
+                {[...Array(event.totalSpots - event.participants.length)].map(
+                    (_, index) => (
+                        <div
+                            key={`empty-${index}`}
+                            className="border border-gray-500 rounded flex items-center px-1 py-2"
+                        >
+                          <UserCircleIcon className="size-10 text-gray-500" />
+                          <div className="w-full pr-1 truncate">
+                            <h1 className="text-sm text-gray-500">Ledig plads</h1>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="bg-gray-500 text-white rounded-full flex items-center justify-center size-5">
+                              ?
+                            </div>
+                          </div>
+                        </div>
+                    )
+                )}
+              </div>
+          ) : (
+              <>
+                {[...Array(event.totalSpots - event.participants.length)].map(
+                    (_, index) => (
+                        <div
+                            key={`empty-${index}`}
+                            className="border border-gray-500 rounded flex items-center px-1 py-2"
+                        >
+                          <UserCircleIcon className="size-20 text-gray-500" />
+                          <div className="w-full pr-1 truncate">
+                            <h1 className="text-xl text-gray-500">Ledig plads</h1>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <div className="bg-gray-500 text-white rounded-full flex items-center justify-center size-12">
+                              ?
+                            </div>
+                          </div>
+                        </div>
+                    )
+                )}
+              </>
+          )}
 
-
-                  <div className="flex items-center gap-2">
-                    <div className="bg-gray-500 text-white rounded-full flex items-center justify-center size-5">
-                      ?
-                    </div>
-                    <div>
-                    </div>
-                  </div>
-                </div>
-            ))}
-          </div>
 
           {/* Join requests (visible to creator) */}
           {event.username === user?.username &&
@@ -510,6 +550,32 @@ export const ViewEventPage = () => {
               </h1>
             </div>
           </div>
+
+          {event.price && event.price > 0 && (
+              <>
+                <div
+                    onClick={() => {
+                      if (eventHost?.phoneNumber) {
+                        navigator.clipboard.writeText(eventHost.phoneNumber).then(() => {
+                          window.location.href = `mobilepay://`;
+                        });
+                      }
+                    }}
+                    className="bg-white rounded flex flex-col justify-center items-center gap-2 py-4"
+                >
+                  <div className="flex items-center">
+                  <CurrencyDollarIcon className="size-10 rounded-lg text-yellow-600 bg-gradient-to-b" />
+                  <h1 className="text-black text-lg truncate overflow-hidden whitespace-nowrap">
+                    {event.price} kr. {eventHost?.phoneNumber && `til ${eventHost.phoneNumber}`}
+                  </h1>
+                  </div>
+                  <p className={`text-gray-500 italic truncate overflow-hidden whitespace-nowrap ${!eventHost?.phoneNumber ? "hidden" : ""}`}>
+                    Klik for at kopiere nummer og gå til MobilePay
+                  </p>
+                </div>
+              </>
+          )}
+
 
           <div className="bg-white rounded w-full text-black p-4 flex flex-col gap-2">
             <h1 className="font-semibold">Bemærkninger</h1>

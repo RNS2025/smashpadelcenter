@@ -23,6 +23,10 @@ const privateEventSchema = new mongoose.Schema({
     required: true,
     default: 4,
   },
+  price: {
+    type: Number,
+    required: false,
+  },
   courtBooked: {
     type: Boolean,
     default: false,

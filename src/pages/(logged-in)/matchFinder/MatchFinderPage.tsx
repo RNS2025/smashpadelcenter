@@ -1,17 +1,13 @@
-import { useEffect, useState } from "react";
-import { Helmet } from "react-helmet-async";
+import {useEffect, useState} from "react";
+import {Helmet} from "react-helmet-async";
 import Animation from "../../../components/misc/Animation.tsx";
 import HomeBar from "../../../components/misc/HomeBar.tsx";
 import "react-datepicker/dist/react-datepicker.css";
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import {Outlet, useLocation, useNavigate} from "react-router-dom";
 import MatchFinderTabMenu from "../../../components/matchFinder/MatchFinderTabMenu.tsx";
-import { useUser } from "../../../context/UserContext";
+import {useUser} from "../../../context/UserContext";
 import communityApi from "../../../services/makkerborsService";
-import {
-  LockClosedIcon,
-  LockOpenIcon,
-  NumberedListIcon,
-} from "@heroicons/react/24/outline";
+import {LockClosedIcon, LockOpenIcon, NumberedListIcon,} from "@heroicons/react/24/outline";
 import LoadingSpinner from "../../../components/misc/LoadingSpinner.tsx";
 import usePolling from "../../../hooks/usePolling.ts";
 
@@ -42,11 +38,10 @@ export const MatchFinderPage = () => {
     const myMatches = data
       .filter((match) => match.username === user?.username)
       .filter((match) => new Date(match.matchDateTime) > new Date());
-    const totalJoinRequests = myMatches.reduce(
-      (sum, match) => sum + (match.joinRequests?.length || 0),
-      0
+    return myMatches.reduce(
+        (sum, match) => sum + (match.joinRequests?.length || 0),
+        0
     );
-    return totalJoinRequests;
   };
 
   usePolling(
@@ -65,7 +60,7 @@ export const MatchFinderPage = () => {
   }
 
   if (!isAuthenticated) {
-    navigate("/turneringer");
+    navigate("/");
     return null;
   }
 

@@ -45,6 +45,8 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
+
 
   const handleUnauthenticated = useCallback(
     (currentPath: string) => {
@@ -86,6 +88,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
           throw new Error("Invalid user data received");
         }
       } catch (err: any) {
+        localStorage.removeItem("user");
         setUser(null);
         setIsAuthenticated(false);
         setError("Kunne ikke hente brugerdata.");
@@ -124,25 +127,31 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = async () => {
     try {
+      setLoggingOut(true);
       localStorage.removeItem("user");
+      localStorage.removeItem("userProfile")
       setError(null);
       setUser(null);
       setIsAuthenticated(false);
       await authLogout();
-      navigate("/");
+      navigate("/", { replace: true });
     } catch (error) {
       console.error("Error during logout:", error);
       setError("Fejl ved udlogning. Prøv igen.");
+    } finally {
+      setLoggingOut(false);
     }
   };
 
+
   useEffect(() => {
-    if (!initialLoadComplete) return;
+    if (!initialLoadComplete || loggingOut) return;
 
     if (!isAuthenticated) {
       handleUnauthenticated(location.pathname);
     }
-  }, [isAuthenticated, location.pathname, handleUnauthenticated, initialLoadComplete]);
+  }, [isAuthenticated, location.pathname, handleUnauthenticated, initialLoadComplete, loggingOut]);
+
 
 
   useEffect(() => {

@@ -5,6 +5,7 @@ interface PrivateEvent {
   description?: string;
   eventFormat?: string;
   totalSpots: number;
+  price?: number;
   courtBooked: boolean;
   eventDateTime: string;
   startTime: string;

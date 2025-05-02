@@ -88,11 +88,18 @@ export function ProfileProvider({ children, username }: { children: ReactNode; u
       if (!username) return;
       try {
         setLoading(true);
-        const profileData = await userProfileService.getOrCreateUserProfile(
-            username
-        );
+
+        const localData = localStorage.getItem("userProfile");
+        if (localData) {
+          const parsed = JSON.parse(localData);
+          setProfile(parsed);
+          setFormData(parsed);
+        }
+
+        const profileData = await userProfileService.getOrCreateUserProfile(username);
         setProfile(profileData);
         setFormData(profileData);
+        localStorage.setItem("userProfile", JSON.stringify(profileData));
       } catch (err: any) {
         console.error("Error fetching profile data:", err);
         setError("Kunne ikke hente profil eller bookinger");
@@ -103,6 +110,7 @@ export function ProfileProvider({ children, username }: { children: ReactNode; u
     if (!username) return;
     fetchData().then();
   }, [username]);
+
 
   useEffect(() => {
     fetchMatches().then();
@@ -144,6 +152,7 @@ export function ProfileProvider({ children, username }: { children: ReactNode; u
         console.log("Updated profile:", updated);
         setProfile(updated);
         setFormData(updated);
+        localStorage.setItem("userProfile", JSON.stringify(updated));
       } else {
         console.error("No username available for update");
       }

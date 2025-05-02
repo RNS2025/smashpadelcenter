@@ -14,7 +14,7 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { useUser } from "../../../context/UserContext";
-import { useEffect, useState, useMemo } from "react";
+import {useEffect, useState, useMemo, useCallback} from "react";
 import { PadelMatch } from "../../../types/PadelMatch";
 import communityApi from "../../../services/makkerborsService";
 import { Navigate, useParams } from "react-router-dom";
@@ -60,6 +60,64 @@ export const ViewMatchPage = () => {
     return null;
   };
 
+  const handleConfirmJoin = useCallback(async (username: string) => {
+    if (!match) return;
+    try {
+      console.log("Confirming join:", { matchId: match.id, username });
+      const updatedMatch = await communityApi.confirmJoinMatch(
+          match.id,
+          username
+      );
+      console.log("Updated match after confirm:", updatedMatch);
+      if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
+        setError("Invalid match data returned");
+        alert("Der opstod en fejl – prøv igen.");
+      }
+      setMatch(updatedMatch);
+    } catch (error: any) {
+      console.error("Error confirming join:", error.response?.data);
+      alert(error.response?.data?.message || "Fejl ved bekræftelse");
+      setError("Fejl ved bekræftelse");
+    }
+  },[match]);
+
+  const handleDeclineJoin = useCallback(async (username: string) => {
+    if (!match) return;
+    try {
+      const updatedMatch = await communityApi.rejectJoinMatch(
+          match.id,
+          username
+      );
+      console.log("Updated match after confirm:", updatedMatch);
+      if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
+        setError("Invalid match data returned");
+        alert("Der opstod en fejl – prøv igen.");
+      }
+      setMatch(updatedMatch);
+    } catch (error: any) {
+      console.error("Error confirming join:", error);
+      alert(error.response?.data?.message || "Fejl ved afvisning");
+      setError("Fejl ved afvisning");
+    }
+  },[match]);
+
+  const handleRemovePlayerFromMatch = useCallback(async (username: string) => {
+    if (!match) return;
+    try {
+      const updatedMatch = await communityApi.removePlayer(match.id, username);
+      console.log("Updated match after confirm:", updatedMatch);
+      if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
+        setError("Invalid match data returned");
+        alert("Der opstod en fejl – prøv igen.");
+      }
+      setMatch(updatedMatch);
+    } catch (error: any) {
+      console.error("Error confirming join:", error);
+      alert(error.response?.data?.message || "Fejl ved afvisning");
+      setError("Fejl ved afvisning");
+    }
+  },[match]);
+
   // Memoized lists
   const participantList = useMemo(() => {
     if (!match) return [];
@@ -99,7 +157,7 @@ export const ViewMatchPage = () => {
         </div>
       </div>
     ));
-  }, [participantProfiles, match, user]);
+  }, [match, participantProfiles, user?.username, handleRemovePlayerFromMatch]);
 
   const reservedSpotsList = useMemo(() => {
     if (!match) return [];
@@ -136,12 +194,12 @@ export const ViewMatchPage = () => {
         key={`empty-${index}`}
         className="border border-gray-500 rounded flex items-center px-1"
       >
-        <UserCircleIcon className="h-20 text-gray-500" />
+        <UserCircleIcon className="size-20 text-gray-500" />
         <div className="w-full pr-1 truncate">
           <h1 className="text-xl text-gray-500">Ledig plads</h1>
         </div>
         <div className="flex items-center gap-2">
-          <div className="bg-gray-500 text-white rounded-full flex items-center justify-center w-12 h-12">
+          <div className="bg-gray-500 text-white rounded-full flex items-center justify-center size-12">
             ?
           </div>
           <div></div>
@@ -184,7 +242,24 @@ export const ViewMatchPage = () => {
         </div>
       </div>
     ));
-  }, [joinRequestProfiles]);
+  }, [handleConfirmJoin, handleDeclineJoin, joinRequestProfiles, match]);
+  
+
+  // Polling for match data
+  const fetchMatch = useCallback(async () => {
+    if (!matchId) {
+      throw new Error("Kamp ID mangler");
+    }
+    const matchData = await communityApi.getMatchById(matchId);
+    if (
+      !matchData ||
+      !Array.isArray(matchData.participants) ||
+      !Array.isArray(matchData.joinRequests)
+    ) {
+      throw new Error("Fejl ved indlæsning af kampe");
+    }
+    return matchData;
+  }, [matchId]);
 
   // Initial fetch
   useEffect(() => {
@@ -199,23 +274,7 @@ export const ViewMatchPage = () => {
       }
     };
     initialFetch();
-  }, [matchId]);
-
-  // Polling for match data
-  const fetchMatch = async () => {
-    if (!matchId) {
-      throw new Error("Kamp ID mangler");
-    }
-    const matchData = await communityApi.getMatchById(matchId);
-    if (
-      !matchData ||
-      !Array.isArray(matchData.participants) ||
-      !Array.isArray(matchData.joinRequests)
-    ) {
-      throw new Error("Fejl ved indlæsning af kampe");
-    }
-    return matchData;
-  };
+  }, [fetchMatch, matchId]);
 
   // Compare match data to avoid unnecessary updates
   const shouldUpdateMatch = (
@@ -300,7 +359,7 @@ export const ViewMatchPage = () => {
     };
 
     fetchParticipants();
-  }, [match?.participants, profileCache]);
+  }, [match, match?.participants, profileCache]);
 
   // Fetch join request profiles
   useEffect(() => {
@@ -349,7 +408,7 @@ export const ViewMatchPage = () => {
     };
 
     fetchJoinRequests();
-  }, [match?.joinRequests, profileCache]);
+  }, [match, match?.joinRequests, profileCache]);
 
   const handleJoinMatch = async () => {
     if (
@@ -416,47 +475,6 @@ export const ViewMatchPage = () => {
     }
   };
 
-  const handleConfirmJoin = async (username: string) => {
-    if (!match) return;
-    try {
-      console.log("Confirming join:", { matchId: match.id, username });
-      const updatedMatch = await communityApi.confirmJoinMatch(
-        match.id,
-        username
-      );
-      console.log("Updated match after confirm:", updatedMatch);
-      if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
-        setError("Invalid match data returned");
-        alert("Der opstod en fejl – prøv igen.");
-      }
-      setMatch(updatedMatch);
-    } catch (error: any) {
-      console.error("Error confirming join:", error.response?.data);
-      alert(error.response?.data?.message || "Fejl ved bekræftelse");
-      setError("Fejl ved bekræftelse");
-    }
-  };
-
-  const handleDeclineJoin = async (username: string) => {
-    if (!match) return;
-    try {
-      const updatedMatch = await communityApi.rejectJoinMatch(
-        match.id,
-        username
-      );
-      console.log("Updated match after confirm:", updatedMatch);
-      if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
-        setError("Invalid match data returned");
-        alert("Der opstod en fejl – prøv igen.");
-      }
-      setMatch(updatedMatch);
-    } catch (error: any) {
-      console.error("Error confirming join:", error);
-      alert(error.response?.data?.message || "Fejl ved afvisning");
-      setError("Fejl ved afvisning");
-    }
-  };
-
   const handleCancelJoinRequest = async (username: string) => {
     if (!match) return;
     try {
@@ -476,22 +494,6 @@ export const ViewMatchPage = () => {
     }
   };
 
-  const handleRemovePlayerFromMatch = async (username: string) => {
-    if (!match) return;
-    try {
-      const updatedMatch = await communityApi.removePlayer(match.id, username);
-      console.log("Updated match after confirm:", updatedMatch);
-      if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
-        setError("Invalid match data returned");
-        alert("Der opstod en fejl – prøv igen.");
-      }
-      setMatch(updatedMatch);
-    } catch (error: any) {
-      console.error("Error confirming join:", error);
-      alert(error.response?.data?.message || "Fejl ved afvisning");
-      setError("Fejl ved afvisning");
-    }
-  };
 
   const handleDeleteMatch = async () => {
     if (!match) return;

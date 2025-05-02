@@ -28,6 +28,7 @@ export const CreateEventForm = () => {
   const [eventFormat, setEventFormat] = useState<string>("");
   const [totalSpots, setTotalSpots] = useState<number>(4);
   const [courtBooked, setCourtBooked] = useState<boolean>(false);
+  const [price, setPrice] = useState<number>(140);
   const [levelRangeRequired, setLevelRangeRequired] = useState<boolean>(false);
   const [levelRange, setLevelRange] = useState<[number, number]>([user?.skillLevel || 2.0, (user?.skillLevel || 2.0) + 1]);
   const [location, setLocation] = useState<string>("SMASH Padelcenter Horsens");
@@ -86,6 +87,7 @@ export const CreateEventForm = () => {
         description,
         eventFormat,
         totalSpots,
+        price,
         courtBooked,
         eventDateTime: selectedStartDate.toISOString(),
         startTime: selectedStartDate.toISOString(),
@@ -257,27 +259,19 @@ export const CreateEventForm = () => {
               </div>
             </div>
 
-            <div>
-              <label className="font-semibold" htmlFor="reserverede">
-                {totalSpots > 4 ? "Baner" : "Bane"} er booket
+            <div className="relative">
+              <label className="font-semibold" htmlFor="turneringsformat">
+                Pris pr. deltager
               </label>
-              <div className="flex h-12">
-                <div className="flex items-center w-full rounded-lg gap-3 pr-1">
-                  {courtBookedArray.map(({ label, value }) => (
-                    <button
-                      type="button"
-                      key={label}
-                      onClick={() => setCourtBooked(value)}
-                      className={`p-2 w-full rounded-xl transition duration-300 ${
-                        courtBooked === value
-                          ? "bg-cyan-500 hover:bg-cyan-600 transition duration-300 text-white"
-                          : "bg-gray-300 hover:bg-gray-400 transition duration-300"
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  ))}
-                </div>
+              <div>
+                <input
+                    type="number"
+                    className="w-full rounded-lg h-12 resize-none"
+                    value={price}
+                    min={0}
+                    onChange={(e) => setPrice(parseFloat(e.target.value))}/>
+
+                <span className="absolute inset-y-1 top-8 right-3 flex items-center text-gray-500 text-sm lg:hidden">kr.</span>
               </div>
             </div>
           </div>
@@ -350,6 +344,30 @@ export const CreateEventForm = () => {
                 SMASH Padelcenter Stensballe
               </option>
             </select>
+          </div>
+
+          <div>
+            <label className="font-semibold" htmlFor="reserverede">
+              {totalSpots > 4 ? "Baner" : "Bane"} er booket
+            </label>
+            <div className="flex h-12">
+              <div className="flex items-center w-full rounded-lg gap-3 pr-1">
+                {courtBookedArray.map(({ label, value }) => (
+                    <button
+                        type="button"
+                        key={label}
+                        onClick={() => setCourtBooked(value)}
+                        className={`p-2 w-full rounded-xl transition duration-300 ${
+                            courtBooked === value
+                                ? "bg-cyan-500 hover:bg-cyan-600 transition duration-300 text-white"
+                                : "bg-gray-300 hover:bg-gray-400 transition duration-300"
+                        }`}
+                    >
+                      {label}
+                    </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div className="flex flex-col">

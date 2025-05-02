@@ -18,7 +18,10 @@ const ProfilePage = () => {
 
 
     useEffect(() => {
-        if (!profile?.fullName) return;
+        if (!profile?.fullName) {
+            setRankedInProfile({} as RankedInPlayerSearchResult);
+            return;
+        }
         const fetchRankedInProfile = async () => {
             try {
                 const response = await rankedInService.searchPlayer(profile.fullName);

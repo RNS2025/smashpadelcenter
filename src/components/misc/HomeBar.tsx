@@ -28,12 +28,10 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
       if (!user?.username) return;
       
         try {
-          console.log("Fetching users from API");
           const response = await userProfileService.getAllUsers();
           const filteredResponse = (response || []).filter(
               (u) => u.username !== user.username
           );
-          console.log("Fetched users:", filteredResponse);
           setAllUsers(filteredResponse);
         } catch (error) {
           console.error("Error fetching users:", error);
