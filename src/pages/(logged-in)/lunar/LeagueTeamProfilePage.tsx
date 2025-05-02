@@ -109,7 +109,7 @@ export const LeagueTeamProfilePage = () => {
             </div>
           </div>
         </div>
-        <div className="justify-self-center max-xl:mt-5">
+        <div className="flex justify-center max-xl:mt-5">
           <TeamProfileTabMenu />
         </div>
         <Outlet />

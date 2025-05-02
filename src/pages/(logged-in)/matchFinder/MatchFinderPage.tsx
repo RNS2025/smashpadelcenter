@@ -73,7 +73,7 @@ export const MatchFinderPage = () => {
       <HomeBar backPage="/hjem" />
       <Animation>
         <div className="sm:mx-20 my-10">
-          <div className="justify-self-center mb-5">
+          <div className="flex justify-center mb-5">
             <MatchFinderTabMenu joinRequestsCount={joinRequestsCount} />
           </div>
           <div className="flex justify-between items-center max-sm:mt-5 mx-4 mb-4">

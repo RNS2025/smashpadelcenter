@@ -54,7 +54,7 @@ export const TeamProfileMatchesTab = () => {
                                 </div>
                             </th>
                             <th className="px-4 py-2 text-gray-900 select-none">
-                                <div className="flex items-center gap-2 justify-self-center">
+                                <div className="flex items-center gap-2 justify-center">
                                     Resultat
                                 </div>
                             </th>

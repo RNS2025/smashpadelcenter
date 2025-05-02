@@ -20,7 +20,7 @@ export const TournamentInfoPage = () => {
                 </div>
 
 
-                <div className="my-2">
+                <div className="flex justify-center my-2">
                     <Outlet />
                 </div>
             </Animation>

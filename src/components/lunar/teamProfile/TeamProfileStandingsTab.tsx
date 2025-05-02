@@ -32,32 +32,32 @@ export const TeamProfileStandingsTab = () => {
                         <thead className="bg-gray-300 font-bold">
                         <tr>
                             <th className="py-2 text-gray-900 select-none w-[10%] sm:w-[30%]">
-                                <div className="flex items-center gap-2 justify-self-center">
+                                <div className="flex items-center gap-2 justify-center">
                                     Holdnavn
                                 </div>
                             </th>
                             <th className="py-2 text-gray-900 select-none">
-                                <div className="flex items-center gap-2 justify-self-center">
+                                <div className="flex items-center gap-2 justify-center">
                                     Kampe spillet
                                 </div>
                             </th>
                             <th className="py-2 text-gray-900 select-none">
-                                <div className="flex items-center gap-2 justify-self-center">
+                                <div className="flex items-center gap-2 justify-center">
                                     W-L
                                 </div>
                             </th>
                             <th className="py-2 text-gray-900 select-none">
-                                <div className="flex items-center gap-2 justify-self-center">
+                                <div className="flex items-center gap-2 justify-center">
                                     Enkeltkampe (W-L)
                                 </div>
                             </th>
                             <th className="py-2 text-gray-900 select-none">
-                                <div className="flex items-center gap-2 justify-self-center">
+                                <div className="flex items-center gap-2 justify-center">
                                     Sæt
                                 </div>
                             </th>
                             <th className="py-2 text-gray-900 select-none">
-                                <div className="flex items-center gap-2 justify-self-center">
+                                <div className="flex items-center gap-2 justify-center">
                                     Partier
                                 </div>
                             </th>

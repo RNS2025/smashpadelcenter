@@ -49,7 +49,7 @@ export const PrivateEventPage = () => {
     <Animation>
       <HomeBar backPage="/hjem" />
       <div className="sm:mx-20 my-10">
-        <div className="justify-self-center mb-5">
+        <div className="flex justify-center mb-5">
           <PrivateEventTabMenu joinRequestsCount={joinRequestsCount} />
         </div>
 

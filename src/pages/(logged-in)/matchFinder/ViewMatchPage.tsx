@@ -585,7 +585,7 @@ export const ViewMatchPage = () => {
       <Animation>
         <div className="mx-4 my-10 space-y-4 text-sm">
           <h1
-            className={`justify-self-center font-semibold ${
+            className={`text-center font-semibold ${
               totalLength > 31
                 ? "text-lg"
                 : totalLength > 37
@@ -606,7 +606,7 @@ export const ViewMatchPage = () => {
 
           {/* Participants */}
           {profilesLoading ? (
-            <div className="text-center text-gray-500">Loading profiles...</div>
+            <div className="text-center text-gray-500">Indlæser profiler...</div>
           ) : (
             participantList
           )}
@@ -624,7 +624,7 @@ export const ViewMatchPage = () => {
                 <h2 className="font-semibold">Tilmeldingsanmodninger</h2>
                 {profilesLoading ? (
                   <div className="text-center text-gray-500">
-                    Loading profiles...
+                    Indlæser profiler...
                   </div>
                 ) : (
                   joinRequestsList

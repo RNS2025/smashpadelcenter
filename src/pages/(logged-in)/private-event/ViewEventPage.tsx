@@ -344,7 +344,7 @@ export const ViewEventPage = () => {
       <Animation>
         <div className="mx-4 my-10 space-y-4 text-sm">
           <h1
-            className={`justify-self-center font-semibold ${
+            className={`text-center font-semibold ${
               totalLength > 31
                 ? "text-lg"
                 : totalLength > 37

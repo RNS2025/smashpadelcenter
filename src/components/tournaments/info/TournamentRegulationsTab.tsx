@@ -26,7 +26,7 @@ export const TournamentRegulationsTab = () => {
             <Helmet>
                 <title>Generelt</title>
             </Helmet>
-        <div className="p-4 sm:justify-self-center prose prose-invert" dangerouslySetInnerHTML={{__html: regulations}}/>
+        <div className="p-4 prose prose-invert" dangerouslySetInnerHTML={{__html: regulations}}/>
         </>
     )
 
