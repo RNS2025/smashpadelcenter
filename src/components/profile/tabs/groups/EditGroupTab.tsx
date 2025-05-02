@@ -213,7 +213,7 @@ export const EditGroupTab = () => {
                       className="bg-cyan-100 text-cyan-700 px-3 py-1 rounded-full text-sm"
                     >
                       <h1 className="truncate">
-                        {member.fullName} ({member.username})
+                        {member.fullName ? `${member.fullName} (${member.username})` : member.username}
                       </h1>
                     </div>
                   ))}

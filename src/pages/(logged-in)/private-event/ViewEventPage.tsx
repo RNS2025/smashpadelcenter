@@ -546,7 +546,7 @@ export const ViewEventPage = () => {
                   {!copied ? (
                     <>
                       <DocumentDuplicateIcon className="h-5" />
-                      <h1>Kopier kamplink</h1>
+                      <h1>Kopier arrangementslink</h1>
                     </>
                   ) : (
                     <>
@@ -560,7 +560,7 @@ export const ViewEventPage = () => {
                   onClick={handleDeleteEvent}
                   className="bg-red-500 hover:bg-red-600 transition duration-300 rounded-lg py-2 px-4 text-white"
                 >
-                  Slet kamp
+                  Slet arrangement
                 </button>
               </div>
             </>

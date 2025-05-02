@@ -189,7 +189,7 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
                               className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-black"
                           >
                             <h1 className="truncate">
-                              {user.fullName} ({user.username})
+                              {user.fullName ? `${user.fullName} (${user.username})` : user.username}
                             </h1>
                           </div>
                       ))

@@ -130,7 +130,7 @@ export default function RegisterPage() {
           <main className="flex items-center justify-center px-5 py-8 sm:px-12 lg:col-span-7 lg:px-16 lg:py-12 xl:col-span-5">
             <div className="w-full lg:max-w-sm">
               <div className="relative -mt-16 block lg:hidden">
-                <a href="/public" className="block">
+                <div className="block">
                   <span className="sr-only">Home</span>
                   <div className="relative inline-block bg-gray-900 p-4 rounded-full">
                     <img
@@ -139,7 +139,7 @@ export default function RegisterPage() {
                         className="h-12 sm:h-12"
                     />
                   </div>
-                </a>
+                </div>
 
                 <h1 className="mt-2 text-2xl font-bold sm:text-3xl md:text-4xl">
                   SMASH Padelcenter 🎾

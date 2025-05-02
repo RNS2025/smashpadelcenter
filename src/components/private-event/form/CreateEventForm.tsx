@@ -15,6 +15,7 @@ import communityApi from "../../../services/makkerborsService.ts";
 import { PrivateEvent } from "../../../types/PrivateEvent.ts";
 import { useUser } from "../../../context/UserContext.tsx";
 import {getNextHalfHour, handleHiddenTimes} from "../../../utils/dateUtils.ts";
+import {ChevronDownIcon, ChevronUpIcon} from "@heroicons/react/24/outline";
 
 registerLocale("da", da);
 
@@ -86,7 +87,7 @@ export const CreateEventForm = () => {
         endTime: selectedEndDate.toISOString(),
         location,
         level: levelRangeRequired
-          ? `${levelRange[0]}-${levelRange[1]}`
+          ? `${levelRange[0]} - ${levelRange[1]}`
           : undefined,
         openRegistration,
         participants: [user.username],
@@ -118,6 +119,36 @@ export const CreateEventForm = () => {
     const newMax = parseFloat(e.target.value);
     setLevelRange([levelRange[0], newMax]);
   };
+
+  const incrementMinLevel = () => {
+    setLevelRange(([min, max]) => {
+      const newMin = Math.min(7.0, parseFloat((min + 0.1).toFixed(1)));
+      const adjustedMax = Math.max(newMin, max);
+      return [newMin, adjustedMax];
+    });
+  };
+
+  const decrementMinLevel = () => {
+    setLevelRange(([min, max]) => {
+      const newMin = Math.max(1.0, parseFloat((min - 0.1).toFixed(1)));
+      return [newMin, max];
+    });
+  };
+
+  const incrementMaxLevel = () => {
+    setLevelRange(([min, max]) => {
+      const newMax = Math.min(7.0, parseFloat((max + 0.1).toFixed(1)));
+      return [min, newMax];
+    });
+  };
+
+  const decrementMaxLevel = () => {
+    setLevelRange(([min, max]) => {
+      const newMax = Math.max(min, parseFloat((max - 0.1).toFixed(1)));
+      return [min, newMax];
+    });
+  };
+
 
   const courtBookedArray = [
     { label: "Nej", value: false },
@@ -330,30 +361,65 @@ export const CreateEventForm = () => {
               </div>
 
               {levelRangeRequired && (
-                <div className="flex h-12">
-                  <div className="flex justify-between items-center w-full rounded-lg gap-2 pr-1">
-                    <input
-                      className="text-center rounded-lg w-full"
-                      type="number"
-                      step="0.1"
-                      min="1.0"
-                      max="7.0"
-                      value={levelRange[0].toFixed(1)}
-                      onChange={handleMinChange}
-                    />
-                    -
-                    <input
-                      className="text-center rounded-lg w-full"
-                      type="number"
-                      step="0.1"
-                      min={levelRange[0]}
-                      max="7.0"
-                      value={levelRange[1].toFixed(1)}
-                      onChange={handleMaxChange}
-                    />
+                  <div className="flex flex-col gap-2">
+                    <div className="grid grid-cols-2 items-center text-center w-full">
+                    <label className="font-semibold">Minimum</label>
+                    <label className="font-semibold">Maksimum</label>
+                    </div>
+
+                    <div className="flex h-12">
+                      <div className="flex justify-between items-center w-full rounded-lg gap-2 pr-1">
+                        <div className="grid grid-cols-2 items-center text-center w-full">
+                          <div className="flex items-center gap-1 p-4 rounded-xl">
+                            <ChevronDownIcon
+                                onClick={decrementMinLevel}
+                                className="size-10 text-black cursor-pointer"
+                            />
+                            <input
+                                className="text-center rounded-lg w-full"
+                                type="number"
+                                step="0.1"
+                                min="1.0"
+                                max="7.0"
+                                value={levelRange[0].toFixed(1)}
+                                onChange={handleMinChange}
+                                disabled
+                            />
+                            <ChevronUpIcon
+                                onClick={incrementMinLevel}
+                                className="size-10 text-black cursor-pointer"
+                            />
+                          </div>
+
+                          <div className="flex items-center gap-1 p-4 w-full">
+                            <ChevronDownIcon
+                                onClick={decrementMaxLevel}
+                                className="size-10 text-black cursor-pointer"
+                            />
+
+                            <input
+                                className="text-center rounded-lg w-full"
+                                type="number"
+                                step="0.1"
+                                min={levelRange[0]}
+                                max="7.0"
+                                value={levelRange[1].toFixed(1)}
+                                onChange={handleMaxChange}
+                                disabled
+                            />
+                            <ChevronUpIcon
+                                onClick={incrementMaxLevel}
+                                className="size-10 text-black cursor-pointer"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
-                </div>
               )}
+
+
+
             </div>
           </div>
 

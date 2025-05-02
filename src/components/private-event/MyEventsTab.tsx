@@ -18,7 +18,7 @@ export const MyEventsTab = () => {
   const { user, loading: userLoading } = useUser();
   const [privateEvents, setPrivateEvents] = useState<PrivateEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [error] = useState<string | null>(null);
   const [isPageVisible, setIsPageVisible] = useState(true);
 
   const useMockData = false;
