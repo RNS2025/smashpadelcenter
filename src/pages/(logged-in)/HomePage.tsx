@@ -25,6 +25,10 @@ export const HomePage = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     let timeoutId: NodeJS.Timeout | null = null;
 
     // Only refresh user data if not authenticated or role is missing
@@ -182,6 +186,18 @@ export const HomePage = () => {
                     description="Se og administrer feedback"
                     link="/feedback"
                 />
+            )}
+
+            {user?.username === "admin" && (
+                <button
+                    onClick={() =>
+                        (window.location.href = "mobilepay://send?phone=29896413&amount=100&comment=Arrangement")
+                    }
+                    className="bg-cyan-700 text-white px-4 py-2 rounded"
+                >
+                  MP
+                </button>
+
             )}
           </div>
         </div>

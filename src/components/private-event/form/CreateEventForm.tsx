@@ -29,9 +29,11 @@ export const CreateEventForm = () => {
   const [totalSpots, setTotalSpots] = useState<number>(4);
   const [courtBooked, setCourtBooked] = useState<boolean>(false);
   const [levelRangeRequired, setLevelRangeRequired] = useState<boolean>(false);
-  const [levelRange, setLevelRange] = useState<[number, number]>([2.0, 3.0]);
+  const [levelRange, setLevelRange] = useState<[number, number]>([user?.skillLevel || 2.0, (user?.skillLevel || 2.0) + 1]);
   const [location, setLocation] = useState<string>("SMASH Padelcenter Horsens");
   const [openRegistration, setOpenRegistration] = useState<boolean>(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
 
   const [selectedStartDate, setSelectedStartDate] = useState(getNextHalfHour);
   const [selectedEndDate, setSelectedEndDate] = useState(
@@ -63,6 +65,9 @@ export const CreateEventForm = () => {
 
   const handleCreateEvent = async (event: FormEvent) => {
     event.preventDefault();
+
+    if (isSubmitting) return;
+    setIsSubmitting(true);
 
     if (userLoading) {
       setError("Vent venligst, indlæser brugerdata...");
@@ -230,14 +235,24 @@ export const CreateEventForm = () => {
               <label className="font-semibold" htmlFor="pladser">
                 Antal pladser
               </label>
-              <div className="pr-1">
+              <div className="flex items-center gap-1 w-full">
+                <ChevronDownIcon
+                    onClick={() => setTotalSpots((prev) => Math.max(4, prev - 1))}
+                    className="size-10 text-black cursor-pointer"
+                />
+
                 <input
-                  type="number"
-                  min={4}
-                  className="w-full rounded-lg h-12 resize-none text-center"
-                  value={totalSpots}
-                  onChange={(e) => setTotalSpots(parseInt(e.target.value))}
-                  required
+                    type="number"
+                    min={4}
+                    className="w-full rounded-lg h-12 resize-none text-center"
+                    value={totalSpots}
+                    onChange={(e) => setTotalSpots(parseInt(e.target.value))}
+                    required
+                    disabled
+                />
+                <ChevronUpIcon
+                    onClick={() => setTotalSpots((prev) => Math.min(prev + 1))}
+                    className="size-10 text-black cursor-pointer"
                 />
               </div>
             </div>
@@ -450,9 +465,10 @@ export const CreateEventForm = () => {
 
         <button
           type="submit"
+          disabled={isSubmitting}
           className="bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white"
         >
-          Opret arrangement
+          {isSubmitting ? "Opretter..." : "Opret arrangement"}
         </button>
       </form>
     </div>

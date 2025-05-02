@@ -1,7 +1,8 @@
-import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App.tsx";
 import "./index.css";
+import {UserProvider} from "./context/UserContext.tsx";
+import {BrowserRouter} from "react-router-dom";
 
 navigator.serviceWorker.register('/sw.js').then((registration) => {
     registration.addEventListener('updatefound', () => {
@@ -21,7 +22,9 @@ navigator.serviceWorker.register('/sw.js').then((registration) => {
 });
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
-  <React.StrictMode>
+    <BrowserRouter>
+    <UserProvider>
     <App />
-  </React.StrictMode>
+    </UserProvider>
+    </BrowserRouter>
 );

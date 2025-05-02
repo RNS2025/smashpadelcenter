@@ -340,6 +340,10 @@ export const ViewEventPage = () => {
             - {safeFormatDate(event.endTime, "HH:mm")}
           </h1>
 
+          <h1 className="text-center text-gray-500 italic text-sm">
+            Tryk på et spillernavn for at se mere information
+          </h1>
+
           {/* Participants */}
           {participantProfiles.map((profile) => (
               <>
@@ -385,19 +389,21 @@ export const ViewEventPage = () => {
           ))}
 
           {/* Empty spots */}
+          <div className={`${event.totalSpots > 8 ? "grid grid-cols-2 gap-2" : ""}`}>
           {[...Array(event.totalSpots - event.participants.length)].map(
             (_, index) => (
                 <div
                     key={`empty-${index}`}
-                    className="border border-gray-500 rounded flex items-center px-1"
+                    className="border border-gray-500 rounded flex items-center px-1 py-2"
                 >
-                  <UserCircleIcon className="h-20 text-gray-500" />
+                  <UserCircleIcon className="size-10 text-gray-500" />
                   <div className="w-full pr-1 truncate">
-                    <h1 className="text-xl text-gray-500">Ledig plads</h1>
+                    <h1 className="text-sm text-gray-500">Ledig plads</h1>
                   </div>
 
+
                   <div className="flex items-center gap-2">
-                    <div className="bg-gray-500 text-white rounded-full flex items-center justify-center w-12 h-12">
+                    <div className="bg-gray-500 text-white rounded-full flex items-center justify-center size-5">
                       ?
                     </div>
                     <div>
@@ -405,6 +411,7 @@ export const ViewEventPage = () => {
                   </div>
                 </div>
             ))}
+          </div>
 
           {/* Join requests (visible to creator) */}
           {event.username === user?.username &&

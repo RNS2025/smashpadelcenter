@@ -58,7 +58,7 @@ export const FeedbackPage = () => {
                 <div className="w-full px-6">
                     {feedback.map((item) => (
                         <div onClick={() => handleResolve(item._id)} key={item._id} className={`flex flex-col gap-2 p-4 border rounded mb-2 ${item.resolved ? "opacity-20" : ""}`}>
-                            <h2 className="text-lg font-semibold">{item.page}</h2>
+                            <h2 className="font-semibold break-words max-w-full">{item.page}</h2>
                             <p>{item.body}</p>
                             <p className="text-gray-500 text-sm">Bruger: {item.username}</p>
                             <p className="text-gray-500 text-sm">{safeFormatDate(item.date, "dd/MM/yyyy HH:mm")}</p>

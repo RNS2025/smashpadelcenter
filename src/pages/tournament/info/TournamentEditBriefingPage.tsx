@@ -39,6 +39,13 @@ export const TournamentEditBriefingPage = () => {
         }
     };
 
+    const handleCancel = () => {
+        const userConfirmed = confirm("Er du sikker på, at du vil annullere ændringerne?");
+        if (userConfirmed) {
+            navigate("/turneringer/info/briefing");
+        }
+    }
+
     return (
         <>
             <Helmet>
@@ -56,6 +63,13 @@ export const TournamentEditBriefingPage = () => {
                                 theme="snow"
                                 className="bg-white text-black rounded-lg"
                             />
+                            <div className="flex justify-between">
+                            <button
+                                onClick={handleCancel}
+                                className="mt-4 bg-red-500 hover:bg-red-600 text-white rounded px-4 py-2"
+                            >
+                                Annuller
+                            </button>
                             <button
                                 onClick={handleSave}
                                 disabled={saving}
@@ -63,6 +77,7 @@ export const TournamentEditBriefingPage = () => {
                             >
                                 {saving ? "Gemmer..." : "Gem ændringer"}
                             </button>
+                            </div>
                         </>
                     )}
                 </div>

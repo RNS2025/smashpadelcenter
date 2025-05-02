@@ -10,8 +10,10 @@ import { useEffect, useState } from "react";
 import usePolling from "../../../hooks/usePolling.ts";
 import communityApi from "../../../services/makkerborsService.ts";
 import { PadelMatch } from "../../../types/PadelMatch.ts";
+import {useNavigate} from "react-router-dom";
 
 const OverviewTab = () => {
+    const navigate = useNavigate();
   const { profile, matches, matchesLoading, setMatches } = useProfileContext();
   const [isPageVisible, setIsPageVisible] = useState(true);
 
@@ -126,6 +128,7 @@ const OverviewTab = () => {
           <ul className="space-y-2">
             {matches.upcoming.map((match) => (
               <li
+                  onClick={() => navigate(`/makkerbørs/${match.id}`)}
                 key={match.id}
                 className="border border-gray-900 p-2 rounded-lg text-gray-800"
               >

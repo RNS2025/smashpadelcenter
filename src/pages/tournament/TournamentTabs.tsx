@@ -9,9 +9,14 @@ import {
 import Animation from "../../components/misc/Animation.tsx";
 import HomeBar from "../../components/misc/HomeBar.tsx";
 import { useUser } from "../../context/UserContext.tsx";
+import {useEffect} from "react";
 
 export const TournamentTabs = () => {
   const { user } = useUser();
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
 
   return (
     <>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { UserProvider } from "./context/UserContext";
 import InstallPrompt from "./components/misc/InstallPrompt.tsx"; // Adjust path as needed
@@ -8,8 +8,6 @@ import HomePage from "./pages/(logged-in)/HomePage.tsx";
 import AdminPage from "./pages/(logged-in)/misc/AdminPage.tsx";
 import CheckInPage from "./pages/tournament/CheckInPage.tsx";
 import PlayerPage from "./pages/tournament/PlayerPage.tsx";
-import BookCourtPage from "./pages/(logged-in)/BookingOfCourt.tsx";
-import BookTrainingPage from "./pages/(logged-in)/BookTraining.tsx";
 import MatchFinderPage from "./pages/(logged-in)/matchFinder/MatchFinderPage.tsx";
 import RanglistePage from "./pages/(logged-in)/RanglistePage.tsx";
 import NewsPage from "./pages/(logged-in)/NewsPage.tsx";
@@ -19,7 +17,6 @@ import PartnerPage from "./pages/(logged-in)/PartnerPage.tsx";
 import ArrangementPage from "./pages/(logged-in)/ArrangementPage.tsx";
 import FeedbackPage from "./pages/(logged-in)/misc/FeedbackPage.tsx";
 import RegisterPage from "./pages/login/RegisterUserPage.tsx";
-import CourtTimes from "./pages/court-times.tsx";
 import TournamentTabs from "./pages/tournament/TournamentTabs.tsx";
 import CourtMapPage from "./pages/tournament/CourtMapPage.tsx";
 import TournamentsResultsPage from "./pages/tournament/TournamentsResultsPage.tsx";
@@ -124,7 +121,6 @@ function App() {
 
   return (
     <HelmetProvider>
-      <BrowserRouter>
         <UserProvider>
           {shouldShowPrompt && (
             <InstallPrompt
@@ -238,7 +234,6 @@ function App() {
             <Route path="/feedback" element={<FeedbackPage />} />
           </Routes>
         </UserProvider>
-      </BrowserRouter>
     </HelmetProvider>
   );
 }

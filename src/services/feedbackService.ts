@@ -13,7 +13,7 @@ const feedbackApi = {
     },
 
     resolveFeedback: async (id: string): Promise<void> => {
-        await api.put(`/feedback/resolve/${id}`);
+        await api.put(`/feedback/resolve/${id}`, { resolved: true });
     },
 }
 

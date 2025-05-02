@@ -20,7 +20,7 @@ export const CreateMatchForm = () => {
   const [selectedReserved, setSelectedReserved] = useState<number>(0);
   const [courtBooked, setCourtBooked] = useState<boolean>(false);
   const [selectedPlayingTime, setSelectedPlayingTime] = useState<number>(90);
-  const [levelRange, setLevelRange] = useState<[number, number]>([2.0, 3.0]);
+  const [levelRange, setLevelRange] = useState<[number, number]>([user?.skillLevel || 2.0, (user?.skillLevel || 2.0) + 1]);
   const [selectedMatchType, setSelectedMatchType] = useState<string>("Herre");
   const [location, setLocation] = useState<string>("SMASH Padelcenter Horsens");
   const [description, setDescription] = useState<string>("");
@@ -378,20 +378,27 @@ export const CreateMatchForm = () => {
                     }}
                 />
 
-                <input
-                    className="text-center rounded-lg w-full"
-                    type="number"
-                    step="0.1"
-                    min={levelRange[0]}
-                    max={levelRange[1]}
-                    value={reservedPlayers[i]?.level?.toFixed(1) ?? ((levelRange[0] + levelRange[1]) / 2).toFixed(1)}
-                    onChange={(e) => {
-                      const newPlayers = [...reservedPlayers];
-                      if (!newPlayers[i]) newPlayers[i] = { name: "", level: (levelRange[0] + levelRange[1]) / 2 };
-                      newPlayers[i].level = parseFloat(e.target.value);
-                      setReservedPlayers(newPlayers);
-                    }}
-                />
+                <div className="flex items-center gap-1 w-full">
+                  <ChevronDownIcon
+                      onClick={decrementMaxLevel}
+                      className="size-10 text-black cursor-pointer"
+                  />
+
+                  <input
+                      className="text-center rounded-lg w-full"
+                      type="number"
+                      step="0.1"
+                      min={levelRange[0]}
+                      max="7.0"
+                      value={((levelRange[1] + levelRange[0]) / 2).toFixed(1)}
+                      onChange={handleMaxChange}
+                      disabled
+                  />
+                  <ChevronUpIcon
+                      onClick={incrementMaxLevel}
+                      className="size-10 text-black cursor-pointer"
+                  />
+                </div>
               </div>
             ))}
           </div>

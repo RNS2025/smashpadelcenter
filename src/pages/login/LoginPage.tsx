@@ -35,7 +35,6 @@ export const LoginPage = () => {
     try {
       await login(username, password);
       navigate("/hjem");
-      window.scrollTo(0, 0);
     } catch (err) {
       setError("Kunne ikke logge ind.");
       console.log(err);

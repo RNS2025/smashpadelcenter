@@ -66,6 +66,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     [navigate]
   );
 
+
   const fetchUserData = useCallback(
     async (currentPath: string) => {
       setLoading(true);
@@ -75,6 +76,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         });
         if (response.data && response.data.isAuthenticated) {
           setUser(response.data.user);
+          localStorage.setItem("user", JSON.stringify(response.data.user));
           setIsAuthenticated(true);
           setError(null);
           if (isLoginPage(currentPath)) {
@@ -96,6 +98,18 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     [navigate]
   );
 
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+      setIsAuthenticated(true);
+      setLoading(false);
+      setInitialLoadComplete(true);
+    } else {
+      fetchUserData(location.pathname).then();
+    }
+  }, [fetchUserData, location.pathname]);
+
   const fetchUser = async () => {
     await fetchUserData(location.pathname);
   };
@@ -110,6 +124,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = async () => {
     try {
+      localStorage.removeItem("user");
       setError(null);
       setUser(null);
       setIsAuthenticated(false);
@@ -127,7 +142,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     if (!isAuthenticated) {
       handleUnauthenticated(location.pathname);
     }
-  }, [isAuthenticated, location.pathname, handleUnauthenticated]);
+  }, [isAuthenticated, location.pathname, handleUnauthenticated, initialLoadComplete]);
 
 
   useEffect(() => {
