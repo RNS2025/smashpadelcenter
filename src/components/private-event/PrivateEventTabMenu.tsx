@@ -4,8 +4,6 @@ export const PrivateEventTabMenu = ({joinRequestsCount}: {
     joinRequestsCount: number;
 }) => {
     return (
-        <div>
-            <div className="block">
                 <div>
                     <nav className="flex gap-6" aria-label="Tabs">
                         <NavLink
@@ -52,8 +50,6 @@ export const PrivateEventTabMenu = ({joinRequestsCount}: {
                         </NavLink>
                         */}
                     </nav>
-                </div>
-            </div>
         </div>
     );
 }

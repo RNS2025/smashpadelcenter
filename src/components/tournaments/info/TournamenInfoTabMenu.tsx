@@ -4,9 +4,7 @@ export const TournamentInfoTabMenu = () => {
     const location = useLocation();
 
     return (
-        <div>
-            <div className="block">
-                <div className="">
+                <div>
                     <nav className="flex gap-6 text-lg font-medium" aria-label="Tabs">
 
                         <NavLink
@@ -31,10 +29,7 @@ export const TournamentInfoTabMenu = () => {
                         >
                             Generelt
                         </NavLink>
-
                     </nav>
-                </div>
-            </div>
         </div>
     );
 };

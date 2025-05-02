@@ -7,8 +7,6 @@ export const MatchFinderTabMenu = ({joinRequestsCount}: {
 
   return (
     <div>
-      <div className="block">
-        <div>
           <nav className="flex gap-6" aria-label="Tabs">
             <NavLink
               to={`/makkerbørs/allekampe`}
@@ -50,8 +48,6 @@ export const MatchFinderTabMenu = ({joinRequestsCount}: {
               Afventer
             </NavLink>
           </nav>
-        </div>
-      </div>
     </div>
   );
 };

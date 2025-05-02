@@ -4,9 +4,7 @@ export const TeamProfileTabMenu = () => {
     const location = useLocation();
 
     return (
-        <div>
-            <div className="block">
-                <div className="">
+                <div>
                     <nav className="flex gap-6 text-lg font-medium" aria-label="Tabs">
                         {/* Spillere Tab */}
                         <NavLink
@@ -44,8 +42,6 @@ export const TeamProfileTabMenu = () => {
                             Kampe
                         </NavLink>
                     </nav>
-                </div>
-            </div>
         </div>
     );
 };
