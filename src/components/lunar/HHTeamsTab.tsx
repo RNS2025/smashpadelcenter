@@ -1,85 +1,41 @@
-import {Helmet} from "react-helmet-async";
-import {useEffect, useState} from "react";
-import {League, TeamInfo} from "../../types/LunarTypes.ts";
-import {
-    fetchAllLeagues,
-    fetchTeamsByLeagueHorsens,
-    fetchTeamsByLeagueStensballe
-} from "../../services/LigaService.ts";
-import {useNavigate} from "react-router-dom";
+import { Helmet } from "react-helmet-async";
+import { useNavigate } from "react-router-dom";
+import { TeamInfo } from "../../types/LunarTypes.ts";
 import TeamListTable from "./misc/TeamListTable.tsx";
-
+import useLeagueTeams from "../../hooks/useLeagueTeams";
 
 export const HHTeamsTab = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    const [leagues, setLeagues] = useState<{ horsens: League[]; stensballe: League[] }>({ horsens: [], stensballe: [] });
-    const [hhTeams, setHhTeams] = useState<TeamInfo[]>([]);
+  // Use custom hook with filter for "HH" leagues
+  const {
+    teams: hhTeams,
+    loading,
+    error,
+  } = useLeagueTeams((league) => league.name.includes("HH"));
 
+  const handleRowClick = (team: TeamInfo) => {
+    sessionStorage.setItem(`teamName_${team.id}`, team.name);
+    navigate(`/holdligaer/${team.id}`);
+  };
 
-    //TODO: Nu kan vi lave et hook
-    useEffect(() => {
-        const fetchLeagues = async () => {
-            try {
-                const response = await fetchAllLeagues();
-                setLeagues(response);
-            } catch (error) {
-                console.error("Error fetching leagues:", error);
-            }
-        }
-        fetchLeagues().then();
-    }, []);
+  return (
+    <>
+      <Helmet>
+        <title>HH-Listen</title>
+      </Helmet>
 
-    useEffect(() => {
-        const fetchTeams = async () => {
-            try {
-                const lunarLeaguesHorsens = leagues.horsens.filter(l =>
-                    l.name.includes("HH")
-                );
-
-                const lunarLeaguesStensballe = leagues.stensballe.filter(l =>
-                    l.name.includes("HH")
-                );
-
-                const teamsFromHorsens = await Promise.all(
-                    lunarLeaguesHorsens.map((l) => fetchTeamsByLeagueHorsens(l.id))
-                );
-
-                const teamsFromStensballe = await Promise.all(
-                    lunarLeaguesStensballe.map((l) => fetchTeamsByLeagueStensballe(l.id))
-                );
-
-                const allTeams = [...teamsFromHorsens.flat(), ...teamsFromStensballe.flat()];
-
-                setHhTeams(allTeams);
-            } catch (error) {
-                console.error("Error fetching teams:", error);
-            }
-        };
-
-        if (leagues.horsens.length && leagues.stensballe.length) {
-            fetchTeams().then();
-        }
-    }, [leagues]);
-
-
-
-
-
-    return (
-        <>
-            <Helmet>
-                <title>HH-Listen</title>
-            </Helmet>
-
-            <div className="sm:mx-20 mx-2">
-                <TeamListTable  teams={hhTeams} onRowClick={(team) => {
-                    sessionStorage.setItem(`teamName_${team.id}`, team.name);
-                    navigate(`/holdligaer/${team.id}`);
-                }}/>
-            </div>
-        </>
-    );
+      <div className="sm:mx-20 mx-2">
+        {loading ? (
+          <div className="text-center py-8">Loading teams...</div>
+        ) : error ? (
+          <div className="text-center text-red-500 py-8">{error}</div>
+        ) : (
+          <TeamListTable teams={hhTeams} onRowClick={handleRowClick} />
+        )}
+      </div>
+    </>
+  );
 };
 
 export default HHTeamsTab;
