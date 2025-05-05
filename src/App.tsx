@@ -2,7 +2,8 @@ import { useEffect, useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { UserProvider } from "./context/UserContext";
-import InstallPrompt from "./components/misc/InstallPrompt.tsx"; // Adjust path as needed
+import LoadingSpinner from "./components/misc/LoadingSpinner.tsx";
+import InstallPrompt from "./components/misc/InstallPrompt.tsx";
 import LoginPage from "./pages/login/LoginPage.tsx";
 import HomePage from "./pages/(logged-in)/HomePage.tsx";
 import AdminPage from "./pages/(logged-in)/misc/AdminPage.tsx";
@@ -49,16 +50,16 @@ import { TournamentRegulationsTab } from "./components/tournaments/info/Tourname
 import TournamentBriefingTab from "./components/tournaments/info/TournamentBriefingTab.tsx";
 import TournamentEditBriefingPage from "./pages/tournament/info/TournamentEditBriefingPage.tsx";
 import ProfilePageWrapper from "./context/ProfilePageWrapper.tsx";
-import MatchesTab from "./components/profile/tabs/MatchesTab.tsx";
-import MatchResultPage from "./pages/(logged-in)/matchFinder/MatchResultPage.tsx";
+import { useUser } from "./context/UserContext";
 import EditMatchPage from "./pages/(logged-in)/matchFinder/EditMatchPage.tsx";
 import EditEventPage from "./pages/(logged-in)/private-event/EditEventPage.tsx";
+import MatchResultPage from "./pages/(logged-in)/matchFinder/MatchResultPage.tsx";
 
-
-function App() {
+function AppContent() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isAppInstalled, setIsAppInstalled] = useState(false);
   const [isPromptDismissed, setIsPromptDismissed] = useState(false);
+  const { isAuthenticated, loading } = useUser();
 
   useEffect(() => {
     // Check if app is already installed
@@ -124,62 +125,53 @@ function App() {
     !isPromptDismissed &&
     !window.matchMedia("(display-mode: standalone)").matches;
 
+  if (loading) {
+    return (
+      <div className="h-screen w-screen flex items-center justify-center">
+        <LoadingSpinner />
+      </div>
+    );
+  }
+
   return (
-    <HelmetProvider>
-        <UserProvider>
-          {shouldShowPrompt && (
-            <InstallPrompt
-              deferredPrompt={deferredPrompt}
-              onDismiss={handleDismiss}
-            />
-          )}
-          <Routes>
-            {/* Whitelisted Routes */}
-            <Route path="/" element={<LoginPage />} />
-            <Route path="/register" element={<RegisterPage />} />
+    <>
+      {shouldShowPrompt && (
+        <InstallPrompt
+          deferredPrompt={deferredPrompt}
+          onDismiss={handleDismiss}
+        />
+      )}
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/turneringer/check-in" element={<CheckInPage />} />
+        <Route path="/turneringer/baneoversigt" element={<CourtMapPage />} />
+        <Route path="/turneringer" element={<TournamentTabs />} />
+        <Route path="/turneringer/info" element={<TournamentInfoPage />}>
+          <Route index element={<Navigate to="briefing" replace />} />
+          <Route path="briefing" element={<TournamentBriefingTab />} />
+          <Route path="generelt" element={<TournamentRegulationsTab />} />
+        </Route>
+        <Route path="/player/:playerId/:rowId" element={<PlayerPage />} />
 
-
-            {/*Turneringer*/}
-            <Route path="/turneringer/check-in" element={<CheckInPage />} />
-            <Route path="/turneringer/baneoversigt" element={<CourtMapPage />}/>
-            <Route path="/turneringer/info" element={<TournamentInfoPage />}>
-              <Route index element={<Navigate to="briefing" replace />} />
-              <Route path="briefing" element={<TournamentBriefingTab />} />
-              <Route path="generelt" element={<TournamentRegulationsTab />} />
+        {/* Protected Routes */}
+        {isAuthenticated ? (
+          <>
+            <Route path="/profil/:username" element={<ProfilePageWrapper />}>
+              <Route index element={<Navigate to="overblik" replace />} />
+              <Route path="overblik" element={<OverviewTab />} />
+              <Route path="rediger" element={<EditTab />} />
+              <Route path="grupper" element={<GroupsTab />} />
+              <Route path="grupper/opretgruppe" element={<CreateGroupTab />} />
+              <Route path="grupper/:groupId" element={<EditGroupTab />} />
             </Route>
-
-            <Route path="/turneringer" element={<TournamentTabs />} />
-            <Route path="/player/:playerId/:rowId" element={<PlayerPage />} />
-
-
-            {/* <Route path="/court-times" element={<CourtTimes />} /> */}
-
-            {/* Protected Routes */}
 
             <Route path="/hjem" element={<HomePage />} />
             <Route path="/admin" element={<AdminPage />} />
             {/* <Route path="/book-court" element={<BookCourtPage />} />
-            <Route path="/book-training" element={<BookTrainingPage />} /> */}
+              <Route path="/book-training" element={<BookTrainingPage />} /> */}
 
-            <Route path="/turneringer/resultater" element={<TournamentsResultsPage />}/>
-            <Route path="/turneringer/info/briefing/redigerbriefing/:briefingId" element={<TournamentEditBriefingPage />}/>
-
-            {/*Profil*/}
-            <Route path="/profil/:username" element={<ProfilePageWrapper />}>
-              <Route index element={<Navigate to="overblik" replace />} />
-              <Route path="overblik" element={<OverviewTab />} />
-              <Route path="grupper" element={<GroupsTab />} />
-              <Route path="kamphistorik" element={<MatchesTab />} />
-
-              <Route path="grupper/opretgruppe" element={<CreateGroupTab />} />
-              <Route path="grupper/:groupId" element={<EditGroupTab />} />
-
-
-              <Route path="rediger" element={<EditTab />} />
-            </Route>
-
-
-            {/* Makkerbørs */}
             <Route path="/makkerbørs" element={<MatchFinderPage />}>
               <Route index element={<Navigate to="allekampe" replace />} />
               <Route path="allekampe" element={<MatchFinderAllMatchesTab />} />
@@ -195,29 +187,57 @@ function App() {
 
             {/* Arrangementer */}
             <Route path="/privat-arrangementer" element={<PrivateEventPage />}>
-              <Route index element={<Navigate to="minearrangementer" replace />}/>
+              <Route
+                index
+                element={<Navigate to="minearrangementer" replace />}
+              />
               <Route path="minearrangementer" element={<MyEventsTab />} />
               <Route path="allearrangementer" element={<AllEventsTab />} />
             </Route>
-            <Route path="/privat-arrangementer/opretarrangement" element={<CreateEventPage />}/>
-            <Route path="/privat-arrangementer/:eventId" element={<ViewEventPage />}/>
+            <Route
+              path="/privat-arrangementer/opretarrangement"
+              element={<CreateEventPage />}
+            />
+            <Route
+              path="/privat-arrangementer/:eventId"
+              element={<ViewEventPage />}
+            />
             <Route path="/privat-arrangementer/:eventId/rediger" element={<EditEventPage />}/>
 
+            <Route
+              path="/turneringer/resultater"
+              element={<TournamentsResultsPage />}
+            />
+            <Route
+              path="/turneringer/info/briefing/redigerbriefing/:briefingId"
+              element={<TournamentEditBriefingPage />}
+            />
 
-            {/* Holdligaer */}
             <Route path="/holdligaer" element={<LunarLigaPage />}>
-              <Route index element={<Navigate to="lunarligaherrer" replace />}/>
+              <Route
+                index
+                element={<Navigate to="lunarligaherrer" replace />}
+              />
               <Route path="lunarligaherrer" element={<LunarTeamsTab />} />
               <Route path="lunarliga4p" element={<LunarTeamsWomenTab />} />
               <Route path="hh-listen" element={<HHTeamsTab />} />
             </Route>
 
-            <Route path="/holdligaer/:teamId" element={<LeagueTeamProfilePage />}>
+            <Route
+              path="/holdligaer/:teamId"
+              element={<LeagueTeamProfilePage />}
+            >
               <Route index element={<Navigate to="spillere" replace />} />
               <Route path="spillere" element={<TeamProfilePlayersTab />} />
-              <Route path="tabeloversigt" element={<TeamProfileStandingsTab />}/>
+              <Route
+                path="tabeloversigt"
+                element={<TeamProfileStandingsTab />}
+              />
               <Route path="kampe" element={<TeamProfileMatchesTab />} />
-              <Route path="kampe/:matchId" element={<TeamProfileMatchDetailsTab />}/>
+              <Route
+                path="kampe/:matchId"
+                element={<TeamProfileMatchDetailsTab />}
+              />
             </Route>
 
             <Route path="/rangliste" element={<RanglistePage />} />
@@ -226,8 +246,21 @@ function App() {
             <Route path="/partner" element={<PartnerPage />} />
             <Route path="/arrangement" element={<ArrangementPage />} />
             <Route path="/feedback" element={<FeedbackPage />} />
-          </Routes>
-        </UserProvider>
+          </>
+        ) : (
+          <Route path="*" element={<Navigate to="/" replace />} />
+        )}
+      </Routes>
+    </>
+  );
+}
+
+function App() {
+  return (
+    <HelmetProvider>
+      <UserProvider>
+        <AppContent />
+      </UserProvider>
     </HelmetProvider>
   );
 }

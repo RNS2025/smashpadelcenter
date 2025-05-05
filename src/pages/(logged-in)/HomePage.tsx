@@ -1,7 +1,7 @@
 import { Helmet } from "react-helmet-async";
 import HomeBar from "../../components/misc/HomeBar.tsx";
 import { useUser } from "../../context/UserContext.tsx";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Animation from "../../components/misc/Animation.tsx";
 import HomeScreenCard from "../../components/HomeScreen/HomeScreenCard.tsx";
 import {
@@ -16,55 +16,35 @@ import {
   BuildingOfficeIcon,
   TrophyIcon,
   UsersIcon,
-  CubeIcon, PresentationChartBarIcon,
+  CubeIcon,
+  PresentationChartBarIcon,
 } from "@heroicons/react/24/outline";
 import { setupNotifications } from "../../utils/notifications";
 
 export const HomePage = () => {
-  const { refreshUser, user, isAuthenticated } = useUser();
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const { user, isAuthenticated } = useUser();
+  const [isNotificationsInitialized, setNotificationsInitialized] =
+    useState(false);
+  const hasRefreshed = useRef(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout | null = null;
-
-    // Only refresh user data if not authenticated or role is missing
-    if (!isAuthenticated || !user?.role) {
-      if (!isRefreshing) {
-        setIsRefreshing(true);
-        // Delay refresh to allow session to stabilize after OAuth redirect
-        timeoutId = setTimeout(() => {
-          refreshUser()
-            .then(() => setIsRefreshing(false))
-            .catch((err) => {
-              console.error("Failed to refresh user:", err);
-              setIsRefreshing(false);
-            });
-        }, 1000); // 1-second delay
-      }
-    }
-
-    // Initialize notifications only if username exists
-    if (!user?.username) return;
+    if (isNotificationsInitialized || !user?.username) return;
 
     const initializeNotifications = async () => {
       try {
-        await setupNotifications(user?.username);
+        await setupNotifications(user.username);
+        setNotificationsInitialized(true);
       } catch (error) {
         console.error("Failed to initialize notifications:", error);
       }
     };
 
-    initializeNotifications().then();
-
-    // Cleanup timeout on unmount
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [user, isRefreshing, refreshUser, isAuthenticated]);
+    initializeNotifications();
+  }, [user?.username, isNotificationsInitialized]);
 
   return (
     <>
@@ -131,9 +111,7 @@ export const HomePage = () => {
             />
             {user?.role === "admin" && (
               <HomeScreenCard
-                icon={
-                  <ListBulletIcon className="size-10" aria-hidden="true" />
-                }
+                icon={<ListBulletIcon className="size-10" aria-hidden="true" />}
                 title="Rangliste"
                 description="Stryg hele vejen til tops i ranglisten"
                 link="rangliste"
@@ -141,9 +119,7 @@ export const HomePage = () => {
             )}
             {user?.role === "admin" && (
               <HomeScreenCard
-                icon={
-                  <NewspaperIcon className="size-10" aria-hidden="true" />
-                }
+                icon={<NewspaperIcon className="size-10" aria-hidden="true" />}
                 title="Nyheder"
                 description="Hold dig opdateret med seneste nyt"
                 link="news"
@@ -160,10 +136,7 @@ export const HomePage = () => {
             {user?.role === "admin" && (
               <HomeScreenCard
                 icon={
-                  <BuildingOfficeIcon
-                    className="size-10"
-                    aria-hidden="true"
-                  />
+                  <BuildingOfficeIcon className="size-10" aria-hidden="true" />
                 }
                 title="Partnere"
                 description="Udforsk vores partnere"
@@ -180,12 +153,17 @@ export const HomePage = () => {
             )}
 
             {user?.username === "admin" && (
-                <HomeScreenCard
-                    icon={<PresentationChartBarIcon className="size-10" aria-hidden="true" />}
-                    title="Feedback"
-                    description="Se og administrer feedback"
-                    link="/feedback"
-                />
+              <HomeScreenCard
+                icon={
+                  <PresentationChartBarIcon
+                    className="size-10"
+                    aria-hidden="true"
+                  />
+                }
+                title="Feedback"
+                description="Se og administrer feedback"
+                link="/feedback"
+              />
             )}
           </div>
         </div>
