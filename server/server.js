@@ -99,28 +99,10 @@ app.use((err, req, res, next) => {
 // HTTP Server
 const httpServer = http.createServer(app);
 
-// Clean database function
-const cleanDatabase = async () => {
-  try {
-    const collections = await mongoose.connection.db.collections();
-    for (let collection of collections) {
-      await collection.drop();
-      logger.info(`🗑️ Dropped collection: ${collection.collectionName}`);
-    }
-    logger.info("✅ Database wiped successfully");
-  } catch (error) {
-    logger.error("Error wiping database:", {
-      error: error.message,
-      stack: error.stack,
-    });
-  }
-};
-
 // MongoDB connection and server startup
 async function startServer() {
   try {
     await connectDB();
-    //await cleanDatabase();
     await createAdmin();
     await createTenUsers();
 

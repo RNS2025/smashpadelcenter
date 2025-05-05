@@ -4,6 +4,7 @@ import React, {
   useState,
   useEffect,
   useCallback,
+  useRef,
 } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { logout as authLogout } from "../services/auth";
@@ -22,7 +23,6 @@ interface UserContextType {
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
-
 
 const isRouteWhitelisted = (pathname: string, whitelist: string[]): boolean => {
   return whitelist.some((route) => {
@@ -46,7 +46,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
-
+  const authCheckInProgress = useRef(false);
 
   const handleUnauthenticated = useCallback(
     (currentPath: string) => {
@@ -68,9 +68,19 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     [navigate]
   );
 
-
   const fetchUserData = useCallback(
     async (currentPath: string) => {
+      // Skip auth check for whitelisted routes
+      if (isRouteWhitelisted(currentPath, WHITELIST_ROUTES)) {
+        setLoading(false);
+        setInitialLoadComplete(true);
+        return;
+      }
+
+      // Prevent multiple simultaneous auth checks
+      if (authCheckInProgress.current) return;
+      authCheckInProgress.current = true;
+
       setLoading(true);
       try {
         const response = await api.get(`/auth/check`, {
@@ -95,21 +105,39 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       } finally {
         setLoading(false);
         setInitialLoadComplete(true);
+        authCheckInProgress.current = false;
       }
-
     },
     [navigate]
   );
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-      setIsAuthenticated(true);
+    // Check if current route is whitelisted
+    const currentPath = location.pathname;
+    const isWhitelisted = isRouteWhitelisted(currentPath, WHITELIST_ROUTES);
+
+    // Skip authentication for whitelisted routes
+    if (isWhitelisted) {
       setLoading(false);
       setInitialLoadComplete(true);
+      return;
+    }
+
+    // Otherwise, proceed with normal auth flow
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+        setIsAuthenticated(true);
+      } catch (e) {
+        console.error("Failed to parse stored user:", e);
+        localStorage.removeItem("user");
+      } finally {
+        setLoading(false);
+        setInitialLoadComplete(true);
+      }
     } else {
-      fetchUserData(location.pathname).then();
+      fetchUserData(currentPath).then();
     }
   }, [fetchUserData, location.pathname]);
 
@@ -129,10 +157,11 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     try {
       setLoggingOut(true);
       localStorage.removeItem("user");
-      localStorage.removeItem("userProfile")
+      localStorage.removeItem("userProfile");
       setError(null);
       setUser(null);
       setIsAuthenticated(false);
+      localStorage.clear();
       await authLogout();
       navigate("/", { replace: true });
     } catch (error) {
@@ -143,16 +172,24 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
-
   useEffect(() => {
     if (!initialLoadComplete || loggingOut) return;
+
+    // Skip check for whitelisted routes
+    if (isRouteWhitelisted(location.pathname, WHITELIST_ROUTES)) {
+      return;
+    }
 
     if (!isAuthenticated) {
       handleUnauthenticated(location.pathname);
     }
-  }, [isAuthenticated, location.pathname, handleUnauthenticated, initialLoadComplete, loggingOut]);
-
-
+  }, [
+    isAuthenticated,
+    location.pathname,
+    handleUnauthenticated,
+    initialLoadComplete,
+    loggingOut,
+  ]);
 
   useEffect(() => {
     if (isLoginPage(location.pathname)) {
