@@ -47,7 +47,7 @@ router.post("/:eventId/invite", async (req, res) => {
       "INVITATION_SENT",
       {
         eventId: req.params.eventId,
-        participantIds: updatedEvent.players,
+        participantIds: updatedEvent.invitedPlayers,
       },
       usernames
     );
@@ -92,6 +92,17 @@ router.post("/:eventId/remove-player", async (req, res) => {
       req.params.eventId,
       username
     );
+
+    // Notify the removed user
+    await sendPrivateEventNotification(
+      "PLAYER_REMOVED",
+      {
+        eventId: req.params.eventId,
+        participantIds: updatedEvent.players,
+      },
+      [username]
+    );
+
     logger.info("Player removed from private event", {
       eventId: req.params.eventId,
       username,
@@ -122,17 +133,17 @@ router.post("/:eventId/confirm", async (req, res) => {
       {
         eventId: req.params.eventId,
         requesterId: username,
-        participantIds: updatedEvent.players,
+        participantIds: username,
       },
       [username]
     );
 
-    // Notify all participants that the invitation was processed
+    // Notify participant that the invitation was processed
     await sendPrivateEventNotification(
       "INVITATION_PROCESSED",
       {
         eventId: req.params.eventId,
-        participantIds: updatedEvent.players,
+        participantIds: username,
       },
       updatedEvent.players
     );
@@ -370,7 +381,7 @@ router.post("/:eventId/join", async (req, res) => {
       {
         eventId: req.params.eventId,
         requesterId: username,
-        participantIds: event.participants,
+        participantIds: event.username,
       },
       event.players
     );
@@ -427,12 +438,12 @@ router.post("/:eventId/confirm", async (req, res) => {
       [username]
     );
 
-    // Notify all participants that the invitation was processed
+    // Notify invited participant that the invitation was processed
     await sendPrivateEventNotification(
       "INVITATION_PROCESSED",
       {
         eventId: req.params.eventId,
-        participantIds: updatedEvent.participants,
+        participantIds: username,
       },
       updatedEvent.participants
     );

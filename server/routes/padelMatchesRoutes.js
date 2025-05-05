@@ -145,7 +145,7 @@ router.post("/:id/invite", async (req, res) => {
       "INVITATION_SENT",
       {
         matchId: req.params.id,
-        participantIds: updatedMatch.participants,
+        participantIds: updatedMatch.invitedPlayers,
       },
       usernames
     );
@@ -199,13 +199,12 @@ router.post("/:id/join", async (req, res) => {
     }
     const match = await padelMatchService.joinMatch(req.params.id, username);
 
-    // Notify all participants (except the match itself) about the join request
+    // Notify Match Owner about the join request
     await sendPadelMatchNotification(
       "REQUEST_TO_JOIN_LEVEL",
       {
         matchId: req.params.id,
-        requesterId: username,
-        participantIds: match.participants,
+        participantIds: match.username,
       },
       match.participants
     );
@@ -289,12 +288,12 @@ router.post("/:id/confirm", async (req, res) => {
       username
     );
 
-    // Notify all participants that the invitation was processed
+    // Notify participant that the invitation was processed
     await sendPadelMatchNotification(
       "INVITATION_PROCESSED",
       {
         matchId: req.params.id,
-        participantIds: updatedMatch.participants,
+        participantIds: req.user.username,
       },
       updatedMatch.participants
     );
@@ -393,6 +392,16 @@ router.post("/:id/remove-player", async (req, res) => {
     const updatedMatch = await padelMatchService.removePlayer(
       req.params.id,
       username
+    );
+
+    // Notify the removed player about their removal
+    await sendPadelMatchNotification(
+      "USER_REMOVED_FROM_MATCH",
+      {
+        matchId: req.params.id,
+        participantIds: username,
+      },
+      [username]
     );
 
     logger.info("Successfully removed player from match", {

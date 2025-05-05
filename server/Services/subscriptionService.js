@@ -262,6 +262,12 @@ const sendPadelMatchNotification = async (eventType, matchDetails, userIds) => {
         category: "makkerbors",
         recipients: participantIds,
       },
+      USER_REMOVED_FROM_MATCH: {
+        title: "Bruger fjernet fra kamp",
+        body: `Du er blevet fjernet fra kamp ${matchId}.`,
+        category: "makkerbors",
+        recipients: [requesterId],
+      },
     };
 
     if (!notificationScenarios[eventType]) {
@@ -350,6 +356,12 @@ const sendPrivateEventNotification = async (
         body: `Arrangement ${eventId} er blevet aflyst af arrangøren.`,
         category: "events",
         recipients: participantIds,
+      },
+      PLAYER_REMOVED: {
+        title: "Bruger fjernet fra arrangement",
+        body: `Du er blevet fjernet fra arrangement ${eventId}.`,
+        category: "events",
+        recipients: [requesterId],
       },
     };
 
