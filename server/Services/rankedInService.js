@@ -261,7 +261,6 @@ const getPlayersInRow = async (
     return [];
   }
 };
-
 const getPlayersMatches = async (
   playerId,
   tournamentClassId,
@@ -299,8 +298,8 @@ const getPlayersMatches = async (
             tournamentData.Elimination?.DrawData || []
           )
             .flat()
-            .flat()
             .filter((match) => {
+              if (!match) return false;
               const playersInvolved = [
                 match?.ChallengerParticipant?.FirstPlayer,
                 match?.ChallengerParticipant?.SecondPlayer,
@@ -322,66 +321,118 @@ const getPlayersMatches = async (
               challenger: {
                 id: match.ChallengerParticipant?.RankedinId || "",
                 firstPlayer: {
-                  id: match.ChallengerParticipant?.FirstPlayer?.RankedinId,
+                  id:
+                    match.ChallengerParticipant?.FirstPlayer?.RankedinId || "",
                   firstName:
-                    match.ChallengerParticipant?.FirstPlayer?.Name.split(
+                    match.ChallengerParticipant?.FirstPlayer?.Name?.split(
                       " "
                     )[0] || "",
                   lastName:
-                    match.ChallengerParticipant?.FirstPlayer?.Name.split(" ")
+                    match.ChallengerParticipant?.FirstPlayer?.Name?.split(" ")
                       .slice(1)
                       .join(" ") || "",
+                  Name:
+                    `${
+                      match.ChallengerParticipant?.FirstPlayer?.Name?.split(
+                        " "
+                      )[0] || ""
+                    } ${
+                      match.ChallengerParticipant?.FirstPlayer?.Name?.split(" ")
+                        .slice(1)
+                        .join(" ") || ""
+                    }`.trim() || "",
                   rankedInId:
-                    match.ChallengerParticipant?.FirstPlayer?.RankedinId,
+                    match.ChallengerParticipant?.FirstPlayer?.RankedinId || "",
                 },
                 secondPlayer: match.ChallengerParticipant?.SecondPlayer
                   ? {
-                      id: match.ChallengerParticipant?.SecondPlayer?.RankedinId,
+                      id:
+                        match.ChallengerParticipant?.SecondPlayer?.RankedinId ||
+                        "",
                       firstName:
-                        match.ChallengerParticipant?.SecondPlayer?.Name.split(
+                        match.ChallengerParticipant?.SecondPlayer?.Name?.split(
                           " "
                         )[0] || "",
                       lastName:
-                        match.ChallengerParticipant?.SecondPlayer?.Name.split(
+                        match.ChallengerParticipant?.SecondPlayer?.Name?.split(
                           " "
                         )
                           .slice(1)
                           .join(" ") || "",
+                      Name:
+                        `${
+                          match.ChallengerParticipant?.SecondPlayer?.Name?.split(
+                            " "
+                          )[0] || ""
+                        } ${
+                          match.ChallengerParticipant?.SecondPlayer?.Name?.split(
+                            " "
+                          )
+                            .slice(1)
+                            .join(" ") || ""
+                        }`.trim() || "",
                       rankedInId:
-                        match.ChallengerParticipant?.SecondPlayer?.RankedinId,
+                        match.ChallengerParticipant?.SecondPlayer?.RankedinId ||
+                        "",
                     }
                   : null,
               },
               challenged: {
                 id: match.ChallengedParticipant?.RankedinId || "",
                 firstPlayer: {
-                  id: match.ChallengedParticipant?.FirstPlayer?.RankedinId,
+                  id:
+                    match.ChallengedParticipant?.FirstPlayer?.RankedinId || "",
                   firstName:
-                    match.ChallengedParticipant?.FirstPlayer?.Name.split(
+                    match.ChallengedParticipant?.FirstPlayer?.Name?.split(
                       " "
                     )[0] || "",
                   lastName:
-                    match.ChallengedParticipant?.FirstPlayer?.Name.split(" ")
+                    match.ChallengedParticipant?.FirstPlayer?.Name?.split(" ")
                       .slice(1)
                       .join(" ") || "",
+                  Name:
+                    `${
+                      match.ChallengedParticipant?.FirstPlayer?.Name?.split(
+                        " "
+                      )[0] || ""
+                    } ${
+                      match.ChallengedParticipant?.FirstPlayer?.Name?.split(" ")
+                        .slice(1)
+                        .join(" ") || ""
+                    }`.trim() || "",
                   rankedInId:
-                    match.ChallengedParticipant?.FirstPlayer?.RankedinId,
+                    match.ChallengedParticipant?.FirstPlayer?.RankedinId || "",
                 },
                 secondPlayer: match.ChallengedParticipant?.SecondPlayer
                   ? {
-                      id: match.ChallengedParticipant?.SecondPlayer?.RankedinId,
+                      id:
+                        match.ChallengedParticipant?.SecondPlayer?.RankedinId ||
+                        "",
                       firstName:
-                        match.ChallengedParticipant?.SecondPlayer?.Name.split(
+                        match.ChallengedParticipant?.SecondPlayer?.Name?.split(
                           " "
                         )[0] || "",
                       lastName:
-                        match.ChallengedParticipant?.SecondPlayer?.Name.split(
+                        match.ChallengedParticipant?.SecondPlayer?.Name?.split(
                           " "
                         )
                           .slice(1)
                           .join(" ") || "",
+                      Name:
+                        `${
+                          match.ChallengedParticipant?.SecondPlayer?.Name?.split(
+                            " "
+                          )[0] || ""
+                        } ${
+                          match.ChallengedParticipant?.SecondPlayer?.Name?.split(
+                            " "
+                          )
+                            .slice(1)
+                            .join(" ") || ""
+                        }`.trim() || "",
                       rankedInId:
-                        match.ChallengedParticipant?.SecondPlayer?.RankedinId,
+                        match.ChallengedParticipant?.SecondPlayer?.RankedinId ||
+                        "",
                     }
                   : null,
               },
@@ -466,18 +517,26 @@ const getPlayersMatches = async (
                       challenger: {
                         id: challenger?.players[0]?.RankedinId || "",
                         firstPlayer: {
-                          id: challenger?.players[0]?.RankedinId,
+                          id: challenger?.players[0]?.RankedinId || "",
                           firstName:
                             challenger?.players[0]?.Name.split(" ")[0] || "",
                           lastName:
                             challenger?.players[0]?.Name.split(" ")
                               .slice(1)
                               .join(" ") || "",
-                          rankedInId: challenger?.players[0]?.RankedinId,
+                          Name:
+                            `${
+                              challenger?.players[0]?.Name.split(" ")[0] || ""
+                            } ${
+                              challenger?.players[0]?.Name.split(" ")
+                                .slice(1)
+                                .join(" ") || ""
+                            }`.trim() || "",
+                          rankedInId: challenger?.players[0]?.RankedinId || "",
                         },
                         secondPlayer: challenger?.players[1]
                           ? {
-                              id: challenger?.players[1]?.RankedinId,
+                              id: challenger?.players[1]?.RankedinId || "",
                               firstName:
                                 challenger?.players[1]?.Name.split(" ")[0] ||
                                 "",
@@ -485,25 +544,43 @@ const getPlayersMatches = async (
                                 challenger?.players[1]?.Name.split(" ")
                                   .slice(1)
                                   .join(" ") || "",
-                              rankedInId: challenger?.players[1]?.RankedinId,
+                              Name:
+                                `${
+                                  challenger?.players[1]?.Name.split(" ")[0] ||
+                                  ""
+                                } ${
+                                  challenger?.players[1]?.Name.split(" ")
+                                    .slice(1)
+                                    .join(" ") || ""
+                                }`.trim() || "",
+                              rankedInId:
+                                challenger?.players[1]?.RankedinId || "",
                             }
                           : null,
                       },
                       challenged: {
                         id: challenged?.players[0]?.RankedinId || "",
                         firstPlayer: {
-                          id: challenged?.players[0]?.RankedinId,
+                          id: challenged?.players[0]?.RankedinId || "",
                           firstName:
                             challenged?.players[0]?.Name.split(" ")[0] || "",
                           lastName:
                             challenged?.players[0]?.Name.split(" ")
                               .slice(1)
                               .join(" ") || "",
-                          rankedInId: challenged?.players[0]?.RankedinId,
+                          Name:
+                            `${
+                              challenged?.players[0]?.Name.split(" ")[0] || ""
+                            } ${
+                              challenged?.players[0]?.Name.split(" ")
+                                .slice(1)
+                                .join(" ") || ""
+                            }`.trim() || "",
+                          rankedInId: challenged?.players[0]?.RankedinId || "",
                         },
                         secondPlayer: challenged?.players[1]
                           ? {
-                              id: challenged?.players[1]?.RankedinId,
+                              id: challenged?.players[1]?.RankedinId || "",
                               firstName:
                                 challenged?.players[1]?.Name.split(" ")[0] ||
                                 "",
@@ -511,7 +588,17 @@ const getPlayersMatches = async (
                                 challenged?.players[1]?.Name.split(" ")
                                   .slice(1)
                                   .join(" ") || "",
-                              rankedInId: challenged?.players[1]?.RankedinId,
+                              Name:
+                                `${
+                                  challenged?.players[1]?.Name.split(" ")[0] ||
+                                  ""
+                                } ${
+                                  challenged?.players[1]?.Name.split(" ")
+                                    .slice(1)
+                                    .join(" ") || ""
+                                }`.trim() || "",
+                              rankedInId:
+                                challenged?.players[1]?.RankedinId || "",
                             }
                           : null,
                       },
@@ -657,7 +744,8 @@ const getNextMatchAndUpcommingOnCourt = async (
     const courtNameLower = courtName.toLowerCase();
     // Filter matches for the specified court (case insensitive)
     const courtMatches = matches.filter(
-        (match) => match.Court && match.Court.toLowerCase().includes(courtNameLower)
+      (match) =>
+        match.Court && match.Court.toLowerCase().includes(courtNameLower)
     );
 
     // Since we don't have EndTime, we'll estimate each match takes 1 hour
@@ -685,37 +773,49 @@ const getNextMatchAndUpcommingOnCourt = async (
   }
 };
 
-const searchPlayer = async (searchTerm, rankingId, rankingType, ageGroup, rankingDate) => {
+const searchPlayer = async (
+  searchTerm,
+  rankingId,
+  rankingType,
+  ageGroup,
+  rankingDate
+) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}Ranking/SearchRankingPlayersAsync`, {
-      params: {
-        rankingId,
-        rankingType,
-        ageGroup,
-        rankingDate,
-        weekFromNow: 1,
-        language: "en",
-        searchTerm,
-        skip: 0,
-        take: 10,
-        _: Date.now(),
-      },
-    });
+    const response = await axios.get(
+      `${API_BASE_URL}Ranking/SearchRankingPlayersAsync`,
+      {
+        params: {
+          rankingId,
+          rankingType,
+          ageGroup,
+          rankingDate,
+          weekFromNow: 1,
+          language: "en",
+          searchTerm,
+          skip: 0,
+          take: 10,
+          _: Date.now(),
+        },
+      }
+    );
 
     const payload = response.data.Payload || [];
 
     let selectedPlayers = payload;
 
-
     if (payload.length > 1) {
-      selectedPlayers = payload.filter(player => player.HomeClubName &&
-          player.HomeClubName.toLowerCase().includes("smash padelcenter" ||
+      selectedPlayers = payload.filter(
+        (player) =>
+          player.HomeClubName &&
+          player.HomeClubName.toLowerCase().includes(
+            "smash padelcenter" ||
               player.HomeClubName.toLowerCase().includes("horsens") ||
-              player.HomeClubName.toLowerCase().includes("8700"))
+              player.HomeClubName.toLowerCase().includes("8700")
+          )
       );
     }
 
-    const players = selectedPlayers.map(player => ({
+    const players = selectedPlayers.map((player) => ({
       participantId: player.Participant.Id,
       participantName: player.Name,
       points: player.ParticipantPoints?.Points ?? 0,
@@ -723,17 +823,18 @@ const searchPlayer = async (searchTerm, rankingId, rankingType, ageGroup, rankin
       participantUrl: player.ParticipantUrl,
     }));
 
-    logger.info(`RankedInService: Found ${players.length} players after conditional filtering.`);
+    logger.info(
+      `RankedInService: Found ${players.length} players after conditional filtering.`
+    );
 
     return players;
   } catch (error) {
-    logger.error("RankedInService: Error searching player", { error: error.message });
+    logger.error("RankedInService: Error searching player", {
+      error: error.message,
+    });
     throw new Error("Could not search player: " + error.message);
   }
 };
-
-
-
 
 module.exports = {
   getAvailableTournaments,

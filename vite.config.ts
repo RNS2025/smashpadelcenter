@@ -16,8 +16,8 @@ export default defineConfig({
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff,woff2}"],
       },
       manifest: {
-        name: "SMASH Padelcenter Klubapp",
-        short_name: "SMASH Klubapp",
+        name: "SMASH",
+        short_name: "SMASH",
         description: "SMASH Padelcenter Klubapp - Din digitale padelklub",
         theme_color: "#000000",
         background_color: "#ffffff",
