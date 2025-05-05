@@ -64,6 +64,42 @@ router.post("/:id/reject", async (req, res) => {
   }
 });
 
+//PATCH /api/v1/matches/:id - Update match details
+router.patch("/:id", async (req, res) => {
+    try {
+        const match = await padelMatchService.getMatchById(req.params.id);
+        if (!match) {
+        logger.warn("Attempted to update non-existent match", {
+            matchId: req.params.id,
+        });
+        return res.status(404).json({ message: "Match not found" });
+        }
+        if (match.username !== req.user.username) {
+        logger.warn("Unauthorized update attempt", {
+            matchId: req.params.id,
+            matchCreator: match.username,
+            attemptedBy: req.user.username,
+        });
+        return res
+            .status(403)
+            .json({ message: "Only the match creator can update the match" });
+        }
+        const updatedMatch = await padelMatchService.updateMatch(
+        req.params.id,
+        req.body
+        );
+
+        logger.info("Successfully updated padel match", { matchId: req.params.id });
+        res.json(updatedMatch);
+    } catch (error) {
+        logger.error("Error updating match", {
+        matchId: req.params.id,
+        error: error.message,
+        });
+        res.status(400).json({ message: error.message });
+    }
+});
+
 // POST /api/v1/matches/:id/accept - Accept a join request
 router.post("/:id/accept", async (req, res) => {
   try {
@@ -417,6 +453,25 @@ router.post("/:id/remove-player", async (req, res) => {
     res.status(400).json({ message: error.message });
   }
 });
+
+
+// POST /api/v1/matches/:id/remove-reserved-player
+router.post("/:id/remove-reserved-player", async (req, res) => {
+  try {
+    const { username } = req.body;
+
+    const match = await padelMatchService.removeReservedPlayer(
+        req.params.id,
+        username
+    );
+
+    res.json(match);
+  } catch (error) {
+    console.error("Error removing reserved player:", error.message);
+    res.status(400).json({ message: error.message });
+  }
+});
+
 
 // DELETE /api/v1/matches/:id - Delete a match
 router.delete("/:id/", async (req, res) => {

@@ -2,7 +2,7 @@ import { Helmet } from "react-helmet-async";
 import HomeBar from "../../../components/misc/HomeBar";
 import Animation from "../../../components/misc/Animation";
 import { useUser } from "../../../context/UserContext.tsx";
-import { Navigate, useParams } from "react-router-dom";
+import {Navigate, useNavigate, useParams} from "react-router-dom";
 import { useEffect, useState } from "react";
 import { User } from "../../../types/user.ts";
 import { PrivateEvent } from "../../../types/PrivateEvent.ts";
@@ -14,7 +14,6 @@ import {
   BoltIcon,
   CheckCircleIcon,
   CheckIcon, CurrencyDollarIcon,
-  DocumentDuplicateIcon,
   MapPinIcon, StarIcon,
   UserCircleIcon,
   UserGroupIcon,
@@ -24,10 +23,12 @@ import mockEvents from "../../../utils/mock/mockEvents.ts";
 import userProfileService from "../../../services/userProfileService.ts";
 import EventInvitedPlayersDialog from "../../../components/private-event/misc/EventInvitePlayersDialog.tsx";
 import {XIcon} from "lucide-react";
+import {createICSFile, downloadICSFile} from "../../../utils/ICSFile.ts";
 
 export const ViewEventPage = () => {
   const { user } = useUser();
   const { eventId } = useParams<{ eventId: string }>();
+  const navigate = useNavigate();
   const [event, setEvent] = useState<PrivateEvent | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -37,8 +38,6 @@ export const ViewEventPage = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [infoDialogVisible, setInfoDialogVisible] = useState(false);
   const [inviteDialogVisible, setInviteDialogVisible] = useState(false);
-
-  const [copied, setCopied] = useState(false);
 
   const useMockData = false;
 
@@ -252,16 +251,6 @@ export const ViewEventPage = () => {
     }
   };
 
-  const handleInvitedPlayers = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 10000);
-    } catch (err) {
-      console.error("Kunne ikke kopiere link:", err);
-    }
-  };
-
   const handleRemovePlayerFromEvent = async (username: string) => {
     if (!event || !user?.username) return;
     try {
@@ -280,6 +269,25 @@ export const ViewEventPage = () => {
       setError("Fejl ved fjernelse");
     }
   }
+
+  const handleCancelJoinRequest = async (username: string) => {
+    if (!event) return;
+    try {
+      const updatedEvent = await communityApi.playerCancelJoinEvent(
+          event.id,
+          username
+      );
+      if (!updatedEvent || !Array.isArray(updatedEvent.participants)) {
+        setError("Invalid event data returned");
+        alert("Der opstod en fejl – prøv igen.");
+      }
+      setEvent(updatedEvent);
+    } catch (error: any) {
+      console.error("Error cancelling join:", error);
+      alert(error.response?.data?.message || "Fejl ved annullering");
+      setError("Fejl ved annullering");
+    }
+  };
 
   if (!eventId) {
     return <Navigate to="/privat-arrangementer" replace />;
@@ -583,24 +591,45 @@ export const ViewEventPage = () => {
           </div>
 
           {/* Action buttons */}
-          {event.username !== user?.username &&
-            user?.username &&
-            !event.participants.includes(user?.username) && !event.invitedPlayers?.includes(user?.username) &&
-            !isEventFull && (
-              <button
-                onClick={handleJoinEvent}
-                className={`bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white ${
-                    event.joinRequests.includes(user?.username)
-                        ? "bg-gray-700 animate-pulse"
-                        : ""
-                }`}
-                disabled={event.joinRequests.includes(user?.username)}
-              >
-                {event.joinRequests.includes(user?.username)
-                    ? "Anmodning sendt"
-                    : "Tilmeld arrangement"}
+          {user?.username && event!.username !== user.username &&
+              !event!.participants.includes(user.username) &&
+              !event!.invitedPlayers?.includes(user.username) &&
+              !isEventFull &&
+              !event!.joinRequests.includes(user.username) && (
+                  <button
+                      onClick={handleJoinEvent}
+                      className="bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                  >
+                    Tilmeld kamp
+                  </button>
+              )}
+
+
+          {user?.username &&
+              event!.username !== user.username &&
+              event!.joinRequests.includes(user.username) && (
+                  <button
+                      onClick={() => handleCancelJoinRequest(user.username)}
+                      className="w-full text-lg bg-red-500 hover:bg-red-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                  >
+                    Fjern tilmeldingsanmodning
+                  </button>
+              )}
+
+          {user && event?.participants.includes(user?.username) && (
+              <button onClick={() => {
+                const ics = createICSFile(
+                    "Padelkamp",
+                    event!.description!,
+                    event!.location,
+                    new Date(event!.eventDateTime),
+                    new Date(event!.endTime)
+                );
+                downloadICSFile(ics, `padelkamp-${event!.id}.ics`);
+              }} className="w-full text-lg bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white">
+                Tilføj til kalender
               </button>
-            )}
+          )}
 
           {event.username === user?.username && (
             <>
@@ -612,22 +641,14 @@ export const ViewEventPage = () => {
                   Inviter spillere
                 </button>
 
-                <div
-                  onClick={handleInvitedPlayers}
-                  className="hidden flex justify-center bg-green-500 hover:bg-green-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                <button
+                    onClick={() => {
+                      navigate(`/privat-arrangementer/${eventId}/rediger`)}
+                    }
+                    className="bg-orange-500 hover:bg-orange-600 transition duration-300 rounded-lg py-2 px-4 text-white"
                 >
-                  {!copied ? (
-                    <>
-                      <DocumentDuplicateIcon className="h-5" />
-                      <h1>Kopier arrangementslink</h1>
-                    </>
-                  ) : (
-                    <>
-                      <CheckIcon className="h-5" />
-                      <h1>Link kopieret!</h1>
-                    </>
-                  )}
-                </div>
+                  Rediger arrangement
+                </button>
 
                 <button
                   onClick={handleDeleteEvent}

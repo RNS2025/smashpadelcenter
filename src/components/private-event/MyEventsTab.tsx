@@ -133,7 +133,7 @@ export const MyEventsTab = () => {
           privateEvents.map((event) => (
             <div
               onClick={() =>
-                navigate(`/privat-arrangementer/${event.username}/${event.id}`)
+                navigate(`/privat-arrangementer/${event.id}`)
               }
               key={event.id}
               className={`border p-4 rounded-lg space-y-1.5 hover:bg-gray-700 mb-5`}

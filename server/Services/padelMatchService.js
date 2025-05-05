@@ -21,6 +21,36 @@ const padelMatchService = {
     }
   },
 
+  updateMatch: async (matchId, matchData) => {
+    try {
+      const match = await PadelMatch.findById(matchId);
+        if (!match) throw new Error("Match not found");
+        // Update match properties
+        Object.assign(match, matchData);
+        await match.save();
+        const updatedMatch = {
+          ...match.toObject(),
+          id: match._id.toString(),
+          participants: match.participants || [],
+          joinRequests: match.joinRequests || [],
+          reservedSpots: match.reservedSpots || [],
+          totalSpots: match.totalSpots || 4,
+        };
+        logger.debug("PadelMatchService: Match updated successfully", {
+          matchId,
+          matchData,
+        });
+        return updatedMatch;
+    } catch (error) {
+        logger.error("PadelMatchService: Error updating match", {
+            matchId,
+            matchData,
+            error: error.message,
+        });
+        throw new Error("Error updating match: " + error.message);
+    }
+  },
+
   removePlayer: async (matchId, username) => {
     try {
       const match = await PadelMatch.findById(matchId);
@@ -68,6 +98,21 @@ const padelMatchService = {
       throw new Error("Error removing player: " + error.message);
     }
   },
+
+  removeReservedPlayer: async (matchId, username) => {
+    const match = await PadelMatch.findById(matchId);
+    if (!match) {
+      throw new Error("Match not found");
+    }
+
+    match.reservedSpots = match.reservedSpots.filter(
+        (spot) => spot.name !== username
+    );
+
+    await match.save();
+    return match;
+  },
+
 
   rejectJoin: async (matchId, username) => {
     try {

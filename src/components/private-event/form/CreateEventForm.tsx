@@ -26,7 +26,7 @@ export const CreateEventForm = () => {
   const [title, setTitle] = useState<string>("");
   const [description, setDescription] = useState<string>("");
   const [eventFormat, setEventFormat] = useState<string>("");
-  const [totalSpots, setTotalSpots] = useState<number>(4);
+  const [totalSpots, setTotalSpots] = useState<number>(8);
   const [courtBooked, setCourtBooked] = useState<boolean>(false);
   const [price, setPrice] = useState<number>(140);
   const [levelRangeRequired, setLevelRangeRequired] = useState<boolean>(false);

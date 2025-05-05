@@ -3,6 +3,7 @@ const PrivateEvent = require("../models/PrivateEvent");
 const User = require("../models/user");
 const crypto = require("crypto");
 const logger = require("../config/logger");
+const PadelMatch = require("../models/PadelMatch");
 
 const privateEventService = {
   getAllPrivateEvents: async () => {
@@ -394,6 +395,32 @@ const privateEventService = {
       throw new Error("Error deleting event: " + error.message);
     }
   },
+
+  playerCancelJoinEvent: async (eventId, username) => {
+    try {
+      const event = await PadelMatch.findById(eventId);
+      if (!event) throw new Error("Event not found");
+      if (!event.joinRequests.includes(username)) {
+        throw new Error("No join request found for this user");
+      }
+      event.joinRequests = event.joinRequests.filter((req) => req !== username);
+      await event.save();
+      const updatedEvent = {
+        ...event.toObject(),
+        id: event._id.toString(),
+        participants: event.participants || [],
+        joinRequests: event.joinRequests || [],
+        reservedSpots: event.reservedSpots || [],
+        totalSpots: event.totalSpots || 8,
+      };
+      console.log("playerCancelJoinMatch updated event:", updatedEvent);
+      return updatedEvent;
+    } catch (error) {
+      console.error("Error canceling join request:", error.message);
+      throw new Error("Error canceling join request: " + error.message);
+    }
+  },
+
 };
 
 module.exports = privateEventService;

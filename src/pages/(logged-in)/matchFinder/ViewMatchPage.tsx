@@ -8,7 +8,6 @@ import {
   UserGroupIcon,
   CheckCircleIcon,
   XCircleIcon,
-  DocumentDuplicateIcon,
   CheckIcon,
   StarIcon,
   XMarkIcon,
@@ -17,7 +16,7 @@ import { useUser } from "../../../context/UserContext";
 import {useEffect, useState, useMemo, useCallback} from "react";
 import { PadelMatch } from "../../../types/PadelMatch";
 import communityApi from "../../../services/makkerborsService";
-import { Navigate, useParams } from "react-router-dom";
+import {Navigate, useNavigate, useParams} from "react-router-dom";
 import LoadingSpinner from "../../../components/misc/LoadingSpinner";
 import { User } from "../../../types/user.ts";
 import userProfileService from "../../../services/userProfileService.ts";
@@ -28,6 +27,7 @@ import usePolling from "../../../hooks/usePolling.ts";
 import {createICSFile, downloadICSFile} from "../../../utils/ICSFile.ts";
 
 export const ViewMatchPage = () => {
+  const navigate = useNavigate();
   const { user } = useUser();
   const { matchId } = useParams<{ matchId: string }>();
   const [match, setMatch] = useState<PadelMatch | null>(null);
@@ -38,7 +38,6 @@ export const ViewMatchPage = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [infoDialogVisible, setInfoDialogVisible] = useState(false);
   const [inviteDialogVisible, setInviteDialogVisible] = useState(false);
-  const [copied, setCopied] = useState(false);
   const [profilesLoading, setProfilesLoading] = useState(false);
   const profileCache = useMemo(() => new Map<string, User>(), []);
 
@@ -119,19 +118,26 @@ export const ViewMatchPage = () => {
     }
   },[match]);
 
+  const handleRemoveReservedPlayer = useCallback(async (username: string) => {
+    if (!match) return;
+    try {
+      const updatedMatch = await communityApi.removeReservedPlayer(match.id, username);
+      setMatch(updatedMatch);
+    } catch (error: any) {
+      console.error("Error confirming delete:", error);
+      alert(error.response?.data?.message || "Fejl ved sletning af reserveret spiller");
+      setError("Fejl ved sletning af reserveret spiller");
+    }
+  },[match]);
+
   // Memoized lists
   const participantList = useMemo(() => {
     if (!match) return [];
+
     return participantProfiles.map((profile) => (
       <div key={profile.username} className="flex items-center gap-2">
         <div className="border rounded flex items-center px-1 w-full py-3">
-          <div
-            onClick={() => {
-              setSelectedUser(profile);
-              setInfoDialogVisible(true);
-            }}
-            className="flex items-center gap-2 w-full pr-1 truncate"
-          >
+          <div onClick={() => {setSelectedUser(profile);setInfoDialogVisible(true);}} className="flex items-center gap-2 w-full pr-1 truncate">
             <UserCircleIcon className="h-14" />
             <div className="flex flex-col gap-2">
               <h1>{profile.fullName}</h1>
@@ -139,7 +145,7 @@ export const ViewMatchPage = () => {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-12 h-12">
+            <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center size-12">
               {profile.skillLevel?.toFixed(1) || "?"}
             </div>
             <div>
@@ -162,26 +168,36 @@ export const ViewMatchPage = () => {
 
   const reservedSpotsList = useMemo(() => {
     if (!match) return [];
+
     return match.reservedSpots.map((reserved) => (
-      <div
-        key={reserved.name}
-        className="border rounded flex items-center px-1 w-full py-3"
-      >
-        <div className="flex items-center gap-2 w-full pr-1 truncate">
+      <div key={reserved.name} className="flex items-center gap-2">
+        <div className="border rounded flex items-center px-1 w-full py-3">
+          <div className="flex items-center gap-2 w-full pr-1 truncate">
           <UserCircleIcon className="h-14" />
           <div className="flex flex-col gap-2">
             <h1>{reserved.name}</h1>
+            <h1 className="italic text-gray-500">Reserveret plads</h1>
           </div>
-        </div>
+          </div>
         <div className="flex items-center gap-2">
-          <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center w-12 h-12">
+          <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center size-12">
             {reserved.level}
           </div>
-          <StarIcon className="size-6 text-gray-500" />
+          <div>
+          {match.username === user?.username && (
+              <XMarkIcon
+                  onClick={() => handleRemoveReservedPlayer}
+                  className={`size-6 text-red-500 ${
+                      match.username !== user?.username ? "hidden" : ""
+                  }`}
+              />
+          )}
+          </div>
+        </div>
         </div>
       </div>
     ));
-  }, [match]);
+  }, [handleRemoveReservedPlayer, match, user?.username]);
 
   const emptySpotsList = useMemo(() => {
     if (!match) return [];
@@ -359,7 +375,7 @@ export const ViewMatchPage = () => {
       }
     };
 
-    fetchParticipants();
+    fetchParticipants().then();
   }, [match, match?.participants, profileCache]);
 
   // Fetch join request profiles
@@ -408,7 +424,7 @@ export const ViewMatchPage = () => {
       }
     };
 
-    fetchJoinRequests();
+    fetchJoinRequests().then();
   }, [match, match?.joinRequests, profileCache]);
 
   const handleJoinMatch = async () => {
@@ -511,17 +527,6 @@ export const ViewMatchPage = () => {
     }
   };
 
-  const handleInvitedPlayers = async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 10000);
-    } catch (err) {
-      console.error("Kunne ikke kopiere link:", err);
-      setError("Kunne ikke kopiere link");
-    }
-  };
-
   if (!matchId) {
     return <Navigate to="/makkerbørs" replace />;
   }
@@ -584,6 +589,7 @@ export const ViewMatchPage = () => {
 
       <HomeBar />
       <Animation>
+
         <div className="mx-4 my-10 space-y-4 text-sm">
           <h1
             className={`text-center font-semibold ${
@@ -687,8 +693,7 @@ export const ViewMatchPage = () => {
           </div>
 
           {/* Action buttons */}
-          {user?.username &&
-            match!.username !== user.username &&
+          {user?.username && match!.username !== user.username &&
             !match!.participants.includes(user.username) &&
             !match!.invitedPlayers.includes(user.username) &&
             !isMatchFull &&
@@ -699,18 +704,35 @@ export const ViewMatchPage = () => {
               >
                 Tilmeld kamp
               </button>
-            )}
+              )}
 
           {user?.username &&
             match!.username !== user.username &&
             match!.joinRequests.includes(user.username) && (
               <button
                 onClick={() => handleCancelJoinRequest(user.username)}
-                className="bg-red-500 hover:bg-red-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                className="w-full text-lg bg-red-500 hover:bg-red-600 transition duration-300 rounded-lg py-2 px-4 text-white"
               >
                 Fjern tilmeldingsanmodning
               </button>
             )}
+
+          {user && match?.participants.includes(user?.username) && (
+          <button onClick={() => {
+            const ics = createICSFile(
+                "Padelkamp",
+                match!.description,
+                match!.location,
+                new Date(match!.matchDateTime),
+                new Date(match!.endTime)
+            );
+            downloadICSFile(ics, `padelkamp-${match!.id}.ics`);
+          }} className="w-full text-lg bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white">
+            Tilføj til kalender
+          </button>
+          )}
+
+
 
           {match!.username === user?.username && (
             <>
@@ -722,35 +744,15 @@ export const ViewMatchPage = () => {
                   Inviter spillere
                 </button>
 
-                <button onClick={() => {
-                  const ics = createICSFile(
-                      "Padelkamp",
-                      match!.description,
-                      match!.location,
-                      new Date(match!.matchDateTime),
-                      new Date(match!.endTime)
-                  );
-                  downloadICSFile(ics, `padelkamp-${match!.id}.ics`);
-                }} className="bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white">
-                  Tilføj til kalender
-                </button>
 
-                <div
-                  onClick={handleInvitedPlayers}
-                  className="flex justify-center hidden bg-green-500 hover:bg-green-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                <button
+                    onClick={() => {
+                      navigate(`/makkerbørs/${matchId}/rediger`)}
+                }
+                    className="bg-orange-500 hover:bg-orange-600 transition duration-300 rounded-lg py-2 px-4 text-white"
                 >
-                  {!copied ? (
-                    <>
-                      <DocumentDuplicateIcon className="h-5" />
-                      <h1>Kopier kamplink</h1>
-                    </>
-                  ) : (
-                    <>
-                      <CheckIcon className="h-5" />
-                      <h1>Link kopieret!</h1>
-                    </>
-                  )}
-                </div>
+                  Rediger kamp
+                </button>
 
                 <button
                   onClick={handleDeleteMatch}

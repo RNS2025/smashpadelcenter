@@ -13,6 +13,14 @@ const communityApi = {
     return response.data;
   },
 
+    updateMatch: async (
+        matchId: string,
+        update: Partial<Omit<PadelMatch, "id">>
+    ): Promise<PadelMatch> => {
+        const response = await api.patch(`/matches/${matchId}`, update);
+        return response.data;
+    },
+
   joinMatch: async (matchId: string, username: string): Promise<PadelMatch> => {
     const response = await api.post(`/matches/${matchId}/join`, { username });
     return response.data;
@@ -65,6 +73,16 @@ const communityApi = {
     return response.data;
   },
 
+  removeReservedPlayer: async (
+    matchId: string,
+    username: string
+  ): Promise<PadelMatch> => {
+    const response = await api.post(`/matches/${matchId}/remove-reserved-player`, {
+      username,
+    });
+    return response.data;
+  },
+
   invitedPlayersToMatch: async (
     matchId: string,
     usernames: string[]
@@ -108,6 +126,11 @@ const communityApi = {
     const response = await api.get(`/matches/player/${username}`);
     return response.data;
   },
+
+
+
+
+
 
   //Private Arrangementer
   getPrivateEvents: async (): Promise<PrivateEvent[]> => {
@@ -196,6 +219,16 @@ const communityApi = {
   ): Promise<PrivateEvent> => {
     const response = await api.post(`/private-event/${eventId}/invite`, {
       usernames,
+    });
+    return response.data;
+  },
+
+  playerCancelJoinEvent: async (
+    eventId: string,
+    username: string
+  ): Promise<PrivateEvent> => {
+    const response = await api.post(`/private-event/${eventId}/player-cancel`, {
+      username,
     });
     return response.data;
   },

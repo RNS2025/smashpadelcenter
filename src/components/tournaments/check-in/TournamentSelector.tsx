@@ -29,7 +29,6 @@ const TournamentSelector: FC<TournamentSelectorProps> = ({
 
   return (
     <div className="mb-6">
-      <h2 className="text-xl font-semibold mb-3">Vælg turnering</h2>
       {loading ? (
           <div className="flex items-center text-gray-500">
             <LoadingSpinner />
@@ -38,7 +37,6 @@ const TournamentSelector: FC<TournamentSelectorProps> = ({
       ) : !upcomingTournament ? (
           <p className="text-gray-500">Ingen kommende turneringer tilgængelige.</p>
       ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div
                 key={upcomingTournament.eventId}
                 className={`p-4 border rounded-lg cursor-pointer transition-colors ${
@@ -50,13 +48,12 @@ const TournamentSelector: FC<TournamentSelectorProps> = ({
             >
               <h3 className="font-bold">{upcomingTournament.eventName}</h3>
               <p className="text-gray-400">
-                {upcomingTournament.club}, {upcomingTournament.city}
+                {upcomingTournament.club}
               </p>
               <p className="text-gray-400">
                 {format(new Date(upcomingTournament.startDate), "dd. MMMM yyyy", { locale: da })}
               </p>
             </div>
-          </div>
       )}
 
     </div>

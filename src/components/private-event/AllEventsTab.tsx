@@ -108,7 +108,7 @@ export const AllEventsTab = () => {
                   event.openRegistration
                     ? () =>
                         navigate(
-                          `/privat-arrangementer/${event.username}/${event.id}`
+                          `/privat-arrangementer/${event.id}`
                         )
                     : undefined
                 }

@@ -356,43 +356,56 @@ export const CreateMatchForm = () => {
             </div>
 
             {[...Array(selectedReserved)].map((_, i) => (
-              <div key={i} className="grid grid-cols-2 gap-2 mt-2">
-                <input
-                    type="text"
-                    placeholder="Spillernavn"
-                    className="rounded-lg w-full text-sm"
-                    value={reservedPlayers[i]?.name ?? ""}
-                    onChange={(e) => {
-                      const newPlayers = [...reservedPlayers];
-                      if (!newPlayers[i]) newPlayers[i] = { name: "", level: (levelRange[0] + levelRange[1]) / 2 };
-                      newPlayers[i].name = e.target.value;
-                      setReservedPlayers(newPlayers);
-                    }}
-                />
-
-                <div className="flex items-center gap-1 w-full">
-                  <ChevronDownIcon
-                      onClick={decrementMaxLevel}
-                      className="size-10 text-black cursor-pointer"
-                  />
-
+                <div key={i} className="grid grid-cols-2 gap-2 mt-2">
                   <input
-                      className="text-center rounded-lg w-full"
-                      type="number"
-                      step="0.1"
-                      min={levelRange[0]}
-                      max="7.0"
-                      value={((levelRange[1] + levelRange[0]) / 2).toFixed(1)}
-                      onChange={handleMaxChange}
-                      disabled
+                      type="text"
+                      placeholder="Spillernavn"
+                      className="rounded-lg w-full text-sm"
+                      value={reservedPlayers[i]?.name ?? ""}
+                      onChange={(e) => {
+                        const newPlayers = [...reservedPlayers];
+                        if (!newPlayers[i]) newPlayers[i] = { name: "", level: (levelRange[0] + levelRange[1]) / 2 };
+                        newPlayers[i].name = e.target.value;
+                        setReservedPlayers(newPlayers);
+                      }}
                   />
-                  <ChevronUpIcon
-                      onClick={incrementMaxLevel}
-                      className="size-10 text-black cursor-pointer"
-                  />
+
+                  <div className="flex items-center gap-1 w-full">
+                    <ChevronDownIcon
+                        onClick={() => {
+                          const updated = [...reservedPlayers];
+                          updated[i].level = Math.max(levelRange[0], parseFloat((updated[i].level - 0.1).toFixed(1)));
+                          setReservedPlayers(updated);
+                        }}
+                        className="size-10 text-black cursor-pointer"
+                    />
+
+                    <input
+                        className="text-center rounded-lg w-full"
+                        type="number"
+                        step="0.1"
+                        min={levelRange[0]}
+                        max={levelRange[1]}
+                        value={reservedPlayers[i]?.level.toFixed(1) ?? ((levelRange[0] + levelRange[1]) / 2).toFixed(1)}
+                        onChange={(e) => {
+                          const updated = [...reservedPlayers];
+                          updated[i].level = parseFloat(e.target.value);
+                          setReservedPlayers(updated);
+                        }}
+                    />
+
+                    <ChevronUpIcon
+                        onClick={() => {
+                          const updated = [...reservedPlayers];
+                          updated[i].level = Math.min(levelRange[1], parseFloat((updated[i].level + 0.1).toFixed(1)));
+                          setReservedPlayers(updated);
+                        }}
+                        className="size-10 text-black cursor-pointer"
+                    />
+                  </div>
                 </div>
-              </div>
             ))}
+
           </div>
 
           <div>

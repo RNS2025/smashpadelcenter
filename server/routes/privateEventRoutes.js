@@ -523,4 +523,43 @@ router.delete("/:eventId", async (req, res) => {
   }
 });
 
+// POST /api/v1/private-event/:id/player-cancel - Cancel a join request
+router.post("/:id/player-cancel", async (req, res) => {
+  try {
+    const { username } = req.body;
+    const event = await privateEventService.getPrivateEventById(req.params.id);
+    if (!event) {
+      logger.warn("Attempted to cancel join for non-existent event", {
+        eventId: req.params.id,
+      });
+      return res.status(404).json({ message: "Event not found" });
+    }
+    if (event.username === req.user.username) {
+      logger.warn("Event creator attempted to cancel their own join request", {
+        eventId: req.params.id,
+        username,
+      });
+      return res
+          .status(403)
+          .json({ message: "Event creator cannot cancel their own join" });
+    }
+    const updatedEvent = await privateEventService.playerCancelJoinEvent(
+        req.params.id,
+        username
+    );
+
+    logger.info("Successfully cancelled user join", {
+      eventId: req.params.id,
+      username,
+    });
+    res.json(updatedEvent);
+  } catch (error) {
+    logger.error("Error cancelling join", {
+      eventId: req.params.id,
+      error: error.message,
+    });
+    res.status(400).json({ message: error.message });
+  }
+});
+
 module.exports = router;

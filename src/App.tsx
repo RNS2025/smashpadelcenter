@@ -51,6 +51,8 @@ import TournamentEditBriefingPage from "./pages/tournament/info/TournamentEditBr
 import ProfilePageWrapper from "./context/ProfilePageWrapper.tsx";
 import MatchesTab from "./components/profile/tabs/MatchesTab.tsx";
 import MatchResultPage from "./pages/(logged-in)/matchFinder/MatchResultPage.tsx";
+import EditMatchPage from "./pages/(logged-in)/matchFinder/EditMatchPage.tsx";
+import EditEventPage from "./pages/(logged-in)/private-event/EditEventPage.tsx";
 
 
 function App() {
@@ -187,6 +189,7 @@ function App() {
             <Route path="/makkerbørs/:matchId" element={<ViewMatchPage />} />
             <Route path="/makkerbørs/opretkamp" element={<CreateMatchPage />} />
             <Route path="/makkerbørs/:matchId/indtastresultat" element={<MatchResultPage />} />
+            <Route path="/makkerbørs/:matchId/rediger" element={<EditMatchPage />} />
 
 
 
@@ -197,7 +200,8 @@ function App() {
               <Route path="allearrangementer" element={<AllEventsTab />} />
             </Route>
             <Route path="/privat-arrangementer/opretarrangement" element={<CreateEventPage />}/>
-            <Route path="/privat-arrangementer/:username/:eventId" element={<ViewEventPage />}/>
+            <Route path="/privat-arrangementer/:eventId" element={<ViewEventPage />}/>
+            <Route path="/privat-arrangementer/:eventId/rediger" element={<EditEventPage />}/>
 
 
             {/* Holdligaer */}
