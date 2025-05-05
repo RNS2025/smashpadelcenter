@@ -170,14 +170,18 @@ router.get("/username", verifyJWT, (req, res) => {
   res.status(200).json({ username: req.user.username });
 });
 
-router.post("/logout", verifyJWT, (req, res) => {
-  logger.info("Logout attempt", { username: req.user.username });
+router.post("/logout", (req, res) => {
+  logger.info("Logout attempt");
+
+  // Clear the auth cookie regardless of whether the user is authenticated
   res.clearCookie("token", {
     httpOnly: true,
     secure: isProduction,
-    sameSite: isProduction ? "none" : "lax", // "none" for cross-origin in production, "lax" for development
+    sameSite: isProduction ? "none" : "lax",
+    path: "/", // Important: specify the path
   });
-  logger.info("User logged out successfully", { username: req.user.username });
+
+  logger.info("User logged out successfully");
   res.status(200).json({ message: "Logged out successfully" });
 });
 

@@ -1,7 +1,7 @@
 import { Helmet } from "react-helmet-async";
 import HomeBar from "../../components/misc/HomeBar.tsx";
 import { useUser } from "../../context/UserContext.tsx";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import Animation from "../../components/misc/Animation.tsx";
 import HomeScreenCard from "../../components/HomeScreen/HomeScreenCard.tsx";
 import {
@@ -22,50 +22,29 @@ import {
 import { setupNotifications } from "../../utils/notifications";
 
 export const HomePage = () => {
-  const { refreshUser, user, isAuthenticated } = useUser();
-  const [isRefreshing, setIsRefreshing] = useState(false);
+  const { user, isAuthenticated } = useUser();
+  const [isNotificationsInitialized, setNotificationsInitialized] =
+    useState(false);
+  const hasRefreshed = useRef(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout | null = null;
-
-    // Only refresh user data if not authenticated or role is missing
-    if (!isAuthenticated || !user?.role) {
-      if (!isRefreshing) {
-        setIsRefreshing(true);
-        // Delay refresh to allow session to stabilize after OAuth redirect
-        timeoutId = setTimeout(() => {
-          refreshUser()
-            .then(() => setIsRefreshing(false))
-            .catch((err) => {
-              console.error("Failed to refresh user:", err);
-              setIsRefreshing(false);
-            });
-        }, 800); // 800 - ms delay to allow session to stabilize
-      }
-    }
-
-    // Initialize notifications only if username exists
-    if (!user?.username) return;
+    if (isNotificationsInitialized || !user?.username) return;
 
     const initializeNotifications = async () => {
       try {
-        await setupNotifications(user?.username);
+        await setupNotifications(user.username);
+        setNotificationsInitialized(true);
       } catch (error) {
         console.error("Failed to initialize notifications:", error);
       }
     };
 
-    initializeNotifications().then();
-
-    // Cleanup timeout on unmount
-    return () => {
-      if (timeoutId) clearTimeout(timeoutId);
-    };
-  }, [user, isRefreshing, refreshUser, isAuthenticated]);
+    initializeNotifications();
+  }, [user?.username, isNotificationsInitialized]);
 
   return (
     <>
