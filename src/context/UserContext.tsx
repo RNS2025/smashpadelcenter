@@ -24,6 +24,7 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
+// Improved route matching with memoization
 const isRouteWhitelisted = (pathname: string, whitelist: string[]): boolean => {
   return whitelist.some((route) => {
     if (!route.includes(":")) return route === pathname;
@@ -33,121 +34,162 @@ const isRouteWhitelisted = (pathname: string, whitelist: string[]): boolean => {
   });
 };
 
-const isLoginPage = (pathname: string): boolean => {
-  return pathname === "/";
+const isPublicRoute = (pathname: string): boolean => {
+  return (
+    pathname === "/" ||
+    pathname === "/register" ||
+    pathname.startsWith("/turneringer")
+  );
 };
 
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
+  // State management
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Navigation state
   const navigate = useNavigate();
   const location = useLocation();
-  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
-  const [loggingOut, setLoggingOut] = useState(false);
-  const authCheckInProgress = useRef(false);
 
-  const handleUnauthenticated = useCallback(
-    (currentPath: string) => {
-      if (!isRouteWhitelisted(currentPath, WHITELIST_ROUTES)) {
-        if (!isLoginPage(currentPath)) {
-          setError("Adgang nægtet - Log ind for at se denne side");
-          navigate("/", {
-            state: {
-              message: "Log venligst ind for at få adgang til denne side",
-              from: currentPath,
-            },
-            replace: true,
-          });
-        } else {
-          setError(null);
-        }
-      }
-    },
-    [navigate]
-  );
+  // Refs to prevent race conditions
+  const authCheckCompleted = useRef(false);
+  const navigationInProgress = useRef(false);
+  const loggingOut = useRef(false);
+  const fetchInProgress = useRef(false);
 
+  // Core function to fetch user data - doesn't handle navigation
   const fetchUserData = useCallback(
-    async (currentPath: string) => {
-      // Skip auth check for whitelisted routes
-      if (isRouteWhitelisted(currentPath, WHITELIST_ROUTES)) {
-        setLoading(false);
-        setInitialLoadComplete(true);
-        return;
-      }
+    async (skipLoadingState = false): Promise<boolean> => {
+      if (fetchInProgress.current) return false;
 
-      // Prevent multiple simultaneous auth checks
-      if (authCheckInProgress.current) return;
-      authCheckInProgress.current = true;
-
-      setLoading(true);
       try {
+        fetchInProgress.current = true;
+        if (!skipLoadingState) setLoading(true);
+
         const response = await api.get(`/auth/check`, {
           withCredentials: true,
         });
+
         if (response.data && response.data.isAuthenticated) {
-          setUser(response.data.user);
-          localStorage.setItem("user", JSON.stringify(response.data.user));
-          setIsAuthenticated(true);
-          setError(null);
-          if (isLoginPage(currentPath)) {
-            navigate("/hjem");
-          }
+          const userData = response.data.user;
+
+          // Update everything in one batch to prevent race conditions
+          Promise.all([
+            localStorage.setItem("user", JSON.stringify(userData)),
+            setUser(userData),
+            setIsAuthenticated(true),
+            setError(null),
+          ]);
+
+          return true;
         } else {
           throw new Error("Invalid user data received");
         }
       } catch (err: any) {
-        localStorage.removeItem("user");
-        setUser(null);
-        setIsAuthenticated(false);
-        setError("Kunne ikke hente brugerdata.");
+        // Clear everything in one batch
+        Promise.all([
+          localStorage.removeItem("user"),
+          setUser(null),
+          setIsAuthenticated(false),
+          setError("Kunne ikke hente brugerdata."),
+        ]);
+
+        return false;
       } finally {
-        setLoading(false);
-        setInitialLoadComplete(true);
-        authCheckInProgress.current = false;
+        if (!skipLoadingState) setLoading(false);
+        fetchInProgress.current = false;
       }
     },
-    [navigate]
+    []
   );
 
+  // Initial authentication check - runs only once on mount
   useEffect(() => {
-    // Check if current route is whitelisted
-    const currentPath = location.pathname;
-    const isWhitelisted = isRouteWhitelisted(currentPath, WHITELIST_ROUTES);
+    const initAuth = async () => {
+      setLoading(true);
 
-    // Skip authentication for whitelisted routes
-    if (isWhitelisted) {
-      setLoading(false);
-      setInitialLoadComplete(true);
+      try {
+        // First try to use cached user data for instant authentication
+        const storedUser = localStorage.getItem("user");
+        if (storedUser) {
+          const parsedUser = JSON.parse(storedUser);
+          setUser(parsedUser);
+          setIsAuthenticated(true);
+        }
+
+        // Then verify with server (in background if we had stored user)
+        await fetchUserData(!!storedUser);
+      } finally {
+        setLoading(false);
+        authCheckCompleted.current = true;
+      }
+    };
+
+    initAuth();
+  }, [fetchUserData]);
+
+  // Handle navigation based on auth state and current route
+  useEffect(() => {
+    // Skip if auth check not completed or navigation already in progress
+    if (
+      !authCheckCompleted.current ||
+      navigationInProgress.current ||
+      loggingOut.current ||
+      loading
+    ) {
       return;
     }
 
-    // Otherwise, proceed with normal auth flow
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      try {
-        setUser(JSON.parse(storedUser));
-        setIsAuthenticated(true);
-      } catch (e) {
-        console.error("Failed to parse stored user:", e);
-        localStorage.removeItem("user");
-      } finally {
-        setLoading(false);
-        setInitialLoadComplete(true);
-      }
-    } else {
-      fetchUserData(currentPath).then();
-    }
-  }, [fetchUserData, location.pathname]);
+    const currentPath = location.pathname;
 
+    // Handle authenticated users on login page
+    if (isAuthenticated && currentPath === "/") {
+      navigationInProgress.current = true;
+      navigate("/hjem", { replace: true });
+      setTimeout(() => {
+        navigationInProgress.current = false;
+      }, 100);
+      return;
+    }
+
+    // Handle unauthenticated users on protected routes
+    if (
+      !isAuthenticated &&
+      !isPublicRoute(currentPath) &&
+      !isRouteWhitelisted(currentPath, WHITELIST_ROUTES)
+    ) {
+      navigationInProgress.current = true;
+      setError("Adgang nægtet - Log ind for at se denne side");
+      navigate("/", {
+        state: {
+          message: "Log venligst ind for at få adgang til denne side",
+          from: currentPath,
+        },
+        replace: true,
+      });
+      setTimeout(() => {
+        navigationInProgress.current = false;
+      }, 100);
+      return;
+    }
+
+    // Clear errors when on login page
+    if (currentPath === "/") {
+      setError(null);
+    }
+  }, [isAuthenticated, location.pathname, loading, navigate]);
+
+  // Public methods
   const fetchUser = async () => {
-    await fetchUserData(location.pathname);
+    await fetchUserData();
   };
 
+  // Lightweight refresh that doesn't trigger loading state
   const refreshUser = async () => {
     try {
-      await fetchUserData(location.pathname);
+      await fetchUserData(true);
     } catch (error) {
       console.error("Error refreshing user", error);
     }
@@ -155,47 +197,32 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = async () => {
     try {
-      setLoggingOut(true);
+      loggingOut.current = true;
+
+      // Clear local data first
       localStorage.removeItem("user");
       localStorage.removeItem("userProfile");
+      localStorage.removeItem("userProfile");
+
+      // Update state pre-emptively to avoid flickering
       setError(null);
       setUser(null);
       setIsAuthenticated(false);
-      localStorage.clear();
-      await authLogout();
+
+      // Then call API (but don't wait for it before navigation)
+      authLogout().catch(console.error);
+
+      // Navigate to home
       navigate("/", { replace: true });
     } catch (error) {
       console.error("Error during logout:", error);
       setError("Fejl ved udlogning. Prøv igen.");
     } finally {
-      setLoggingOut(false);
+      setTimeout(() => {
+        loggingOut.current = false;
+      }, 100);
     }
   };
-
-  useEffect(() => {
-    if (!initialLoadComplete || loggingOut) return;
-
-    // Skip check for whitelisted routes
-    if (isRouteWhitelisted(location.pathname, WHITELIST_ROUTES)) {
-      return;
-    }
-
-    if (!isAuthenticated) {
-      handleUnauthenticated(location.pathname);
-    }
-  }, [
-    isAuthenticated,
-    location.pathname,
-    handleUnauthenticated,
-    initialLoadComplete,
-    loggingOut,
-  ]);
-
-  useEffect(() => {
-    if (isLoginPage(location.pathname)) {
-      setError(null);
-    }
-  }, [location.pathname]);
 
   return (
     <UserContext.Provider

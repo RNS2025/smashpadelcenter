@@ -16,7 +16,8 @@ import {
   BuildingOfficeIcon,
   TrophyIcon,
   UsersIcon,
-  CubeIcon, PresentationChartBarIcon,
+  CubeIcon,
+  PresentationChartBarIcon,
 } from "@heroicons/react/24/outline";
 import { setupNotifications } from "../../utils/notifications";
 
@@ -43,7 +44,7 @@ export const HomePage = () => {
               console.error("Failed to refresh user:", err);
               setIsRefreshing(false);
             });
-        }, 1000); // 1-second delay
+        }, 800); // 800 - ms delay to allow session to stabilize
       }
     }
 
@@ -131,9 +132,7 @@ export const HomePage = () => {
             />
             {user?.role === "admin" && (
               <HomeScreenCard
-                icon={
-                  <ListBulletIcon className="size-10" aria-hidden="true" />
-                }
+                icon={<ListBulletIcon className="size-10" aria-hidden="true" />}
                 title="Rangliste"
                 description="Stryg hele vejen til tops i ranglisten"
                 link="rangliste"
@@ -141,9 +140,7 @@ export const HomePage = () => {
             )}
             {user?.role === "admin" && (
               <HomeScreenCard
-                icon={
-                  <NewspaperIcon className="size-10" aria-hidden="true" />
-                }
+                icon={<NewspaperIcon className="size-10" aria-hidden="true" />}
                 title="Nyheder"
                 description="Hold dig opdateret med seneste nyt"
                 link="news"
@@ -160,10 +157,7 @@ export const HomePage = () => {
             {user?.role === "admin" && (
               <HomeScreenCard
                 icon={
-                  <BuildingOfficeIcon
-                    className="size-10"
-                    aria-hidden="true"
-                  />
+                  <BuildingOfficeIcon className="size-10" aria-hidden="true" />
                 }
                 title="Partnere"
                 description="Udforsk vores partnere"
@@ -180,12 +174,17 @@ export const HomePage = () => {
             )}
 
             {user?.username === "admin" && (
-                <HomeScreenCard
-                    icon={<PresentationChartBarIcon className="size-10" aria-hidden="true" />}
-                    title="Feedback"
-                    description="Se og administrer feedback"
-                    link="/feedback"
-                />
+              <HomeScreenCard
+                icon={
+                  <PresentationChartBarIcon
+                    className="size-10"
+                    aria-hidden="true"
+                  />
+                }
+                title="Feedback"
+                description="Se og administrer feedback"
+                link="/feedback"
+              />
             )}
           </div>
         </div>

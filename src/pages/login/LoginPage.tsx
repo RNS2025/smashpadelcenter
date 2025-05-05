@@ -1,7 +1,8 @@
 import { Helmet } from "react-helmet-async";
-import {useState, useEffect, FormEvent} from "react";
+import { useState, useEffect, FormEvent } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { login, loginWithProvider } from "../../services/auth.ts";
+import { useUser } from "../../context/UserContext";
 import DPFLogo from "../../assets/DPF_Logo.png";
 
 interface LocationState {
@@ -17,6 +18,7 @@ export const LoginPage = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { fetchUser } = useUser();
 
   useEffect(() => {
     const state = location.state as LocationState;
@@ -33,11 +35,36 @@ export const LoginPage = () => {
     setIsSubmitting(true);
 
     try {
-      await login(username, password);
-      navigate("/hjem");
+      const response = await login(username, password);
+      console.log("Login response:", response); // Debug log
+
+      if (response?.token) {
+        // Store the token
+        localStorage.setItem("token", response.token);
+
+        // Fetch user data
+        const userDataResult = await fetchUser();
+
+        if (userDataResult) {
+          // User data successfully fetched
+          const state = location.state as LocationState;
+          const redirectTo = state?.from || "/hjem";
+          navigate(redirectTo, { replace: true });
+        } else {
+          setError("Brugerdata kunne ikke hentes.");
+        }
+      } else {
+        setError(
+          "Login mislykkedes. Kontroller dine oplysninger og prøv igen."
+        );
+        console.error("Login failed - no token in response:", response);
+      }
     } catch (err) {
-      setError("Kunne ikke logge ind.");
-      console.log(err);
+      console.error("Login error:", err);
+      setError(
+        "Kunne ikke logge ind: " +
+          (err instanceof Error ? err.message : "Ukendt fejl")
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -50,7 +77,7 @@ export const LoginPage = () => {
       loginWithProvider(provider);
     } catch (err) {
       setError("Kunne ikke logge ind");
-        console.log(err);
+      console.log(err);
     }
   };
 
@@ -85,7 +112,10 @@ export const LoginPage = () => {
 
               <p className="mt-4 leading-relaxed">Din nye klubapp.</p>
 
-              <div onClick={() => navigate("/turneringer")} className="flex items-center gap-2 mt-4 border border-white rounded-lg p-2">
+              <div
+                onClick={() => navigate("/turneringer")}
+                className="flex items-center gap-2 mt-4 border border-white rounded-lg p-2"
+              >
                 <img src={DPFLogo} alt="DPF Logo" className="size-16" />
                 <h1>Gå direkte til centerets DPF-central</h1>
               </div>
@@ -114,12 +144,14 @@ export const LoginPage = () => {
                   Din nye klubapp.
                 </p>
 
-                <div onClick={() => {
-                  navigate("/turneringer")
-                  window.scrollTo(0, 0);
-                }}
-                     className="flex items-center gap-2 mt-4 border border-white rounded-lg p-2">
-                <img src={DPFLogo} alt="DPF Logo" className="size-16" />
+                <div
+                  onClick={() => {
+                    navigate("/turneringer");
+                    window.scrollTo(0, 0);
+                  }}
+                  className="flex items-center gap-2 mt-4 border border-white rounded-lg p-2"
+                >
+                  <img src={DPFLogo} alt="DPF Logo" className="size-16" />
                   <h1>Gå direkte til centerets DPF-central</h1>
                 </div>
               </div>

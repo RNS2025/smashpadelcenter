@@ -6,7 +6,6 @@ import { League, TeamInfo } from "../types/LunarTypes";
 // Cache leagues data in memory
 let leaguesCache: { horsens: League[]; stensballe: League[] } | null = null;
 let leaguesCacheTimestamp: number = 0;
-// Cache duration in milliseconds: 6 hours
 const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 
 export const fetchAllLeagues = async () => {
