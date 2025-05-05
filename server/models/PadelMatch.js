@@ -123,6 +123,10 @@ const padelMatchSchema = new mongoose.Schema({
     type: [String],
     default: [],
   },
+  playersConfirmedResult: {
+    type: [String],
+    default: [],
+  }
 });
 
 // Transform _id to id in JSON responses

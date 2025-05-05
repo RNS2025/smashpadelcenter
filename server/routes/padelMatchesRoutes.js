@@ -484,4 +484,23 @@ router.get("/player/:username", async (req, res) => {
   }
 });
 
+// PATCH /api/v1/matches/:id/result - Update match result
+router.patch("/:id/result", async (req, res) => {
+  const matchId = req.params.id;
+  const resultPayload = req.body;
+
+  try {
+    const updatedMatch = await padelMatchService.submitMatchResult(matchId, resultPayload);
+    logger.info("Successfully submitted match result", { matchId });
+    res.json(updatedMatch);
+  } catch (error) {
+    logger.error("Error submitting match result", {
+      matchId,
+      error: error.message,
+    });
+    res.status(400).json({ message: error.message });
+  }
+});
+
+
 module.exports = router;

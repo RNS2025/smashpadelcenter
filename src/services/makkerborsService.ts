@@ -75,6 +75,14 @@ const communityApi = {
     return response.data;
   },
 
+    submitMatchResult: async (
+        matchId: string,
+        matchResult: Partial<Omit<PadelMatch, "id">>
+    ): Promise<PadelMatch> => {
+        const response = await api.patch(`/matches/${matchId}/result`, matchResult);
+        return response.data;
+    },
+
   reserveSpots: async (
     matchId: string,
     spotIndex: number,

@@ -472,6 +472,29 @@ const padelMatchService = {
       throw new Error("Error fetching matches: " + error.message);
     }
   },
+
+  submitMatchResult: async (matchId, matchResult) => {
+    try {
+      const match = await PadelMatch.findById(matchId);
+      if (!match) {
+        throw new Error("Match not found");
+      }
+
+      if (match.team1Sets !== undefined && match.team2Sets !== undefined) {
+        throw new Error("Error in match result");
+      }
+
+
+      Object.assign(match, matchResult);
+
+      await match.save();
+      return match;
+    } catch (error) {
+      console.error("Error submitting match result:", error.message);
+      throw new Error("Error submitting match result: " + error.message);
+    }
+  },
 };
+
 
 module.exports = padelMatchService;

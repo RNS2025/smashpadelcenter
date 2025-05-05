@@ -4,12 +4,15 @@ import Animation from "../../../components/misc/Animation.tsx";
 import {safeFormatDate} from "../../../utils/dateUtils.ts";
 import {useEffect, useState} from "react";
 import {PadelMatch} from "../../../types/PadelMatch.ts";
-import {useParams} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import communityApi from "../../../services/makkerborsService.ts";
 import LoadingSpinner from "../../../components/misc/LoadingSpinner.tsx";
+import { useUser } from "../../../context/UserContext.tsx";
 
 export const MatchResultPage = () => {
+    const navigate = useNavigate();
     const { matchId } = useParams<{ matchId: string }>();
+    const { user } = useUser();
     const [match, setMatch] = useState<PadelMatch | null>(null);
     const [player1, setPlayer1] = useState("");
     const [player2, setPlayer2] = useState("");
@@ -21,7 +24,7 @@ export const MatchResultPage = () => {
     const [setsWonTeam2, setSetsWonTeam2] = useState(0);
     const [detailedScore, setDetailedScore] = useState(false);
     const totalSets = setsWonTeam1 + setsWonTeam2;
-
+    const [setScores, setSetScores] = useState<{ team1: number; team2: number }[]>([]);
 
     useEffect(() => {
         if (!matchId) return;
@@ -44,7 +47,7 @@ export const MatchResultPage = () => {
     }, [player1, player2, player3, player4]);
 
 
-    if (!match || !matchId) {
+    if (!match || !matchId || !user) {
         return <LoadingSpinner />
     }
 
@@ -53,6 +56,56 @@ export const MatchResultPage = () => {
     const allPlayers = [...match.participants, ...match.reservedSpots.map((r) => r.name)];
     const getAvailablePlayers = (exclude: string[]) => {
         return allPlayers.filter((player) => !exclude.includes(player));
+    };
+
+    const handleScoreChange = (index: number, team: 'team1' | 'team2', value: number) => {
+        setSetScores(prev => {
+            const updated = [...prev];
+            updated[index] = { ...updated[index], [team]: value };
+            return updated;
+        });
+    };
+
+    const generateScoreObject = (): NonNullable<PadelMatch["score"]> => {
+        const score: NonNullable<PadelMatch["score"]> = {};
+        const keys = ["firstSet", "secondSet", "thirdSet", "fourthSet", "fifthSet"] as const;
+
+        setScores.forEach((set, index) => {
+            const key = keys[index];
+            score[key] = {
+                score: `${set.team1}-${set.team2}`,
+            };
+        });
+
+        return score;
+    };
+
+
+
+    const handleSubmitResult = async () => {
+        if (!matchId) return;
+
+        const matchResult: PadelMatch = {
+            ...match,
+            team1Sets: setsWonTeam1,
+            team2Sets: setsWonTeam2,
+            winningTeam: setsWonTeam1 > setsWonTeam2 ? team1 : team2,
+            losingTeam: setsWonTeam1 < setsWonTeam2 ? team1 : team2,
+            score: detailedScore ? generateScoreObject() : undefined,
+            playersConfirmedResult: [...(match.playersConfirmedResult || []), user?.username],
+        };
+
+
+        try {
+            const userConfirmed = confirm("Er du sikker på, at du vil indsende dette resultat?");
+            if (userConfirmed) {
+                await communityApi.submitMatchResult(matchId, matchResult);
+                navigate(`/makkerbørs/minekampe`);
+            }
+        } catch (error) {
+            console.error("Error updating match:", error);
+            alert("Der opstod en fejl ved indsendelse af resultatet.");
+        }
     };
 
 
@@ -189,22 +242,37 @@ export const MatchResultPage = () => {
                             </div>
                             {[...Array(totalSets)].map((_, index) => (
                                 <div key={index} className="grid grid-cols-2 gap-2">
-                                    <select className="rounded-md border-gray-300 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm text-black">
+                                    <select
+                                        value={setScores[index]?.team1 ?? 0}
+                                        onChange={(e) => handleScoreChange(index, "team1", Number(e.target.value))}
+                                        className="rounded-md border-gray-300 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm text-black"
+                                    >
                                         {[0,1,2,3,4,5,6,7].map(n => (
                                             <option key={n} value={n}>{n}</option>
                                         ))}
                                     </select>
-                                    <select className="rounded-md border-gray-300 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm text-black">
+
+                                    <select
+                                        value={setScores[index]?.team2 ?? 0}
+                                        onChange={(e) => handleScoreChange(index, "team2", Number(e.target.value))}
+                                        className="rounded-md border-gray-300 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm text-black"
+                                    >
                                         {[0,1,2,3,4,5,6,7].map(n => (
                                             <option key={n} value={n}>{n}</option>
                                         ))}
                                     </select>
-                                    </div>
+
+                                </div>
                             ))}
                         </div>
                     )}
 
 
+                    {totalSets > 0 && (
+                    <button type="button" onClick={handleSubmitResult} className="bg-cyan-500 p-2 px-4 rounded-lg mt-4">
+                        Indsend resultat
+                    </button>
+                    )}
                 </div>
 
 

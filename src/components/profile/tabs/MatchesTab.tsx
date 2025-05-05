@@ -9,7 +9,9 @@ const MatchesTab = () => {
 
 
     if (!profile) return <LoadingSpinner />;
-  return (
+
+    
+    return (
       <>
         <Helmet>
           <title>Kamphistorik</title>
@@ -45,7 +47,7 @@ const MatchesTab = () => {
                     </div>
                     <div className="flex justify-between text-sm pt-2">
                       <div className="flex items-center gap-4">
-                        {match.result === "pending" || match.result === "unknown" ? (
+                        {match.team1Sets !== 0 && match.team2Sets !== 0 ? (
                             <QuestionMarkCircleIcon className="h-10 text-gray-800" />
                         ) : (
                             <CheckCircleIcon className="h-10 text-green-800" />
@@ -56,8 +58,8 @@ const MatchesTab = () => {
                         </div>
                       </div>
                       <div className="grid grid-cols-2 gap-2">
-                        {match.participants.map((participant, index) => (
-                            <p key={index}>{participant}</p>
+                          {[...match.participants, ...match.reservedSpots.map((r) => r.name)].map((player, index) => (
+                            <p key={index}>{player}</p>
                         ))}
                       </div>
                     </div>

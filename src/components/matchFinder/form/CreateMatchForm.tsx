@@ -67,6 +67,7 @@ export const CreateMatchForm = () => {
         matchType: selectedMatchType,
         score: {},
         deadline: deadline != 0 ? new Date(selectedDate.getTime() - (deadline * 60) * 60 * 1000).toISOString() : undefined,
+        playersConfirmedResult: [],
       };
 
       await communityApi.createMatch(matchData);
