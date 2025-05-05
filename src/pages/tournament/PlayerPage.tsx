@@ -74,8 +74,8 @@ const PlayerPage = () => {
 
   return (
     <>
-      <Animation>
         <HomeBar />
+      <Animation>
         <div className="mx-auto p-6 max-w-4xl">
           {/* Player Profile Section */}
           {playerData.Header && (
@@ -281,7 +281,7 @@ const PlayerPage = () => {
 
                   {/* Score Section */}
                   {match.isPlayed && match.score && (
-                    <div className="mt-4 pt-4 border-t border-gray-200">
+                    <div className="mt-4 pt-4 border-t border-gray-200 text-gray-800">
                       <h3 className="font-semibold text-lg mb-2">Resultat</h3>
                       <div className="flex flex-col sm:flex-row gap-4">
                         <div>

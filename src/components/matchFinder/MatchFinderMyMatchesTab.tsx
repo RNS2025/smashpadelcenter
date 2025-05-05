@@ -93,11 +93,13 @@ export const MatchFinderMyMatchesTab = () => {
                           e.stopPropagation();
                           navigate(`/makkerbørs/${match.id}/indtastresultat`)
                         }}
-                        className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg z-10"
+                        className={`absolute inset-0 bg-black bg-opacity-80 flex items-center justify-center rounded-lg z-10`}
                     >
-                      <span className="text-white text-lg font-semibold animate-pulse">Indtast resultat</span>
+                      <span className="text-white text-lg text-center font-semibold">{user && match.playersConfirmedResult.includes(user?.username) ? "Resultat afventer bekræftelse fra medspillere"  : "Indtast resultat"}</span>
                     </div>
                 )}
+
+
 
 
 

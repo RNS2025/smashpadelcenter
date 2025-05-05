@@ -536,8 +536,8 @@ export const ViewMatchPage = () => {
         <Helmet>
           <title>Kampdetaljer</title>
         </Helmet>
-        <Animation>
           <HomeBar />
+        <Animation>
           <div className="mx-4 my-10">{error}</div>
         </Animation>
       </>

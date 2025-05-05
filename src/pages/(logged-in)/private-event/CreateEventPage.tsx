@@ -10,8 +10,8 @@ export const CreateEventPage = () => {
                 <title>Opret arrangement</title>
             </Helmet>
 
-            <Animation>
                 <HomeBar />
+            <Animation>
                 <div className="mx-10 max-sm:mx-2 my-10 max-sm:my-2">
                     <CreateEventForm />
                 </div>

@@ -39,8 +39,9 @@ const ProfilePage = () => {
 
 
   return (
-    <Animation>
+      <>
       <HomeBar backPage={"/hjem"}/>
+    <Animation>
 
 
       <div className="mx-auto p-6 max-w-4xl">
@@ -61,6 +62,7 @@ const ProfilePage = () => {
         </div>
       </div>
     </Animation>
+      </>
   );
 };
 

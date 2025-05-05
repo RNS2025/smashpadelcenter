@@ -28,7 +28,7 @@ export const TournamentTabs = () => {
       <Animation>
         <div className="flex my-5 items-center justify-center">
           <div
-            className={`grid grid-cols-1 gap-8 sm:grid-cols-3 ${
+            className={`grid grid-cols-2 gap-8 sm:grid-cols-3 ${
               user?.role === "admin" ? "lg:grid-cols-4" : "lg:grid-cols-3"
             }`}
           >

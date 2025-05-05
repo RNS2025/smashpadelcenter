@@ -46,8 +46,9 @@ export const PrivateEventPage = () => {
   }, [useMockData, user]);
 
   return (
-    <Animation>
+      <>
       <HomeBar backPage="/hjem" />
+    <Animation>
       <div className="sm:mx-20 my-10">
         <div className="flex justify-center mb-5">
           <PrivateEventTabMenu joinRequestsCount={joinRequestsCount} />
@@ -86,6 +87,7 @@ export const PrivateEventPage = () => {
         </div>
       </div>
     </Animation>
+      </>
   );
 };
 

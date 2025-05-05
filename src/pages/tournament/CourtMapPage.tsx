@@ -118,10 +118,10 @@ export const CourtMapPage = () => {
 
   return (
     <>
-      <HomeBar />
       <Helmet>
         <title>Baneoversigt</title>
       </Helmet>
+      <HomeBar />
 
       <Animation>
         <div className="mt-5 flex max-lg:flex-col sm:space-y-10 space-y-0 lg:justify-between lg:px-10 max-lg:px-5">

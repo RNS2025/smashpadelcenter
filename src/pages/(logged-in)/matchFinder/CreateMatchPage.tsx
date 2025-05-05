@@ -10,8 +10,8 @@ export const CreateMatchPage = () => {
         <title>Opret kamp</title>
       </Helmet>
 
-      <Animation>
-          <HomeBar />
+        <HomeBar />
+        <Animation>
         <div className="mx-10 max-sm:mx-2 my-10 max-sm:my-2">
           <CreateMatchForm />
         </div>

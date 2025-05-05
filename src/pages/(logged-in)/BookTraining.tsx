@@ -96,8 +96,8 @@ const BookTraining: React.FC = () => {
       <Helmet>
         <title>Book Training</title>
       </Helmet>
-      <Animation>
         <HomeBar backPage="/hjem" />
+      <Animation>
         <div className="flex flex-col items-center justify-center min-h-screen -mt-20 overflow-y-hidden">
           <h1 className="text-3xl font-bold text-black text-center mb-8">
             Book a Training Session

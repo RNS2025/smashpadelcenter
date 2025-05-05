@@ -45,29 +45,34 @@ export const LeagueTeamProfilePage = () => {
 
   if (loading) {
     return (
-      <Animation>
+        <>
         <HomeBar backPage="/holdligaer" />
+      <Animation>
         <div className="h-full w-full flex items-center justify-center">
           <LoadingSpinner />
         </div>
       </Animation>
+        </>
     );
   }
 
   if (error || !team) {
     return (
-      <Animation>
+        <>
         <HomeBar backPage="/holdligaer" />
+      <Animation>
         <div className="mx-auto p-6 mt-10 text-center text-red-500">
           {error || "Hold ikke fundet"}
         </div>
       </Animation>
+        </>
     );
   }
 
   return (
-    <Animation>
+      <>
       <HomeBar backPage="/holdligaer" />
+    <Animation>
       <div className="mx-2 sm:mx-10 p-6 bg-white mt-10 shadow-md rounded-lg">
         <div className="flex gap-5 px-2">
           <img
@@ -115,6 +120,7 @@ export const LeagueTeamProfilePage = () => {
         <Outlet />
       </div>
     </Animation>
+      </>
   );
 };
 
