@@ -29,7 +29,7 @@ const padelMatchSchema = new mongoose.Schema({
   },
   description: {
     type: String,
-    required: true,
+    required: false,
   },
   level: {
     type: String,
@@ -88,9 +88,33 @@ const padelMatchSchema = new mongoose.Schema({
     required: false,
   },
   score: {
-    type: String,
-    required: false,
+    firstSet: {
+      score: { type: String, required: false },
+      tieBreak: { type: String, required: false },
+    },
+    secondSet: {
+      score: { type: String, required: false },
+      tieBreak: { type: String, required: false },
+    },
+    thirdSet: {
+      score: { type: String, required: false },
+      tieBreak: { type: String, required: false },
+    },
+    fourthSet: {
+      score: { type: String, required: false },
+      tieBreak: { type: String, required: false },
+    },
+    fifthSet: {
+      score: { type: String, required: false },
+      tieBreak: { type: String, required: false },
+    },
   },
+  team1Sets: {
+    type: Number,
+  },
+    team2Sets: {
+    type: Number,
+    },
   winningTeam: {
     type: [String],
     default: [],
@@ -98,11 +122,6 @@ const padelMatchSchema = new mongoose.Schema({
   losingTeam: {
     type: [String],
     default: [],
-  },
-  result: {
-    type: String,
-    enum: ["win", "loss", "pending", "unknown"],
-    default: "pending",
   },
 });
 

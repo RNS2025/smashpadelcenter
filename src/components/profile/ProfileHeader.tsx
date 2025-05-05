@@ -27,10 +27,12 @@ export const ProfileHeader = ({ profile, rankedInProfile }: { profile: User | nu
                     </div>
 
 
+                    {profile.email && (
                     <div className="flex gap-2">
                         <EnvelopeIcon className="h-6 text-gray-600" />
                         <p className="text-gray-600">{profile.email}</p>
                     </div>
+                    )}
 
                     {rankedInProfile && rankedInProfile.points > 0 && (
                     <div className="flex gap-2">

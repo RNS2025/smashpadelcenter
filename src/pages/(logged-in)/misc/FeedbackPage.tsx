@@ -17,7 +17,7 @@ export const FeedbackPage = () => {
                     const dateA = new Date(a.date);
                     const dateB = new Date(b.date);
                     return dateB.getTime() - dateA.getTime();
-                })
+                }).sort((a => a.resolved ? 1 : -1));
                 setFeedback(filteredResponse);
             } catch (error) {
                 console.error("Error fetching feedback:", error);

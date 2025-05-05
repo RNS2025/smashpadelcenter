@@ -25,6 +25,7 @@ import PlayerInfoDialog from "../../../components/matchFinder/misc/PlayerInfoDia
 import { MatchInvitedPlayersDialog } from "../../../components/matchFinder/misc/MatchInvitePlayersDialog.tsx";
 import { safeFormatDate } from "../../../utils/dateUtils.ts";
 import usePolling from "../../../hooks/usePolling.ts";
+import {createICSFile, downloadICSFile} from "../../../utils/ICSFile.ts";
 
 export const ViewMatchPage = () => {
   const { user } = useUser();
@@ -273,7 +274,7 @@ export const ViewMatchPage = () => {
         setLoading(false);
       }
     };
-    initialFetch();
+    initialFetch().then();
   }, [fetchMatch, matchId]);
 
   // Compare match data to avoid unnecessary updates
@@ -719,6 +720,19 @@ export const ViewMatchPage = () => {
                   className="bg-green-500 hover:bg-green-600 transition duration-300 rounded-lg py-2 px-4 text-white"
                 >
                   Inviter spillere
+                </button>
+
+                <button onClick={() => {
+                  const ics = createICSFile(
+                      "Padelkamp",
+                      match!.description,
+                      match!.location,
+                      new Date(match!.matchDateTime),
+                      new Date(match!.endTime)
+                  );
+                  downloadICSFile(ics, `padelkamp-${match!.id}.ics`);
+                }} className="bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white">
+                  Tilføj til kalender
                 </button>
 
                 <div

@@ -66,16 +66,16 @@ export function ProfileProvider({ children, username }: { children: ReactNode; u
         );
       const formerMatches = userMatches
         .filter((match) => new Date(match.matchDateTime) <= now)
-        .filter((match) => match.participants.length === match.totalSpots)
+        .filter((match) => match.participants.length + match.reservedSpots.length === match.totalSpots)
         .sort(
           (a, b) =>
             new Date(b.matchDateTime).getTime() -
-            new Date(a.matchDateTime).getTime()
-        );
+            new Date(a.matchDateTime).getTime());
       setMatches({
         upcoming: upcomingMatches,
         former: formerMatches,
       });
+      console.log(matches)
     } catch (err: any) {
       console.error("Error fetching match data:", err);
     } finally {

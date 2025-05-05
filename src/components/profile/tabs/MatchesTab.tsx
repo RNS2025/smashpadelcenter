@@ -1,81 +1,74 @@
 import {useProfileContext} from "../../../context/ProfileContext.tsx";
 import LoadingSpinner from "../../misc/LoadingSpinner.tsx";
+import {Helmet} from "react-helmet-async";
+import {safeFormatDate} from "../../../utils/dateUtils.ts";
+import {CheckCircleIcon, QuestionMarkCircleIcon} from "@heroicons/react/24/outline";
 
 const MatchesTab = () => {
-    const { profile } = useProfileContext();
+    const { profile, matches, matchesLoading } = useProfileContext();
 
 
     if (!profile) return <LoadingSpinner />;
   return (
-    <div>
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">Kamphistorik</h2>
-      <div className="overflow-hidden shadow-md rounded-lg border border-gray-200">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                Dato
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                Modstander
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                Score
-              </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                Resultat
-              </th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {profile.pastMatches.length ? (
-              profile.pastMatches.map((match) => (
-                <tr
-                  key={match.id}
-                  className="hover:bg-gray-50 transition duration-300"
-                >
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {new Date(match.date).toLocaleDateString("da-DK")}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {match.opponent}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                    {match.score}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 py-1 rounded text-xs font-medium ${
-                        match.result === "win"
-                          ? "bg-green-100 text-green-800"
-                          : match.result === "loss"
-                          ? "bg-red-100 text-red-800"
-                          : "bg-gray-100 text-gray-800"
-                      }`}
-                    >
-                      {match.result === "win"
-                        ? "SEJR"
-                        : match.result === "loss"
-                        ? "NEDERLAG"
-                        : match.result.toUpperCase()}
-                    </span>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td
-                  colSpan={4}
-                  className="px-6 py-4 text-center text-sm text-gray-600"
-                >
-                  Ingen kampe fundet
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
+      <>
+        <Helmet>
+          <title>Kamphistorik</title>
+        </Helmet>
+
+        {matchesLoading ? (
+            <div className="py-4">
+              <LoadingSpinner />
+            </div>
+        ) : matches.former.length > 0 ? (
+            <ul className="space-y-2">
+              {matches.former.map((match) => (
+                  <li
+                      key={match.id}
+                      className="border border-gray-900 p-2 rounded-lg text-gray-800"
+                  >
+                    <div className="flex justify-between text-xs border-b border-gray-600">
+                      <h1>
+                        {safeFormatDate(
+                            match.matchDateTime,
+                            "dd. MMMM | HH:mm"
+                        ).toUpperCase()} - {safeFormatDate(match.endTime, "HH:mm")}
+                      </h1>
+                      <div className="flex gap-1">
+                        <p>
+                          {match.location.includes("Horsens")
+                              ? "Horsens"
+                              : "Stensballe"}
+                        </p>
+                        <p>|</p>
+                        <p>{match.matchType}</p>
+                      </div>
+                    </div>
+                    <div className="flex justify-between text-sm pt-2">
+                      <div className="flex items-center gap-4">
+                        {match.result === "pending" || match.result === "unknown" ? (
+                            <QuestionMarkCircleIcon className="h-10 text-gray-800" />
+                        ) : (
+                            <CheckCircleIcon className="h-10 text-green-800" />
+                        )}
+                        <div className="text-sm">
+                          <h1>Niveau:</h1>
+                          <h1>{match.level}</h1>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        {match.participants.map((participant, index) => (
+                            <p key={index}>{participant}</p>
+                        ))}
+                      </div>
+                    </div>
+                  </li>
+              ))}
+            </ul>
+        ) : (
+            <p className="text-gray-600">Ingen tidligere kampe.</p>
+        )}
+
+      </>
   );
 };
 

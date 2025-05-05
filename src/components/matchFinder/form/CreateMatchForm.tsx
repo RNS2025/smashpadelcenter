@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import communityApi from "../../../services/makkerborsService";
 import { PadelMatch } from "../../../types/PadelMatch";
 import { useUser } from "../../../context/UserContext";
-import {getNextHalfHour, handleHiddenTimes} from "../../../utils/dateUtils";
+import {filterPassedTime, getNextHalfHour, handleHiddenTimes} from "../../../utils/dateUtils";
 import {ChevronDownIcon, ChevronUpIcon} from "@heroicons/react/24/outline";
 
 registerLocale("da", da);
@@ -40,21 +40,13 @@ export const CreateMatchForm = () => {
     });
   }, [levelRange, selectedReserved]);
 
-  const filterPassedTime = (time: Date) => {
-    const hour = time.getHours();
-    const minutes = time.getMinutes();
-    const totalMinutes = hour * 60 + minutes;
-
-    return totalMinutes >= 329 && totalMinutes <= 1380;
-  };
-
   const handleCreateMatch = async (event: FormEvent) => {
     event.preventDefault();
 
     try {
       const matchData: Omit<PadelMatch, "id"> = {
         username: user!.username,
-        description: description || "Ingen bemærkninger",
+        description: description,
         level: `${levelRange[0].toFixed(1)} - ${levelRange[1].toFixed(1)}`,
         participants: [],
         joinRequests: [],
@@ -73,8 +65,7 @@ export const CreateMatchForm = () => {
         courtBooked,
         location,
         matchType: selectedMatchType,
-        score: "",
-        result: "pending",
+        score: {},
         deadline: deadline != 0 ? new Date(selectedDate.getTime() - (deadline * 60) * 60 * 1000).toISOString() : undefined,
       };
 

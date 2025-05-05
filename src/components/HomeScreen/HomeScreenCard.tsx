@@ -21,11 +21,7 @@ const HomeScreenCard: FC<HomeScreenCardProps> = ({
   const navigate = useNavigate();
   return (
     <div
-      className={`rounded-xl border border-gray-800 p-8 shadow-xl transition ${
-        disabled
-          ? "opacity-50 cursor-not-allowed"
-          : "hover:border-cyan-500/10 hover:shadow-cyan-500/10"
-      } h-60 w-60`}
+      className={`rounded-xl border border-gray-800 sm:p-8 p-4 shadow-xl transition sm:size-60 size-36 ${disabled ? "opacity-50 cursor-not-allowed" : "hover:border-cyan-500/10 hover:shadow-cyan-500/10"}`}
     >
       <div
         className={`${disabled ? "pointer-events-none" : ""}`}
@@ -33,9 +29,9 @@ const HomeScreenCard: FC<HomeScreenCardProps> = ({
       >
         <div className="text-cyan-500">{icon}</div>
 
-        <h2 className="mt-4 text-xl font-bold">{title}</h2>
+        <h2 className="mt-4 sm:text-xl font-bold">{title}</h2>
 
-        <p className="mt-4 text-sm text-gray-300 italic">{description}</p>
+        <p className="max-sm:hidden mt-4 text-sm text-gray-300 italic">{description}</p>
       </div>
     </div>
   );

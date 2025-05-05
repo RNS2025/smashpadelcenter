@@ -15,9 +15,31 @@ export interface PadelMatch {
   courtBooked: boolean;
   location: string;
   matchType: string; // e.g., "Herre", "Dame", "Mix", "Blandet"
-  score?: string;
+  score?: {
+    firstSet?: {
+      score: string;
+      tieBreak?: string;
+    }
+    secondSet?: {
+      score: string;
+      tieBreak?: string;
+    }
+    thirdSet?: {
+      score: string;
+      tieBreak?: string;
+    }
+    fourthSet?: {
+      score: string;
+      tieBreak?: string;
+    }
+    fifthSet?: {
+      score: string;
+      tieBreak?: string;
+    }
+  }
+  team1Sets?: number;
+  team2Sets?: number;
   winningTeam?: string[];
   losingTeam?: string[];
-  result?: "win" | "loss" | "pending" | "unknown";
   deadline?: string;
 }

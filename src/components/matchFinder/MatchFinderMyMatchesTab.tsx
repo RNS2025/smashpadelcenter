@@ -25,24 +25,21 @@ export const MatchFinderMyMatchesTab = () => {
         if (user?.username) {
           const data = await communityApi.getMatches();
 
-          const sortedData = data.filter((match ) => {
-            const matchDate = new Date(match.endTime);
-            return matchDate >= new Date();
-          }).filter((match) => match.username === user.username || (match.participants.includes(user.username) || match.invitedPlayers.includes(user.username)))
+          const sortedData = data.filter((match) => {
+            const matchEnd = new Date(match.endTime);
+            const isFull = match.participants.length + match.reservedSpots.length === match.totalSpots;
+
+            return matchEnd > new Date() || isFull;
+          })
+              .filter((match) => match.username === user.username || (match.participants.includes(user.username) || match.invitedPlayers.includes(user.username)))
               .sort((a, b) => {
-            const aIsFull = a.participants.length + a.reservedSpots.length === a.totalSpots;
-            const bIsFull = b.participants.length + b.reservedSpots.length === b.totalSpots;
-
-            if (aIsFull !== bIsFull) {
-              return Number(aIsFull) - Number(bIsFull);
-            }
-
             const aDate = new Date(a.matchDateTime).getTime();
             const bDate = new Date(b.matchDateTime).getTime();
             return aDate - bDate;
           });
 
           setMatches(sortedData);
+          console.log(sortedData);
         }
         setLoading(false);
       } catch (err) {
@@ -70,6 +67,8 @@ export const MatchFinderMyMatchesTab = () => {
         <title>Mine kampe</title>
       </Helmet>
 
+
+
       <div className="text-sm">
         {matches.length === 0 ? (
             <p className="mt-10">Ingen aktuelle kampe at vise.</p>
@@ -83,8 +82,25 @@ export const MatchFinderMyMatchesTab = () => {
               }}
 
               key={match.id}
-            className={`border p-4 rounded-lg space-y-1.5 hover:bg-gray-700 mb-5 ${match.deadline && isMatchDeadlinePassed(match.deadline) ? "opacity-70 border-red-500" : ""}`}
+            className={`relative border p-4 rounded-lg space-y-1.5 hover:bg-gray-700 mb-5 ${match.deadline && isMatchDeadlinePassed(match.deadline) ? "opacity-70 border-red-500" : ""}
+            ${match.participants.length + match.reservedSpots.length === match.totalSpots ? "border-green-500" : ""}
+            `}
           >
+            {new Date(match.endTime) < new Date() &&
+                (match.participants.length + match.reservedSpots.length === match.totalSpots) && (
+                    <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/makkerbørs/${match.id}/indtastresultat`)
+                        }}
+                        className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-lg z-10"
+                    >
+                      <span className="text-white text-lg font-semibold animate-pulse">Indtast resultat</span>
+                    </div>
+                )}
+
+
+
             <div className="flex justify-between">
               <h1 className="font-semibold">
                 {match.deadline && isMatchDeadlinePassed(match.deadline)
@@ -108,7 +124,7 @@ export const MatchFinderMyMatchesTab = () => {
 
             <div className="flex justify-between border-b border-gray-600">
               <p>{match.location}</p>
-              <p>Herre</p>
+              <p>{match.matchType}</p>
             </div>
             <div className="flex justify-between">
               <p>Niveau {match.level}</p>
@@ -181,6 +197,7 @@ export const MatchFinderMyMatchesTab = () => {
                   </p>
                 </div>
             )}
+
           </div>
         )))}
       </div>

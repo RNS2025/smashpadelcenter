@@ -60,3 +60,8 @@ export const getLastMonday = () => {
 
     return lastMonday;
 };
+
+export const filterPassedTime = (time: Date) => {
+    const now = new Date();
+    return time.getTime() >= now.getTime();
+};

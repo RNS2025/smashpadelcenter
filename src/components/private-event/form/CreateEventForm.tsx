@@ -14,7 +14,7 @@ import { useNavigate } from "react-router-dom";
 import communityApi from "../../../services/makkerborsService.ts";
 import { PrivateEvent } from "../../../types/PrivateEvent.ts";
 import { useUser } from "../../../context/UserContext.tsx";
-import {getNextHalfHour, handleHiddenTimes} from "../../../utils/dateUtils.ts";
+import {filterPassedTime, getNextHalfHour, handleHiddenTimes} from "../../../utils/dateUtils.ts";
 import {ChevronDownIcon, ChevronUpIcon} from "@heroicons/react/24/outline";
 
 registerLocale("da", da);
@@ -57,11 +57,6 @@ export const CreateEventForm = () => {
   const handleEndDateChange = (date: Date) => {
     setSelectedEndDate(date);
     setEndManuallyChanged(true);
-  };
-
-  const filterPassedTime = (time: Date) => {
-    const now = new Date();
-    return time.getTime() >= now.getTime();
   };
 
   const handleCreateEvent = async (event: FormEvent) => {

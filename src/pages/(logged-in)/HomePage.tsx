@@ -75,7 +75,7 @@ export const HomePage = () => {
       <HomeBar />
       <Animation>
         <div className="flex my-5 items-center justify-center">
-          <div className="grid gap-8 lg:gap-20 grid-cols-4 max-lg:grid-cols-3 max-md:grid-cols-1">
+          <div className="grid gap-8 lg:gap-20 grid-cols-4 max-lg:grid-cols-3 max-md:grid-cols-2">
             {user?.role === "admin" && (
               <HomeScreenCard
                 icon={<CalendarIcon className="size-10" aria-hidden="true" />}

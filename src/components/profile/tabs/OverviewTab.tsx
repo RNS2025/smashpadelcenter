@@ -126,7 +126,7 @@ const OverviewTab = () => {
           </div>
         ) : matches.upcoming.length > 0 ? (
           <ul className="space-y-2">
-            {matches.upcoming.map((match) => (
+            {matches.upcoming.slice(0, 2).map((match) => (
               <li
                   onClick={() => navigate(`/makkerbørs/${match.id}`)}
                 key={match.id}
@@ -172,63 +172,6 @@ const OverviewTab = () => {
           </ul>
         ) : (
           <p className="text-gray-600">Ingen kommende kampe.</p>
-        )}
-
-        <h3 className="text-lg font-semibold text-gray-800 mt-4 mb-2">
-          Tidligere Kampe
-        </h3>
-
-        {matchesLoading ? (
-          <div className="py-4">
-            <LoadingSpinner />
-          </div>
-        ) : matches.former.length > 0 ? (
-          <ul className="space-y-2">
-            {matches.former.map((match) => (
-              <li
-                key={match.id}
-                className="border border-gray-900 p-2 rounded-lg text-gray-800"
-              >
-                <div className="flex justify-between text-xs border-b border-gray-600">
-                  <h1>
-                    {safeFormatDate(
-                      match.matchDateTime,
-                      "dd. MMMM | HH:mm"
-                    ).toUpperCase()} - {safeFormatDate(match.endTime, "HH:mm")}
-                  </h1>
-                  <div className="flex gap-1">
-                    <p>
-                      {match.location.includes("Horsens")
-                        ? "Horsens"
-                        : "Stensballe"}
-                    </p>
-                    <p>|</p>
-                    <p>{match.matchType}</p>
-                  </div>
-                </div>
-                <div className="flex justify-between text-sm pt-2">
-                  <div className="flex items-center gap-4">
-                    {match.result === "pending" || match.result === "unknown" ? (
-                      <QuestionMarkCircleIcon className="h-10 text-gray-800" />
-                    ) : (
-                      <CheckCircleIcon className="h-10 text-green-800" />
-                    )}
-                    <div className="text-sm">
-                      <h1>Niveau:</h1>
-                      <h1>{match.level}</h1>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    {match.participants.map((participant, index) => (
-                      <p key={index}>{participant}</p>
-                    ))}
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-gray-600">Ingen tidligere kampe.</p>
         )}
       </div>
     </>
