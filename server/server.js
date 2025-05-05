@@ -38,7 +38,7 @@ const ENV = process.env.NODE_ENV || "development";
 const isDev = ENV === "development";
 
 // Log which environment and database we're using
-logger.info(`Using ${isDev ? "development" : "production"} database`);
+logger.info(`Server: Using ${isDev ? "development" : "production"} database`);
 
 // Middleware
 app.use(express.json());

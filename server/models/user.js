@@ -37,7 +37,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["user", "Admin", "Træner"],
+      enum: ["user", "admin", "Træner"],
       default: "user",
     },
     fullName: {
@@ -91,10 +91,10 @@ const userSchema = new mongoose.Schema(
         members: [{ type: String, required: true }],
       },
     ],
-      rankedInId: {
-          type: String,
-          trim: true,
-      },
+    rankedInId: {
+      type: String,
+      trim: true,
+    },
   },
   {
     autoIndex: false, // Disable auto-indexing for production
