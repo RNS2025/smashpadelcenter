@@ -39,9 +39,11 @@ const PlayerCheckInList: FC<PlayerCheckInListProps> = ({
         )}
       </div>
       <div>
+        {players.length > 0 && (
         <p className="text-gray-500 italic max-sm:text-center max-sm:text-sm">
           Klik på et spillernavn for at se mere information.
         </p>
+        )}
       </div>
       {players.length === 0 ? (
         <p>Ingen spillere fundet i denne række.</p>

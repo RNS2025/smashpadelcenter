@@ -216,6 +216,17 @@ const CheckInPage = () => {
     }
   };
 
+  const isSameDate = (date1: Date, date2: Date) =>
+      date1.getFullYear() === date2.getFullYear() &&
+      date1.getMonth() === date2.getMonth() &&
+      date1.getDate() === date2.getDate();
+
+  const tournamentNotTodayCheck =
+      selectedTournament && selectedTournament.startDate
+          ? !isSameDate(new Date(selectedTournament.startDate), new Date())
+          : true;
+
+
   return (
     <>
       <Animation>
@@ -263,9 +274,7 @@ const CheckInPage = () => {
               loading={loading.players}
               isCheckingIn={loading.checkIn}
               userRole={user?.role || "Unknown"}
-              tournamentNotToday={
-                selectedTournament?.startDate !== new Date().toISOString()
-              }
+              tournamentNotToday={tournamentNotTodayCheck}
               onCheckInToggle={handleCheckInToggle}
               onBulkCheckIn={handleBulkCheckIn}
               onPlayerClick={handlePlayerClick}
