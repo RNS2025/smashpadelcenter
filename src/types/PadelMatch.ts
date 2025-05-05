@@ -41,5 +41,6 @@ export interface PadelMatch {
   team2Sets?: number;
   winningTeam?: string[];
   losingTeam?: string[];
+  playersConfirmedResult: string[];
   deadline?: string;
 }

@@ -221,10 +221,7 @@ const CheckInPage = () => {
       date1.getMonth() === date2.getMonth() &&
       date1.getDate() === date2.getDate();
 
-  const tournamentNotTodayCheck =
-      selectedTournament && selectedTournament.startDate
-          ? !isSameDate(new Date(selectedTournament.startDate), new Date())
-          : true;
+  const tournamentNotTodayCheck = selectedTournament && selectedTournament.startDate ? !isSameDate(new Date(selectedTournament.startDate), new Date()) : true;
 
 
   return (
