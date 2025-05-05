@@ -7,12 +7,14 @@ dotenv.config({ path: path.resolve(__dirname, ".env") });
 // Set the MongoDB URI based on environment
 const isDev = process.env.NODE_ENV === "development";
 const MONGODB_URI = isDev
-  ? process.env.MONGODB_URI || "mongodb://localhost:27017/smashpadel"
+  ? "mongodb://localhost:27017/smashpadel"
   : "mongodb+srv://admin:Rise%40ndShine@cluster0.108ujbh.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 
 // Log which environment and database we're using
 logger.info(
-  `DatabaseService: Using ${isDev ? "development" : "production"} database`
+  `DatabaseService: Using ${
+    isDev ? "development" : "production"
+  } database: ${MONGODB_URI}`
 );
 
 async function connectDB() {

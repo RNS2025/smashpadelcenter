@@ -37,9 +37,6 @@ const PORT = process.env.PORT || 3001;
 const ENV = process.env.NODE_ENV || "development";
 const isDev = ENV === "development";
 
-// Log which environment and database we're using
-logger.info(`Server: Using ${isDev ? "development" : "production"} database`);
-
 // Middleware
 app.use(express.json());
 app.use(cookieParser());

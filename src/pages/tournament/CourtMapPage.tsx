@@ -6,13 +6,19 @@ import HomeBar from "../../components/misc/HomeBar.tsx";
 import rankedInService from "../../services/rankedIn.ts";
 import LoadingSpinner from "../../components/misc/LoadingSpinner.tsx";
 import DpfMatch from "../../types/DpfMatch.ts";
-import {safeFormatDate} from "../../utils/dateUtils.ts";
+import { safeFormatDate } from "../../utils/dateUtils.ts";
 
 export const CourtMapPage = () => {
-  const [selectedCourtLabel, setSelectedCourtLabel] = useState<string | null>(null);
-  const [upcomingTournamentEventId, setUpcomingTournamentEventId] = useState<string | null>(null);
+  const [selectedCourtLabel, setSelectedCourtLabel] = useState<string | null>(
+    null
+  );
+  const [upcomingTournamentEventId, setUpcomingTournamentEventId] = useState<
+    string | null
+  >(null);
   const [ongoingMatch, setOnGoingMatch] = useState<DpfMatch | null>(null);
   const [upcomingMatch, setUpcommingMatch] = useState<DpfMatch | null>(null);
+  const [secondUpcomingMatch, setSecondUpcomingMatch] =
+    useState<DpfMatch | null>(null);
   const [loadingTournament, setLoadingTournament] = useState(true);
   const [loadingMatches, setLoadingMatches] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -65,12 +71,23 @@ export const CourtMapPage = () => {
         setError(null);
         setOnGoingMatch(null); // Reset previous match data
         setUpcommingMatch(null); // Reset previous match data
+        setSecondUpcomingMatch(null); // Reset previous match data
 
-        const { ongoingMatch, upcomingMatch } = await rankedInService.getOnGoingMatchAndUpcommingMatch(upcomingTournamentEventId, selectedCourtLabel);
+        const { ongoingMatch, upcomingMatch, secondUpcomingMatch } =
+          await rankedInService.getOnGoingMatchAndUpcommingMatch(
+            upcomingTournamentEventId,
+            selectedCourtLabel
+          );
 
-        console.log("Fetched matches for court:", ongoingMatch, upcomingMatch);
+        console.log(
+          "Fetched matches for court:",
+          ongoingMatch,
+          upcomingMatch,
+          secondUpcomingMatch
+        );
         setOnGoingMatch(ongoingMatch);
         setUpcommingMatch(upcomingMatch);
+        setSecondUpcomingMatch(secondUpcomingMatch || null);
         setLoadingMatches(false);
       } catch (err) {
         console.error(
@@ -89,27 +106,25 @@ export const CourtMapPage = () => {
     if (!match) return null;
 
     return (
-      <div className="rounded-lg">
-          <p className="font-semibold mt-2">
-            {title} ({match.Date ? safeFormatDate(match.Date, "HH:mm") : "TBD"})
-          </p>
+      <div className="rounded-lg mb-4">
+        <p className="font-semibold mt-2">
+          {title} ({match.Date ? safeFormatDate(match.Date, "HH:mm") : "TBD"})
+        </p>
         <div className="flex flex-col rounded-xl items-center mt-1 gap-2">
           <div className="flex items-stretch gap-2 font-semibold max-sm:text-sm p-1 w-full">
-
-
             <div className="grid grid-rows-2 text-center items-center w-full border rounded-lg border-blue-500 p-1">
               <h1>{match.Challenger?.Name || "TBD"}</h1>
-              <h1>{match.Challenger?.Player2Name && match.Challenger.Player2Name}</h1>
+              <h1>
+                {match.Challenger?.Player2Name && match.Challenger.Player2Name}
+              </h1>
             </div>
-
 
             <div className="grid grid-rows-2 text-center items-center w-full border rounded-lg border-red-500 p-1">
               <h1>{match.Challenged?.Name || "TBD"}</h1>
-              <h1>{match.Challenged?.Player2Name && match.Challenged.Player2Name}</h1>
+              <h1>
+                {match.Challenged?.Player2Name && match.Challenged.Player2Name}
+              </h1>
             </div>
-
-
-
           </div>
         </div>
       </div>
@@ -146,12 +161,15 @@ export const CourtMapPage = () => {
                   <>
                     {renderMatchInfo(ongoingMatch, "Nuværende kamp")}
                     {renderMatchInfo(upcomingMatch, "Næste kamp")}
+                    {renderMatchInfo(secondUpcomingMatch, "Efterfølgende kamp")}
 
-                    {!ongoingMatch && !upcomingMatch && (
-                      <p className="mt-4">
-                        Ingen kampe planlagt for denne bane.
-                      </p>
-                    )}
+                    {!ongoingMatch &&
+                      !upcomingMatch &&
+                      !secondUpcomingMatch && (
+                        <p className="mt-4">
+                          Ingen kampe planlagt for denne bane.
+                        </p>
+                      )}
                   </>
                 )}
               </>

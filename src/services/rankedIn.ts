@@ -256,6 +256,7 @@ const rankedInService = {
   ): Promise<{
     ongoingMatch: DpfMatch | null;
     upcomingMatch: DpfMatch | null;
+    secondUpcomingMatch?: DpfMatch | null;
   }> => {
     try {
       const response = await api.get("/GetOnGoingMatchAndUpcommingMatch", {
@@ -294,14 +295,16 @@ const rankedInService = {
         }) || null;
 
       // Find next match (upcoming)
-      const upcomingMatch =
-        courtMatches
-          .filter((match: any) => match.Date && new Date(match.Date) > now)
-          .sort(
-            (a: any, b: any) =>
-              new Date(a.Date).getTime() - new Date(b.Date).getTime()
-          )[0] || null;
+      // Find next two matches (upcoming)
+      const upcomingMatches = courtMatches
+        .filter((match: any) => match.Date && new Date(match.Date) > now)
+        .sort(
+          (a: any, b: any) =>
+            new Date(a.Date).getTime() - new Date(b.Date).getTime()
+        );
 
+      const upcomingMatch = upcomingMatches[0] || null;
+      const secondUpcomingMatch = upcomingMatches[1] || null;
       // If no current match is found but there's an upcoming match in the API response
       // and it matches our court, use it as the upcomingMatch
       if (
@@ -316,10 +319,12 @@ const rankedInService = {
         return {
           ongoingMatch: null,
           upcomingMatch: response.data.upcomingMatch,
+          secondUpcomingMatch: null,
         };
       }
 
-      return { ongoingMatch, upcomingMatch };
+      return { ongoingMatch, upcomingMatch, secondUpcomingMatch };
+      return { ongoingMatch, upcomingMatch, secondUpcomingMatch };
     } catch (error) {
       console.error("Error fetching current and next match:", error);
       throw error;
