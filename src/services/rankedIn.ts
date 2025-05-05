@@ -9,7 +9,7 @@ import CheckInUpdateRequest from "../types/CheckInUpdateRequest";
 import BulkCheckInUpdateRequest from "../types/BulkCheckInUpdateRequest";
 import PlayerData from "../types/PlayerData.ts";
 import DpfMatch from "../types/DpfMatch.ts";
-import {getLastMonday} from "../utils/dateUtils.ts";
+import { getLastMonday } from "../utils/dateUtils.ts";
 
 const rankedInService = {
   // Fetch all available tournaments
@@ -276,7 +276,8 @@ const rankedInService = {
       // Find matches for the specified court
       const courtMatches = matches.filter(
         (match: any) =>
-          match.Court && match.Court.toLowerCase().includes(courtName.toLowerCase())
+          match.Court &&
+          match.Court.toLowerCase().includes(courtName.toLowerCase())
       );
 
       // Determine current match and next match
@@ -308,10 +309,12 @@ const rankedInService = {
         !upcomingMatch &&
         response.data.upcomingMatch &&
         response.data.upcomingMatch.Court &&
-        response.data.upcomingMatch.Court.toLowerCase().includes(courtName.toLowerCase())
+        response.data.upcomingMatch.Court.toLowerCase().includes(
+          courtName.toLowerCase()
+        )
       ) {
         return {
-            ongoingMatch: null,
+          ongoingMatch: null,
           upcomingMatch: response.data.upcomingMatch,
         };
       }
@@ -347,7 +350,6 @@ const rankedInService = {
       throw error;
     }
   },
-
 };
 
 export default rankedInService;

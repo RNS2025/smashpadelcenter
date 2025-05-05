@@ -186,12 +186,12 @@ const PlayerPage = () => {
 
           {/* Matches Section */}
           <h2 className="text-2xl font-bold mb-6">
-            Kommende kampe for {playerData.Header?.FullName || "spiller"}
+            Kampe for {playerData.Header?.FullName || "spiller"}
           </h2>
           {matches.length === 0 ? (
             <p className="text-lg">Ingen kampe fundet for spiller.</p>
           ) : (
-            <div className="grid gap-6">
+            <div className="grid gap-6 text-black-800">
               {matches.map((match) => (
                 <div
                   key={match.matchId}
@@ -216,19 +216,41 @@ const PlayerPage = () => {
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <p className="text-gray-800">
+                      <p
+                        className={`text-gray-800 ${
+                          match.isPlayed &&
+                          match.score?.IsFirstParticipantWinner
+                            ? "font-bold"
+                            : ""
+                        }`}
+                      >
                         <strong>Udfordrere:</strong>{" "}
                         {match.challenger.firstPlayer.Name}
                         {match.challenger.secondPlayer
                           ? ` & ${match.challenger.secondPlayer.Name}`
                           : ""}
+                        {match.isPlayed &&
+                          match.score?.IsFirstParticipantWinner && (
+                            <span className="ml-2 text-green-600">🏆</span>
+                          )}
                       </p>
-                      <p className="text-gray-800">
+                      <p
+                        className={`text-gray-800 ${
+                          match.isPlayed &&
+                          !match.score?.IsFirstParticipantWinner
+                            ? "font-bold"
+                            : ""
+                        }`}
+                      >
                         <strong>Modstanderpar:</strong>{" "}
                         {match.challenged.firstPlayer.Name}
                         {match.challenged.secondPlayer
                           ? ` & ${match.challenged.secondPlayer.Name}`
                           : ""}
+                        {match.isPlayed &&
+                          !match.score?.IsFirstParticipantWinner && (
+                            <span className="ml-2 text-green-600">🏆</span>
+                          )}
                       </p>
                     </div>
                     <div>
@@ -256,6 +278,41 @@ const PlayerPage = () => {
                       </p>
                     </div>
                   </div>
+
+                  {/* Score Section */}
+                  {match.isPlayed && match.score && (
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <h3 className="font-semibold text-lg mb-2">Resultat</h3>
+                      <div className="flex flex-col sm:flex-row gap-4">
+                        <div>
+                          <p className="font-medium">
+                            Samlet score:
+                            <span className="ml-2 text-lg">
+                              {match.score.FirstParticipantScore} -{" "}
+                              {match.score.SecondParticipantScore}
+                            </span>
+                          </p>
+                        </div>
+
+                        {match.score.DetailedScoring && (
+                          <div>
+                            <p className="font-medium">Set:</p>
+                            <div className="flex gap-2 flex-wrap">
+                              {match.score.DetailedScoring.map((set, index) => (
+                                <span
+                                  key={index}
+                                  className="bg-gray-100 px-3 py-1 rounded-md"
+                                >
+                                  {set.FirstParticipantScore}-
+                                  {set.SecondParticipantScore}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

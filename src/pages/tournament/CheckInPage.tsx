@@ -217,15 +217,22 @@ const CheckInPage = () => {
   };
 
   const isSameDate = (date1: Date, date2: Date) =>
-      date1.getFullYear() === date2.getFullYear() &&
-      date1.getMonth() === date2.getMonth() &&
-      date1.getDate() === date2.getDate();
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate();
+
+  const isDateInPast = (date: Date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    date.setHours(0, 0, 0, 0);
+    return date < today;
+  };
 
   const tournamentNotTodayCheck =
-      selectedTournament && selectedTournament.startDate
-          ? !isSameDate(new Date(selectedTournament.startDate), new Date())
-          : true;
-
+    selectedTournament && selectedTournament.startDate
+      ? !isSameDate(new Date(selectedTournament.startDate), new Date()) &&
+        !isDateInPast(new Date(selectedTournament.startDate))
+      : true;
 
   return (
     <>
