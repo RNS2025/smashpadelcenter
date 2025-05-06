@@ -1,7 +1,7 @@
 import { Helmet } from "react-helmet-async";
 import HomeBar from "../../components/misc/HomeBar.tsx";
 import { useUser } from "../../context/UserContext.tsx";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import Animation from "../../components/misc/Animation.tsx";
 import HomeScreenCard from "../../components/HomeScreen/HomeScreenCard.tsx";
 import {
@@ -22,10 +22,8 @@ import {
 import { setupNotifications } from "../../utils/notifications";
 
 export const HomePage = () => {
-  const { user, isAuthenticated } = useUser();
-  const [isNotificationsInitialized, setNotificationsInitialized] =
-    useState(false);
-  const hasRefreshed = useRef(false);
+  const { user } = useUser();
+  const [isNotificationsInitialized, setNotificationsInitialized] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);

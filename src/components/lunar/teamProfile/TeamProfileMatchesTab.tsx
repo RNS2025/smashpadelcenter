@@ -29,32 +29,27 @@ export const TeamProfileMatchesTab = () => {
             </Helmet>
 
             {teamMatches && (
-                <div className="overflow-auto xl:max-h-[550px] max-xl:max-h-[470px] rounded-lg border border-gray-200 shadow-lg my-5 text-sm">
-                    <table className="min-w-full divide-y-2 divide-gray-200 bg-white">
-                        <thead className="text-left bg-gray-300 font-bold">
+                <div className="overflow-auto xl:max-h-[550px] max-xl:max-h-[470px] rounded-lg border border-gray-200 shadow-lg my-5 text-xxs">
+                    <table className="min-w-[320px] w-full divide-y-2 divide-gray-200 bg-white">
+                        <thead className="bg-gray-300 font-bold">
                         <tr>
-                            <th className="px-4 py-2 text-gray-900 select-none">
-                                <div className="flex items-center gap-2">
+                            <th className="py-2 text-gray-900 select-none">
+                                <div className="flex items-center justify-center">
                                     Dato
                                 </div>
                             </th>
-                            <th className="px-4 py-2 text-gray-900 select-none">
-                                <div className="flex items-center gap-2">
+                            <th className="py-2 text-gray-900 select-none">
+                                <div className="flex items-center justify-center">
                                     Hjemmehold
                                 </div>
                             </th>
-                            <th className="px-4 py-2 text-gray-900 select-none">
-                                <div className="flex items-center gap-2">
-
-                                </div>
-                            </th>
-                            <th className="px-4 py-2 text-gray-900 select-none">
-                                <div className="flex items-center gap-2 ">
+                            <th className="py-2 text-gray-900 select-none">
+                                <div className="flex items-center justify-center ">
                                     Udehold
                                 </div>
                             </th>
-                            <th className="px-4 py-2 text-gray-900 select-none">
-                                <div className="flex items-center gap-2 justify-center">
+                            <th className="py-2 text-gray-900 select-none">
+                                <div className="flex items-center justify-center">
                                     Resultat
                                 </div>
                             </th>
@@ -65,15 +60,14 @@ export const TeamProfileMatchesTab = () => {
                         {teamMatches.map((match) => (
                                 <Fragment key={match.MatchId}>
                                 <tr className="hover:bg-cyan-500 transition-colors duration-500">
-                                    <td className="px-4 py-4 font-medium text-gray-900">{match.Details.Date}</td>
-                                    <td className={`px-4 py-4 font-medium text-gray-900 ${match.Team1.IsWinner ? "font-semibold" : ""}`}>
+                                    <td className="px-2 py-4 font-medium text-gray-900">{match.Details.Date}</td>
+                                    <td className={`px-px-2 py-4 font-medium text-gray-900 ${match.Team1.IsWinner ? "font-semibold" : ""}`}>
                                         {match.Team1.Name}
                                     </td>
-                                    <td className="px-4 py-4 font-medium text-gray-900">vs</td>
-                                    <td className={`px-4 py-4 font-medium text-gray-900 ${match.Team2.IsWinner ? "font-semibold" : ""}`}>
+                                    <td className={`px-2-4 py-4 font-medium text-gray-900 ${match.Team2.IsWinner ? "font-semibold" : ""}`}>
                                         {match.Team2.Name}
                                     </td>
-                                    <td className="px-4 py-4 font-medium text-gray-900 text-center">
+                                    <td className="px-2 py-4 font-medium text-gray-900 text-center">
                                         {!match.ShowPlayerEnterResultButton && (
                                             <p className={`${match.ShowPlayerEnterResultButton ? "font-semibold" : ""}`}>
                                                 {match.ShowResults
@@ -89,7 +83,7 @@ export const TeamProfileMatchesTab = () => {
 
                                 {!match.ShowResults && match.Date !== "00:00" && !match.ShowPlayerEnterResultButton && (
                                     <tr key={`${match.MatchId}-extra`}>
-                                        <td colSpan={5} className="px-4 py-2 text-sm text-gray-600 border-t-2 border-white">
+                                        <td colSpan={5} className="px-2 py-2 text-sm text-gray-600 border-t-2 border-white">
                                             <div className="flex justify-center items-center gap-1 text-gray-600">
                                                 <ClockIcon className="h-5"/>
                                                 <p className="pt-0.5">{match.Date}</p>

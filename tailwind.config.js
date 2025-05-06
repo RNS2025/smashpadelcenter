@@ -16,6 +16,9 @@ export default {
                 'xs': '640px',
                 'desktop': '1024px',
             },
+            fontSize: {
+                xxs: "0.625rem", // 10px
+            }
         },
     },
     plugins: [forms, typography],

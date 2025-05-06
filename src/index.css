@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+@theme {
+  --text-xxs: 0.625rem;
+}
+
 html {
   @apply font-sans;
 

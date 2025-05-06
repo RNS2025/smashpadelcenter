@@ -54,6 +54,8 @@ import { useUser } from "./context/UserContext";
 import EditMatchPage from "./pages/(logged-in)/matchFinder/EditMatchPage.tsx";
 import EditEventPage from "./pages/(logged-in)/private-event/EditEventPage.tsx";
 import MatchResultPage from "./pages/(logged-in)/matchFinder/MatchResultPage.tsx";
+import TournamentDrawsPage from "./pages/tournament/TournamentDrawsPage.tsx";
+import MatchesTab from "./components/profile/tabs/MatchesTab.tsx";
 
 function AppContent() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -145,9 +147,10 @@ function AppContent() {
         {/* Public Routes */}
         <Route path="/" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/turneringer" element={<TournamentTabs />} />
         <Route path="/turneringer/check-in" element={<CheckInPage />} />
         <Route path="/turneringer/baneoversigt" element={<CourtMapPage />} />
-        <Route path="/turneringer" element={<TournamentTabs />} />
+        <Route path="/turneringer/lodtrækninger" element={<TournamentDrawsPage />} />
         <Route path="/turneringer/info" element={<TournamentInfoPage />}>
           <Route index element={<Navigate to="briefing" replace />} />
           <Route path="briefing" element={<TournamentBriefingTab />} />
@@ -161,6 +164,7 @@ function AppContent() {
             <Route path="/profil/:username" element={<ProfilePageWrapper />}>
               <Route index element={<Navigate to="overblik" replace />} />
               <Route path="overblik" element={<OverviewTab />} />
+              <Route path="kamphistorik" element={<MatchesTab />} />
               <Route path="rediger" element={<EditTab />} />
               <Route path="grupper" element={<GroupsTab />} />
               <Route path="grupper/opretgruppe" element={<CreateGroupTab />} />

@@ -1,10 +1,10 @@
 import { Helmet } from "react-helmet-async";
 import HomeScreenCard from "../../components/HomeScreen/HomeScreenCard.tsx";
 import {
-  CheckCircleIcon,
-  InformationCircleIcon,
-  MapIcon,
-  RectangleGroupIcon,
+    CheckCircleIcon,
+    InformationCircleIcon,
+    MapIcon, QueueListIcon,
+    RectangleGroupIcon,
 } from "@heroicons/react/24/outline";
 import Animation from "../../components/misc/Animation.tsx";
 import HomeBar from "../../components/misc/HomeBar.tsx";
@@ -35,7 +35,7 @@ export const TournamentTabs = () => {
             <HomeScreenCard
               icon={
                 <InformationCircleIcon
-                  className="h-10 w-10"
+                  className="size-10"
                   aria-hidden="true"
                 />
               }
@@ -45,14 +45,20 @@ export const TournamentTabs = () => {
             />
             <HomeScreenCard
               icon={
-                <CheckCircleIcon className="h-10 w-10" aria-hidden="true" />
+                <CheckCircleIcon className="size-10" aria-hidden="true" />
               }
               title="Indtjekning"
               description="Tjek ind til DPF-turneringer"
               link="/turneringer/check-in"
             />
+              <HomeScreenCard
+                  icon={<QueueListIcon className="size-10" aria-hidden="true" />}
+                  title="Lodtrækninger"
+                  description="Se lodtrækninger for kommende turnering"
+                  link="/turneringer/lodtrækninger"
+              />
             <HomeScreenCard
-              icon={<MapIcon className="h-10 w-10" aria-hidden="true" />}
+              icon={<MapIcon className="size-10" aria-hidden="true" />}
               title="Baneoversigt"
               description="Se hvor kampene bliver afviklet"
               link="/turneringer/baneoversigt"
@@ -61,7 +67,7 @@ export const TournamentTabs = () => {
               <HomeScreenCard
                 icon={
                   <RectangleGroupIcon
-                    className="h-10 w-10"
+                    className="size-10"
                     aria-hidden="true"
                   />
                 }
