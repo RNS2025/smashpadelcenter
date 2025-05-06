@@ -435,7 +435,7 @@ router.post("/:id/remove-player", async (req, res) => {
       "USER_REMOVED_FROM_MATCH",
       {
         matchId: req.params.id,
-        participantIds: username,
+        requesterId: username,
       },
       [username]
     );
