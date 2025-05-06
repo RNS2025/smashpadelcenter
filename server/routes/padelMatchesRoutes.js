@@ -41,11 +41,10 @@ router.post("/:id/reject", async (req, res) => {
 
     // Notify the player who requested that their request was processed
     await sendPadelMatchNotification(
-      "REQUEST_PROCESSED",
+      "INVITATION_PROCESSED",
       {
         matchId: req.params.id,
         requesterId: match.username,
-        participantIds: updatedMatch.participants,
       },
       [username]
     );
@@ -127,11 +126,10 @@ router.post("/:id/accept", async (req, res) => {
 
     // Notify the player who requested that their request was processed
     await sendPadelMatchNotification(
-      "REQUEST_PROCESSED",
+      "INVITATION_PROCESSED",
       {
         matchId: req.params.id,
         requesterId: match.username,
-        participantIds: updatedMatch.participants,
       },
       [username]
     );
@@ -181,7 +179,7 @@ router.post("/:id/invite", async (req, res) => {
       "INVITATION_SENT",
       {
         matchId: req.params.id,
-        participantIds: updatedMatch.invitedPlayers,
+        participantIds: usernames,
       },
       usernames
     );
@@ -326,7 +324,7 @@ router.post("/:id/confirm", async (req, res) => {
 
     // Notify participant that the invitation was processed
     await sendPadelMatchNotification(
-      "INVITATION_PROCESSED",
+      "REQUEST_PROCESSED",
       {
         matchId: req.params.id,
         participantIds: username,

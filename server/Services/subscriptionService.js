@@ -281,17 +281,23 @@ const sendPrivateEventNotification = async (
         category: "events",
         recipients: [requesterId],
       },
+      REQUEST_PROCESSED_DECLINED: {
+        title: "Anmodning afvist",
+        body: `Din anmodning til arrangement er blevet afvist.`,
+        category: "events",
+        recipients: [requesterId],
+      },
       INVITATION_SENT: {
         title: "Ny invitation til arrangement",
         body: `Du er blevet inviteret til arrangement.`,
         category: "events",
-        recipients: userIds,
+        recipients: participantIds,
       },
       INVITATION_PROCESSED: {
         title: "Invitation behandlet",
         body: `Invitationen til arrangement er blevet behandlet.`,
         category: "events",
-        recipients: participantIds,
+        recipients: [requesterId],
       },
       EVENT_FULL: {
         title: "Arrangement fyldt",

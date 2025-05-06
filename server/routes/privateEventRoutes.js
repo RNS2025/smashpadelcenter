@@ -47,7 +47,7 @@ router.post("/:eventId/invite", async (req, res) => {
       "INVITATION_SENT",
       {
         eventId: req.params.eventId,
-        participantIds: updatedEvent.invitedPlayers,
+        participantIds: usernames,
       },
       usernames
     );
@@ -98,7 +98,7 @@ router.post("/:eventId/remove-player", async (req, res) => {
       "PLAYER_REMOVED",
       {
         eventId: req.params.eventId,
-        participantIds: updatedEvent.players,
+        requesterId: username,
       },
       [username]
     );
@@ -129,23 +129,12 @@ router.post("/:eventId/confirm", async (req, res) => {
 
     // Notify the user who requested that their request was processed
     await sendPrivateEventNotification(
-      "REQUEST_PROCESSED",
-      {
-        eventId: req.params.eventId,
-        requesterId: match.username,
-        participantIds: username,
-      },
-      [username]
-    );
-
-    // Notify participant that the invitation was processed
-    await sendPrivateEventNotification(
       "INVITATION_PROCESSED",
       {
         eventId: req.params.eventId,
-        participantIds: username,
+        requesterId: updatedEvent.eventOwner,
       },
-      updatedEvent.players
+      [username]
     );
 
     // Check if the event is now full (assuming maxPlayers is a field in the event)
@@ -210,11 +199,10 @@ router.post("/:eventId/decline", async (req, res) => {
 
     // Notify the user who requested that their request was processed
     await sendPrivateEventNotification(
-      "REQUEST_PROCESSED",
+      "REQUEST_PROCESSED_DECLINED",
       {
         eventId: req.params.eventId,
-        requesterId: match.username,
-        participantIds: updatedEvent.players,
+        requesterId: username,
       },
       [username]
     );
@@ -432,18 +420,17 @@ router.post("/:eventId/confirm", async (req, res) => {
       "REQUEST_PROCESSED",
       {
         eventId: req.params.eventId,
-        requesterId: match.username,
-        participantIds: updatedEvent.participants,
+        requesterId: updatedEvent.username,
       },
       [username]
     );
 
     // Notify invited participant that the invitation was processed
     await sendPrivateEventNotification(
-      "INVITATION_PROCESSED",
+      "REQUEST_PROCESSED",
       {
         eventId: req.params.eventId,
-        participantIds: username,
+        requesterId: username,
       },
       updatedEvent.participants
     );
