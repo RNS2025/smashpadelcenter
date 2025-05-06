@@ -77,7 +77,11 @@ router.get(
     logger.info("Google OAuth login successful", {
       username: req.user.username,
     });
-    res.redirect(`${process.env.FRONTEND_URL}/hjem`);
+    // Redirect to the appropriate frontend URL based on environment
+    const redirectUrl = isProduction
+      ? "https://rns-apps.dk"
+      : "http://localhost:5173";
+    res.redirect(`${redirectUrl}/hjem`);
   }
 );
 
