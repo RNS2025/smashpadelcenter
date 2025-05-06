@@ -61,27 +61,88 @@ router.get(
 
 router.get(
   "/auth/google/callback",
-  passport.authenticate("google", {
-    session: false,
-    failureRedirect: "/",
-  }),
+  (req, res, next) => {
+    logger.info("Google OAuth callback received with code", {
+      hasCode: !!req.query.code,
+      codeLength: req.query.code ? req.query.code.length : 0,
+    });
+    next();
+  },
+  (req, res, next) => {
+    // Use custom passport authenticate with step-by-step logging
+    passport.authenticate("google", { session: false }, (err, user, info) => {
+      if (err) {
+        logger.error("Google auth error during authentication:", {
+          error: err.message,
+          stack: err.stack,
+        });
+        return res.status(500).send(`
+          <html>
+            <body>
+              <h1>Authentication Error</h1>
+              <p>${err.message}</p>
+              <pre>${err.stack}</pre>
+              <a href="http://localhost:5173">Return to app</a>
+            </body>
+          </html>
+        `);
+      }
+
+      if (!user) {
+        logger.error("No user returned from Google auth:", { info });
+        return res.status(401).send(`
+          <html>
+            <body>
+              <h1>Authentication Failed</h1>
+              <p>No user was returned from Google authentication.</p>
+              <p>Reason: ${info ? info.message : "Unknown error"}</p>
+              <a href="http://localhost:5173">Return to app</a>
+            </body>
+          </html>
+        `);
+      }
+
+      logger.info("Google auth successful, user object created", {
+        userId: user._id,
+        username: user.username,
+      });
+
+      req.user = user;
+      next();
+    })(req, res, next);
+  },
   (req, res) => {
-    const token = generateToken(req.user);
-    // Set cookie options based on environment
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: isProduction, // Only use secure in production
-      sameSite: isProduction ? "none" : "lax", // "none" for cross-origin in production, "lax" for development
-      maxAge: 24 * 60 * 60 * 1000,
-    });
-    logger.info("Google OAuth login successful", {
-      username: req.user.username,
-    });
-    // Redirect to the appropriate frontend URL based on environment
-    const redirectUrl = isProduction
-      ? "https://rns-apps.dk"
-      : "http://localhost:5173";
-    res.redirect(`${redirectUrl}/hjem`);
+    try {
+      logger.info("Generating JWT token for authenticated user");
+      const token = generateToken(req.user);
+
+      logger.info("Setting authentication cookie");
+      res.cookie("token", token, {
+        httpOnly: true,
+        secure: true, // Set to false for local testing
+        sameSite: "none",
+        path: "/",
+        maxAge: 24 * 60 * 60 * 1000,
+      });
+
+      logger.info("Authentication complete, redirecting to app");
+      res.redirect("http://localhost:5173/hjem");
+    } catch (error) {
+      logger.error("Error in final callback handler:", {
+        error: error.message,
+        stack: error.stack,
+      });
+      res.status(500).send(`
+        <html>
+          <body>
+            <h1>Token Generation Error</h1>
+            <p>${error.message}</p>
+            <pre>${error.stack}</pre>
+            <a href="http://localhost:5173">Return to app</a>
+          </body>
+        </html>
+      `);
+    }
   }
 );
 
