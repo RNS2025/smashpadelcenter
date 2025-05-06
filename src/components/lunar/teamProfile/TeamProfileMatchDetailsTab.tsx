@@ -42,22 +42,22 @@ export const TeamProfileMatchDetailsTab = () => {
             </Helmet>
 
             {matchDetails && currentMatch && (
-                <div className="overflow-auto rounded-lg border border-gray-200 shadow-lg my-5 text-sm">
-                    <table className="min-w-[700px] w-full divide-y-2 divide-gray-200 bg-white">
-                    <thead className="text-left bg-gray-300 font-bold">
+                <div className="overflow-auto xl:max-h-[550px] max-xl:max-h-[470px] rounded-lg border border-gray-200 shadow-lg my-5 text-xxs">
+                    <table className="min-w-[320px] w-full divide-y-2 divide-gray-200 bg-white">
+                    <thead className="bg-gray-300 font-bold">
                         <tr>
-                            <th className="px-4 py-2 text-gray-900 select-none w-[35%]">
-                                <div className="flex items-center gap-2">
+                            <th className="px-2 py-2 text-gray-900 select-none w-[35%]">
+                                <div className="flex items-center justify-center">
                                     {currentMatch.Team1.Name}
                                 </div>
                             </th>
-                            <th className="px-4 py-2 text-gray-900 select-none w-[35%]">
-                                <div className="flex items-center gap-2">
+                            <th className="px-2 py-2 text-gray-900 select-none w-[35%]">
+                                <div className="flex items-center justify-center">
                                     {currentMatch.Team2.Name}
                                 </div>
                             </th>
-                            <th className="px-4 py-2 text-gray-900 select-none w-[30%]">
-                                <div className="flex items-center gap-2">
+                            <th className="px-2 py-2 text-gray-900 select-none w-[30%]">
+                                <div className="flex items-center justify-center">
                                     Resultat
                                 </div>
                             </th>
@@ -68,23 +68,23 @@ export const TeamProfileMatchDetailsTab = () => {
                         {matchDetails?.Matches.Matches.map((match) => (
                             <Fragment key={match.Id}>
                             {match.MatchResult?.HasDetailedScore && (
-                                <tr className="hover:bg-cyan-500 transition-colors duration-500">
-                                    <td className={`px-4 py-4 font-medium text-gray-900 ${match.MatchResult?.IsFirstParticipantWinner ? "font-semibold" : ""}`}>
+                                <tr className="hover:bg-cyan-500 transition-colors duration-500 text-center">
+                                    <td className={`flex flex-col gap-1 px-2 py-4 font-medium text-gray-900 ${match.MatchResult?.IsFirstParticipantWinner ? "font-semibold" : ""}`}>
                                         <p>{match.Challenger.Name}</p>
                                         <p>{match.Challenger.Player2Name}</p>
                                     </td>
-                                    <td className={`px-4 py-4 font-medium text-gray-900 ${!match.MatchResult?.IsFirstParticipantWinner ? "font-semibold" : ""}`}>
+                                    <td className={`px-2 py-4 font-medium text-gray-900 ${!match.MatchResult?.IsFirstParticipantWinner ? "font-semibold" : ""}`}>
                                         <p>{match.Challenged.Name}</p>
                                         <p>{match.Challenged.Player2Name}</p>
                                     </td>
-                                    <td className="px-4 py-4 font-medium text-gray-900 grid grid-cols-[30%_70%]">
-                                        <p className="bg-sky-900 font-semibold rounded-xl p-2 text-white w-fit align-middle">
+                                    <td className="px-2 py-4 font-medium text-gray-900 flex flex-col items-center">
+                                        <p className="bg-sky-900 font-semibold rounded-xl px-2 py-1 text-white w-fit align-middle">
                                             {match.MatchResult?.Score?.FirstParticipantScore} - {match.MatchResult?.Score?.SecondParticipantScore}
                                         </p>
                                         {match.MatchResult?.Score?.DetailedScoring && (
                                             <div className="flex items-center gap-x-2">
                                                 {match.MatchResult.Score.DetailedScoring.map((score, index) => (
-                                                    <p key={index} className="text-sm text-gray-600 font-semibold">
+                                                    <p key={index} className="text-gray-600 font-semibold">
                                                         {score.FirstParticipantScore} - {score.SecondParticipantScore}
                                                     </p>
                                                 ))}
