@@ -132,7 +132,7 @@ router.post("/:eventId/confirm", async (req, res) => {
       "REQUEST_PROCESSED",
       {
         eventId: req.params.eventId,
-        requesterId: username,
+        requesterId: match.username,
         participantIds: username,
       },
       [username]
@@ -213,7 +213,7 @@ router.post("/:eventId/decline", async (req, res) => {
       "REQUEST_PROCESSED",
       {
         eventId: req.params.eventId,
-        requesterId: username,
+        requesterId: match.username,
         participantIds: updatedEvent.players,
       },
       [username]
@@ -432,7 +432,7 @@ router.post("/:eventId/confirm", async (req, res) => {
       "REQUEST_PROCESSED",
       {
         eventId: req.params.eventId,
-        requesterId: username,
+        requesterId: match.username,
         participantIds: updatedEvent.participants,
       },
       [username]
@@ -449,7 +449,11 @@ router.post("/:eventId/confirm", async (req, res) => {
     );
 
     // Check if the event is now full (assuming totalSpots is a field in the event)
-    if (updatedEvent.participants.length >= updatedEvent.totalSpots) {
+    if (
+      updatedEvent.participants &&
+      Array.isArray(updatedEvent.participants) &&
+      updatedEvent.participants.length >= updatedEvent.totalSpots
+    ) {
       await sendPrivateEventNotification(
         "EVENT_FULL",
         {
@@ -540,12 +544,12 @@ router.post("/:id/player-cancel", async (req, res) => {
         username,
       });
       return res
-          .status(403)
-          .json({ message: "Event creator cannot cancel their own join" });
+        .status(403)
+        .json({ message: "Event creator cannot cancel their own join" });
     }
     const updatedEvent = await privateEventService.playerCancelJoinEvent(
-        req.params.id,
-        username
+      req.params.id,
+      username
     );
 
     logger.info("Successfully cancelled user join", {

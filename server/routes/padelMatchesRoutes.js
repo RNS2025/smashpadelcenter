@@ -44,7 +44,7 @@ router.post("/:id/reject", async (req, res) => {
       "REQUEST_PROCESSED",
       {
         matchId: req.params.id,
-        requesterId: username,
+        requesterId: match.username,
         participantIds: updatedMatch.participants,
       },
       [username]
@@ -130,7 +130,7 @@ router.post("/:id/accept", async (req, res) => {
       "REQUEST_PROCESSED",
       {
         matchId: req.params.id,
-        requesterId: username,
+        requesterId: match.username,
         participantIds: updatedMatch.participants,
       },
       [username]
@@ -334,11 +334,11 @@ router.post("/:id/confirm", async (req, res) => {
       updatedMatch.participants
     );
 
-    // Check if the match is now full (assuming maxPlayers is a field in the match)
-    if (
-      updatedMatch.participants.length + updatedMatch.reservedSpots.length >=
-      updatedMatch.totalSpots
-    ) {
+    // Check if the match is now full
+    const participantsCount = updatedMatch.participants?.length || 0;
+    const reservedSpotsCount = updatedMatch.reservedSpots?.length || 0;
+
+    if (participantsCount + reservedSpotsCount >= updatedMatch.totalSpots) {
       await sendPadelMatchNotification(
         "MATCH_FULL",
         {
@@ -355,7 +355,7 @@ router.post("/:id/confirm", async (req, res) => {
     });
     res.json(updatedMatch);
   } catch (error) {
-    logger.error("Error confirming join", {
+    logger.error("PadelMatchRoutes: Error confirming join", {
       matchId: req.params.id,
       error: error.message,
     });
