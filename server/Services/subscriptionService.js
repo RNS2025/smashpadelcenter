@@ -495,28 +495,6 @@ const sendTournamentCheckInNotification = async (
       notificationPromises = [];
     }
 
-    let notificationPromises;
-
-    if (Array.isArray(recipients)) {
-      // Handle array of recipients
-      notificationPromises = recipients.map((userId) =>
-        sendNotification(userId, title, body, category)
-      );
-    } else if (recipients) {
-      // Handle single recipient
-      notificationPromises = [
-        sendNotification(recipients, title, body, category),
-      ];
-    } else {
-      // Handle no recipients
-      console.log("No recipients specified for notification", {
-        eventType,
-        tournamentId,
-        rowId,
-      });
-      notificationPromises = [];
-    }
-
     await Promise.all(notificationPromises);
     logger.info("Tournament check-in notifications sent", {
       eventType,
