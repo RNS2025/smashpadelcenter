@@ -285,9 +285,24 @@ const sendPadelMatchNotification = async (eventType, matchDetails, userIds) => {
       return;
     }
 
-    const notificationPromises = recipients.map((userId) =>
-      sendNotification(userId, title, body, category)
-    );
+    console.log("Recipients for notification", { recipients });
+
+    let notificationPromises;
+
+    if (Array.isArray(recipients)) {
+      // Handle array of recipients
+      notificationPromises = recipients.map((userId) =>
+        sendNotification(userId, title, body, category)
+      );
+    } else if (recipients) {
+      // Handle single recipient
+      notificationPromises = [
+        sendNotification(recipients, title, body, category),
+      ];
+    } else {
+      // Handle no recipients
+      notificationPromises = [];
+    }
 
     await Promise.all(notificationPromises);
     logger.info("Padel match notifications sent", {
@@ -380,9 +395,22 @@ const sendPrivateEventNotification = async (
       return;
     }
 
-    const notificationPromises = recipients.map((userId) =>
-      sendNotification(userId, title, body, category)
-    );
+    let notificationPromises;
+
+    if (Array.isArray(recipients)) {
+      // Handle array of recipients
+      notificationPromises = recipients.map((userId) =>
+        sendNotification(userId, title, body, category)
+      );
+    } else if (recipients) {
+      // Handle single recipient
+      notificationPromises = [
+        sendNotification(recipients, title, body, category),
+      ];
+    } else {
+      // Handle no recipients
+      notificationPromises = [];
+    }
 
     await Promise.all(notificationPromises);
     logger.info("Private event notifications sent", {
@@ -454,9 +482,27 @@ const sendTournamentCheckInNotification = async (
       return;
     }
 
-    const notificationPromises = recipients.map((userId) =>
-      sendNotification(userId, title, body, category)
-    );
+    let notificationPromises;
+
+    if (Array.isArray(recipients)) {
+      // Handle array of recipients
+      notificationPromises = recipients.map((userId) =>
+        sendNotification(userId, title, body, category)
+      );
+    } else if (recipients) {
+      // Handle single recipient
+      notificationPromises = [
+        sendNotification(recipients, title, body, category),
+      ];
+    } else {
+      // Handle no recipients
+      console.log("No recipients specified for notification", {
+        eventType,
+        tournamentId,
+        rowId,
+      });
+      notificationPromises = [];
+    }
 
     await Promise.all(notificationPromises);
     logger.info("Tournament check-in notifications sent", {
