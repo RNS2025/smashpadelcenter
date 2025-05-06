@@ -4,7 +4,6 @@ const {
   sendNotification,
 } = require("../Services/subscriptionService");
 const SubscriptionPreference = require("../models/subscriptionPreferenceSchema");
-const NotificationHistory = require("../models/NotificationHistory");
 const logger = require("../config/logger"); // Import logger
 const router = express.Router();
 
@@ -140,11 +139,6 @@ router.get("/notifications/:username", async (req, res) => {
   try {
     const { username } = req.params;
     logger.info("Fetching notifications for user", { username });
-    const notifications = await NotificationHistory.find({
-      userId: username,
-    }).sort({
-      createdAt: -1,
-    });
     logger.info("Notifications fetched successfully", {
       username,
       count: notifications.length,
@@ -183,11 +177,6 @@ router.get("/notifications/:username", async (req, res) => {
 router.put("/notifications/:notificationId/read", async (req, res) => {
   try {
     const { notificationId } = req.params;
-    const notification = await NotificationHistory.findOneAndUpdate(
-      { notificationId },
-      { isRead: true },
-      { new: true }
-    );
     if (!notification) {
       logger.warn("Notification not found", { notificationId });
       return res.status(404).json({ error: "Notification not found." });

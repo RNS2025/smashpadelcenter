@@ -2,7 +2,6 @@ const SubscriptionService = require("../models/Subscription");
 const webPush = require("web-push");
 const SubscriptionPreference = require("../models/subscriptionPreferenceSchema");
 const { v4: uuidv4 } = require("uuid");
-const NotificationHistory = require("../models/NotificationHistory");
 const logger = require("../config/logger");
 
 // Configure VAPID keys
@@ -69,57 +68,8 @@ const saveSubscription = async (subscription, userId) => {
   }
 };
 
-// Check if a similar notification was sent recently to prevent duplicates
-const isDuplicateNotification = async (
-  userId,
-  title,
-  body,
-  category,
-  timeWindowMinutes = 5
-) => {
-  try {
-    // Look for similar notifications in the last X minutes
-    const timeWindow = new Date(Date.now() - timeWindowMinutes * 60 * 1000);
-
-    const existingNotification = await NotificationHistory.findOne({
-      userId,
-      title,
-      body,
-      category,
-      createdAt: { $gte: timeWindow },
-    });
-
-    return !!existingNotification;
-  } catch (error) {
-    logger.error(
-      "SubscriptionService: Error checking for duplicate notifications:",
-      {
-        error: error.message,
-      }
-    );
-    // If there's an error checking, we'll allow the notification to be sent
-    return false;
-  }
-};
-
 const sendNotification = async (userId, title, body, category) => {
   try {
-    // Check for duplicate notifications
-    const isDuplicate = await isDuplicateNotification(
-      userId,
-      title,
-      body,
-      category
-    );
-    if (isDuplicate) {
-      logger.info("SubscriptionService: Skipping duplicate notification", {
-        userId,
-        title,
-        category,
-      });
-      return;
-    }
-
     const image =
       "https://www.smash.dk/wp-content/uploads/2021/05/SMASH-neg-udenby@4x.png"; // Default image URL
     const filter = userId ? { userId } : {};
@@ -132,19 +82,8 @@ const sendNotification = async (userId, title, body, category) => {
       return;
     }
 
-    // Process each subscription
     const notificationPromises = [];
-
-    const notificationId = uuidv4(); // Generate unique notification ID
-
-    // Save notification to history
-    await NotificationHistory.create({
-      userId,
-      notificationId,
-      title,
-      body,
-      category,
-    });
+    const notificationId = uuidv4();
 
     for (const subscription of subscriptions) {
       // Check user preferences if a category is specified
@@ -228,7 +167,7 @@ const sendPadelMatchNotification = async (eventType, matchDetails, userIds) => {
       },
       REQUEST_PROCESSED: {
         title: "Anmodning behandlet",
-        body: `Din anmodning til kamp er blevet behandlet.`,
+        body: `Din anmodning er blevet accepteret.`,
         category: "makkerbors",
         recipients: [requesterId],
       },

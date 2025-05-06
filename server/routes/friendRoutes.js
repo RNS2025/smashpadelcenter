@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const Friend = require("../models/Friend");
 const User = require("../models/user");
-const NotificationHistory = require("../models/NotificationHistory");
 const { verifyJWT, checkRole } = require("../middleware/jwt");
 const logger = require("../config/logger"); // Import logger
 
@@ -74,15 +73,6 @@ router.post(
         userId: user._id,
         friendId: friend._id,
         status: "pending",
-      });
-
-      // Notify the friend
-      await NotificationHistory.create({
-        userId: friend._id.toString(),
-        notificationId: require("uuid").v4(),
-        title: "Ny venanmodning",
-        body: `${user.username} har sendt dig en venanmodning.`,
-        category: "friends",
       });
 
       logger.info("Friend request sent successfully", {
@@ -157,13 +147,6 @@ router.post(
         // Create mutual friend relationship
         await Friend.create({ userId, friendId, status: "accepted" });
         // Notify the requester
-        await NotificationHistory.create({
-          userId: friendId.toString(),
-          notificationId: require("uuid").v4(),
-          title: "Venanmodning accepteret",
-          body: `${req.user.username} har accepteret din venanmodning.`,
-          category: "friends",
-        });
         logger.info("Friend request accepted", {
           by: req.user.username,
           friendId,

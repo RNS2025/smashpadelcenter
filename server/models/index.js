@@ -6,7 +6,6 @@ const Friend = require("./Friend");
 const Message = require("./Message");
 const CheckIn = require("./CheckIn");
 const News = require("./newsModel");
-const NotificationHistory = require("./NotificationHistory");
 const PadelMatch = require("./PadelMatch");
 const RankedInModels = require("./rankedInModels");
 const Subscription = require("./Subscription");
@@ -23,7 +22,6 @@ module.exports = {
   Message,
   CheckIn,
   News,
-  NotificationHistory,
   PadelMatch,
   RankedInModels,
   Subscription,
