@@ -277,6 +277,14 @@ const sendPadelMatchNotification = async (eventType, matchDetails, userIds) => {
     const { title, body, category, recipients } =
       notificationScenarios[eventType];
 
+    if (!recipients || recipients.length === 0) {
+      logger.info("No recipients specified for notification", {
+        eventType,
+        matchId,
+      });
+      return;
+    }
+
     console.log("Recipients for notification", { recipients });
 
     let notificationPromises;
@@ -379,6 +387,14 @@ const sendPrivateEventNotification = async (
     const { title, body, category, recipients } =
       notificationScenarios[eventType];
 
+    if (!recipients || recipients.length === 0) {
+      logger.info("No recipients specified for notification", {
+        eventType,
+        eventId,
+      });
+      return;
+    }
+
     let notificationPromises;
 
     if (Array.isArray(recipients)) {
@@ -456,6 +472,28 @@ const sendTournamentCheckInNotification = async (
 
     const { title, body, category, recipients } =
       notificationScenarios[eventType];
+
+    let notificationPromises;
+
+    if (Array.isArray(recipients)) {
+      // Handle array of recipients
+      notificationPromises = recipients.map((userId) =>
+        sendNotification(userId, title, body, category)
+      );
+    } else if (recipients) {
+      // Handle single recipient
+      notificationPromises = [
+        sendNotification(recipients, title, body, category),
+      ];
+    } else {
+      // Handle no recipients
+      console.log("No recipients specified for notification", {
+        eventType,
+        tournamentId,
+        rowId,
+      });
+      notificationPromises = [];
+    }
 
     let notificationPromises;
 
