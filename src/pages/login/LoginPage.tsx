@@ -1,6 +1,6 @@
 import { Helmet } from "react-helmet-async";
 import { useState, useEffect, FormEvent } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { login, loginWithProvider } from "../../services/auth.ts";
 import { useUser } from "../../context/UserContext";
 import DPFLogo from "../../assets/DPF_Logo.png";
@@ -233,6 +233,15 @@ export const LoginPage = () => {
                     Opret Konto
                   </button>
                 </form>
+
+                <div className="text-center my-4">
+                  <Link
+                    to="/glemt-adgangskode"
+                    className="text-cyan-500 hover:text-cyan-400 text-sm"
+                  >
+                    Glemt adgangskode?
+                  </Link>
+                </div>
 
                 <div className="flex items-center">
                   <div className="flex-grow border-t border-gray-300"></div>

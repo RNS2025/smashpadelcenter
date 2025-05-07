@@ -30,6 +30,7 @@
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
     "lucide-react": "^0.487.0",
+    "nodemailer": "^7.0.2",
     "passport-github2": "^0.1.12",
     "react": "^18.3.1",
     "react-datepicker": "^8.3.0",

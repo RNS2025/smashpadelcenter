@@ -55,6 +55,8 @@ import EditMatchPage from "./pages/(logged-in)/matchFinder/EditMatchPage.tsx";
 import EditEventPage from "./pages/(logged-in)/private-event/EditEventPage.tsx";
 import MatchResultPage from "./pages/(logged-in)/matchFinder/MatchResultPage.tsx";
 import MatchesTab from "./components/profile/tabs/MatchesTab.tsx";
+import ForgotPasswordPage from "./pages/login/ForgotPasswordPage.tsx";
+import ResetPasswordPage from "./pages/login/ResetPasswordPage.tsx";
 
 function AppContent() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -155,6 +157,8 @@ function AppContent() {
           <Route path="generelt" element={<TournamentRegulationsTab />} />
         </Route>
         <Route path="/player/:playerId/:rowId" element={<PlayerPage />} />
+        <Route path="/glemt-adgangskode" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
         {/* Protected Routes */}
         {isAuthenticated ? (
