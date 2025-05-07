@@ -354,8 +354,8 @@ export const CreateEventForm = () => {
                         onClick={() => setCourtBooked(value)}
                         className={`p-2 w-full rounded-xl transition duration-300 ${
                             courtBooked === value
-                                ? "bg-cyan-500 hover:bg-cyan-600 transition duration-300 text-white"
-                                : "bg-gray-300 hover:bg-gray-400 transition duration-300"
+                                ? "bg-cyan-500 text-white"
+                                : "bg-gray-300"
                         }`}
                     >
                       {label}
@@ -379,8 +379,8 @@ export const CreateEventForm = () => {
                     onClick={() => setLevelRangeRequired(value)}
                     className={`p-2 w-full rounded-xl transition duration-300 ${
                       levelRangeRequired === value
-                        ? "bg-cyan-500 hover:bg-cyan-600 transition duration-300 text-white"
-                        : "bg-gray-300 hover:bg-gray-400 transition duration-300"
+                        ? "bg-cyan-500 text-white"
+                        : "bg-gray-300"
                     }`}
                   >
                     {label}
@@ -404,7 +404,7 @@ export const CreateEventForm = () => {
                                 className="size-10 text-black cursor-pointer"
                             />
                             <input
-                                className="text-center rounded-lg w-full"
+                                className="text-center rounded-lg w-full disabled:text-black disabled:border-black"
                                 type="number"
                                 step="0.1"
                                 min="1.0"
@@ -426,7 +426,7 @@ export const CreateEventForm = () => {
                             />
 
                             <input
-                                className="text-center rounded-lg w-full"
+                                className="text-center rounded-lg w-full disabled:text-black disabled:border-black"
                                 type="number"
                                 step="0.1"
                                 min={levelRange[0]}
@@ -464,8 +464,8 @@ export const CreateEventForm = () => {
                     onClick={() => setOpenRegistration(value)}
                     className={`p-2 w-full rounded-xl transition duration-300 ${
                       openRegistration === value
-                        ? "bg-cyan-500 hover:bg-cyan-600 transition duration-300 text-white"
-                        : "bg-gray-300 hover:bg-gray-400 transition duration-300"
+                        ? "bg-cyan-500 text-white"
+                        : "bg-gray-300"
                     }`}
                   >
                     {label}
@@ -479,7 +479,7 @@ export const CreateEventForm = () => {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+          className="bg-cyan-500 rounded-lg py-2 px-4 text-white"
         >
           {isSubmitting ? "Opretter..." : "Opret arrangement"}
         </button>

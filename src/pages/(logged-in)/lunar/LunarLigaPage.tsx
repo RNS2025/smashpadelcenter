@@ -15,7 +15,7 @@ const LunarLigaPage = () => {
         <HomeBar backPage={"/hjem"}/>
           <Animation>
 
-        <div className="flex justify-center my-10">
+        <div className="flex justify-center my-5">
         <LunarTabMenu/>
         </div>
 

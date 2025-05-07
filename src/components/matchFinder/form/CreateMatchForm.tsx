@@ -209,8 +209,8 @@ export const CreateMatchForm = () => {
                     onClick={() => setSelectedPlayingTime(option)}
                     className={`p-2 w-full rounded-xl transition duration-300 ${
                       selectedPlayingTime === option
-                        ? "bg-cyan-500 text-white hover:bg-cyan-600 transition duration-300"
-                        : "bg-gray-300 hover:bg-gray-400 transition duration-300"
+                        ? "bg-cyan-500 text-white "
+                        : "bg-gray-300 "
                     }`}
                   >
                     {option}
@@ -235,8 +235,8 @@ export const CreateMatchForm = () => {
                     onClick={() => setCourtBooked(value)}
                     className={`p-2 w-full rounded-xl transition duration-300 ${
                       courtBooked === value
-                        ? "bg-cyan-500 hover:bg-cyan-600 transition duration-300 text-white"
-                        : "bg-gray-300 hover:bg-gray-400 transition duration-300"
+                        ? "bg-cyan-500 text-white"
+                        : "bg-gray-300 "
                     }`}
                   >
                     {label}
@@ -266,7 +266,7 @@ export const CreateMatchForm = () => {
                           className="size-10 text-black cursor-pointer"
                       />
                       <input
-                          className="text-center rounded-lg w-full"
+                          className="text-center rounded-lg w-full disabled:text-black disabled:border-black"
                           type="number"
                           step="0.1"
                           min="1.0"
@@ -288,7 +288,7 @@ export const CreateMatchForm = () => {
                       />
 
                       <input
-                          className="text-center rounded-lg w-full"
+                          className="text-center rounded-lg w-full disabled:text-black disabled:border-black"
                           type="number"
                           step="0.1"
                           min={levelRange[0]}
@@ -321,8 +321,8 @@ export const CreateMatchForm = () => {
                     onClick={() => setSelectedMatchType(option)}
                     className={`max-lg:w-full lg:w-20 p-2 text-sm rounded-xl transition duration-300 ${
                       selectedMatchType === option
-                        ? "bg-cyan-500 hover:bg-cyan-600 transition duration-300 text-white"
-                        : "bg-gray-300 hover:bg-gray-400 transition duration-300"
+                        ? "bg-cyan-500 text-white"
+                        : "bg-gray-300"
                     }`}
                   >
                     {option}
@@ -345,8 +345,8 @@ export const CreateMatchForm = () => {
                     onClick={() => setSelectedReserved(spot)}
                     className={`p-2 w-full rounded-xl transition duration-300 ${
                       selectedReserved === spot
-                        ? "bg-cyan-500 text-white hover:bg-cyan-600 transition duration-300"
-                        : "bg-gray-300 hover:bg-gray-400 transition duration-300"
+                        ? "bg-cyan-500 text-white"
+                        : "bg-gray-300"
                     }`}
                   >
                     {spot}
@@ -360,7 +360,7 @@ export const CreateMatchForm = () => {
                   <input
                       type="text"
                       placeholder="Spillernavn"
-                      className="rounded-lg w-full text-sm"
+                      className="rounded-lg w-full text-sm "
                       value={reservedPlayers[i]?.name ?? ""}
                       onChange={(e) => {
                         const newPlayers = [...reservedPlayers];
@@ -368,6 +368,7 @@ export const CreateMatchForm = () => {
                         newPlayers[i].name = e.target.value;
                         setReservedPlayers(newPlayers);
                       }}
+                      required
                   />
 
                   <div className="flex items-center gap-1 w-full">
@@ -381,7 +382,7 @@ export const CreateMatchForm = () => {
                     />
 
                     <input
-                        className="text-center rounded-lg w-full"
+                        className="text-center rounded-lg w-full disabled:text-black disabled:border-black"
                         type="number"
                         step="0.1"
                         min={levelRange[0]}
@@ -392,6 +393,7 @@ export const CreateMatchForm = () => {
                           updated[i].level = parseFloat(e.target.value);
                           setReservedPlayers(updated);
                         }}
+                        disabled
                     />
 
                     <ChevronUpIcon
@@ -424,7 +426,7 @@ export const CreateMatchForm = () => {
 
         <button
           type="submit"
-          className="bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+          className="bg-cyan-500 rounded-lg py-2 px-4 text-white"
         >
           Opret kamp
         </button>

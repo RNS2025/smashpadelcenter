@@ -64,7 +64,7 @@ const MessagesTab: React.FC<MessagesTabProps> = ({
               return (
                 <div
                   key={friend._id}
-                  className={`p-4 border-b border-gray-200 cursor-pointer hover:bg-gray-50 transition duration-300 ${
+                  className={`p-4 border-b border-gray-200 cursor-pointer ${
                     selectedFriend === friendId ? "bg-gray-100" : ""
                   }`}
                   onClick={() => handleSelectFriend(friendId)}
@@ -167,7 +167,7 @@ const MessagesTab: React.FC<MessagesTabProps> = ({
                   <button
                     onClick={handleSendMessage}
                     disabled={!newMessage.trim()}
-                    className="inline-flex justify-center py-2 px-4 rounded-lg text-sm font-medium text-white bg-cyan-500 hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                    className="inline-flex justify-center py-2 px-4 rounded-lg text-sm font-medium text-white bg-cyan-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
                   >
                     Send
                   </button>

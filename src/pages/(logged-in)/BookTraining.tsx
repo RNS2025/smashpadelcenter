@@ -236,7 +236,7 @@ const BookTraining: React.FC = () => {
                   <button
                     onClick={handleBookTrainer}
                     disabled={!selectedDate || !selectedTimeSlot}
-                    className="bg-blue-500 text-white px-4 py-2 rounded mt-4 hover:bg-blue-600 disabled:bg-gray-400"
+                    className="bg-blue-500 text-white px-4 py-2 rounded mt-4 disabled:bg-gray-400"
                   >
                     Book Now
                   </button>
@@ -281,7 +281,7 @@ const BookTraining: React.FC = () => {
                     <button
                       onClick={handleSendMessage}
                       disabled={!newMessage.trim()}
-                      className="bg-blue-500 text-white px-4 py-2 rounded ml-2 hover:bg-blue-600 disabled:bg-gray-400"
+                      className="bg-blue-500 text-white px-4 py-2 rounded ml-2 disabled:bg-gray-400"
                     >
                       Send
                     </button>
@@ -289,7 +289,7 @@ const BookTraining: React.FC = () => {
                 </div>
 
                 <button
-                  className="bg-gray-300 text-black px-4 py-2 rounded mt-4 hover:bg-gray-400"
+                  className="bg-gray-300 text-black px-4 py-2 rounded mt-4"
                   onClick={() => setSelectedTrainer(null)}
                 >
                   Back to Trainers
@@ -344,13 +344,13 @@ const BookTraining: React.FC = () => {
                 <div className="flex justify-between mt-2">
                   <button
                     onClick={() => setShowAdminForm(false)}
-                    className="bg-gray-300 text-black px-4 py-2 rounded hover:bg-gray-400"
+                    className="bg-gray-300 text-black px-4 py-2 rounded"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleCreateTrainer}
-                    className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+                    className="bg-green-600 text-white px-4 py-2 rounded"
                   >
                     Create Trainer
                   </button>

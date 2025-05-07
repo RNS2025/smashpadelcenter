@@ -53,7 +53,7 @@ const NotificationsTab: React.FC<NotificationsTabProps> = ({
               key={notification.notificationId}
               className={`bg-gray-50 rounded-lg p-4 border ${
                 notification.isRead ? "border-gray-200" : "border-cyan-500"
-              } hover:shadow-md transition duration-300 cursor-pointer`}
+              } cursor-pointer`}
               onClick={() => handleMarkAsRead(notification.notificationId)}
             >
               <div className="flex justify-between items-center">

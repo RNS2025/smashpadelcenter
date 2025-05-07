@@ -113,7 +113,7 @@ export const AllEventsTab = () => {
                     : undefined
                 }
                 key={event.id}
-                className={`border p-4 rounded-lg space-y-1.5 hover:bg-gray-700 mb-5 ${
+                className={`border p-4 rounded-lg space-y-1.5 mb-5 ${
                   !event.openRegistration ? "opacity-50" : ""
                 }`}
               >

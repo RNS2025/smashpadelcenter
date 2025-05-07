@@ -214,21 +214,21 @@ export const LoginPage = () => {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="inline-flex items-center justify-center rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition-all duration-300 hover:bg-transparent hover:text-blue-600 focus:outline-none focus:ring disabled:opacity-50"
+                    className="inline-flex items-center justify-center rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition-all duration-300 focus:outline-none focus:ring disabled:opacity-50"
                   >
                     Log ind
                   </button>
                   <button
                     type="button"
                     onClick={() => navigate("/glemt-adgangskode")}
-                    className="text-sm text-blue-600 hover:underline"
+                    className="text-sm text-blue-600"
                   >
                     Glemt adgangskode?
                   </button>
                   <button
                     type="button"
                     onClick={() => navigate("/register")}
-                    className="text-sm text-blue-600 hover:underline"
+                    className="text-sm text-blue-600"
                   >
                     Opret Konto
                   </button>
@@ -243,7 +243,7 @@ export const LoginPage = () => {
                 <div className="flex flex-col gap-4">
                   <button
                     onClick={() => handleProviderLogin("google")}
-                    className="inline-flex items-center justify-center rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition-all duration-300 hover:bg-transparent hover:text-blue-600 focus:outline-none focus:ring"
+                    className="inline-flex items-center justify-center rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition-all duration-300 focus:outline-none focus:ring"
                     disabled={isSubmitting}
                   >
                     <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">

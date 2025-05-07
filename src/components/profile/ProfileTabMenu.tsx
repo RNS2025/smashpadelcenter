@@ -17,7 +17,7 @@ export const ProfileTabMenu = ({profile, user}: {
                     className={`font-semibold inline-flex items-center justify-center h-8 shrink-0 rounded-full gap-2 px-2 text-sm max-sm:text-xs
                       ${location.pathname.includes("overblik")
                         ? "bg-cyan-100 text-cyan-600"
-                        : "text-gray-500 hover:border-gray-300 hover:text-gray-700 transition duration-300"}`}
+                        : "text-gray-500"}`}
                 >
                     Overblik
                 </NavLink>
@@ -29,7 +29,7 @@ export const ProfileTabMenu = ({profile, user}: {
                         className={`font-semibold inline-flex items-center justify-center h-8 shrink-0 rounded-full gap-2 px-2 text-sm max-sm:text-xs
                       ${location.pathname.includes("grupper")
                             ? "bg-cyan-100 text-cyan-600"
-                            : "text-gray-500 hover:border-gray-300 hover:text-gray-700 transition duration-300"}`}
+                            : "text-gray-500"}`}
                     >
                         Grupper
                     </NavLink>
@@ -39,7 +39,7 @@ export const ProfileTabMenu = ({profile, user}: {
                             className={`font-semibold inline-flex items-center justify-center h-8 shrink-0 rounded-full gap-2 px-2 text-sm max-sm:text-xs
                       ${location.pathname.includes("kamphistorik")
                                 ? "bg-cyan-100 text-cyan-600"
-                                : "text-gray-500 hover:border-gray-300 hover:text-gray-700 transition duration-300"}`}
+                                : "text-gray-500"}`}
                         >
                             Kamphistorik
                         </NavLink>
@@ -49,7 +49,7 @@ export const ProfileTabMenu = ({profile, user}: {
                         className={`font-semibold inline-flex items-center justify-center h-8 shrink-0 rounded-full gap-2 px-2 text-sm max-sm:text-xs
                       ${location.pathname.includes("rediger")
                             ? "bg-cyan-100 text-cyan-600"
-                            : "text-gray-500 hover:border-gray-300 hover:text-gray-700 transition duration-300"}`}
+                            : "text-gray-500"}`}
                     >
                         Rediger
                     </NavLink>

@@ -52,7 +52,7 @@ export const TeamProfilePlayersTab = () => {
 
                     <tbody className="divide-y divide-gray-200">
                     {team.Players.map((player: Player) => (
-                        <tr key={player.Id} className="hover:bg-cyan-500 transition-colors duration-500">
+                        <tr key={player.Id}>
                             <td className="flex max-md:flex-col gap-2 px-4 py-4 font-medium text-gray-900">
                                 {player.FirstName}
                                 <div>

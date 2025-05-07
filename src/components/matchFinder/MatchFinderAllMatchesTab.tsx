@@ -96,7 +96,7 @@ export const MatchFinderAllMatchesTab = () => {
           <div
             onClick={() => navigate(`/makkerbørs/${match.id}`)}
             key={match.id}
-            className={`border p-4 rounded-lg space-y-1.5 hover:bg-gray-700 mb-5 ${match.participants.length + match.reservedSpots.length === match.totalSpots ? "opacity-70 border-red-500" : ""}
+            className={`border p-4 rounded-lg space-y-1.5 mb-5 ${match.participants.length + match.reservedSpots.length === match.totalSpots ? "opacity-70 border-red-500" : ""}
             ${user?.username && match.joinRequests.includes(user?.username) ? "border-yellow-500" : ""}`}
           >
             <h1 className="font-semibold">

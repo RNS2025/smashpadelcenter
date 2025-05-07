@@ -24,7 +24,7 @@ import PlayerInfoDialog from "../../../components/matchFinder/misc/PlayerInfoDia
 import { MatchInvitedPlayersDialog } from "../../../components/matchFinder/misc/MatchInvitePlayersDialog.tsx";
 import { safeFormatDate } from "../../../utils/dateUtils.ts";
 import usePolling from "../../../hooks/usePolling.ts";
-import {createICSFile, downloadICSFile} from "../../../utils/ICSFile.ts";
+import {createCalendarURL} from "../../../utils/ICSFile.ts";
 
 export const ViewMatchPage = () => {
   const navigate = useNavigate();
@@ -554,6 +554,7 @@ export const ViewMatchPage = () => {
     safeFormatDate(match!.endTime, "HH:mm").length;
   const isMatchFull = match!.participants.length === 4;
 
+
   return (
     <>
       <Helmet>
@@ -700,7 +701,7 @@ export const ViewMatchPage = () => {
             !match!.joinRequests.includes(user.username) && (
               <button
                 onClick={handleJoinMatch}
-                className="bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                className="bg-cyan-500 rounded-lg py-2 px-4 text-white"
               >
                 Tilmeld kamp
               </button>
@@ -711,25 +712,26 @@ export const ViewMatchPage = () => {
             match!.joinRequests.includes(user.username) && (
               <button
                 onClick={() => handleCancelJoinRequest(user.username)}
-                className="w-full text-lg bg-red-500 hover:bg-red-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                className="w-full text-lg bg-red-500  rounded-lg py-2 px-4 text-white"
               >
                 Fjern tilmeldingsanmodning
               </button>
             )}
 
           {user && match?.participants.includes(user?.username) && (
-          <button onClick={() => {
-            const ics = createICSFile(
-                "Padelkamp",
-                match!.description,
-                match!.location,
-                new Date(match!.matchDateTime),
-                new Date(match!.endTime)
-            );
-            downloadICSFile(ics, `padelkamp-${match!.id}.ics`);
-          }} className="w-full text-lg bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white">
-            Tilføj til kalender
-          </button>
+              <button className="w-full text-lg bg-cyan-500 rounded-lg py-2 px-4 text-white">
+              <a
+                  href={createCalendarURL(
+                      "Padelkamp",
+                      match!.description,
+                      match!.location,
+                      new Date(match!.matchDateTime),
+                      new Date(match!.endTime)
+                  )}
+              >
+                Tilføj til kalender
+              </a>
+              </button>
           )}
 
 
@@ -739,7 +741,7 @@ export const ViewMatchPage = () => {
               <div className="flex flex-col w-full gap-4 text-lg">
                 <button
                   onClick={() => setInviteDialogVisible(true)}
-                  className="bg-green-500 hover:bg-green-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                  className="bg-green-500  rounded-lg py-2 px-4 text-white"
                 >
                   Inviter spillere
                 </button>
@@ -749,14 +751,14 @@ export const ViewMatchPage = () => {
                     onClick={() => {
                       navigate(`/makkerbørs/${matchId}/rediger`)}
                 }
-                    className="bg-orange-500 hover:bg-orange-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                    className="bg-orange-500 rounded-lg py-2 px-4 text-white"
                 >
                   Rediger kamp
                 </button>
 
                 <button
                   onClick={handleDeleteMatch}
-                  className="bg-red-500 hover:bg-red-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                  className="bg-red-500 rounded-lg py-2 px-4 text-white"
                 >
                   Slet kamp
                 </button>

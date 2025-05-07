@@ -63,7 +63,7 @@ const FriendsTab = ({
           <button
             onClick={handleAddFriend}
             disabled={!newFriendUsername.trim()}
-            className="inline-flex justify-center py-2 px-4 rounded-lg text-sm font-medium text-white bg-cyan-500 hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
+            className="inline-flex justify-center py-2 px-4 rounded-lg text-sm font-medium text-white bg-cyan-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
           >
             Tilføj
           </button>
@@ -87,7 +87,7 @@ const FriendsTab = ({
                   onClick={() =>
                     handleRespondToFriendRequest(request.userId._id, "accepted")
                   }
-                  className="py-1 px-3 rounded-lg text-sm font-medium text-white bg-green-500 hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-300"
+                  className="py-1 px-3 rounded-lg text-sm font-medium text-white bg-green-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition duration-300"
                 >
                   Accepter
                 </button>
@@ -95,7 +95,7 @@ const FriendsTab = ({
                   onClick={() =>
                     handleRespondToFriendRequest(request.userId._id, "rejected")
                   }
-                  className="py-1 px-3 rounded-lg text-sm font-medium text-white bg-red-500 hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-300"
+                  className="py-1 px-3 rounded-lg text-sm font-medium text-white bg-red-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition duration-300"
                 >
                   Afvis
                 </button>
@@ -130,7 +130,7 @@ const FriendsTab = ({
                 <span className="text-sm text-gray-800">{friendUsername}</span>
                 <button
                   onClick={() => handleSelectFriend(friendId)}
-                  className="py-1 px-3 rounded-lg text-sm font-medium text-white bg-cyan-500 hover:bg-cyan-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition duration-300"
+                  className="py-1 px-3 rounded-lg text-sm font-medium text-white bg-cyan-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition duration-300"
                 >
                   Chat
                 </button>

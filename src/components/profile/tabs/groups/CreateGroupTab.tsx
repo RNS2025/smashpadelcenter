@@ -163,7 +163,7 @@ export const CreateGroupTab = () => {
                         <div
                           key={member.id}
                           onClick={() => handleSelectUser(member)}
-                          className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                          className="px-4 py-2 cursor-pointer"
                         >
                           <h1 className="truncate">
                             {member.fullName} ({member.username})
@@ -206,7 +206,7 @@ export const CreateGroupTab = () => {
 
           <button
             type="submit"
-            className="bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+            className="bg-cyan-500 rounded-lg py-2 px-4 text-white"
           >
             Opret gruppe
           </button>

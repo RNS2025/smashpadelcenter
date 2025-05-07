@@ -14,7 +14,7 @@ export const MatchFinderTabMenu = ({joinRequestsCount}: {
                                 ${
                                   location.pathname.includes("allekampe")
                                     ? "border-cyan-500 text-cyan-500"
-                                    : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 transition duration-300"
+                                    : "border-transparent text-gray-500"
                                 }
                             `}
             >
@@ -27,7 +27,7 @@ export const MatchFinderTabMenu = ({joinRequestsCount}: {
                                 ${
                                   location.pathname.includes("minekampe")
                                     ? "border-cyan-500 text-cyan-500"
-                                    : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 transition duration-300"}`}
+                                    : "border-transparent text-gray-500"}`}
             >
                 Mine kampe
                 {joinRequestsCount > 0 && (
@@ -41,7 +41,7 @@ export const MatchFinderTabMenu = ({joinRequestsCount}: {
                                 ${
                                   location.pathname.includes("afventer")
                                     ? "border-cyan-500 text-cyan-500"
-                                    : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 transition duration-300"
+                                    : "border-transparent text-gray-500"
                                 }
                             `}
             >

@@ -30,7 +30,7 @@ export const GroupsTab = () => {
             <div>
                 <button
                     onClick={() => navigate("opretgruppe")}
-                    className="bg-cyan-500 hover:bg-cyan-600 rounded-lg py-2 px-4 text-sm"
+                    className="bg-cyan-500 rounded-lg py-2 px-4 text-sm"
                 >
                     Ny gruppe
                 </button>

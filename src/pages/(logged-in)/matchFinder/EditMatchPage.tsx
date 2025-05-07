@@ -252,8 +252,8 @@ export const EditMatchPage = () => {
                                         onClick={() => setSelectedPlayingTime(option)}
                                         className={`p-2 w-full rounded-xl transition duration-300 ${
                                             selectedPlayingTime === option
-                                                ? "bg-cyan-500 text-white hover:bg-cyan-600 transition duration-300"
-                                                : "bg-gray-300 hover:bg-gray-400 transition duration-300"
+                                                ? "bg-cyan-500 text-white"
+                                                : "bg-gray-300"
                                         }`}
                                     >
                                         {option}
@@ -278,8 +278,8 @@ export const EditMatchPage = () => {
                                         onClick={() => setCourtBooked(value)}
                                         className={`p-2 w-full rounded-xl transition duration-300 ${
                                             courtBooked === value
-                                                ? "bg-cyan-500 hover:bg-cyan-600 transition duration-300 text-white"
-                                                : "bg-gray-300 hover:bg-gray-400 transition duration-300"
+                                                ? "bg-cyan-500 text-white"
+                                                : "bg-gray-300"
                                         }`}
                                     >
                                         {label}
@@ -364,8 +364,8 @@ export const EditMatchPage = () => {
                                         onClick={() => setSelectedMatchType(option)}
                                         className={`max-lg:w-full lg:w-20 p-2 text-sm rounded-xl transition duration-300 ${
                                             selectedMatchType === option
-                                                ? "bg-cyan-500 hover:bg-cyan-600 transition duration-300 text-white"
-                                                : "bg-gray-300 hover:bg-gray-400 transition duration-300"
+                                                ? "bg-cyan-500 text-white"
+                                                : "bg-gray-300"
                                         }`}
                                     >
                                         {option}
@@ -388,8 +388,8 @@ export const EditMatchPage = () => {
                                         onClick={() => setSelectedReserved(spot)}
                                         className={`p-2 w-full rounded-xl transition duration-300 ${
                                             selectedReserved === spot
-                                                ? "bg-cyan-500 text-white hover:bg-cyan-600 transition duration-300"
-                                                : "bg-gray-300 hover:bg-gray-400 transition duration-300"
+                                                ? "bg-cyan-500 text-white"
+                                                : "bg-gray-300"
                                         }`}
                                     >
                                         {spot}
@@ -466,7 +466,7 @@ export const EditMatchPage = () => {
 
                 <button
                     type="submit"
-                    className="bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                    className="bg-cyan-500 rounded-lg py-2 px-4 text-white"
                 >
                     Gem ændringer
                 </button>

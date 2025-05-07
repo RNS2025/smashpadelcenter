@@ -1,18 +1,22 @@
 import { useState } from "react";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
 import LoadingSpinner from "../../misc/LoadingSpinner.tsx";
-import {TeamInfo} from "../../../types/LunarTypes.ts";
+import { TeamInfo } from "../../../types/LunarTypes.ts";
 
 type SortableFields = "Name" | "Division";
 
-const TeamListTable = ({ teams, onRowClick }: {
+const TeamListTable = ({
+                           teams,
+                           onRowClick,
+                           loading,
+                       }: {
     teams: TeamInfo[];
     onRowClick?: (team: TeamInfo) => void;
+    loading: boolean;
 }) => {
     const [searchQuery, setSearchQuery] = useState("");
-    const [sortField, setSortField] = useState<SortableFields>("Name");
+    const [sortField, setSortField] = useState<SortableFields>("Division");
     const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-
 
     const handleSort = (field: SortableFields) => {
         if (sortField === field) {
@@ -50,9 +54,6 @@ const TeamListTable = ({ teams, onRowClick }: {
             }
         });
 
-
-
-
     return (
         <>
             <input
@@ -64,7 +65,6 @@ const TeamListTable = ({ teams, onRowClick }: {
             />
 
             <div className="overflow-auto max-h-[600px] rounded-lg border border-gray-200 shadow-lg my-5">
-
                 <table className="min-w-full divide-y-2 divide-gray-200 bg-white text-gray-900 text-sm">
                     <thead className="text-left bg-gray-300 font-bold">
                     <tr>
@@ -86,11 +86,18 @@ const TeamListTable = ({ teams, onRowClick }: {
                     </thead>
 
                     <tbody className="divide-y divide-gray-300">
-                    {filteredAndSortedTeams.length > 0 ? (
+                    {loading ? (
+                        <tr>
+                            <td colSpan={3}>
+                                <div className="flex justify-center items-center py-10 text-gray-500">
+                                    <LoadingSpinner />
+                                </div>
+                            </td>
+                        </tr>
+                    ) : filteredAndSortedTeams.length > 0 ? (
                         filteredAndSortedTeams.map((team) => (
                             <tr
                                 key={team.id}
-                                className="hover:bg-cyan-500 cursor-pointer transition-colors duration-500"
                                 onClick={() => onRowClick?.(team)}
                             >
                                 <td className="sm:px-4 max-sm:px-2 py-4">{team.name}</td>
@@ -101,9 +108,9 @@ const TeamListTable = ({ teams, onRowClick }: {
                         <tr>
                             <td colSpan={3}>
                                 <div className="flex justify-center items-center py-10 text-gray-500">
-                                <LoadingSpinner/>
+                                    Ingen resultater fundet
                                 </div>
-                                </td>
+                            </td>
                         </tr>
                     )}
                     </tbody>

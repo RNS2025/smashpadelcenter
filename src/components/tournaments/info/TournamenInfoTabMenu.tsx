@@ -12,7 +12,7 @@ export const TournamentInfoTabMenu = () => {
                             className={`inline-flex shrink-0 items-center gap-2 border-b-2 px-1 pb-4
                                 ${location.pathname.includes("briefing")
                                 ? "border-cyan-500 text-cyan-500"
-                                : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 transition duration-300"}
+                                : "border-transparent text-gray-500"}
                             `}
                         >
                             Briefing
@@ -24,7 +24,7 @@ export const TournamentInfoTabMenu = () => {
                             className={`inline-flex shrink-0 items-center gap-2 border-b-2 px-1 pb-4
                                 ${location.pathname.includes("generelt")
                                 ? "border-cyan-500 text-cyan-500"
-                                : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 transition duration-300"}
+                                : "border-transparent text-gray-500"}
                             `}
                         >
                             Generelt

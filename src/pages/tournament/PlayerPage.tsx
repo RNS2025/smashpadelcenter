@@ -102,7 +102,7 @@ const PlayerPage = () => {
                         <strong>Klub:</strong>{" "}
                         <a
                           href={playerData.Header.HomeClubUrl || "#"}
-                          className="text-blue-500 hover:underline"
+                          className="text-blue-500"
                         >
                           {playerData.Header.HomeClubName}
                         </a>
@@ -195,7 +195,7 @@ const PlayerPage = () => {
               {matches.map((match) => (
                 <div
                   key={match.matchId}
-                  className="bg-white shadow-md rounded-lg p-5 border border-gray-200 hover:shadow-lg transition-shadow duration-300"
+                  className="bg-white shadow-md rounded-lg p-5 border border-gray-200"
                 >
                   <div className="flex justify-between items-center mb-4">
                     <h2 className="text-xl font-semibold text-gray-800">

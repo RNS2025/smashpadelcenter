@@ -143,7 +143,7 @@ export const MatchInvitedPlayersDialog = ({
                       <div
                         key={member.id}
                         onClick={() => handleSelectUser(member)}
-                        className="px-4 py-2 hover:bg-gray-100 cursor-pointer"
+                        className="px-4 py-2 cursor-pointer"
                       >
                         <h1 className="truncate">
                           {member.fullName} ({member.username})
@@ -188,7 +188,7 @@ export const MatchInvitedPlayersDialog = ({
               <button
                 onClick={onClose}
                 type="button"
-                className="bg-gray-500 hover:bg-gray-600 transition duration-300 rounded-lg py-2 px-4 text-white mt-4"
+                className="bg-gray-500 rounded-lg py-2 px-4 text-white mt-4"
               >
                 Annuller
               </button>
@@ -197,7 +197,7 @@ export const MatchInvitedPlayersDialog = ({
                 onClick={handleInvitedPlayers}
                 type="button"
                 disabled={selectedUsers.length === 0}
-                className={`bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white mt-4 ${
+                className={`bg-cyan-500 rounded-lg py-2 px-4 text-white mt-4 ${
                   selectedUsers.length === 0 ? "opacity-50" : ""
                 }`}
               >

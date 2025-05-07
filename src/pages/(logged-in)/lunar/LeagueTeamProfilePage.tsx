@@ -61,7 +61,7 @@ export const LeagueTeamProfilePage = () => {
         <>
         <HomeBar backPage="/holdligaer" />
       <Animation>
-        <div className="mx-auto p-6 mt-10 text-center text-red-500">
+        <div className="mx-auto p-3 mt-5 text-center text-red-500">
           {error || "Hold ikke fundet"}
         </div>
       </Animation>
@@ -73,7 +73,7 @@ export const LeagueTeamProfilePage = () => {
       <>
       <HomeBar backPage="/holdligaer" />
     <Animation>
-      <div className="mx-2 sm:mx-10 p-6 bg-white mt-10 shadow-md rounded-lg">
+      <div className="mx-2 sm:mx-10 p-4 bg-white mt-5 shadow-md rounded-lg">
         <div className="flex gap-5 px-2">
           <img
             src={team.HomeClubImageUrl}
@@ -92,7 +92,7 @@ export const LeagueTeamProfilePage = () => {
                     <a
                       href={`https://rankedin.com${initiator.PlayerUrl}`}
                         target="_blank"
-                      className="text-cyan-500 hover:underline"
+                      className="text-cyan-500"
                     >
                       {initiator.Name}
                     </a>
@@ -105,7 +105,7 @@ export const LeagueTeamProfilePage = () => {
                   <a
                     href={`https://rankedin.com${team.HomeClub.Url}`}
                     target="_blank"
-                    className="text-cyan-500 hover:underline"
+                    className="text-cyan-500"
                   >
                     {team.HomeClub.Name}
                   </a>

@@ -66,14 +66,14 @@ export const TournamentEditBriefingPage = () => {
                             <div className="flex justify-between">
                             <button
                                 onClick={handleCancel}
-                                className="mt-4 bg-red-500 hover:bg-red-600 text-white rounded px-4 py-2"
+                                className="mt-4 bg-red-500 text-white rounded px-4 py-2"
                             >
                                 Annuller
                             </button>
                             <button
                                 onClick={handleSave}
                                 disabled={saving}
-                                className="mt-4 bg-green-500 hover:bg-green-600 text-white rounded px-4 py-2"
+                                className="mt-4 bg-green-500 text-white rounded px-4 py-2"
                             >
                                 {saving ? "Gemmer..." : "Gem ændringer"}
                             </button>

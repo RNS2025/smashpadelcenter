@@ -598,7 +598,7 @@ export const ViewEventPage = () => {
               !event!.joinRequests.includes(user.username) && (
                   <button
                       onClick={handleJoinEvent}
-                      className="bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                      className="bg-cyan-500 rounded-lg py-2 px-4 text-white"
                   >
                     Tilmeld kamp
                   </button>
@@ -610,7 +610,7 @@ export const ViewEventPage = () => {
               event!.joinRequests.includes(user.username) && (
                   <button
                       onClick={() => handleCancelJoinRequest(user.username)}
-                      className="w-full text-lg bg-red-500 hover:bg-red-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                      className="w-full text-lg bg-red-500 rounded-lg py-2 px-4 text-white"
                   >
                     Fjern tilmeldingsanmodning
                   </button>
@@ -626,7 +626,7 @@ export const ViewEventPage = () => {
                     new Date(event!.endTime)
                 );
                 downloadICSFile(ics, `padelkamp-${event!.id}.ics`);
-              }} className="w-full text-lg bg-cyan-500 hover:bg-cyan-600 transition duration-300 rounded-lg py-2 px-4 text-white">
+              }} className="w-full text-lg bg-cyan-500 rounded-lg py-2 px-4 text-white">
                 Tilføj til kalender
               </button>
           )}
@@ -636,7 +636,7 @@ export const ViewEventPage = () => {
               <div className="flex flex-col w-full gap-4 text-lg">
                 <button
                   onClick={() => setInviteDialogVisible(true)}
-                  className="bg-green-500 hover:bg-green-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                  className="bg-green-500 rounded-lg py-2 px-4 text-white"
                 >
                   Inviter spillere
                 </button>
@@ -645,14 +645,14 @@ export const ViewEventPage = () => {
                     onClick={() => {
                       navigate(`/privat-arrangementer/${eventId}/rediger`)}
                     }
-                    className="bg-orange-500 hover:bg-orange-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                    className="bg-orange-500 rounded-lg py-2 px-4 text-white"
                 >
                   Rediger arrangement
                 </button>
 
                 <button
                   onClick={handleDeleteEvent}
-                  className="bg-red-500 hover:bg-red-600 transition duration-300 rounded-lg py-2 px-4 text-white"
+                  className="bg-red-500 rounded-lg py-2 px-4 text-white"
                 >
                   Slet arrangement
                 </button>

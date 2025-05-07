@@ -68,7 +68,7 @@ export const TeamProfileMatchDetailsTab = () => {
                         {matchDetails?.Matches.Matches.map((match) => (
                             <Fragment key={match.Id}>
                             {match.MatchResult?.HasDetailedScore && (
-                                <tr className="hover:bg-cyan-500 transition-colors duration-500 text-center">
+                                <tr className="text-center">
                                     <td className={`flex flex-col gap-1 px-2 py-4 font-medium text-gray-900 ${match.MatchResult?.IsFirstParticipantWinner ? "font-semibold" : ""}`}>
                                         <p>{match.Challenger.Name}</p>
                                         <p>{match.Challenger.Player2Name}</p>

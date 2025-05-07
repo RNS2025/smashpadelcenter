@@ -12,7 +12,7 @@ export const LunarTabMenu = () => {
                             className={`inline-flex shrink-0 items-center gap-2 border-b-2 px-1 pb-4 text-sm max-sm:text-xs
                                 ${location.pathname.includes("lunarligaherrer")
                                 ? "border-cyan-500 text-cyan-500"
-                                : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 transition duration-300"}
+                                : "border-transparent text-gray-500"}
                             `}
                         >
                             Lunar Ligaen
@@ -24,7 +24,7 @@ export const LunarTabMenu = () => {
                             className={`inline-flex shrink-0 items-center gap-2 border-b-2 px-1 pb-4 text-sm max-sm:text-xs
                                 ${location.pathname.includes("lunarliga4p")
                                 ? "border-cyan-500 text-cyan-500"
-                                : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 transition duration-300"}
+                                : "border-transparent text-gray-500"}
                             `}
                         >
                             Lunar Ligaen 4P (Kvinder)
@@ -36,7 +36,7 @@ export const LunarTabMenu = () => {
                             className={`inline-flex shrink-0 items-center gap-2 border-b-2 px-1 pb-4 text-sm max-sm:text-xs
                                 ${location.pathname.includes("hh-listen")
                                 ? "border-cyan-500 text-cyan-500"
-                                : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 transition duration-300"}
+                                : "border-transparent text-gray-500"}
                             `}
                         >
                             HH-Listen

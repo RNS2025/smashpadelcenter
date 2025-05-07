@@ -82,7 +82,7 @@ export const MatchFinderMyMatchesTab = () => {
               }}
 
               key={match.id}
-            className={`relative border p-4 rounded-lg space-y-1.5 hover:bg-gray-700 mb-5 ${match.deadline && isMatchDeadlinePassed(match.deadline) ? "opacity-70 border-red-500" : ""}
+            className={`relative border p-4 rounded-lg space-y-1.5 mb-5 ${match.deadline && isMatchDeadlinePassed(match.deadline) ? "opacity-70 border-red-500" : ""}
             ${match.participants.length + match.reservedSpots.length === match.totalSpots ? "border-green-500" : ""}
             `}
           >

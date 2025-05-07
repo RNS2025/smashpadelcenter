@@ -77,7 +77,7 @@ const PlayerCheckInList: FC<PlayerCheckInListProps> = ({
                       <div className="flex flex-col gap-2">
                         {player1 && (
                           <span
-                            className="text-gray-800 font-semibold hover:underline cursor-pointer"
+                            className="text-gray-800 font-semibold cursor-pointer"
                             onClick={() => onPlayerClick(player1.RankedInId)}
                           >
                             {player1.Name}
@@ -85,7 +85,7 @@ const PlayerCheckInList: FC<PlayerCheckInListProps> = ({
                         )}
                         {player2 && (
                           <span
-                            className="text-gray-800 font-semibold hover:underline cursor-pointer"
+                            className="text-gray-800 font-semibold cursor-pointer"
                             onClick={() => onPlayerClick(player2.RankedInId)}
                           >
                             {player2.Name}
@@ -125,14 +125,14 @@ const PlayerCheckInList: FC<PlayerCheckInListProps> = ({
               <button
                 onClick={() => onBulkCheckIn(false)}
                 disabled={isCheckingIn || tournamentNotToday}
-                className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 disabled:bg-gray-400"
+                className="px-4 py-2 bg-red-600 text-white rounded disabled:bg-gray-400"
               >
                 Udtjek alle
               </button>
               <button
                 onClick={() => onBulkCheckIn(true)}
                 disabled={isCheckingIn || tournamentNotToday}
-                className="px-4 py-2 bg-cyan-500 text-white rounded hover:bg-cyan-600 disabled:bg-gray-400"
+                className="px-4 py-2 bg-cyan-500 text-white rounded disabled:bg-gray-400"
               >
                 Indtjek alle
               </button>

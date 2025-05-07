@@ -12,7 +12,7 @@ export const PrivateEventTabMenu = ({joinRequestsCount}: {
                                 ${
                                 location.pathname.includes("minearrangementer")
                                     ? "border-cyan-500 text-cyan-500"
-                                    : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 transition duration-300"
+                                    : "border-transparent text-gray-500"
                             }
                             `}
                         >
@@ -28,7 +28,7 @@ export const PrivateEventTabMenu = ({joinRequestsCount}: {
                                 ${
                                 location.pathname.includes("allearrangementer")
                                     ? "border-cyan-500 text-cyan-500"
-                                    : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 transition duration-300"
+                                    : "border-transparent text-gray-500"
                             }
                             `}
                         >
@@ -42,7 +42,7 @@ export const PrivateEventTabMenu = ({joinRequestsCount}: {
                                 ${
                                 location.pathname.includes("invitationer")
                                     ? "border-cyan-500 text-cyan-500"
-                                    : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 transition duration-300"
+                                    : "border-transparent text-gray-500"
                             }
                             `}
                         >

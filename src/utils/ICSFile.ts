@@ -36,3 +36,11 @@ export const downloadICSFile = (icsContent: string, filename = "event.ics") => {
     link.click();
     URL.revokeObjectURL(url);
 };
+
+export const createCalendarURL = (title: string, description: string, location: string, start: Date, end: Date) => {
+    const formatDate = (date: Date) => date.toISOString().replace(/-|:|\.\d+/g, "").slice(0, 15);
+    const startTime = formatDate(start);
+    const endTime = formatDate(end);
+
+    return `webcal://?action=TEMPLATE&text=${encodeURIComponent(title)}&details=${encodeURIComponent(description)}&location=${encodeURIComponent(location)}&dates=${startTime}/${endTime}`;
+};

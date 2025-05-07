@@ -87,7 +87,7 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
               <li>
                 <h1
                   onClick={() => navigate(`/profil/${user?.username}`)}
-                  className="text-black transition hover:text-gray-500/75 cursor-pointer"
+                  className="text-black cursor-pointer"
                 >
                   {" "}
                   Profil{" "}
@@ -98,7 +98,7 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
                 <li>
                   <h1
                     onClick={() => navigate("/admin")}
-                    className="text-black transition hover:text-gray-500/75 cursor-pointer"
+                    className="text-black cursor-pointer"
                   >
                     {" "}
                     Admin Panel{" "}
@@ -109,7 +109,7 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
               <li>
                 <h1
                   onClick={handleLogout}
-                  className="text-black transition hover:text-gray-500/75 cursor-pointer"
+                  className="text-black cursor-pointer"
                 >
                   {" "}
                   Log ud{" "}
@@ -184,7 +184,7 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
                                 navigate(`/profil/${user.username}`)
                                 setActivePanel(null);
                               }}
-                              className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-black"
+                              className="px-4 py-2 cursor-pointer text-black"
                           >
                             <h1 className="truncate">
                               {user.fullName ? `${user.fullName} (${user.username})` : user.username}
@@ -206,13 +206,13 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
           <div className="py-1" role="none">
             <h1
               onClick={() => navigate(`/profil/${user?.username}`)}
-              className="block px-4 py-2 text-sm text-black hover:bg-gray-100"
+              className="block px-4 py-2 text-sm text-black"
             >
               Profil
             </h1>
             <h1
               onClick={() => navigate("/admin")}
-              className={`block px-4 py-2 text-sm text-black hover:bg-gray-100 ${
+              className={`block px-4 py-2 text-sm text-black ${
                 user?.role === "admin" ? "" : "hidden"
               }`}
             >
@@ -220,7 +220,7 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
             </h1>
             <h1
               onClick={handleLogout}
-              className="block px-4 py-2 text-sm text-black hover:bg-gray-100"
+              className="block px-4 py-2 text-sm text-black"
             >
               Log ud
             </h1>

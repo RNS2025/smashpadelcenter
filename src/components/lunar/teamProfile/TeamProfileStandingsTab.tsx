@@ -61,7 +61,7 @@ export const TeamProfileStandingsTab = () => {
 
                         <tbody className="divide-y divide-gray-200">
                         {teamStandings.ScoresViewModels.map((teamStanding) => (
-                            <tr key={teamStanding.Standing} className="hover:bg-cyan-500 transition-colors duration-500">
+                            <tr key={teamStanding.Standing}>
                                 <td className="px-2 py-4 font-medium text-gray-900 flex gap-4">
                                     <p>{teamStanding.Standing}.</p>
                                     <p>{teamStanding.ParticipantName}</p>

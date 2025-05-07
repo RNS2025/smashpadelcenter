@@ -34,10 +34,10 @@ const SettingsTab: React.FC<SettingsTabProps> = ({
         </p>
       </div>
       <div className="flex justify-end gap-4">
-        <button className="text-cyan-500 hover:text-cyan-600 transition duration-300">
+        <button className="text-cyan-500">
           Skift kodeord
         </button>
-        <button className="text-cyan-500 hover:text-cyan-600 transition duration-300">
+        <button className="text-cyan-500">
           Administrer notifikationer
         </button>
       </div>

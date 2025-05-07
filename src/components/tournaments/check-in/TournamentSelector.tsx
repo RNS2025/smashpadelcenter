@@ -42,7 +42,7 @@ const TournamentSelector: FC<TournamentSelectorProps> = ({
                 className={`p-4 border rounded-lg cursor-pointer transition-colors ${
                     selectedTournament?.eventId === upcomingTournament.eventId
                         ? "border-cyan-500"
-                        : "hover:bg-gray-600"
+                        : ""
                 }`}
                 onClick={() => onSelect(upcomingTournament)}
             >

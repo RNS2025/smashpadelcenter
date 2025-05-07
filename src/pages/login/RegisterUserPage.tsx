@@ -175,7 +175,7 @@ export default function RegisterPage() {
                     <button
                       type="button"
                       onClick={handleNavigateToLogin}
-                      className="text-blue-600 text-xs mt-2 underline hover:text-blue-800"
+                      className="text-blue-600 text-xs mt-2 underline"
                     >
                       Go to login page now
                     </button>
@@ -253,7 +253,7 @@ export default function RegisterPage() {
                       <button
                         type="submit"
                         disabled={isLoading}
-                        className="inline-block shrink-0 rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium transition-all duration-300 hover:bg-transparent hover:text-blue-600 focus:outline-none focus:ring active:text-blue-500 disabled:opacity-50"
+                        className="inline-block shrink-0 rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium transition-all duration-300 focus:outline-none focus:ring active:text-blue-500 disabled:opacity-50"
                       >
                         {isLoading ? (
                           <span className="flex items-center">
@@ -287,7 +287,7 @@ export default function RegisterPage() {
                         <button
                           type="button"
                           onClick={() => navigate("/")}
-                          className="text-blue-600 underline transition-colors duration-200 hover:text-blue-800"
+                          className="text-blue-600 underline transition-colors duration-200 "
                         >
                           Log ind
                         </button>

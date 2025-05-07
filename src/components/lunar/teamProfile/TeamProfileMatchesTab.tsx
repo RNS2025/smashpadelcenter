@@ -59,12 +59,12 @@ export const TeamProfileMatchesTab = () => {
                         <tbody className="divide-y divide-gray-200">
                         {teamMatches.map((match) => (
                                 <Fragment key={match.MatchId}>
-                                <tr className="hover:bg-cyan-500 transition-colors duration-500">
+                                <tr>
                                     <td className="px-2 py-4 font-medium text-gray-900">{match.Details.Date}</td>
-                                    <td className={`px-px-2 py-4 font-medium text-gray-900 ${match.Team1.IsWinner ? "font-semibold" : ""}`}>
+                                    <td className={`px-px-2 py-4 font-medium text-gray-900 text-center ${match.Team1.IsWinner ? "font-semibold" : ""}`}>
                                         {match.Team1.Name}
                                     </td>
-                                    <td className={`px-2-4 py-4 font-medium text-gray-900 ${match.Team2.IsWinner ? "font-semibold" : ""}`}>
+                                    <td className={`px-2-4 py-4 font-medium text-gray-900 text-center ${match.Team2.IsWinner ? "font-semibold" : ""}`}>
                                         {match.Team2.Name}
                                     </td>
                                     <td className="px-2 py-4 font-medium text-gray-900 text-center">
@@ -77,7 +77,7 @@ export const TeamProfileMatchesTab = () => {
                                         )}
                                         <button
                                             onClick={() => navigate(`${match.MatchId}`)}
-                                            className={`bg-sky-900 hover:bg-sky-950 rounded text-white p-1 ${match.ShowUpcomingInfoText ? "hidden" : ""}`}>Se kampdetaljer</button>
+                                            className={`bg-sky-900 rounded text-white p-1 ${match.ShowUpcomingInfoText ? "hidden" : ""}`}>Se kampdetaljer</button>
                                     </td>
                                 </tr>
 

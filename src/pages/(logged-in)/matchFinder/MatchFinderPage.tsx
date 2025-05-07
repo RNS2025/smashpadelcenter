@@ -7,7 +7,7 @@ import {Outlet, useLocation, useNavigate} from "react-router-dom";
 import MatchFinderTabMenu from "../../../components/matchFinder/MatchFinderTabMenu.tsx";
 import {useUser} from "../../../context/UserContext";
 import communityApi from "../../../services/makkerborsService";
-import {LockClosedIcon, LockOpenIcon, NumberedListIcon,} from "@heroicons/react/24/outline";
+import {BoltIcon, LockClosedIcon, LockOpenIcon} from "@heroicons/react/24/outline";
 import LoadingSpinner from "../../../components/misc/LoadingSpinner.tsx";
 import usePolling from "../../../hooks/usePolling.ts";
 
@@ -110,9 +110,9 @@ export const MatchFinderPage = () => {
               }`}
             >
               {isMyLevel ? (
-                <NumberedListIcon className="h-5 w-5 text-yellow-500" />
+                <BoltIcon className="h-5 w-5 text-yellow-500" />
               ) : (
-                <NumberedListIcon className="h-5 w-5 text-gray-500" />
+                <BoltIcon className="h-5 w-5 text-gray-500" />
               )}
 
               <label htmlFor="showClosedEvents" className="text-gray-500">

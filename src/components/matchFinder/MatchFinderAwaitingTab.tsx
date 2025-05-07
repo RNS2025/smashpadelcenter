@@ -24,7 +24,7 @@ export const MatchFinderAwaitingTab = () => {
       try {
         const data = await communityApi.getMatches();
         const awaitingMatches = data.filter(
-          (match) => (user?.username && new Date(match.matchDateTime) >= new Date() && (match.joinRequests.includes(user?.username) || match.invitedPlayers.includes(user.username)))
+          (match) => (user?.username && new Date(match.matchDateTime) >= new Date() && match.joinRequests.includes(user?.username))
         ).sort((a, b) => {
             const aDate = new Date(a.matchDateTime).getTime();
             const bDate = new Date(b.matchDateTime).getTime();
@@ -64,7 +64,7 @@ export const MatchFinderAwaitingTab = () => {
             <div
                 onClick={match.deadline && !isMatchDeadlinePassed(match.deadline) ? () => navigate(`/makkerbørs/${match.id}`) : undefined}
                 key={match.id}
-                className="border border-yellow-500 rounded-lg p-4 space-y-1.5 cursor-pointer hover:bg-gray-700 mb-5"
+                className="border border-yellow-500 rounded-lg p-4 space-y-1.5 cursor-pointer mb-5"
             >
               <h1 className="font-semibold">
                 {match.deadline && isMatchDeadlinePassed(match.deadline)

@@ -48,13 +48,13 @@ const InstallPrompt: React.FC<InstallPromptProps> = ({
           <div className="flex space-x-4">
             <button
               onClick={handleInstall}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+              className="bg-blue-500 text-white px-4 py-2 rounded"
             >
               Install
             </button>
             <button
               onClick={handleDismiss}
-              className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400 transition"
+              className="bg-gray-300 text-gray-800 px-4 py-2 rounded"
             >
               Dismiss
             </button>

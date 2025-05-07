@@ -157,7 +157,7 @@ const TrainerTab: React.FC<TrainerTabProps> = ({
                   <button
                     onClick={handleAddTimeSlot}
                     disabled={!newTimeSlot}
-                    className="ml-2 px-4 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-300"
+                    className="ml-2 px-4 py-2 bg-blue-500 text-white rounded-md disabled:bg-gray-300"
                   >
                     Tilføj
                   </button>
@@ -177,7 +177,7 @@ const TrainerTab: React.FC<TrainerTabProps> = ({
                         <span>{slot}</span>
                         <button
                           onClick={() => handleRemoveTimeSlot(index)}
-                          className="ml-2 text-blue-500 hover:text-blue-700"
+                          className="ml-2 text-blue-500"
                         >
                           ×
                         </button>
@@ -193,7 +193,7 @@ const TrainerTab: React.FC<TrainerTabProps> = ({
                   availabilityTimeSlots.length === 0 ||
                   isSubmitting
                 }
-                className="mt-4 px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 disabled:bg-gray-300"
+                className="mt-4 px-4 py-2 bg-green-500 text-white rounded-md disabled:bg-gray-300"
               >
                 {isSubmitting ? "Gemmer..." : "Gem Tilgængelighed"}
               </button>
@@ -281,7 +281,7 @@ const TrainerTab: React.FC<TrainerTabProps> = ({
                         className={`p-2 rounded cursor-pointer ${
                           selectedUser === user.username
                             ? "bg-blue-100 text-blue-800"
-                            : "hover:bg-gray-100"
+                            : ""
                         }`}
                         onClick={() => setSelectedUser(user.username)}
                       >
@@ -361,7 +361,7 @@ const TrainerTab: React.FC<TrainerTabProps> = ({
                             replyEl.value = "";
                           }
                         }}
-                        className="mt-2 px-4 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+                        className="mt-2 px-4 py-1 bg-blue-500 text-white rounded-md"
                       >
                         Send svar
                       </button>

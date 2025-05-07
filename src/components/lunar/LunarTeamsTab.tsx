@@ -13,6 +13,7 @@ export const LunarTeamsTab = () => {
     loading,
     error,
   } = useLeagueTeams((league) => league.name.includes("Lunar Ligaen - "));
+    const isLoading = loading || lunarTeams.length === 0;
 
   const handleRowClick = (team: TeamInfo) => {
     sessionStorage.setItem(`teamName_${team.id}`, team.name);
@@ -27,11 +28,11 @@ export const LunarTeamsTab = () => {
 
       <div className="sm:mx-20 mx-2">
         {loading ? (
-          <div className="text-center py-8">Loading teams...</div>
+          <div className="text-center py-8">Indlæser hold...</div>
         ) : error ? (
           <div className="text-center text-red-500 py-8">{error}</div>
         ) : (
-          <TeamListTable teams={lunarTeams} onRowClick={handleRowClick} />
+          <TeamListTable teams={lunarTeams} onRowClick={handleRowClick} loading={isLoading} />
         )}
       </div>
     </>
