@@ -53,13 +53,6 @@ export const changeUserRole = async (username: string, role: string) => {
   }
 };
 
-export const loginWithProvider = (provider: string) => {
-  const ENV = import.meta.env.MODE;
-  const BACKEND_URL =
-    ENV === "production" ? "https://rns-apps.dk" : "http://localhost:3001";
-  window.location.href = `${BACKEND_URL}/api/v1/auth/${provider}`;
-};
-
 export const register = async (username: string, password: string) => {
   try {
     const response = await api.post("/register", { username, password });

@@ -239,22 +239,6 @@ export const LoginPage = () => {
                   <span className="mx-4 text-sm text-gray-500">eller</span>
                   <div className="flex-grow border-t border-gray-300"></div>
                 </div>
-
-                <div className="flex flex-col gap-4">
-                  <button
-                    onClick={() => handleProviderLogin("google")}
-                    className="inline-flex items-center justify-center rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition-all duration-300 focus:outline-none focus:ring"
-                    disabled={isSubmitting}
-                  >
-                    <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
-                      <path
-                        fill="currentColor"
-                        d="M12.24 10.667v2.333h6.84c-.28 1.333-1.933 3.867-6.84 3.867-4.12 0-7.467-3.333-7.467-7.467s3.347-7.467 7.467-7.467c2.12 0 4.013.867 5.373 2.267l1.64-1.64C17.373 1.12 14.907 0 12.24 0 6.307 0 1.373 4.933 1.373 10.867s4.933 10.867 10.867 10.867c6.307 0 10.867-4.933 10.867-10.867 0-.733-.093-1.467-.24-2.2h-10.627z"
-                      />
-                    </svg>
-                    Log ind med Google
-                  </button>
-                </div>
               </div>
             </div>
           </main>

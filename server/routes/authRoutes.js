@@ -4,7 +4,6 @@ const { passport, generateToken } = require("../config/passport");
 const { verifyJWT, checkRole } = require("../middleware/jwt");
 const databaseService = require("../Services/databaseService");
 const logger = require("../config/logger");
-const googleAuth = require("../config/googleAuth");
 
 const router = express.Router();
 
@@ -48,80 +47,6 @@ router.post("/login", (req, res, next) => {
   })(req, res, next);
 });
 
-router.get("/auth/google", (req, res) => {
-  logger.info("Initiating Google OAuth flow");
-  const authUrl = googleAuth.getAuthUrl();
-  res.redirect(authUrl);
-});
-
-router.get("/auth/google/callback", async (req, res) => {
-  const { code, error } = req.query;
-
-  logger.info("Google OAuth callback received", {
-    hasCode: !!code,
-    hasError: !!error,
-    error,
-  });
-
-  if (error) {
-    logger.error("Google OAuth error", { error });
-    return res.status(400).send(`
-      <html>
-        <body>
-          <h1>Authentication Error</h1>
-          <p>${error}</p>
-          <a href="${
-            isProduction ? "https://rns-apps.dk" : "http://localhost:5173"
-          }">Return to app</a>
-        </body>
-      </html>
-    `);
-  }
-
-  try {
-    // Exchange code for Google profile
-    const googleProfile = await googleAuth.getGoogleUser(code);
-
-    // Find or create user
-    const user = await googleAuth.findOrCreateUser(googleProfile);
-
-    // Generate JWT token
-    const token = googleAuth.generateToken(user);
-
-    // Set cookie
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? "none" : "lax",
-      path: "/",
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
-    });
-
-    // Redirect to app
-    logger.info("Google authentication successful, redirecting to app");
-    res.redirect(
-      isProduction ? "https://rns-apps.dk/hjem" : "http://localhost:5173/hjem"
-    );
-  } catch (error) {
-    logger.error("Google authentication error", {
-      error: error.message,
-      stack: error.stack,
-    });
-
-    res.status(500).send(`
-      <html>
-        <body>
-          <h1>Authentication Error</h1>
-          <p>${error.message}</p>
-          <pre>${error.stack}</pre>
-          <a href="${
-            isProduction ? "https://rns-apps.dk" : "http://localhost:5173"
-          }">Return to app</a>
-        </body>
-      </html>
-    `);
-  }
-});
 router.get("/auth/check", verifyJWT, async (req, res) => {
   logger.debug("Auth check request", {
     user: req.user ? req.user._id : "unknown",
