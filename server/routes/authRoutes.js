@@ -62,19 +62,22 @@ router.get(
 router.get(
   "/auth/google/callback",
   (req, res, next) => {
-    logger.info("Google OAuth callback received with code", {
+    logger.info("Google OAuth callback received", {
       hasCode: !!req.query.code,
-      codeLength: req.query.code ? req.query.code.length : 0,
+      hasError: !!req.query.error,
+      error: req.query.error,
+      errorDescription: req.query.error_description,
     });
     next();
   },
   (req, res, next) => {
-    // Use custom passport authenticate with step-by-step logging
+    // Use custom passport authenticate with detailed error handling
     passport.authenticate("google", { session: false }, (err, user, info) => {
       if (err) {
-        logger.error("Google auth error during authentication:", {
+        logger.error("Google auth error:", {
           error: err.message,
           stack: err.stack,
+          info: info,
         });
         return res.status(500).send(`
           <html>
@@ -82,27 +85,42 @@ router.get(
               <h1>Authentication Error</h1>
               <p>${err.message}</p>
               <pre>${err.stack}</pre>
-              <a href="http://localhost:5173">Return to app</a>
+              <script>
+                console.error("Auth error:", ${JSON.stringify(err)});
+                console.error("Info:", ${JSON.stringify(info || {})});
+              </script>
+              <a href="${
+                process.env.NODE_ENV === "production"
+                  ? "https://rns-apps.dk"
+                  : "http://localhost:5173"
+              }">Return to app</a>
             </body>
           </html>
         `);
       }
 
       if (!user) {
-        logger.error("No user returned from Google auth:", { info });
+        const errorMsg = info ? info.message : "Authentication failed";
+        logger.error("Google auth failed to return user:", { info });
         return res.status(401).send(`
           <html>
             <body>
               <h1>Authentication Failed</h1>
-              <p>No user was returned from Google authentication.</p>
-              <p>Reason: ${info ? info.message : "Unknown error"}</p>
-              <a href="http://localhost:5173">Return to app</a>
+              <p>${errorMsg}</p>
+              <script>
+                console.error("Auth failed:", ${JSON.stringify(info || {})});
+              </script>
+              <a href="${
+                process.env.NODE_ENV === "production"
+                  ? "https://rns-apps.dk"
+                  : "http://localhost:5173"
+              }">Return to app</a>
             </body>
           </html>
         `);
       }
 
-      logger.info("Google auth successful, user object created", {
+      logger.info("Google auth successful", {
         userId: user._id,
         username: user.username,
       });
@@ -113,22 +131,25 @@ router.get(
   },
   (req, res) => {
     try {
-      logger.info("Generating JWT token for authenticated user");
+      logger.info("Generating token for authenticated user");
       const token = generateToken(req.user);
 
-      logger.info("Setting authentication cookie");
+      // Set cookie with proper configuration based on environment
+      const isProduction = process.env.NODE_ENV === "production";
       res.cookie("token", token, {
         httpOnly: true,
-        secure: true, // Set to false for local testing
-        sameSite: "none",
+        secure: isProduction,
+        sameSite: isProduction ? "none" : "lax",
         path: "/",
-        maxAge: 24 * 60 * 60 * 1000,
+        maxAge: 24 * 60 * 60 * 1000, // 1 day
       });
 
-      logger.info("Authentication complete, redirecting to app");
-      res.redirect("http://localhost:5173/hjem");
+      logger.info("Redirecting authenticated user");
+      res.redirect(
+        isProduction ? "https://rns-apps.dk/hjem" : "http://localhost:5173/hjem"
+      );
     } catch (error) {
-      logger.error("Error in final callback handler:", {
+      logger.error("Token generation error:", {
         error: error.message,
         stack: error.stack,
       });
@@ -138,7 +159,14 @@ router.get(
             <h1>Token Generation Error</h1>
             <p>${error.message}</p>
             <pre>${error.stack}</pre>
-            <a href="http://localhost:5173">Return to app</a>
+            <script>console.error("Token error:", ${JSON.stringify(
+              error
+            )});</script>
+            <a href="${
+              process.env.NODE_ENV === "production"
+                ? "https://rns-apps.dk"
+                : "http://localhost:5173"
+            }">Return to app</a>
           </body>
         </html>
       `);

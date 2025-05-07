@@ -31,31 +31,33 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: `https://rns-apps.dk/api/v1/auth/google/callback`,
+      callbackURL: "https://rns-apps.dk/api/v1/auth/google/callback",
+      proxy: true, // This helps when behind a proxy like Render
     },
     async (accessToken, refreshToken, profile, done) => {
-      console.log("Google authentication callback triggered");
-      console.log("Profile:", JSON.stringify(profile, null, 2));
-      console.log("Environment:", {
-        clientID: process.env.GOOGLE_CLIENT_ID,
-        callbackURL: `${process.env.BACKEND_URL}/api/v1/auth/google/callback`,
-      });
-
       try {
-        console.log("Searching for existing user with providerId:", profile.id);
+        const logger = require("../config/logger");
+        logger.info("Google authentication callback triggered", {
+          profileId: profile.id,
+          displayName: profile.displayName,
+        });
+
+        // Search for existing user
         let user = await User.findOne({
           providerId: profile.id,
           provider: "google",
         });
 
         if (!user) {
-          console.log("No existing user found, creating new user");
+          logger.info("Creating new user from Google profile", {
+            profileId: profile.id,
+          });
+
           const email =
             profile.emails?.[0]?.value || `${profile.id}@google.com`;
           const username =
             profile.displayName?.replace(/\s+/g, "") || email.split("@")[0];
 
-          console.log("Creating new user with:", { username, email });
           user = new User({
             provider: "google",
             providerId: profile.id,
@@ -64,14 +66,19 @@ passport.use(
             role: "user",
           });
           await user.save();
-          console.log("New user created successfully");
+          logger.info("New Google user created", { username });
         } else {
-          console.log("Existing user found:", user.username);
+          logger.info("Existing Google user found", {
+            username: user.username,
+          });
         }
 
         return done(null, user);
       } catch (err) {
-        console.error("Error in Google authentication:", err);
+        logger.error("Error in Google authentication:", {
+          error: err.message,
+          stack: err.stack,
+        });
         return done(err);
       }
     }
