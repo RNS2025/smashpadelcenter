@@ -22,8 +22,8 @@ export default defineConfig({
         theme_color: "#000000",
         background_color: "#ffffff",
         display: "standalone",
-        start_url: "/",
-        scope: "/",
+        start_url: "https://rns-apps.dk/",
+        scope: "https://rns-apps.dk/",
         icons: [
           {
             src: "icons/ikon_192.png",
@@ -40,4 +40,7 @@ export default defineConfig({
     }),
   ],
   base: "/",
+  define: {
+    isProduction: JSON.stringify(process.env.NODE_ENV === "production"),
+  },
 });

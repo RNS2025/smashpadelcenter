@@ -1,6 +1,24 @@
 import { precacheAndRoute } from "workbox-precaching";
+import { registerRoute } from "workbox-routing";
+import { NetworkFirst } from "workbox-strategies";
 
-// Precache assets
+// Determine production environment from env variable// Precache assets
+const isProduction =
+  self.location.hostname !== "localhost" &&
+  !self.location.hostname.includes("127.0.0.1");
+
+const CACHE_STRATEGY = isProduction ? "networkFirst" : "networkOnly";
+
+registerRoute(
+  ({ url }) => url.pathname.startsWith("/api/") && isProduction,
+  new NetworkFirst()
+);
+console.log(
+  `Service Worker running in ${
+    isProduction ? "production" : "development"
+  } mode`
+);
+console.log(`Using cache strategy: ${CACHE_STRATEGY}`);
 precacheAndRoute(self.__WB_MANIFEST);
 
 // Optional: Install/Activate events
