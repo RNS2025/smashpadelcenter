@@ -54,7 +54,6 @@ import { useUser } from "./context/UserContext";
 import EditMatchPage from "./pages/(logged-in)/matchFinder/EditMatchPage.tsx";
 import EditEventPage from "./pages/(logged-in)/private-event/EditEventPage.tsx";
 import MatchResultPage from "./pages/(logged-in)/matchFinder/MatchResultPage.tsx";
-import TournamentDrawsPage from "./pages/tournament/TournamentDrawsPage.tsx";
 import MatchesTab from "./components/profile/tabs/MatchesTab.tsx";
 
 function AppContent() {
@@ -150,7 +149,6 @@ function AppContent() {
         <Route path="/turneringer" element={<TournamentTabs />} />
         <Route path="/turneringer/check-in" element={<CheckInPage />} />
         <Route path="/turneringer/baneoversigt" element={<CourtMapPage />} />
-        <Route path="/turneringer/lodtrækninger" element={<TournamentDrawsPage />} />
         <Route path="/turneringer/info" element={<TournamentInfoPage />}>
           <Route index element={<Navigate to="briefing" replace />} />
           <Route path="briefing" element={<TournamentBriefingTab />} />
@@ -184,10 +182,14 @@ function AppContent() {
             </Route>
             <Route path="/makkerbørs/:matchId" element={<ViewMatchPage />} />
             <Route path="/makkerbørs/opretkamp" element={<CreateMatchPage />} />
-            <Route path="/makkerbørs/:matchId/indtastresultat" element={<MatchResultPage />} />
-            <Route path="/makkerbørs/:matchId/rediger" element={<EditMatchPage />} />
-
-
+            <Route
+              path="/makkerbørs/:matchId/indtastresultat"
+              element={<MatchResultPage />}
+            />
+            <Route
+              path="/makkerbørs/:matchId/rediger"
+              element={<EditMatchPage />}
+            />
 
             {/* Arrangementer */}
             <Route path="/privat-arrangementer" element={<PrivateEventPage />}>
@@ -206,7 +208,10 @@ function AppContent() {
               path="/privat-arrangementer/:eventId"
               element={<ViewEventPage />}
             />
-            <Route path="/privat-arrangementer/:eventId/rediger" element={<EditEventPage />}/>
+            <Route
+              path="/privat-arrangementer/:eventId/rediger"
+              element={<EditEventPage />}
+            />
 
             <Route
               path="/turneringer/resultater"

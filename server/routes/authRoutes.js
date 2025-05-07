@@ -4,6 +4,7 @@ const { passport, generateToken } = require("../config/passport");
 const { verifyJWT, checkRole } = require("../middleware/jwt");
 const databaseService = require("../Services/databaseService");
 const logger = require("../config/logger");
+const googleAuth = require("../config/googleAuth");
 
 const router = express.Router();
 
@@ -47,105 +48,80 @@ router.post("/login", (req, res, next) => {
   })(req, res, next);
 });
 
-router.get(
-  "/auth/google",
-  (req, res, next) => {
-    logger.debug("Google OAuth login attempt");
-    next();
-  },
-  passport.authenticate("google", {
-    scope: ["profile", "email"],
-    session: false,
-  })
-);
+router.get("/auth/google", (req, res) => {
+  logger.info("Initiating Google OAuth flow");
+  const authUrl = googleAuth.getAuthUrl();
+  res.redirect(authUrl);
+});
 
-router.get(
-  "/auth/google/callback",
-  (req, res, next) => {
-    logger.info("Google OAuth callback received with code", {
-      hasCode: !!req.query.code,
-      codeLength: req.query.code ? req.query.code.length : 0,
-    });
-    next();
-  },
-  (req, res, next) => {
-    // Use custom passport authenticate with step-by-step logging
-    passport.authenticate("google", { session: false }, (err, user, info) => {
-      if (err) {
-        logger.error("Google auth error during authentication:", {
-          error: err.message,
-          stack: err.stack,
-        });
-        return res.status(500).send(`
-          <html>
-            <body>
-              <h1>Authentication Error</h1>
-              <p>${err.message}</p>
-              <pre>${err.stack}</pre>
-              <a href="http://localhost:5173">Return to app</a>
-            </body>
-          </html>
-        `);
-      }
+router.get("/auth/google/callback", async (req, res) => {
+  const { code, error } = req.query;
 
-      if (!user) {
-        logger.error("No user returned from Google auth:", { info });
-        return res.status(401).send(`
-          <html>
-            <body>
-              <h1>Authentication Failed</h1>
-              <p>No user was returned from Google authentication.</p>
-              <p>Reason: ${info ? info.message : "Unknown error"}</p>
-              <a href="http://localhost:5173">Return to app</a>
-            </body>
-          </html>
-        `);
-      }
+  logger.info("Google OAuth callback received", {
+    hasCode: !!code,
+    hasError: !!error,
+    error,
+  });
 
-      logger.info("Google auth successful, user object created", {
-        userId: user._id,
-        username: user.username,
-      });
-
-      req.user = user;
-      next();
-    })(req, res, next);
-  },
-  (req, res) => {
-    try {
-      logger.info("Generating JWT token for authenticated user");
-      const token = generateToken(req.user);
-
-      logger.info("Setting authentication cookie");
-      res.cookie("token", token, {
-        httpOnly: true,
-        secure: true, // Set to false for local testing
-        sameSite: "none",
-        path: "/",
-        maxAge: 24 * 60 * 60 * 1000,
-      });
-
-      logger.info("Authentication complete, redirecting to app");
-      res.redirect("http://localhost:5173/hjem");
-    } catch (error) {
-      logger.error("Error in final callback handler:", {
-        error: error.message,
-        stack: error.stack,
-      });
-      res.status(500).send(`
-        <html>
-          <body>
-            <h1>Token Generation Error</h1>
-            <p>${error.message}</p>
-            <pre>${error.stack}</pre>
-            <a href="http://localhost:5173">Return to app</a>
-          </body>
-        </html>
-      `);
-    }
+  if (error) {
+    logger.error("Google OAuth error", { error });
+    return res.status(400).send(`
+      <html>
+        <body>
+          <h1>Authentication Error</h1>
+          <p>${error}</p>
+          <a href="${
+            isProduction ? "https://rns-apps.dk" : "http://localhost:5173"
+          }">Return to app</a>
+        </body>
+      </html>
+    `);
   }
-);
 
+  try {
+    // Exchange code for Google profile
+    const googleProfile = await googleAuth.getGoogleUser(code);
+
+    // Find or create user
+    const user = await googleAuth.findOrCreateUser(googleProfile);
+
+    // Generate JWT token
+    const token = googleAuth.generateToken(user);
+
+    // Set cookie
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? "none" : "lax",
+      path: "/",
+      maxAge: 24 * 60 * 60 * 1000, // 1 day
+    });
+
+    // Redirect to app
+    logger.info("Google authentication successful, redirecting to app");
+    res.redirect(
+      isProduction ? "https://rns-apps.dk/hjem" : "http://localhost:5173/hjem"
+    );
+  } catch (error) {
+    logger.error("Google authentication error", {
+      error: error.message,
+      stack: error.stack,
+    });
+
+    res.status(500).send(`
+      <html>
+        <body>
+          <h1>Authentication Error</h1>
+          <p>${error.message}</p>
+          <pre>${error.stack}</pre>
+          <a href="${
+            isProduction ? "https://rns-apps.dk" : "http://localhost:5173"
+          }">Return to app</a>
+        </body>
+      </html>
+    `);
+  }
+});
 router.get("/auth/check", verifyJWT, async (req, res) => {
   logger.debug("Auth check request", {
     user: req.user ? req.user._id : "unknown",
