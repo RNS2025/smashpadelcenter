@@ -73,7 +73,7 @@ export const LeagueTeamProfilePage = () => {
       <>
       <HomeBar backPage="/holdligaer" />
     <Animation>
-      <div className="mx-2 sm:mx-10 p-4 bg-white mt-5 shadow-md rounded-lg">
+      <div className="h-[calc(100vh-100px)] mx-2 sm:mx-10 p-4 bg-white mt-5 shadow-md rounded-lg">
         <div className="flex gap-5 px-2">
           <img
             src={team.HomeClubImageUrl}

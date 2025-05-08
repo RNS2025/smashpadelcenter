@@ -42,21 +42,21 @@ export const TeamProfileMatchDetailsTab = () => {
             </Helmet>
 
             {matchDetails && currentMatch && (
-                <div className="overflow-auto xl:max-h-[550px] max-xl:max-h-[470px] rounded-lg border border-gray-200 shadow-lg my-5 text-xxs">
+                <div className="overflow-auto h-[calc(100vh-340px)] rounded-lg border border-gray-200 shadow-lg my-5 text-xxs">
                     <table className="min-w-[320px] w-full divide-y-2 divide-gray-200 bg-white">
                     <thead className="bg-gray-300 font-bold">
                         <tr>
-                            <th className="px-2 py-2 text-gray-900 select-none w-[35%]">
+                            <th className="px-2 py-2 text-gray-900 select-none w-[30%]">
                                 <div className="flex items-center justify-center">
                                     {currentMatch.Team1.Name}
                                 </div>
                             </th>
-                            <th className="px-2 py-2 text-gray-900 select-none w-[35%]">
+                            <th className="px-2 py-2 text-gray-900 select-none w-[30%]">
                                 <div className="flex items-center justify-center">
                                     {currentMatch.Team2.Name}
                                 </div>
                             </th>
-                            <th className="px-2 py-2 text-gray-900 select-none w-[30%]">
+                            <th className="px-2 py-2 text-gray-900 select-none w-[40%]">
                                 <div className="flex items-center justify-center">
                                     Resultat
                                 </div>
@@ -69,15 +69,20 @@ export const TeamProfileMatchDetailsTab = () => {
                             <Fragment key={match.Id}>
                             {match.MatchResult?.HasDetailedScore && (
                                 <tr className="text-center">
-                                    <td className={`flex flex-col gap-1 px-2 py-4 font-medium text-gray-900 ${match.MatchResult?.IsFirstParticipantWinner ? "font-semibold" : ""}`}>
+                                    <td className={`px-2 py-4 font-medium text-gray-900 ${match.MatchResult?.IsFirstParticipantWinner ? "font-semibold" : ""}`}>
+                                        <div className="flex flex-col gap-1 items-center">
                                         <p>{match.Challenger.Name}</p>
                                         <p>{match.Challenger.Player2Name}</p>
+                                        </div>
                                     </td>
                                     <td className={`px-2 py-4 font-medium text-gray-900 ${!match.MatchResult?.IsFirstParticipantWinner ? "font-semibold" : ""}`}>
+                                        <div className="flex flex-col gap-1 items-center">
                                         <p>{match.Challenged.Name}</p>
                                         <p>{match.Challenged.Player2Name}</p>
+                                        </div>
                                     </td>
                                     <td className="px-2 py-4 font-medium text-gray-900 flex flex-col items-center">
+                                        <div className="flex flex-col gap-1 items-center">
                                         <p className="bg-sky-900 font-semibold rounded-xl px-2 py-1 text-white w-fit align-middle">
                                             {match.MatchResult?.Score?.FirstParticipantScore} - {match.MatchResult?.Score?.SecondParticipantScore}
                                         </p>
@@ -90,6 +95,7 @@ export const TeamProfileMatchDetailsTab = () => {
                                                 ))}
                                             </div>
                                         )}
+                                        </div>
                                     </td>
                                 </tr>
                             )}

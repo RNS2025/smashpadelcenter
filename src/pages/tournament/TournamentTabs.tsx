@@ -51,12 +51,14 @@ export const TournamentTabs = () => {
               description="Tjek ind til DPF-turneringer"
               link="/turneringer/check-in"
             />
+              {user?.role === "admin" && (
               <HomeScreenCard
                   icon={<QueueListIcon className="size-10" aria-hidden="true" />}
                   title="Lodtrækninger"
                   description="Se lodtrækninger for kommende turnering"
                   link="/turneringer/lodtrækninger"
               />
+                )}
             <HomeScreenCard
               icon={<MapIcon className="size-10" aria-hidden="true" />}
               title="Baneoversigt"

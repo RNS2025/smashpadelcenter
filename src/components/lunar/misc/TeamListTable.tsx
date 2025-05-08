@@ -64,7 +64,7 @@ const TeamListTable = ({
                 onChange={(e) => setSearchQuery(e.target.value)}
             />
 
-            <div className="overflow-auto max-h-[600px] rounded-lg border border-gray-200 shadow-lg my-5">
+            <div className="overflow-auto h-[calc(100vh-210px)] rounded-lg border border-gray-200 shadow-lg my-5">
                 <table className="min-w-full divide-y-2 divide-gray-200 bg-white text-gray-900 text-sm">
                     <thead className="text-left bg-gray-300 font-bold">
                     <tr>

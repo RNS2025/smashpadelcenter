@@ -45,7 +45,7 @@ export const LoginPage = () => {
         // Fetch user data
         const userDataResult = await fetchUser();
 
-        if (userDataResult) {
+        if (userDataResult !== null) {
           // User data successfully fetched
           const state = location.state as LocationState;
           const redirectTo = state?.from || "/hjem";
