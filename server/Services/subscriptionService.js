@@ -7,15 +7,12 @@ const logger = require("../config/logger");
 // Configure VAPID keys
 const vapidKeys = {
   publicKey:
-    process.env.VAPID_PUBLIC_KEY ||
     "BNs6vAoTALj4B4HwsVW3Kz6y3EYGc6XK5ZjM9V3QH42XDolvBKNQNmMBkThCu6TualLn5ZMzpydHp74wrk7aqXY",
-  privateKey:
-    process.env.VAPID_PRIVATE_KEY ||
-    "qQte9v2HUtpVMYqMMu-BstuVKMcgHP8ZehaOHGoFnEw",
+  privateKey: "qQte9v2HUtpVMYqMMu-BstuVKMcgHP8ZehaOHGoFnEw",
 };
 
 webPush.setVapidDetails(
-  "mailto:your-email@example.com",
+  "mailto:olsen7531@gmail.com",
   vapidKeys.publicKey,
   vapidKeys.privateKey
 );

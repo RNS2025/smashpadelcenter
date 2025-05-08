@@ -1,7 +1,7 @@
 import { Helmet } from "react-helmet-async";
 import { useState, useEffect, FormEvent } from "react";
 import { useNavigate, useLocation, Link } from "react-router-dom";
-import { login, loginWithProvider } from "../../services/auth.ts";
+import { login } from "../../services/auth.ts";
 import { useUser } from "../../context/UserContext";
 import DPFLogo from "../../assets/DPF_Logo.png";
 
@@ -43,14 +43,13 @@ export const LoginPage = () => {
         localStorage.setItem("token", response.token);
 
         // Fetch user data
-        const userDataResult = await fetchUser();
-
-        if (userDataResult) {
+        try {
+          await fetchUser();
           // User data successfully fetched
           const state = location.state as LocationState;
           const redirectTo = state?.from || "/hjem";
           navigate(redirectTo, { replace: true });
-        } else {
+        } catch (error) {
           setError("Brugerdata kunne ikke hentes.");
         }
       } else {
@@ -67,17 +66,6 @@ export const LoginPage = () => {
       );
     } finally {
       setIsSubmitting(false);
-    }
-  };
-
-  const handleProviderLogin = (provider: string) => {
-    setError("");
-    setSuccessMessage("");
-    try {
-      loginWithProvider(provider);
-    } catch (err) {
-      setError("Kunne ikke logge ind");
-      console.log(err);
     }
   };
 
@@ -218,30 +206,23 @@ export const LoginPage = () => {
                   >
                     Log ind
                   </button>
-                  <button
-                    type="button"
-                    onClick={() => navigate("/glemt-adgangskode")}
-                    className="text-sm text-blue-600"
-                  >
-                    Glemt adgangskode?
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => navigate("/register")}
-                    className="text-sm text-blue-600"
-                  >
-                    Opret Konto
-                  </button>
+                  <div className="text-center my-4">
+                    <Link
+                      to="/glemt-adgangskode"
+                      className="text-blue-600 hover:text-blue-500 text-sm"
+                    >
+                      Glemt adgangskode?
+                    </Link>
+                    <div className="mt-1">
+                      <Link
+                        to="/register"
+                        className="text-blue-600 hover:text-blue-500 text-sm"
+                      >
+                        Opret Konto
+                      </Link>
+                    </div>
+                  </div>
                 </form>
-
-                <div className="text-center my-4">
-                  <Link
-                    to="/glemt-adgangskode"
-                    className="text-cyan-500 hover:text-cyan-400 text-sm"
-                  >
-                    Glemt adgangskode?
-                  </Link>
-                </div>
 
                 <div className="flex items-center">
                   <div className="flex-grow border-t border-gray-300"></div>

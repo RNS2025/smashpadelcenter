@@ -17,4 +17,6 @@ export const WHITELIST_ROUTES = [
   "/player/:playerId/:rowId",
   "/player/:playerId",
   "/InstallPrompt",
+  "/glemt-adgangskode",
+  "/reset-password/:token",
 ];

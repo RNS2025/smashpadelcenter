@@ -28,6 +28,7 @@ const path = require("path");
 const http = require("http");
 const dotenv = require("dotenv");
 const logger = require("./config/logger");
+const emailService = require("./services/emailService");
 
 // Load .env file
 dotenv.config({ path: path.resolve(__dirname, ".env") });
@@ -106,13 +107,26 @@ async function startServer() {
     await createAdmin();
     await createTenUsers();
 
+    // Verify email connection
+    try {
+      await emailService.verifyConnection();
+    } catch (emailErr) {
+      logger.warn(
+        "Email service not available, continuing without email functionality"
+      );
+      // Don't fail server startup if email isn't configured
+    }
+
     // Start HTTP server
     httpServer.listen(PORT, () => {
       logger.info(`HTTP Server is running on http://localhost:${PORT}`);
       updateAllData();
     });
   } catch (err) {
-    logger.error("Failed to start server:", err);
+    logger.error("Failed to start server:", {
+      error: err.message,
+      stack: err.stack,
+    });
     process.exit(1);
   }
 }

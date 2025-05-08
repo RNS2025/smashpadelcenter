@@ -55,8 +55,8 @@ import EditMatchPage from "./pages/(logged-in)/matchFinder/EditMatchPage.tsx";
 import EditEventPage from "./pages/(logged-in)/private-event/EditEventPage.tsx";
 import MatchResultPage from "./pages/(logged-in)/matchFinder/MatchResultPage.tsx";
 import MatchesTab from "./components/profile/tabs/MatchesTab.tsx";
-import ForgotPasswordPage from "./pages/login/ForgotPasswordPage.tsx";
 import ResetPasswordPage from "./pages/login/ResetPasswordPage.tsx";
+import ForgotPasswordPage from "./pages/login/ForgotPasswordPage.tsx";
 
 function AppContent() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);

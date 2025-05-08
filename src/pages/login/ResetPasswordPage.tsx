@@ -5,7 +5,11 @@ import { Helmet } from "react-helmet-async";
 import LoadingSpinner from "../../components/misc/LoadingSpinner";
 
 const ResetPasswordPage: React.FC = () => {
+  // This extracts the token from URL
   const { token } = useParams<{ token: string }>();
+
+  console.log("Reset password token:", token); // Add this for debugging
+
   const navigate = useNavigate();
 
   const [password, setPassword] = useState("");

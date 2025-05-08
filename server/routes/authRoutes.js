@@ -5,20 +5,12 @@ const { verifyJWT, checkRole } = require("../middleware/jwt");
 const databaseService = require("../Services/databaseService");
 const logger = require("../config/logger");
 const crypto = require("crypto");
-const nodemailer = require("nodemailer");
+const emailService = require("../services/emailService");
+const User = require("../models/user");
 
 const router = express.Router();
 
 const isProduction = process.env.NODE_ENV === "production";
-
-// Setup nodemailer transporter (add this to your server initialization)
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASSWORD,
-  },
-});
 
 router.post("/login", (req, res, next) => {
   logger.debug("Login attempt", { username: req.body.username });
@@ -218,11 +210,9 @@ router.post("/forgot-password", async (req, res) => {
     if (!user) {
       logger.warn("Password reset requested for non-existent email", { email });
       // Still return success to prevent email enumeration
-      return res
-        .status(200)
-        .json({
-          message: "If that email exists, a password reset link has been sent",
-        });
+      return res.status(200).json({
+        message: "If that email exists, a password reset link has been sent",
+      });
     }
 
     // Generate token
@@ -233,38 +223,50 @@ router.post("/forgot-password", async (req, res) => {
     user.resetPasswordExpires = Date.now() + 7200000; // 2 hours
     await user.save();
 
-    // Create reset URL
-    const frontendURL = isProduction
-      ? "https://rns-apps.dk"
-      : "http://localhost:5173";
-    const resetURL = `${frontendURL}/reset-password/${resetToken}`;
+    try {
+      // Create reset URL
+      const frontendURL = isProduction
+        ? "https://rns-apps.dk"
+        : "http://localhost:5173";
+      const resetURL = `${frontendURL}/reset-password/${resetToken}`;
 
-    // Send email
-    const mailOptions = {
-      to: user.email,
-      from: process.env.EMAIL_USER,
-      subject: "Smash Padel Center - Nulstil din adgangskode",
-      text: `Du modtager denne email, fordi du (eller en anden) har anmodet om at nulstille din adgangskode.\n\n
-      Klik på følgende link eller kopier det til din browser for at fortsætte processen:\n\n
-      ${resetURL}\n\n
-      Hvis du ikke anmodede om dette, bedes du ignorere denne email.\n`,
-    };
+      await emailService.sendPasswordResetEmail(user.email, resetURL);
+      logger.info("Password reset email sent", { email: user.email });
 
-    await transporter.sendMail(mailOptions);
-    logger.info("Password reset email sent", { email });
-
-    res.status(200).json({
-      message:
-        "En e-mail er blevet sendt til den angivne adresse med instruktioner om, hvordan du nulstiller din adgangskode.",
-    });
-  } catch (err) {
-    logger.error("Password reset request error", { error: err.message });
-    res
-      .status(500)
-      .json({
-        error:
-          "Der opstod en fejl ved anmodning om nulstilling af adgangskode.",
+      res.status(200).json({
+        message:
+          "En e-mail er blevet sendt til den angivne adresse med instruktioner om, hvordan du nulstiller din adgangskode.",
       });
+    } catch (emailErr) {
+      // Email service failed but we still generated a token - provide it directly
+      logger.error("Failed to send password reset email", {
+        error: emailErr.message,
+        email: user.email,
+      });
+
+      // For development environment, return the token directly
+      if (process.env.NODE_ENV !== "production") {
+        return res.status(200).json({
+          message:
+            "Email service is unavailable. In development mode, use this token:",
+          token: resetToken,
+          resetUrl: `http://localhost:5173/reset-password/${resetToken}`,
+        });
+      }
+
+      return res.status(500).json({
+        error:
+          "Der opstod en fejl ved afsendelse af email. Kontakt venligst support.",
+      });
+    }
+  } catch (err) {
+    logger.error("Password reset request error", {
+      error: err.message,
+      stack: err.stack,
+    });
+    res.status(500).json({
+      error: "Der opstod en fejl ved anmodning om nulstilling af adgangskode.",
+    });
   }
 });
 
@@ -284,12 +286,10 @@ router.post("/reset-password/:token", async (req, res) => {
 
     if (!user) {
       logger.warn("Invalid or expired reset token used", { token });
-      return res
-        .status(400)
-        .json({
-          error:
-            "Ugyldigt eller udløbet token. Anmod venligst om en ny nulstilling.",
-        });
+      return res.status(400).json({
+        error:
+          "Ugyldigt eller udløbet token. Anmod venligst om en ny nulstilling.",
+      });
     }
 
     // Update password
@@ -301,22 +301,15 @@ router.post("/reset-password/:token", async (req, res) => {
     logger.info("Password reset successful", { username: user.username });
 
     // Send confirmation email
-    const mailOptions = {
-      to: user.email,
-      from: process.env.EMAIL_USER,
-      subject: "Din adgangskode er blevet ændret",
-      text: `Hej ${user.fullName || user.username},\n\n
-      Dette er en bekræftelse på, at adgangskoden for din konto hos Smash Padel Center er blevet ændret.\n`,
-    };
+    await emailService.sendPasswordChangedEmail(
+      user.email,
+      user.fullName || user.username
+    );
 
-    await transporter.sendMail(mailOptions);
-
-    res
-      .status(200)
-      .json({
-        message:
-          "Din adgangskode er blevet nulstillet! Du kan nu logge ind med din nye adgangskode.",
-      });
+    res.status(200).json({
+      message:
+        "Din adgangskode er blevet nulstillet! Du kan nu logge ind med din nye adgangskode.",
+    });
   } catch (err) {
     logger.error("Password reset error", { error: err.message });
     res
@@ -343,12 +336,10 @@ router.get("/reset-password/:token/verify", async (req, res) => {
     res.status(200).json({ valid: true });
   } catch (err) {
     logger.error("Token verification error", { error: err.message });
-    res
-      .status(500)
-      .json({
-        valid: false,
-        error: "Der opstod en fejl ved verificering af token.",
-      });
+    res.status(500).json({
+      valid: false,
+      error: "Der opstod en fejl ved verificering af token.",
+    });
   }
 });
 

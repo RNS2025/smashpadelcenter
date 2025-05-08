@@ -7,7 +7,6 @@ import React, {
   useRef,
 } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { logout as authLogout } from "../services/auth";
 import { WHITELIST_ROUTES } from "./WhitelistRoutes";
 import { User } from "../types/user";
 import api from "../api/api.ts";
