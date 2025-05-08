@@ -5,7 +5,7 @@ const { verifyJWT, checkRole } = require("../middleware/jwt");
 const databaseService = require("../Services/databaseService");
 const logger = require("../config/logger");
 const crypto = require("crypto");
-const emailService = require("../services/emailService");
+const emailService = require("../Services/emailService");
 const User = require("../models/user");
 
 const router = express.Router();
