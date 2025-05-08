@@ -28,7 +28,7 @@ const path = require("path");
 const http = require("http");
 const dotenv = require("dotenv");
 const logger = require("./config/logger");
-const emailService = require("./services/emailService");
+const emailService = require("./Services/emailService");
 
 // Load .env file
 dotenv.config({ path: path.resolve(__dirname, ".env") });
