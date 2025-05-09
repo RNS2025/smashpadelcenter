@@ -15,6 +15,7 @@ export const LunarTeamsTab = () => {
   } = useLeagueTeams((league) => league.name.includes("Lunar Ligaen - "));
     const isLoading = loading || lunarTeams.length === 0;
 
+
   const handleRowClick = (team: TeamInfo) => {
     sessionStorage.setItem(`teamName_${team.id}`, team.name);
     navigate(`/holdligaer/${team.id}`);

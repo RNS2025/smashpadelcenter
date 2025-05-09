@@ -1,6 +1,6 @@
 import {Helmet} from "react-helmet-async";
 import {useNavigate, useParams} from "react-router-dom";
-import {Fragment, useEffect, useState} from "react";
+import {Fragment, useEffect, useMemo, useState} from "react";
 import {TeamMatch} from "../../../types/LunarTypes.ts";
 import {fetchTeamMatches} from "../../../services/LigaService.ts";
 import {ClockIcon, MapPinIcon} from "@heroicons/react/24/outline";
@@ -21,6 +21,15 @@ export const TeamProfileMatchesTab = () => {
         fetchData().then();
     }, [teamId]);
 
+    const memoizedMatches = useMemo(() => {
+        if (!teamMatches) return [];
+        return teamMatches.map((match) => ({
+            ...match,
+            isUpcoming: !match.ShowResults && match.Date !== "00:00" && !match.ShowPlayerEnterResultButton,
+            isHighlighted: match.Team1.IsWinner || match.Team2.IsWinner,
+            displayResult: match.ShowResults ? `${match.Team1.Result} - ${match.Team2.Result}` : "Ikke afviklet",
+        }));
+    }, [teamMatches]);
 
     return (
         <>
@@ -28,8 +37,8 @@ export const TeamProfileMatchesTab = () => {
                 <title>Kampe</title>
             </Helmet>
 
-            {teamMatches && (
-                <div className="overflow-auto max-h-[calc(100vh-340px)] rounded-lg border border-gray-200 shadow-lg my-5 text-xxs">
+            {memoizedMatches.length > 0 && (
+                <div className="overflow-auto h-[calc(100vh-380px)] rounded-lg border border-gray-200 shadow-lg my-5 text-xxs">
                     <table className="min-w-[320px] w-full divide-y-2 divide-gray-200 bg-white">
                         <thead className="bg-gray-300 font-bold">
                         <tr>
@@ -57,7 +66,7 @@ export const TeamProfileMatchesTab = () => {
                         </thead>
 
                         <tbody className="divide-y divide-gray-200">
-                        {teamMatches.map((match) => (
+                        {memoizedMatches.map((match) => (
                                 <Fragment key={match.MatchId}>
                                 <tr>
                                     <td className="px-2 py-4 font-medium text-gray-900">{match.Details.Date}</td>
@@ -81,7 +90,7 @@ export const TeamProfileMatchesTab = () => {
                                     </td>
                                 </tr>
 
-                                {!match.ShowResults && match.Date !== "00:00" && !match.ShowPlayerEnterResultButton && (
+                                {match.isUpcoming && (
                                     <tr key={`${match.MatchId}-extra`}>
                                         <td colSpan={5} className="px-2 py-2 text-xxs text-gray-600 border-t-2 border-white">
                                             <div className="flex justify-center items-center gap-1 text-gray-600">

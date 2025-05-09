@@ -6,9 +6,14 @@ import {CheckCircleIcon, QuestionMarkCircleIcon} from "@heroicons/react/24/outli
 
 const MatchesTab = () => {
     const { profile, matches, matchesLoading } = useProfileContext();
+    console.log(matches);
 
 
-    if (!profile) return <LoadingSpinner />;
+    if (!profile) return(
+        <div className="w-full flex justify-center items-center">
+        <LoadingSpinner />
+        </div>
+    )
 
     
     return (

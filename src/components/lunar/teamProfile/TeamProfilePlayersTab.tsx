@@ -1,7 +1,7 @@
 import {Helmet} from "react-helmet-async";
 import {Player, TeamDetails} from "../../../types/LunarTypes.ts";
 import {useParams} from "react-router-dom";
-import {useEffect, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {fetchTeamInfo} from "../../../services/LigaService.ts";
 
 export const TeamProfilePlayersTab = () => {
@@ -16,9 +16,14 @@ export const TeamProfilePlayersTab = () => {
                 const response = await fetchTeamInfo(parseInt(teamId, 10));
                 setTeam(response.Team);
             }
-        }
+        };
         fetchData().then();
     }, [teamId]);
+
+
+    const players = useMemo(() => {
+        return team?.Players || [];
+    }, [team]);
 
 
     return (
@@ -27,8 +32,8 @@ export const TeamProfilePlayersTab = () => {
                 <title>Spillere</title>
             </Helmet>
 
-            {team && (
-            <div className="overflow-auto max-h-[calc(100vh-340px)] rounded-lg border border-gray-200 shadow-lg my-5 text-xs">
+            {players.length > 0 && (
+            <div className="overflow-auto h-[calc(100vh-380px)] rounded-lg border border-gray-200 shadow-lg my-5 text-xs">
                 <table className="min-w-full divide-y-2 divide-gray-200 bg-white">
                     <thead className="text-left bg-gray-300 font-bold">
                     <tr>
@@ -51,7 +56,7 @@ export const TeamProfilePlayersTab = () => {
                     </thead>
 
                     <tbody className="divide-y divide-gray-200">
-                    {team.Players.map((player: Player) => (
+                    {players.map((player: Player) => (
                         <tr key={player.Id}>
                             <td className="flex max-md:flex-col gap-2 px-4 py-4 font-medium text-gray-900">
                                 {player.FirstName}

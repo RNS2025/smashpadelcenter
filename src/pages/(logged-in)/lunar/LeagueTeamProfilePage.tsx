@@ -9,6 +9,7 @@ import LoadingSpinner from "../../../components/misc/LoadingSpinner.tsx";
 
 export const LeagueTeamProfilePage = () => {
   const { teamId } = useParams<{ teamId: string }>();
+  const lastLunarTab = sessionStorage.getItem("lastLigaTab") || "/holdligaer";
   const cachedName = teamId ? sessionStorage.getItem(`teamName_${teamId}`) : null;
   const [team, setTeam] = useState<TeamDetails | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,7 +47,7 @@ export const LeagueTeamProfilePage = () => {
   if (loading) {
     return (
         <>
-        <HomeBar backPage="/holdligaer" />
+        <HomeBar backPage={lastLunarTab} />
       <Animation>
         <div className="h-full w-full flex items-center justify-center">
           <LoadingSpinner />
@@ -59,7 +60,7 @@ export const LeagueTeamProfilePage = () => {
   if (error || !team) {
     return (
         <>
-        <HomeBar backPage="/holdligaer" />
+        <HomeBar backPage={lastLunarTab} />
       <Animation>
         <div className="mx-auto p-3 mt-5 text-center text-red-500">
           {error || "Hold ikke fundet"}
@@ -71,7 +72,7 @@ export const LeagueTeamProfilePage = () => {
 
   return (
       <>
-      <HomeBar backPage="/holdligaer" />
+      <HomeBar backPage={lastLunarTab}/>
     <Animation>
       <div className="max-h-[calc(100vh-100px)] mx-2 sm:mx-10 p-4 bg-white mt-5 shadow-md rounded-lg">
         <div className="flex gap-5 px-2">

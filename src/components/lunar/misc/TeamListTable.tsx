@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
 import LoadingSpinner from "../../misc/LoadingSpinner.tsx";
 import { TeamInfo } from "../../../types/LunarTypes.ts";
@@ -14,9 +14,18 @@ const TeamListTable = ({
     onRowClick?: (team: TeamInfo) => void;
     loading: boolean;
 }) => {
+    const storedSortField = localStorage.getItem("teamSortField") as SortableFields || "Division";
+    const storedSortDirection = localStorage.getItem("teamSortDirection") as "asc" | "desc" || "asc";
+
+
     const [searchQuery, setSearchQuery] = useState("");
-    const [sortField, setSortField] = useState<SortableFields>("Division");
-    const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+    const [sortField, setSortField] = useState<SortableFields>(storedSortField);
+    const [sortDirection, setSortDirection] = useState<"asc" | "desc">(storedSortDirection);
+
+    useEffect(() => {
+        localStorage.setItem("teamSortField", sortField);
+        localStorage.setItem("teamSortDirection", sortDirection);
+    }, [sortField, sortDirection]);
 
     const handleSort = (field: SortableFields) => {
         if (sortField === field) {

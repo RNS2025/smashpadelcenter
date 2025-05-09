@@ -144,7 +144,9 @@ export const MyEventsTab = () => {
 
       <div className="text-sm cursor-pointer">
         {privateEvents.length === 0 ? (
-          <p className="mt-10">Du har ingen kommende arrangementer.</p>
+            <div className="border py-4 rounded-lg space-y-1.5 mb-5">
+              <p className="font-semibold text-center">Du har ingen kommende arrangementer.</p>
+            </div>
         ) : (
           privateEvents.map((event) => (
             <div

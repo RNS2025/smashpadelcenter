@@ -41,7 +41,7 @@ const ProfilePage = () => {
     if (loading) {
         return (
             <>
-                <HomeBar />%
+                <HomeBar />
                 <div className="w-full h-[calc(100vh-150px)] flex justify-center items-center">
                     <LoadingSpinner />
                 </div>

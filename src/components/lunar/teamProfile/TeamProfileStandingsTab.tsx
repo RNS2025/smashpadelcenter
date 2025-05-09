@@ -1,6 +1,6 @@
 import {Helmet} from "react-helmet-async";
 import {useParams} from "react-router-dom";
-import {useEffect, useState} from "react";
+import {useEffect, useMemo, useState} from "react";
 import {TeamStandingsResponse} from "../../../types/LunarTypes.ts";
 import {fetchTeamStandings} from "../../../services/LigaService.ts";
 
@@ -19,6 +19,10 @@ export const TeamProfileStandingsTab = () => {
         fetchData().then();
     }, [teamId]);
 
+    const standings = useMemo(() => {
+        return teamStandings?.ScoresViewModels || [];
+    }, [teamStandings]);
+
 
     return (
         <>
@@ -26,8 +30,8 @@ export const TeamProfileStandingsTab = () => {
                 <title>Tabeloversigt</title>
             </Helmet>
 
-            {teamStandings && (
-                <div className="overflow-auto max-h-[calc(100vh-350px)] rounded-lg border border-gray-200 shadow-lg my-5 text-xxs">
+            {standings.length > 0 && (
+                <div className="overflow-auto h-[calc(100vh-380px)] rounded-lg border border-gray-200 shadow-lg my-5 text-xxs">
                     <table className="min-w-[320px] w-full divide-y-2 divide-gray-200 bg-white">
                         <thead className="bg-gray-300 font-bold">
                         <tr>
@@ -60,7 +64,7 @@ export const TeamProfileStandingsTab = () => {
                         </thead>
 
                         <tbody className="divide-y divide-gray-200">
-                        {teamStandings.ScoresViewModels.map((teamStanding) => (
+                        {standings.map((teamStanding) => (
                             <tr key={teamStanding.Standing}>
                                 <td className="px-2 py-4 font-medium text-gray-900 flex gap-4">
                                     <p>{teamStanding.Standing}.</p>

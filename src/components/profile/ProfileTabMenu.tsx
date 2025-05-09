@@ -11,7 +11,7 @@ export const ProfileTabMenu = ({profile, user}: {
 
     return (
         <div>
-            <nav className="flex gap-6 w-full overflow-x-auto pb-2" aria-label="Tabs">
+            <nav className="flex gap-3 w-full overflow-x-auto pb-2" aria-label="Tabs">
                 <NavLink
                     to={`/profil/${profile.username}/overblik`}
                     className={`font-semibold inline-flex items-center justify-center h-8 shrink-0 rounded-full gap-2 px-2 text-sm max-sm:text-xs
