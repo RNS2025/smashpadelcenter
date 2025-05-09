@@ -61,6 +61,16 @@ app.use((req, res, next) => {
 // Passport setup
 app.use(passport.initialize());
 
+if (isDev) {
+  app.use((req, res, next) => {
+    const delayMs = parseInt("2000", 10);
+    logger.info(
+      `Development mode: Adding ${delayMs}ms delay to simulate network latency`
+    );
+    setTimeout(next, delayMs);
+  });
+}
+
 // Serve static files
 app.use("/uploads", express.static(path.join(__dirname, "Uploads")));
 
