@@ -6,8 +6,6 @@ const InstallPage: React.FC = () => {
   const navigate = useNavigate();
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [showManualGuide, setShowManualGuide] = useState<boolean>(false);
-  const [showIOSInstallMessage, setShowIOSInstallMessage] =
-    useState<boolean>(false);
 
   // Browser and device detection
   const isFacebookBrowser = /FBAN|FBAV/i.test(navigator.userAgent);
@@ -16,10 +14,6 @@ const InstallPage: React.FC = () => {
   const isSafari =
     /Safari/.test(navigator.userAgent) && !/Chrome/.test(navigator.userAgent);
   const isChrome = /Chrome/.test(navigator.userAgent);
-
-  // Detects if device is in standalone mode
-  const isInStandaloneMode = () =>
-    "standalone" in window.navigator && window.navigator.standalone;
 
   useEffect(() => {
     // Check if app is already installed in standalone mode
@@ -30,11 +24,6 @@ const InstallPage: React.FC = () => {
     if (isStandalone) {
       navigate("/hjem", { replace: true });
       return;
-    }
-
-    // iOS specific check for standalone mode
-    if (isIOS && !isInStandaloneMode()) {
-      setShowIOSInstallMessage(true);
     }
 
     if (isFacebookBrowser) {
@@ -271,9 +260,6 @@ const InstallPage: React.FC = () => {
               <h1 className="mt-4 text-2xl font-bold text-white sm:text-3xl">
                 SMASH Padelcenter
               </h1>
-              <p className="mt-2 leading-relaxed text-gray-400">
-                Din nye klubapp
-              </p>
             </div>
             <div className="mt-8 flex flex-col items-center justify-center">
               <div className="w-12 h-12 rounded-full border-4 border-blue-600 border-t-transparent animate-spin"></div>
@@ -305,9 +291,6 @@ const InstallPage: React.FC = () => {
             <h1 className="mt-4 text-2xl font-bold text-white sm:text-3xl">
               SMASH Padelcenter
             </h1>
-            <p className="mt-2 leading-relaxed text-gray-400">
-              Din nye klubapp
-            </p>
           </div>
 
           <div className="mt-6 flex flex-col gap-4">
