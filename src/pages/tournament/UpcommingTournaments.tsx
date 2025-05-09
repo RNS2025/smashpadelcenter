@@ -1,6 +1,6 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import axios from "axios";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, addDays, isBefore } from "date-fns";
 
 interface TournamentClass {
   Id: number;
@@ -27,11 +27,19 @@ interface Tournament {
   Classes?: TournamentClass[];
 }
 
+interface CachedData {
+  tournaments: Tournament[];
+  timestamp: string;
+  from: number;
+}
+
+const CACHE_KEY = "padel_tournaments_cache";
+const CACHE_DURATION_DAYS = 1;
+
 const UpcommingTournaments: React.FC = () => {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [dateFilter, setDateFilter] = useState<string>("");
   const [locationFilter, setLocationFilter] = useState<string>("");
   const [regionFilter, setRegionFilter] = useState<string>("All");
   const [postalCodeFilter, setPostalCodeFilter] = useState<string>("");
@@ -160,85 +168,156 @@ const UpcommingTournaments: React.FC = () => {
     return { postalCode, region: "Unknown" };
   };
 
-  // Fetch tournaments
-  const fetchTournaments = async (startFrom: number) => {
+  // Check if cache is valid
+  const isCacheValid = useCallback((cachedData: CachedData): boolean => {
+    const cacheDate = new Date(cachedData.timestamp);
+    const expiryDate = addDays(cacheDate, CACHE_DURATION_DAYS);
+    return isBefore(new Date(), expiryDate);
+  }, []);
+
+  // Save data to cache
+  const saveToCache = useCallback((data: Tournament[], currentFrom: number) => {
+    const cacheData: CachedData = {
+      tournaments: data,
+      timestamp: new Date().toISOString(),
+      from: currentFrom + 25, // Store next starting point
+    };
+    localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+  }, []);
+
+  // Load data from cache
+  const loadFromCache = useCallback((): {
+    data: Tournament[] | null;
+    nextFrom: number;
+  } => {
     try {
-      setLoading(true);
-      const response = await axios.get(
-        "https://api.rankedin.com/v1/calendar/GetEventsAsync",
-        {
-          params: {
-            from: startFrom,
-            take: 25,
-            country: 45,
-            sport: 5,
-            eventType: 4,
-            eventState: 1,
-            calendarAgeGroups: 2,
-            calendarDateFilter: 1,
-            calendarOrganization: 0,
-          },
-        }
-      );
+      const cachedJson = localStorage.getItem(CACHE_KEY);
+      if (!cachedJson) return { data: null, nextFrom: 0 };
 
-      // Fetch classes and address for each tournament
-      const tournamentsWithClasses = await Promise.all(
-        response.data.map(async (tournament: Tournament) => {
-          try {
-            const classResponse = await axios.get(
-              `https://api.rankedin.com/v1/tournament/GetInfoAsync?id=${tournament.EventId}&language=en`
-            );
-            const sidebar = classResponse.data.TournamentSidebarModel;
-            // Filter classes to only include valid DPF classes
-            const filteredClasses = (sidebar.Classes || []).filter(
-              (c: TournamentClass) =>
-                validDPFClasses.some((dpf) =>
-                  c.Name.toLowerCase().includes(dpf.toLowerCase())
-                )
-            );
-            return {
-              ...tournament,
-              Address: sidebar.Address || tournament.Address, // Use event address
-              Classes: filteredClasses,
-            };
-          } catch (classError) {
-            console.error(
-              `Failed to fetch classes for tournament ${tournament.EventId}:`,
-              classError
-            );
-            return { ...tournament, Classes: [] };
-          }
-        })
-      );
-
-      if (startFrom === 0) {
-        setTournaments(tournamentsWithClasses);
-      } else {
-        setTournaments((prev) => [...prev, ...tournamentsWithClasses]);
+      const cachedData: CachedData = JSON.parse(cachedJson);
+      if (!isCacheValid(cachedData)) {
+        localStorage.removeItem(CACHE_KEY);
+        return { data: null, nextFrom: 0 };
       }
-      setHasMore(response.data.length === 25);
-      setLoading(false);
-    } catch (err) {
-      setError("Failed to fetch tournaments");
-      setLoading(false);
+
+      return {
+        data: cachedData.tournaments,
+        nextFrom: cachedData.from,
+      };
+    } catch (e) {
+      console.error("Error loading from cache:", e);
+      localStorage.removeItem(CACHE_KEY);
+      return { data: null, nextFrom: 0 };
     }
-  };
+  }, [isCacheValid]);
+
+  // Fetch tournaments with caching
+  const fetchTournaments = useCallback(
+    async (startFrom: number, useCache: boolean = true) => {
+      try {
+        setLoading(true);
+
+        // Check cache first if allowed
+        if (useCache && startFrom === 0) {
+          const { data: cachedTournaments, nextFrom } = loadFromCache();
+          if (cachedTournaments && cachedTournaments.length > 0) {
+            setTournaments(cachedTournaments);
+            setFrom(nextFrom);
+            setLoading(false);
+            return;
+          }
+        }
+
+        // Fetch from API if cache is not available or invalid
+        const response = await axios.get(
+          "https://api.rankedin.com/v1/calendar/GetEventsAsync",
+          {
+            params: {
+              from: startFrom,
+              take: 25,
+              country: 45,
+              sport: 5,
+              eventType: 4,
+              eventState: 1,
+              calendarAgeGroups: 2,
+              calendarOrganization: 0,
+            },
+          }
+        );
+
+        // Fetch classes and address for each tournament
+        const tournamentsWithClasses = await Promise.all(
+          response.data.map(async (tournament: Tournament) => {
+            try {
+              const classResponse = await axios.get(
+                `https://api.rankedin.com/v1/tournament/GetInfoAsync?id=${tournament.EventId}&language=en`
+              );
+              const sidebar = classResponse.data.TournamentSidebarModel;
+              // Filter classes to only include valid DPF classes
+              const filteredClasses = (sidebar.Classes || []).filter(
+                (c: TournamentClass) =>
+                  validDPFClasses.some((dpf) =>
+                    c.Name.toLowerCase().includes(dpf.toLowerCase())
+                  )
+              );
+              return {
+                ...tournament,
+                Address: sidebar.Address || tournament.Address, // Use event address
+                Classes: filteredClasses,
+              };
+            } catch (classError) {
+              console.error(
+                `Failed to fetch classes for tournament ${tournament.EventId}:`,
+                classError
+              );
+              return { ...tournament, Classes: [] };
+            }
+          })
+        );
+
+        if (startFrom === 0) {
+          setTournaments(tournamentsWithClasses);
+          // Save to cache only for initial load
+          saveToCache(tournamentsWithClasses, startFrom);
+        } else {
+          setTournaments((prevTournaments) => {
+            const updatedTournaments = [
+              ...prevTournaments,
+              ...tournamentsWithClasses,
+            ];
+
+            // Update cache with the new data if it's not too large
+            if (updatedTournaments.length <= 100) {
+              // Limit cache size
+              saveToCache(updatedTournaments, startFrom);
+            }
+
+            return updatedTournaments;
+          });
+        }
+
+        setFrom(startFrom + 25);
+        setHasMore(response.data.length === 25);
+        setLoading(false);
+      } catch (err) {
+        setError("Failed to fetch tournaments");
+        setLoading(false);
+      }
+    },
+    [loadFromCache, saveToCache]
+  ); // Remove tournaments from dependency array
 
   // Initial fetch
   useEffect(() => {
+    // Using a flag to ensure we only run this once
+    const controller = new AbortController();
     fetchTournaments(0);
+    return () => controller.abort();
   }, []);
 
   // Apply filters with useMemo for optimization
   const filteredTournaments = useMemo(() => {
     let filtered = tournaments;
-
-    // Date filter
-    if (dateFilter) {
-      filtered = filtered.filter(
-        (t) => format(parseISO(t.StartDate), "yyyy-MM-dd") === dateFilter
-      );
-    }
 
     // Location filter
     if (locationFilter) {
@@ -278,7 +357,6 @@ const UpcommingTournaments: React.FC = () => {
 
     return filtered;
   }, [
-    dateFilter,
     locationFilter,
     regionFilter,
     postalCodeFilter,
@@ -296,9 +374,15 @@ const UpcommingTournaments: React.FC = () => {
 
   // Load more tournaments
   const handleLoadMore = () => {
-    const nextFrom = from + 25;
-    setFrom(nextFrom);
-    fetchTournaments(nextFrom);
+    fetchTournaments(from);
+  };
+
+  // Force refresh all data
+  const handleRefreshData = () => {
+    localStorage.removeItem(CACHE_KEY);
+    setTournaments([]);
+    setFrom(0);
+    fetchTournaments(0, false);
   };
 
   if (error) {
@@ -310,6 +394,30 @@ const UpcommingTournaments: React.FC = () => {
       <h1 className="text-3xl font-bold mb-4 text-black">
         Upcoming Padel Tournaments
       </h1>
+
+      {/* Refresh button */}
+      <div className="mb-4 flex justify-end">
+        <button
+          onClick={handleRefreshData}
+          className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition flex items-center"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5 mr-1"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+            />
+          </svg>
+          Refresh Data
+        </button>
+      </div>
 
       {/* Filters */}
       <div className="mb-4">
@@ -337,17 +445,6 @@ const UpcommingTournaments: React.FC = () => {
 
         {/* Date, Location, Postal Code, Month, and Class Filters */}
         <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-black">
-              Filter by Date
-            </label>
-            <input
-              type="date"
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-black"
-            />
-          </div>
           <div className="flex-1">
             <label className="block text-sm font-medium text-black">
               Filter by Location
@@ -408,6 +505,12 @@ const UpcommingTournaments: React.FC = () => {
         </div>
       </div>
 
+      {/* Tournament Count */}
+      <div className="mb-4 text-black">
+        Showing {filteredTournaments.length} tournament
+        {filteredTournaments.length !== 1 ? "s" : ""}
+      </div>
+
       {/* Tournament List */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {filteredTournaments.map((tournament) => (
@@ -437,14 +540,13 @@ const UpcommingTournaments: React.FC = () => {
               </p>
             )}
             {tournament.IsStreamPlanned && (
-              <p className="text-black">Streaming Planned</p>
+              <p className="text-green-600 font-medium">Streaming Planned</p>
             )}
-            кемпивз
             <a
               href={tournament.EventUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-black hover:underline"
+              className="inline-block mt-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
             >
               View Tournament
             </a>
@@ -452,22 +554,35 @@ const UpcommingTournaments: React.FC = () => {
         ))}
       </div>
 
+      {/* Loading Indicator */}
+      {loading && (
+        <div className="flex justify-center my-6">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+        </div>
+      )}
+
       {/* Load More Button */}
-      {hasMore && (
+      {hasMore && !loading && (
         <div className="mt-6 text-center">
           <button
             onClick={handleLoadMore}
-            disabled={loading}
-            className={`px-6 py-2 rounded-md text-sm font-medium transition ${
-              loading
-                ? "bg-gray-400 text-black cursor-not-allowed"
-                : "bg-indigo-600 text-white hover:bg-indigo-700"
-            }`}
+            className="px-6 py-2 rounded-md text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition"
           >
-            {loading ? "Loading..." : "Load More"}
+            Load 25 More Tournaments
           </button>
         </div>
       )}
+
+      {/* Cache Status */}
+      <div className="mt-6 text-center text-sm text-gray-500">
+        Data is cached for 24 hours to improve performance
+        {tournaments.length > 0 && (
+          <span>
+            {" "}
+            · Showing {tournaments.length} total tournaments in memory
+          </span>
+        )}
+      </div>
     </div>
   );
 };
