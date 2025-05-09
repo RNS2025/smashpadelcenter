@@ -19,4 +19,5 @@ export const WHITELIST_ROUTES = [
   "/InstallPrompt",
   "/glemt-adgangskode",
   "/reset-password/:token",
+  "/install",
 ];
