@@ -27,7 +27,7 @@ export const TeamProfileStandingsTab = () => {
             </Helmet>
 
             {teamStandings && (
-                <div className="overflow-auto h-[calc(100vh-350px)] rounded-lg border border-gray-200 shadow-lg my-5 text-xxs">
+                <div className="overflow-auto max-h-[calc(100vh-350px)] rounded-lg border border-gray-200 shadow-lg my-5 text-xxs">
                     <table className="min-w-[320px] w-full divide-y-2 divide-gray-200 bg-white">
                         <thead className="bg-gray-300 font-bold">
                         <tr>

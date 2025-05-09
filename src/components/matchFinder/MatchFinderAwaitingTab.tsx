@@ -42,7 +42,13 @@ export const MatchFinderAwaitingTab = () => {
   }, [user?.username]);
 
   if (loading) {
-    return <LoadingSpinner />;
+    return (
+        <>
+          <div className="w-full flex justify-center items-center">
+            <LoadingSpinner />
+          </div>
+        </>
+    )
   }
 
   if (error) {
@@ -58,7 +64,9 @@ export const MatchFinderAwaitingTab = () => {
 
       <div className="text-sm ">
         {matches.length === 0 ? (
-          <p className="mt-10">Ingen kampe afventer din bekræftelse.</p>
+            <div className="border p-4 rounded-lg space-y-1.5 mb-5">
+              <p className="text-center py-4 font-semibold">Du har ingen aktive tilmeldingsanmodninger.</p>
+            </div>
         ) : (
           matches.map((match) => (
             <div

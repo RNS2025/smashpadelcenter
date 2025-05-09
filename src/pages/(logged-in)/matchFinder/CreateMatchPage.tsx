@@ -4,6 +4,8 @@ import Animation from "../../../components/misc/Animation.tsx";
 import HomeBar from "../../../components/misc/HomeBar.tsx";
 
 export const CreateMatchPage = () => {
+
+
   return (
     <>
       <Helmet>

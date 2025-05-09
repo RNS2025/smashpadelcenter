@@ -20,9 +20,10 @@ import {
   PresentationChartBarIcon,
 } from "@heroicons/react/24/outline";
 import { setupNotifications } from "../../utils/notifications";
+import LoadingSpinner from "../../components/misc/LoadingSpinner.tsx";
 
 export const HomePage = () => {
-  const { user } = useUser();
+  const { user, loading } = useUser();
   const [isNotificationsInitialized, setNotificationsInitialized] = useState(false);
 
   useEffect(() => {
@@ -41,8 +42,19 @@ export const HomePage = () => {
       }
     };
 
-    initializeNotifications();
+    initializeNotifications().then();
   }, [user?.username, isNotificationsInitialized]);
+
+  if (loading) {
+    return (
+        <>
+          <HomeBar />
+          <div className="w-full h-[calc(100vh-150px)] flex justify-center items-center">
+            <LoadingSpinner />
+          </div>
+        </>
+    )
+  }
 
   return (
     <>

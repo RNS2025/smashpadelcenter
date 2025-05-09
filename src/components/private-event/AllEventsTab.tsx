@@ -70,7 +70,13 @@ export const AllEventsTab = () => {
   );
 
   if (loading) {
-    return <LoadingSpinner />;
+    return (
+        <>
+          <div className="w-full flex justify-center items-center">
+            <LoadingSpinner />
+          </div>
+        </>
+    )
   }
 
   if (error) {

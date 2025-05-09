@@ -29,7 +29,7 @@ export const TeamProfileMatchesTab = () => {
             </Helmet>
 
             {teamMatches && (
-                <div className="overflow-auto h-[calc(100vh-340px)] rounded-lg border border-gray-200 shadow-lg my-5 text-xxs">
+                <div className="overflow-auto max-h-[calc(100vh-340px)] rounded-lg border border-gray-200 shadow-lg my-5 text-xxs">
                     <table className="min-w-[320px] w-full divide-y-2 divide-gray-200 bg-white">
                         <thead className="bg-gray-300 font-bold">
                         <tr>
@@ -61,7 +61,7 @@ export const TeamProfileMatchesTab = () => {
                                 <Fragment key={match.MatchId}>
                                 <tr>
                                     <td className="px-2 py-4 font-medium text-gray-900">{match.Details.Date}</td>
-                                    <td className={`px-px-2 py-4 font-medium text-gray-900 text-center ${match.Team1.IsWinner ? "font-semibold" : ""}`}>
+                                    <td className={`px-2 py-4 font-medium text-gray-900 text-center ${match.Team1.IsWinner ? "font-semibold" : ""}`}>
                                         {match.Team1.Name}
                                     </td>
                                     <td className={`px-2-4 py-4 font-medium text-gray-900 text-center ${match.Team2.IsWinner ? "font-semibold" : ""}`}>
@@ -83,7 +83,7 @@ export const TeamProfileMatchesTab = () => {
 
                                 {!match.ShowResults && match.Date !== "00:00" && !match.ShowPlayerEnterResultButton && (
                                     <tr key={`${match.MatchId}-extra`}>
-                                        <td colSpan={5} className="px-2 py-2 text-sm text-gray-600 border-t-2 border-white">
+                                        <td colSpan={5} className="px-2 py-2 text-xxs text-gray-600 border-t-2 border-white">
                                             <div className="flex justify-center items-center gap-1 text-gray-600">
                                                 <ClockIcon className="h-5"/>
                                                 <p className="pt-0.5">{match.Date}</p>

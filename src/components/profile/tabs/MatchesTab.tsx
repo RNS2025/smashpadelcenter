@@ -18,8 +18,8 @@ const MatchesTab = () => {
         </Helmet>
 
         {matchesLoading ? (
-            <div className="py-4">
-              <LoadingSpinner />
+            <div className="w-full flex justify-center items-center">
+            <LoadingSpinner />
             </div>
         ) : matches.former.length > 0 ? (
             <ul className="space-y-2">
@@ -45,21 +45,21 @@ const MatchesTab = () => {
                         <p>{match.matchType}</p>
                       </div>
                     </div>
-                    <div className="flex justify-between text-sm pt-2">
+                    <div className="flex justify-between text-xs pt-2">
                       <div className="flex items-center gap-4">
                         {match.team1Sets !== 0 && match.team2Sets !== 0 ? (
-                            <QuestionMarkCircleIcon className="h-10 text-gray-800" />
+                            <QuestionMarkCircleIcon className="size-8 text-gray-800" />
                         ) : (
-                            <CheckCircleIcon className="h-10 text-green-800" />
+                            <CheckCircleIcon className="size-8 text-green-800" />
                         )}
-                        <div className="text-sm">
+                        <div>
                           <h1>Niveau:</h1>
                           <h1>{match.level}</h1>
                         </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="max-w-44 grid grid-cols-2 gap-2">
                           {[...match.participants, ...match.reservedSpots.map((r) => r.name)].map((player, index) => (
-                            <p key={index}>{player}</p>
+                            <p className="text-center truncate" key={index}>{player}</p>
                         ))}
                       </div>
                     </div>
@@ -67,7 +67,9 @@ const MatchesTab = () => {
               ))}
             </ul>
         ) : (
-            <p className="text-gray-600">Ingen tidligere kampe.</p>
+            <div className="border border-gray-900 p-2 rounded-lg text-gray-800">
+            <p className="py-4 text-center text-gray-600">Ingen tidligere kampe.</p>
+            </div>
         )}
 
       </>

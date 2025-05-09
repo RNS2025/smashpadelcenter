@@ -532,7 +532,14 @@ export const ViewMatchPage = () => {
   }
 
   if (loading) {
-    return <LoadingSpinner />;
+    return (
+        <>
+          <HomeBar backPage="/hjem" />
+          <div className="w-full h-[calc(100vh-150px)] flex justify-center items-center">
+            <LoadingSpinner />
+          </div>
+        </>
+    )
   }
 
   if (error && !match) {

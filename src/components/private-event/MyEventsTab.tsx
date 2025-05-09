@@ -101,7 +101,13 @@ export const MyEventsTab = () => {
   }, [userLoading, user, navigate]);
 
   if (userLoading || loading) {
-    return <LoadingSpinner />;
+    return (
+        <>
+            <div className="w-full flex justify-center items-center">
+            <LoadingSpinner />
+            </div>
+        </>
+    )
   }
 
   if (error) {
@@ -118,6 +124,16 @@ export const MyEventsTab = () => {
         )}
       </div>
     );
+  }
+
+  if (loading) {
+    return (
+        <>
+          <div className="w-full flex justify-center items-center">
+            <LoadingSpinner />
+          </div>
+        </>
+    )
   }
 
   return (
