@@ -4,6 +4,7 @@ import { HelmetProvider } from "react-helmet-async";
 import { UserProvider } from "./context/UserContext";
 import LoadingSpinner from "./components/misc/LoadingSpinner.tsx";
 import InstallPrompt from "./components/misc/InstallPrompt.tsx";
+import InstallPage from "./pages/installPage.tsx"; // New import
 import LoginPage from "./pages/login/LoginPage.tsx";
 import HomePage from "./pages/(logged-in)/HomePage.tsx";
 import AdminPage from "./pages/(logged-in)/misc/AdminPage.tsx";
@@ -147,6 +148,7 @@ function AppContent() {
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<LoginPage />} />
+        <Route path="/install" element={<InstallPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/turneringer" element={<TournamentTabs />} />
         <Route path="/turneringer/check-in" element={<CheckInPage />} />
