@@ -100,14 +100,6 @@ const InstallPage: React.FC = () => {
   // Helper function to render iOS Safari guide
   const renderIOSSafariGuide = () => (
     <div className="bg-gray-800 rounded-lg p-4 text-white space-y-6">
-      {showIOSInstallMessage && (
-        <div className="bg-blue-600 rounded-lg p-3 mb-4">
-          <p className="text-white text-sm font-medium">
-            Installér SMASH app på din iOS-enhed for den bedste oplevelse! 📱
-          </p>
-        </div>
-      )}
-
       <div>
         <h3 className="text-lg font-bold mb-2">Trin 1: Tryk på Del-knappen</h3>
         <p className="text-gray-300 text-sm mb-2">
@@ -258,37 +250,6 @@ const InstallPage: React.FC = () => {
     </div>
   );
 
-  // Render special iOS installation banner
-  const renderIOSInstallBanner = () => {
-    if (isIOS && !isInStandaloneMode() && showIOSInstallMessage) {
-      return (
-        <div className="fixed bottom-0 left-0 right-0 bg-blue-600 shadow-lg p-4 z-50 transition-all duration-300 ease-in-out">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <span className="text-2xl mr-3">📱</span>
-              <div>
-                <p className="text-white text-sm font-medium">
-                  Installér SMASH App på din iPhone for den bedste oplevelse
-                </p>
-                <p className="text-blue-100 text-xs">
-                  Tryk på "Del" og derefter "Føj til hjemmeskærm"
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowIOSInstallMessage(false)}
-              className="text-white text-xl font-medium"
-              aria-label="Luk installationsbesked"
-            >
-              ×
-            </button>
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
-
   // If still waiting for auto-installation attempt
   if (!showManualGuide && !isFacebookBrowser && !isIOS) {
     return (
@@ -329,8 +290,6 @@ const InstallPage: React.FC = () => {
       <Helmet>
         <title>Installér SMASH App</title>
       </Helmet>
-
-      {renderIOSInstallBanner()}
 
       <section className="flex min-h-screen items-center justify-center bg-gray-900 px-5 py-8">
         <div className="w-full max-w-md">
