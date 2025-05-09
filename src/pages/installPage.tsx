@@ -1,15 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const InstallPage: React.FC = () => {
   const navigate = useNavigate();
-  const location = useLocation();
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [showManualGuide, setShowManualGuide] = useState<boolean>(false);
   const isFacebookBrowser = /FBAN|FBAV/i.test(navigator.userAgent);
-  const [localDeferredPrompt, setLocalDeferredPrompt] = useState<any>(null);
-  const [showManualGuide, setShowManualGuide] = useState<boolean>(
-    location.search === "?manual=true"
-  );
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
   const isAndroid = /Android/.test(navigator.userAgent);
   const isSafari =
@@ -18,51 +15,12 @@ const InstallPage: React.FC = () => {
 
   useEffect(() => {
     if (isFacebookBrowser) {
-      // Facebook in-app browser: no further action
+      // Facebook in-app browser: show manual guide immediately
+      setShowManualGuide(true);
       return;
     }
 
-    // Wait for beforeinstallprompt event to capture deferredPrompt
-    const handleBeforeInstallPrompt = (e: Event) => {
-      e.preventDefault();
-      setLocalDeferredPrompt(e);
-    };
-
-    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
-
-    return () => {
-      window.removeEventListener(
-        "beforeinstallprompt",
-        handleBeforeInstallPrompt
-      );
-    };
-  }, [isFacebookBrowser]);
-
-  const handleInstall = async () => {
-    if (localDeferredPrompt) {
-      // Use the stored prompt if available
-      try {
-        localDeferredPrompt.prompt();
-        const choiceResult = await localDeferredPrompt.userChoice;
-
-        if (choiceResult.outcome === "accepted") {
-          navigate("/hjem", { replace: true });
-        } else {
-          showManualInstallGuide();
-        }
-        setLocalDeferredPrompt(null);
-      } catch (err) {
-        console.error("Installation prompt error:", err);
-        showManualInstallGuide();
-      }
-    } else {
-      // Try alternative installation methods if deferredPrompt isn't available
-      showManualInstallGuide();
-    }
-  };
-
-  const showManualInstallGuide = () => {
-    // Check if app is already installed
+    // Check if app is already installed in standalone mode
     const isStandalone = window.matchMedia(
       "(display-mode: standalone)"
     ).matches;
@@ -71,10 +29,54 @@ const InstallPage: React.FC = () => {
       return;
     }
 
-    // Show manual installation guide
-    navigate("/install?manual=true", { replace: true });
-    setShowManualGuide(true);
-  };
+    // Immediately try to trigger install prompt
+    const showInstallPrompt = async () => {
+      if (deferredPrompt) {
+        try {
+          deferredPrompt.prompt();
+          const choiceResult = await deferredPrompt.userChoice;
+
+          if (choiceResult.outcome === "accepted") {
+            navigate("/hjem", { replace: true });
+          } else {
+            // User declined automatic prompt, show manual guide
+            setShowManualGuide(true);
+          }
+          setDeferredPrompt(null);
+        } catch (err) {
+          console.error("Installation prompt error:", err);
+          // On error, fall back to manual guide
+          setShowManualGuide(true);
+        }
+      } else {
+        // No prompt available, show manual guide
+        setTimeout(() => {
+          setShowManualGuide(true);
+        }, 1000); // Short delay to avoid flashing content
+      }
+    };
+
+    // Catch beforeinstallprompt event
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+
+    window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+
+    // Try to show install prompt after a brief delay
+    const timeoutId = setTimeout(() => {
+      showInstallPrompt();
+    }, 500);
+
+    return () => {
+      window.removeEventListener(
+        "beforeinstallprompt",
+        handleBeforeInstallPrompt
+      );
+      clearTimeout(timeoutId);
+    };
+  }, [deferredPrompt, isFacebookBrowser, navigate]);
 
   // Helper function to render iOS Safari guide
   const renderIOSSafariGuide = () => (
@@ -82,7 +84,8 @@ const InstallPage: React.FC = () => {
       <div>
         <h3 className="text-lg font-bold mb-2">Trin 1: Tryk på Del-knappen</h3>
         <p className="text-gray-300 text-sm mb-2">
-          Find del-knappen nederst på skærmen.
+          Find del-knappen nederst på skærmen eller øverst til højre, afhængigt
+          af hvilken browser du bruger.
         </p>
         <div className="bg-gray-700 p-3 rounded-md text-center">
           <span className="text-2xl">📱</span>
@@ -228,6 +231,41 @@ const InstallPage: React.FC = () => {
     </div>
   );
 
+  // If still waiting for auto-installation attempt
+  if (!showManualGuide && !isFacebookBrowser) {
+    return (
+      <>
+        <Helmet>
+          <title>Installér SMASH App</title>
+        </Helmet>
+        <section className="flex min-h-screen items-center justify-center bg-gray-900 px-5 py-8">
+          <div className="w-full max-w-md">
+            <div className="text-center">
+              <div className="relative inline-block bg-gray-900 px-4 py-6 rounded-full">
+                <img
+                  src="https://www.smash.dk/wp-content/uploads/2021/05/SMASH-neg-udenby@4x.png"
+                  alt="SMASH Logo"
+                  className="h-10 sm:h-12"
+                  aria-label="SMASH Padelcenter Logo"
+                />
+              </div>
+              <h1 className="mt-4 text-2xl font-bold text-white sm:text-3xl">
+                SMASH Padelcenter
+              </h1>
+              <p className="mt-2 leading-relaxed text-gray-400">
+                Din nye klubapp
+              </p>
+            </div>
+            <div className="mt-8 flex flex-col items-center justify-center">
+              <div className="w-12 h-12 rounded-full border-4 border-blue-600 border-t-transparent animate-spin"></div>
+              <p className="mt-4 text-white">Forbereder installation...</p>
+            </div>
+          </div>
+        </section>
+      </>
+    );
+  }
+
   return (
     <>
       <Helmet>
@@ -254,52 +292,32 @@ const InstallPage: React.FC = () => {
           </div>
 
           <div className="mt-6 flex flex-col gap-4">
-            {!showManualGuide ? (
-              <>
-                <h2 className="text-xl font-bold text-white text-center">
-                  Installér SMASH App
-                </h2>
+            <h2 className="text-xl font-bold text-white text-center">
+              Sådan installerer du SMASH App
+            </h2>
+            <p className="text-gray-300 text-center mb-4">
+              Følg disse simple trin for at installere app'en på din telefon:
+            </p>
 
-                {isFacebookBrowser ? (
-                  <div className="transition-all duration-300 ease-in-out bg-yellow-100 border border-yellow-300 rounded-md p-3">
-                    <p className="text-yellow-700 text-sm">
-                      For at installere SMASH App, åbn dette link i Chrome
-                      (Android) eller Safari (iOS):{" "}
-                      <a
-                        href="https://rns-apps.dk/install"
-                        className="text-blue-600 hover:underline"
-                      >
-                        https://rns-apps.dk/install
-                      </a>
-                    </p>
-                  </div>
-                ) : (
-                  <div className="transition-all duration-300 ease-in-out text-center">
-                    <button
-                      onClick={handleInstall}
-                      className="w-full inline-flex items-center justify-center rounded-md border border-blue-600 bg-blue-600 px-12 py-3 text-sm font-medium text-white transition-all duration-300 focus:outline-none focus:ring disabled:opacity-50"
-                    >
-                      Installér Nu
-                    </button>
-                  </div>
-                )}
-              </>
-            ) : (
-              <>
-                <h2 className="text-xl font-bold text-white text-center">
-                  Sådan installerer du SMASH App
-                </h2>
-                <p className="text-gray-300 text-center mb-4">
-                  Følg disse simple trin for at installere app'en på din
-                  telefon:
+            {isFacebookBrowser ? (
+              <div className="transition-all duration-300 ease-in-out bg-yellow-100 border border-yellow-300 rounded-md p-3">
+                <p className="text-yellow-700 text-sm">
+                  For at installere SMASH App, åbn dette link i Chrome (Android)
+                  eller Safari (iOS):{" "}
+                  <a
+                    href="https://rns-apps.dk/install"
+                    className="text-blue-600 hover:underline"
+                  >
+                    https://rns-apps.dk/install
+                  </a>
                 </p>
-
-                {isIOS && isSafari
-                  ? renderIOSSafariGuide()
-                  : isAndroid && isChrome
-                  ? renderAndroidChromeGuide()
-                  : renderGenericGuide()}
-              </>
+              </div>
+            ) : isIOS && isSafari ? (
+              renderIOSSafariGuide()
+            ) : isAndroid && isChrome ? (
+              renderAndroidChromeGuide()
+            ) : (
+              renderGenericGuide()
             )}
           </div>
         </div>

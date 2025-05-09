@@ -49,7 +49,7 @@ export const LoginPage = () => {
           const state = location.state as LocationState;
           const redirectTo = state?.from || "/hjem";
           navigate(redirectTo, { replace: true });
-        } catch (error) {
+        } catch {
           setError("Brugerdata kunne ikke hentes.");
         }
       } else {
