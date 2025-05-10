@@ -50,7 +50,7 @@ const VALID_DPF_CLASSES = [
 ];
 
 const REGIONS = [
-  "All",
+  "Alle",
   "Hovedstaden",
   "Sjælland",
   "Syddanmark",
@@ -59,17 +59,17 @@ const REGIONS = [
 ];
 
 const MONTHS = [
-  { value: "", label: "All Months" },
-  { value: "01", label: "January" },
-  { value: "02", label: "February" },
-  { value: "03", label: "March" },
+  { value: "", label: "Alle Måneder" },
+  { value: "01", label: "Januar" },
+  { value: "02", label: "Februar" },
+  { value: "03", label: "Marts" },
   { value: "04", label: "April" },
-  { value: "05", label: "May" },
-  { value: "06", label: "June" },
-  { value: "07", label: "July" },
+  { value: "05", label: "Maj" },
+  { value: "06", label: "Juni" },
+  { value: "07", label: "Juli" },
   { value: "08", label: "August" },
   { value: "09", label: "September" },
-  { value: "10", label: "October" },
+  { value: "10", label: "Oktober" },
   { value: "11", label: "November" },
   { value: "12", label: "December" },
 ];
@@ -87,7 +87,7 @@ const getDPFBaseClass = (className: string): string | null => {
 };
 
 const getRegionFromAddress = (address: string): string => {
-  if (!address) return "Unknown";
+  if (!address) return "Ukendt";
   const lowerAddress = address.toLowerCase();
   if (
     lowerAddress.includes("københavn") ||
@@ -134,7 +134,7 @@ const getRegionFromAddress = (address: string): string => {
     const num = parseInt(postalCodeMatch[0]);
     if (num >= 1000 && num <= 2999) return "Hovedstaden";
   }
-  return "Unknown";
+  return "Ukendt";
 };
 
 const getPostalCodeFromAddress = (address: string): string => {
@@ -221,12 +221,12 @@ const TournamentCard: FC<TournamentCardProps> = ({ tournament }) => {
         </h3>
         <p
           className="text-sm text-gray-400 mb-1 line-clamp-1"
-          title={tournament.Address || "Address not specified"}
+          title={tournament.Address || "Adresse ikke angivet"}
         >
           <span role="img" aria-label="Location pin">
             📍
           </span>{" "}
-          {tournament.Address || "Address not specified"}
+          {tournament.Address || "Adresse ikke angivet"}
         </p>
         <p className="text-sm text-gray-400 mb-3">
           <span role="img" aria-label="Calendar">
@@ -239,7 +239,7 @@ const TournamentCard: FC<TournamentCardProps> = ({ tournament }) => {
         {tournament.Classes && tournament.Classes.length > 0 && (
           <div className="mb-4">
             <p className="text-xs text-gray-500 mb-1.5 font-medium">
-              Available Classes:
+              Tilgængelige Klasser:
             </p>
             <div className="flex flex-wrap gap-1.5">
               {tournament.Classes.slice(0, 3).map((c) => (
@@ -252,7 +252,7 @@ const TournamentCard: FC<TournamentCardProps> = ({ tournament }) => {
               ))}
               {tournament.Classes.length > 3 && (
                 <span className="bg-slate-700 text-gray-300 text-xs px-2 py-1 rounded-full">
-                  +{tournament.Classes.length - 3} more
+                  +{tournament.Classes.length - 3} mere
                 </span>
               )}
             </div>
@@ -265,7 +265,7 @@ const TournamentCard: FC<TournamentCardProps> = ({ tournament }) => {
             rel="noopener noreferrer"
             className="w-full block text-center px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-200"
           >
-            View Details
+            Se Detaljer
           </a>
         </div>
       </div>
@@ -276,14 +276,14 @@ const TournamentCard: FC<TournamentCardProps> = ({ tournament }) => {
 interface TournamentFiltersProps {
   filters: {
     location: string;
-    region: string;
+    region: string[]; // Changed from string to string[]
     postalCode: string;
     month: string;
     class: string;
   };
   onFilterChange: (
     filterName: keyof TournamentFiltersProps["filters"],
-    value: string
+    value: string | string[] // Allow string array for region
   ) => void;
   onPostalCodeChange: (value: string) => void;
   onClearFilters: () => void;
@@ -307,6 +307,27 @@ const TournamentFilters: FC<TournamentFiltersProps> = ({
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
+  const handleRegionClick = (region: string) => {
+    let newRegions: string[];
+    const currentRegions = filters.region;
+
+    if (region === "Alle") {
+      newRegions = ["Alle"];
+    } else {
+      if (currentRegions.includes("Alle")) {
+        newRegions = [region]; // Start new selection, remove "Alle"
+      } else if (currentRegions.includes(region)) {
+        newRegions = currentRegions.filter((r) => r !== region);
+        if (newRegions.length === 0) {
+          newRegions = ["Alle"]; // If all are deselected, revert to "Alle"
+        }
+      } else {
+        newRegions = [...currentRegions, region];
+      }
+    }
+    onFilterChange("region", newRegions);
+  };
+
   return (
     <div className="relative mb-6">
       <button
@@ -323,9 +344,7 @@ const TournamentFilters: FC<TournamentFiltersProps> = ({
             <path d="M3 3a1 1 0 000 2h14a1 1 0 100-2H3zm0 6a1 1 0 000 2h14a1 1 0 100-2H3zm0 6a1 1 0 000 2h14a1 1 0 100-2H3z" />
           </svg>
           <span className="font-semibold">
-            {filterCount > 0
-              ? `Filters Applied (${filterCount})`
-              : "Show Filters"}
+            {filterCount > 0 ? `Filtre Anvendt (${filterCount})` : "Vis Filtre"}
           </span>
         </div>
         <svg
@@ -354,11 +373,9 @@ const TournamentFilters: FC<TournamentFiltersProps> = ({
               {regionOptions.map((region) => (
                 <button
                   key={region}
-                  onClick={() => {
-                    onFilterChange("region", region);
-                  }}
+                  onClick={() => handleRegionClick(region)} // Updated onClick handler
                   className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-400 focus:ring-offset-slate-700 ${
-                    filters.region === region
+                    filters.region.includes(region) // Check if region is in the array
                       ? "bg-blue-500 text-white shadow-sm"
                       : "bg-slate-600 text-gray-200 hover:bg-slate-500"
                   }`}
@@ -375,14 +392,14 @@ const TournamentFilters: FC<TournamentFiltersProps> = ({
                 htmlFor="locationFilter"
                 className="block text-sm font-medium mb-1 text-gray-300"
               >
-                Location (City/Address)
+                Lokation (By/Adresse)
               </label>
               <input
                 id="locationFilter"
                 type="text"
                 value={filters.location}
                 onChange={(e) => onFilterChange("location", e.target.value)}
-                placeholder="e.g. Copenhagen"
+                placeholder="f.eks. København"
                 className="w-full px-3 py-2 border border-slate-500 bg-slate-800 text-gray-200 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               />
             </div>
@@ -391,14 +408,14 @@ const TournamentFilters: FC<TournamentFiltersProps> = ({
                 htmlFor="postalCodeFilter"
                 className="block text-sm font-medium mb-1 text-gray-300"
               >
-                Postal Code
+                Postnummer
               </label>
               <input
                 id="postalCodeFilter"
                 type="text"
                 value={filters.postalCode}
                 onChange={(e) => onPostalCodeChange(e.target.value)}
-                placeholder="e.g. 2300"
+                placeholder="f.eks. 2300"
                 maxLength={4}
                 className="w-full px-3 py-2 border border-slate-500 bg-slate-800 text-gray-200 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               />
@@ -408,7 +425,7 @@ const TournamentFilters: FC<TournamentFiltersProps> = ({
                 htmlFor="monthFilter"
                 className="block text-sm font-medium mb-1 text-gray-300"
               >
-                Month
+                Måned
               </label>
               <select
                 id="monthFilter"
@@ -432,7 +449,7 @@ const TournamentFilters: FC<TournamentFiltersProps> = ({
                 htmlFor="classFilter"
                 className="block text-sm font-medium mb-1 text-gray-300"
               >
-                DPF Class
+                DPF Klasse
               </label>
               <select
                 id="classFilter"
@@ -459,9 +476,9 @@ const TournamentFilters: FC<TournamentFiltersProps> = ({
                 setIsDropdownOpen(false);
               }}
               className="w-full sm:w-auto px-4 py-2 text-sm bg-slate-600 hover:bg-slate-500 text-gray-200 rounded-md transition flex items-center justify-center"
-              title="Clear all filters"
+              title="Ryd alle filtre"
             >
-              Clear Filters
+              Ryd Filtre
             </button>
             <button
               onClick={() => {
@@ -469,10 +486,10 @@ const TournamentFilters: FC<TournamentFiltersProps> = ({
                 setIsDropdownOpen(false);
               }}
               className="w-full sm:w-auto px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition flex items-center justify-center text-sm"
-              title="Refresh data from server"
+              title="Opdater data fra serveren"
             >
               <RefreshIcon />
-              Refresh Data
+              Opdater Data
             </button>
           </div>
         </div>
@@ -490,7 +507,7 @@ const UpcomingTournaments: FC = () => {
 
   const initialFilters = {
     location: "",
-    region: "All",
+    region: ["Alle"], // Default to an array with "Alle"
     postalCode: "",
     month: "",
     class: "",
@@ -503,7 +520,7 @@ const UpcomingTournaments: FC = () => {
   const classOptions = useMemo(() => {
     const allClasses = new Set<string>(VALID_DPF_CLASSES);
     return [
-      { value: "", label: "All Classes" },
+      { value: "", label: "Alle Klasser" },
       ...Array.from(allClasses)
         .sort()
         .map((name) => ({ value: name, label: name })),
@@ -571,7 +588,7 @@ const UpcomingTournaments: FC = () => {
           setFrom(cachedNextFrom);
           setHasMore(true);
           setLoading({ initial: false, more: false });
-          setSuccessMessage("Loaded tournaments from cache.");
+          setSuccessMessage("Turneringer indlæst fra cache.");
           setTimeout(() => setSuccessMessage(null), 2000);
           return;
         }
@@ -609,7 +626,7 @@ const UpcomingTournaments: FC = () => {
               );
               const sidebar = classResponse.data.TournamentSidebarModel;
               const tournamentSpecificAddress =
-                sidebar.Address || eventData.Address;
+                sidebar.Address || "Adresse ikke specificeret"; // Corrected Address sourcing
               const filteredClasses = (sidebar.Classes || []).filter(
                 (c: TournamentClass) => getDPFBaseClass(c.Name) !== null
               );
@@ -625,7 +642,7 @@ const UpcomingTournaments: FC = () => {
               );
               return {
                 ...eventData,
-                Address: eventData.Address || "N/A",
+                Address: "Adresse ikke specificeret", // Corrected Address sourcing in catch
                 Classes: [],
               };
             }
@@ -653,14 +670,14 @@ const UpcomingTournaments: FC = () => {
             .getItem(CACHE_KEY)
             ?.includes(newTournaments[0]?.EventName)
         ) {
-          setSuccessMessage("Successfully fetched tournaments.");
+          setSuccessMessage("Turneringer hentet med succes.");
         }
-        if (isRefresh) setSuccessMessage("Data refreshed successfully.");
+        if (isRefresh) setSuccessMessage("Data opdateret med succes.");
         setTimeout(() => setSuccessMessage(null), 2000);
       } catch (err) {
         console.error("Failed to fetch tournaments:", err);
         setError(
-          "Failed to fetch tournaments. Please check your connection or try again later."
+          "Kunne ikke hente turneringer. Tjek din forbindelse eller prøv igen senere."
         );
         setTimeout(() => setError(null), 5000);
       } finally {
@@ -679,7 +696,7 @@ const UpcomingTournaments: FC = () => {
 
   const handleFilterChange = (
     filterName: keyof typeof filters,
-    value: string
+    value: string | string[] // Updated to accept string array
   ) => {
     setFilters((prev) => ({ ...prev, [filterName]: value }));
   };
@@ -715,9 +732,11 @@ const UpcomingTournaments: FC = () => {
         !t.Address?.toLowerCase().includes(filters.location.toLowerCase())
       )
         return false;
+      // Updated region filter logic for array
       if (
-        filters.region !== "All" &&
-        getRegionFromAddress(t.Address || "") !== filters.region
+        filters.region.length > 0 && // Check if there are any regions selected
+        !filters.region.includes("Alle") && // If "Alle" is not selected
+        !filters.region.includes(getRegionFromAddress(t.Address || "")) // Check if tournament region is in selected regions
       )
         return false;
       if (
@@ -745,7 +764,12 @@ const UpcomingTournaments: FC = () => {
   const activeFilterCount = useMemo(() => {
     let count = 0;
     if (filters.location) count++;
-    if (filters.region !== "All") count++;
+    // Updated active filter count for regions
+    if (
+      filters.region.length > 0 &&
+      !(filters.region.length === 1 && filters.region[0] === "Alle")
+    )
+      count++;
     if (filters.postalCode) count++;
     if (filters.month) count++;
     if (filters.class) count++;
@@ -764,8 +788,8 @@ const UpcomingTournaments: FC = () => {
                 DPF Turneringer
               </h1>
               <p className="mt-3 text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto relative z-10">
-                Discover upcoming Padel tournaments across Denmark. Filter,
-                find, and get ready to compete!
+                Udforsk kommende padel-turneringer i hele Danmark. Filtrer, find
+                og gør dig klar til at konkurrere!
               </p>
             </header>
 
@@ -796,33 +820,92 @@ const UpcomingTournaments: FC = () => {
               filterCount={activeFilterCount}
             />
 
-            <div className="flex justify-between items-center mb-4 text-sm text-slate-400">
-              <span>
-                Showing{" "}
-                <span className="font-semibold text-slate-200">
-                  {filteredTournaments.length}
-                </span>{" "}
-                tournament{filteredTournaments.length !== 1 ? "s" : ""}
-                {activeFilterCount > 0 &&
-                  ` (out of ${tournaments.length} loaded)`}
-              </span>
-            </div>
+            {loading.initial && <LoadingSpinner size="large" />}
 
-            {loading.initial ? (
-              <LoadingSpinner size="large" />
-            ) : filteredTournaments.length === 0 ? (
-              <div className="bg-slate-800 shadow-xl rounded-lg p-8 text-center text-slate-400">
-                <h3 className="text-xl font-semibold mb-2 text-slate-200">
-                  No Tournaments Found
+            {!loading.initial && filteredTournaments.length === 0 && (
+              <div className="text-center py-10 px-6 bg-slate-800 rounded-lg shadow-md">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="mx-auto h-12 w-12 text-slate-500"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+                <h3 className="mt-2 text-xl font-semibold text-white">
+                  Ingen turneringer fundet
                 </h3>
-                <p>
-                  {tournaments.length > 0 && activeFilterCount > 0
-                    ? "No tournaments match your current filters. Try adjusting or clearing them."
-                    : "There are no upcoming tournaments at the moment. Please check back later or refresh the data."}
+                <p className="mt-1 text-sm text-slate-400">
+                  Prøv at justere dine filtre eller indlæs flere turneringer.
                 </p>
+                <div className="mt-6 flex flex-col sm:flex-row justify-center gap-3">
+                  {activeFilterCount > 0 && (
+                    <button
+                      onClick={handleClearFilters}
+                      className="w-full sm:w-auto px-4 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-200 flex items-center justify-center"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4 mr-2"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
+                      Ryd Filtre ({activeFilterCount})
+                    </button>
+                  )}
+                  {hasMore && (
+                    <button
+                      onClick={handleLoadMore}
+                      disabled={loading.more}
+                      className="w-full sm:w-auto px-4 py-2.5 bg-slate-600 text-white text-sm font-medium rounded-lg hover:bg-slate-500 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-opacity-50 transition-colors duration-200 flex items-center justify-center disabled:opacity-50"
+                    >
+                      {loading.more ? (
+                        <LoadingSpinner size="small" />
+                      ) : (
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-4 w-4 mr-2"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                          strokeWidth={2}
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                          />
+                        </svg>
+                      )}
+                      Indlæs Flere Turneringer
+                    </button>
+                  )}
+                </div>
+                {!activeFilterCount && !hasMore && (
+                  <p className="mt-4 text-sm text-slate-500">
+                    Der er ingen flere turneringer at vise med de nuværende
+                    indstillinger.
+                  </p>
+                )}
               </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            )}
+
+            {!loading.initial && filteredTournaments.length > 0 && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {filteredTournaments.map((tournament) => (
                   <TournamentCard
                     key={tournament.EventId}
@@ -832,27 +915,21 @@ const UpcomingTournaments: FC = () => {
               </div>
             )}
 
-            {hasMore &&
-              !loading.initial &&
+            {loading.more && <LoadingSpinner size="small" />}
+
+            {!loading.initial &&
               !loading.more &&
-              (filteredTournaments.length > 0 || activeFilterCount === 0) && ( // Show load more if there are results OR no filters are active
+              hasMore &&
+              filteredTournaments.length > 0 && (
                 <div className="mt-10 text-center">
                   <button
                     onClick={handleLoadMore}
-                    disabled={loading.more}
-                    className="px-8 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-colors duration-200 shadow-lg"
                   >
-                    Load More Tournaments
+                    Indlæs Flere Turneringer
                   </button>
                 </div>
               )}
-            {loading.more && <LoadingSpinner size="small" />}
-
-            <footer className="mt-12 py-6 text-center text-xs text-slate-500 border-t border-slate-700">
-              Tournament data is cached for up to {CACHE_DURATION_DAYS * 24}{" "}
-              hours for improved performance. Use the "Refresh" button in
-              filters for the latest data.
-            </footer>
           </div>
         </div>
       </Animation>
