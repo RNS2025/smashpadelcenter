@@ -1,6 +1,9 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import axios from "axios";
 import { format, parseISO, addDays, isBefore } from "date-fns";
+import HomeBar from "../../components/misc/HomeBar";
+import Animation from "../../components/misc/Animation";
+import AlertMessage from "../../components/tournaments/check-in/AlertMessage";
 
 interface TournamentClass {
   Id: number;
@@ -36,10 +39,14 @@ interface CachedData {
 const CACHE_KEY = "padel_tournaments_cache";
 const CACHE_DURATION_DAYS = 1;
 
-const UpcommingTournaments: React.FC = () => {
+const UpcomingTournaments: React.FC = () => {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState({
+    tournaments: true,
+    loadMore: false,
+  });
   const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [locationFilter, setLocationFilter] = useState<string>("");
   const [regionFilter, setRegionFilter] = useState<string>("All");
   const [postalCodeFilter, setPostalCodeFilter] = useState<string>("");
@@ -215,7 +222,11 @@ const UpcommingTournaments: React.FC = () => {
   const fetchTournaments = useCallback(
     async (startFrom: number, useCache: boolean = true) => {
       try {
-        setLoading(true);
+        if (startFrom === 0) {
+          setLoading((prev) => ({ ...prev, tournaments: true }));
+        } else {
+          setLoading((prev) => ({ ...prev, loadMore: true }));
+        }
 
         // Check cache first if allowed
         if (useCache && startFrom === 0) {
@@ -223,7 +234,9 @@ const UpcommingTournaments: React.FC = () => {
           if (cachedTournaments && cachedTournaments.length > 0) {
             setTournaments(cachedTournaments);
             setFrom(nextFrom);
-            setLoading(false);
+            setLoading({ tournaments: false, loadMore: false });
+            setSuccessMessage("Loaded tournaments from cache");
+            setTimeout(() => setSuccessMessage(null), 3000);
             return;
           }
         }
@@ -279,6 +292,8 @@ const UpcommingTournaments: React.FC = () => {
           setTournaments(tournamentsWithClasses);
           // Save to cache only for initial load
           saveToCache(tournamentsWithClasses, startFrom);
+          setSuccessMessage("Successfully fetched tournaments");
+          setTimeout(() => setSuccessMessage(null), 3000);
         } else {
           setTournaments((prevTournaments) => {
             const updatedTournaments = [
@@ -298,14 +313,15 @@ const UpcommingTournaments: React.FC = () => {
 
         setFrom(startFrom + 25);
         setHasMore(response.data.length === 25);
-        setLoading(false);
-      } catch (err) {
+        setLoading({ tournaments: false, loadMore: false });
+      } catch {
         setError("Failed to fetch tournaments");
-        setLoading(false);
+        setLoading({ tournaments: false, loadMore: false });
+        setTimeout(() => setError(null), 5000);
       }
     },
     [loadFromCache, saveToCache]
-  ); // Remove tournaments from dependency array
+  );
 
   // Initial fetch
   useEffect(() => {
@@ -313,7 +329,7 @@ const UpcommingTournaments: React.FC = () => {
     const controller = new AbortController();
     fetchTournaments(0);
     return () => controller.abort();
-  }, []);
+  }, [fetchTournaments]);
 
   // Apply filters with useMemo for optimization
   const filteredTournaments = useMemo(() => {
@@ -385,206 +401,250 @@ const UpcommingTournaments: React.FC = () => {
     fetchTournaments(0, false);
   };
 
-  if (error) {
-    return <div className="text-black text-center">{error}</div>;
-  }
-
   return (
-    <div className="container mx-auto p-4">
-      <h1 className="text-3xl font-bold mb-4 text-black">
-        Upcoming Padel Tournaments
-      </h1>
+    <>
+      <HomeBar />
+      <Animation>
+        <div className="container mx-auto p-4">
+          <h1 className="text-2xl font-bold mb-6">
+            Upcoming Padel Tournaments
+          </h1>
 
-      {/* Refresh button */}
-      <div className="mb-4 flex justify-end">
-        <button
-          onClick={handleRefreshData}
-          className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition flex items-center"
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 mr-1"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+          {error && (
+            <AlertMessage
+              type="error"
+              message={error}
+              onClose={() => setError(null)}
             />
-          </svg>
-          Refresh Data
-        </button>
-      </div>
+          )}
 
-      {/* Filters */}
-      <div className="mb-4">
-        {/* Region Buttons */}
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-black mb-2">
-            Filter by Region
-          </label>
-          <div className="flex flex-wrap gap-2">
-            {regions.map((region) => (
+          {successMessage && (
+            <AlertMessage
+              type="success"
+              message={successMessage}
+              onClose={() => setSuccessMessage(null)}
+            />
+          )}
+
+          <div className="bg-white shadow rounded-lg p-4 mb-6">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold">Filters</h2>
               <button
-                key={region}
-                onClick={() => setRegionFilter(region)}
-                className={`px-4 py-2 rounded-md text-sm font-medium transition ${
-                  regionFilter === region
-                    ? "bg-indigo-600 text-white"
-                    : "bg-gray-200 text-black hover:bg-gray-300"
-                }`}
+                onClick={handleRefreshData}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition flex items-center text-sm"
               >
-                {region}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4 mr-1"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                  />
+                </svg>
+                Refresh Data
               </button>
-            ))}
-          </div>
-        </div>
+            </div>
 
-        {/* Date, Location, Postal Code, Month, and Class Filters */}
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-black">
-              Filter by Location
-            </label>
-            <input
-              type="text"
-              value={locationFilter}
-              onChange={(e) => setLocationFilter(e.target.value)}
-              placeholder="Enter city or address"
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-black"
-            />
+            {/* Region Buttons */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium mb-2">
+                Filter by Region
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {regions.map((region) => (
+                  <button
+                    key={region}
+                    onClick={() => setRegionFilter(region)}
+                    className={`px-3 py-1 rounded-md text-sm font-medium transition ${
+                      regionFilter === region
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                    }`}
+                  >
+                    {region}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Other Filters */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Filter by Location
+                </label>
+                <input
+                  type="text"
+                  value={locationFilter}
+                  onChange={(e) => setLocationFilter(e.target.value)}
+                  placeholder="Enter city or address"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Filter by Postal Code
+                </label>
+                <input
+                  type="text"
+                  value={postalCodeFilter}
+                  onChange={(e) => handlePostalCodeChange(e.target.value)}
+                  placeholder="Enter 4-digit postal code"
+                  maxLength={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Filter by Month
+                </label>
+                <select
+                  value={monthFilter}
+                  onChange={(e) => setMonthFilter(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  {months.map((month) => (
+                    <option key={month.value} value={month.value}>
+                      {month.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-1">
+                  Filter by Class
+                </label>
+                <select
+                  value={classFilter}
+                  onChange={(e) => setClassFilter(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  {classOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-black">
-              Filter by Postal Code
-            </label>
-            <input
-              type="text"
-              value={postalCodeFilter}
-              onChange={(e) => handlePostalCodeChange(e.target.value)}
-              placeholder="Enter 4-digit postal code"
-              maxLength={4}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-black"
-            />
+
+          {/* Tournament Count */}
+          <div className="flex justify-between items-center mb-4">
+            <div className="font-medium">
+              Showing {filteredTournaments.length} tournament
+              {filteredTournaments.length !== 1 ? "s" : ""}
+            </div>
           </div>
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-black">
-              Filter by Month
-            </label>
-            <select
-              value={monthFilter}
-              onChange={(e) => setMonthFilter(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-black"
-            >
-              {months.map((month) => (
-                <option key={month.value} value={month.value}>
-                  {month.label}
-                </option>
+
+          {/* Tournament Cards */}
+          {loading.tournaments ? (
+            <div className="flex justify-center my-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+          ) : filteredTournaments.length === 0 ? (
+            <div className="bg-white shadow rounded-lg p-8 text-center">
+              <p className="text-gray-600">No tournaments match your filters</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {filteredTournaments.map((tournament) => (
+                <div
+                  key={tournament.EventId}
+                  className="bg-white shadow rounded-lg overflow-hidden hover:shadow-md transition"
+                >
+                  <div className="relative h-48 bg-gray-200">
+                    <img
+                      src={tournament.PosterUrl}
+                      alt={tournament.EventName}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.currentTarget.src =
+                          "https://via.placeholder.com/150?text=No+Image";
+                      }}
+                    />
+                    {tournament.IsStreamPlanned && (
+                      <div className="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full">
+                        Live Stream
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-semibold text-lg mb-1 line-clamp-1">
+                      {tournament.EventName}
+                    </h3>
+                    <p className="text-sm text-gray-600 mb-1">
+                      {tournament.Address}
+                    </p>
+                    <p className="text-sm text-gray-600 mb-2">
+                      {format(parseISO(tournament.StartDate), "MMM d, yyyy")}
+                    </p>
+
+                    {tournament.Classes && tournament.Classes.length > 0 && (
+                      <div className="mb-3">
+                        <p className="text-xs text-gray-500 mb-1">Classes:</p>
+                        <div className="flex flex-wrap gap-1">
+                          {tournament.Classes.map((c) => (
+                            <span
+                              key={c.Id}
+                              className="bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded"
+                            >
+                              {c.Name}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="flex justify-end">
+                      <a
+                        href={tournament.EventUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition"
+                      >
+                        View Details
+                      </a>
+                    </div>
+                  </div>
+                </div>
               ))}
-            </select>
-          </div>
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-black">
-              Filter by Class
-            </label>
-            <select
-              value={classFilter}
-              onChange={(e) => setClassFilter(e.target.value)}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-black"
-            >
-              {classOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+            </div>
+          )}
+
+          {/* Load More Button */}
+          {hasMore && !loading.loadMore && filteredTournaments.length > 0 && (
+            <div className="mt-8 text-center">
+              <button
+                onClick={handleLoadMore}
+                className="px-6 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 transition"
+              >
+                Load More
+              </button>
+            </div>
+          )}
+
+          {/* Loading More Indicator */}
+          {loading.loadMore && (
+            <div className="flex justify-center my-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+            </div>
+          )}
+
+          {/* Cache Info */}
+          <div className="mt-8 text-center text-xs text-gray-500">
+            Data is cached for 24 hours for improved performance
           </div>
         </div>
-      </div>
-
-      {/* Tournament Count */}
-      <div className="mb-4 text-black">
-        Showing {filteredTournaments.length} tournament
-        {filteredTournaments.length !== 1 ? "s" : ""}
-      </div>
-
-      {/* Tournament List */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {filteredTournaments.map((tournament) => (
-          <div
-            key={tournament.EventId}
-            className="border rounded-lg p-4 shadow-sm hover:shadow-md transition"
-          >
-            <img
-              src={tournament.PosterUrl}
-              alt={tournament.EventName}
-              className="w-full h-48 object-cover rounded-md mb-2"
-              onError={(e) => {
-                e.currentTarget.src = "https://via.placeholder.com/150";
-              }}
-            />
-            <h2 className="text-xl font-semibold text-black">
-              {tournament.EventName}
-            </h2>
-            <p className="text-black">{tournament.Address}</p>
-            <p className="text-black">
-              {format(parseISO(tournament.StartDate), "MMM d, yyyy")}
-            </p>
-            <p className="text-black">{tournament.OrganisationName}</p>
-            {tournament.Classes && tournament.Classes.length > 0 && (
-              <p className="text-black">
-                Classes: {tournament.Classes.map((c) => c.Name).join(", ")}
-              </p>
-            )}
-            {tournament.IsStreamPlanned && (
-              <p className="text-green-600 font-medium">Streaming Planned</p>
-            )}
-            <a
-              href={tournament.EventUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-block mt-2 px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
-            >
-              View Tournament
-            </a>
-          </div>
-        ))}
-      </div>
-
-      {/* Loading Indicator */}
-      {loading && (
-        <div className="flex justify-center my-6">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
-        </div>
-      )}
-
-      {/* Load More Button */}
-      {hasMore && !loading && (
-        <div className="mt-6 text-center">
-          <button
-            onClick={handleLoadMore}
-            className="px-6 py-2 rounded-md text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition"
-          >
-            Load 25 More Tournaments
-          </button>
-        </div>
-      )}
-
-      {/* Cache Status */}
-      <div className="mt-6 text-center text-sm text-gray-500">
-        Data is cached for 24 hours to improve performance
-        {tournaments.length > 0 && (
-          <span>
-            {" "}
-            · Showing {tournaments.length} total tournaments in memory
-          </span>
-        )}
-      </div>
-    </div>
+      </Animation>
+    </>
   );
 };
 
-export default UpcommingTournaments;
+export default UpcomingTournaments;
