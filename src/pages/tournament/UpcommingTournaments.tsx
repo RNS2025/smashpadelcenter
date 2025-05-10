@@ -649,14 +649,23 @@ const UpcomingTournaments: FC = () => {
           })
         );
 
-        const newTournaments =
+        const combinedTournaments =
           isRefresh || startFrom === 0
             ? tournamentsWithDetails
             : [...tournaments, ...tournamentsWithDetails];
 
+        // De-duplicate tournaments based on EventId to prevent duplicate key warnings
+        const uniqueTournamentsMap = new Map<number, Tournament>();
+        combinedTournaments.forEach((tournament) => {
+          if (!uniqueTournamentsMap.has(tournament.EventId)) {
+            uniqueTournamentsMap.set(tournament.EventId, tournament);
+          }
+        });
+        const newTournaments = Array.from(uniqueTournamentsMap.values());
+
         setTournaments(newTournaments);
 
-        const nextFetchFrom = startFrom + tournamentsWithDetails.length;
+        const nextFetchFrom = startFrom + tournamentsWithDetails.length; // Keep original logic for 'from'
         setFrom(nextFetchFrom);
         setHasMore(tournamentsWithDetails.length === 25);
 
