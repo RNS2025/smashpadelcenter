@@ -9,9 +9,10 @@ import RankedInPlayerSearchResult from "../../../types/RankedInProfile.ts";
 import rankedInService from "../../../services/rankedIn.ts";
 import * as console from "node:console";
 import {useUser} from "../../../context/UserContext.tsx";
+import LoadingSpinner from "../../../components/misc/LoadingSpinner.tsx";
 
 const ProfilePage = () => {
-  const { profile } = useProfileContext();
+  const { profile, loading } = useProfileContext();
   const { user } = useUser();
   const [rankedInProfile, setRankedInProfile] = useState<RankedInPlayerSearchResult>({} as RankedInPlayerSearchResult);
 
@@ -36,6 +37,17 @@ const ProfilePage = () => {
         };
         fetchRankedInProfile().then();
     }, [profile?.fullName]);
+
+    if (loading) {
+        return (
+            <>
+                <HomeBar />
+                <div className="w-full h-[calc(100vh-150px)] flex justify-center items-center">
+                    <LoadingSpinner />
+                </div>
+            </>
+        )
+    }
 
 
   return (

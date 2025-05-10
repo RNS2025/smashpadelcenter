@@ -1,6 +1,6 @@
 // hooks/useLeagueTeams.ts
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { League, TeamInfo } from "../types/LunarTypes";
 import {
   fetchAllLeagues,
@@ -36,47 +36,40 @@ export const useLeagueTeams = (leagueFilter: LeagueFilterFunction) => {
       }
     };
 
-    fetchLeagues();
+    fetchLeagues().then();
   }, []);
+
+  const filteredHorsensLeagues = useMemo(() => {
+    return leagues.horsens.filter(leagueFilter);
+  }, [leagues.horsens, leagueFilter]);
+
+  const filteredStensballeLeagues = useMemo(() => {
+    return leagues.stensballe.filter(leagueFilter);
+  }, [leagues.stensballe, leagueFilter]);
 
   // When leagues load, fetch the teams from filtered leagues
   useEffect(() => {
     const fetchTeams = async () => {
       try {
-        if (!leagues.horsens.length && !leagues.stensballe.length) return;
-
-        // Filter leagues based on the provided filter function
-        const filteredHorsensLeagues = leagues.horsens.filter(leagueFilter);
-        const filteredStensballeLeagues =
-          leagues.stensballe.filter(leagueFilter);
-
-        // Check if we have any leagues at all
-        if (
-          filteredHorsensLeagues.length === 0 &&
-          filteredStensballeLeagues.length === 0
-        ) {
+        if (filteredHorsensLeagues.length === 0 && filteredStensballeLeagues.length === 0) {
           setTeams([]);
           setLoading(false);
           return;
         }
 
-        // Fetch teams from Horsens leagues
         const teamsPromisesHorsens = filteredHorsensLeagues.map((league) =>
-          fetchTeamsByLeagueHorsens(league.id)
+            fetchTeamsByLeagueHorsens(league.id)
         );
 
-        // Fetch teams from Stensballe leagues
-        const teamsPromisesStensballe = filteredStensballeLeagues.map(
-          (league) => fetchTeamsByLeagueStensballe(league.id)
+        const teamsPromisesStensballe = filteredStensballeLeagues.map((league) =>
+            fetchTeamsByLeagueStensballe(league.id)
         );
 
-        // Execute all promises concurrently
         const [horsensResults, stensballeResults] = await Promise.all([
           Promise.all(teamsPromisesHorsens),
           Promise.all(teamsPromisesStensballe),
         ]);
 
-        // Combine all teams
         const allTeams = [
           ...horsensResults.flat(),
           ...stensballeResults.flat(),
@@ -91,10 +84,8 @@ export const useLeagueTeams = (leagueFilter: LeagueFilterFunction) => {
       }
     };
 
-    if (leagues.horsens.length || leagues.stensballe.length) {
-      fetchTeams();
-    }
-  }, [leagues, leagueFilter]);
+    fetchTeams().then();
+  }, [filteredHorsensLeagues, filteredStensballeLeagues]);
 
   return { teams, loading, error };
 };

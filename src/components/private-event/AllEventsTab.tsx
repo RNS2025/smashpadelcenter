@@ -47,13 +47,19 @@ export const AllEventsTab = () => {
       events = mockEvents;
     } else {
       const response = await communityApi.getPrivateEvents();
-      events = response.sort((a, b) => {
+      events = response.filter((e) => {
+        return (
+            new Date(e.eventDateTime) > new Date()
+        )
+      })
+          .sort((a, b) => {
         return (
           new Date(a.eventDateTime).getTime() -
           new Date(b.eventDateTime).getTime()
         );
       });
     }
+    console.log(events);
     return events;
   };
 
@@ -70,7 +76,13 @@ export const AllEventsTab = () => {
   );
 
   if (loading) {
-    return <LoadingSpinner />;
+    return (
+        <>
+          <div className="w-full flex justify-center items-center">
+            <LoadingSpinner />
+          </div>
+        </>
+    )
   }
 
   if (error) {
@@ -89,7 +101,9 @@ export const AllEventsTab = () => {
 
       <div className="text-sm cursor-pointer">
         {privateEvents.length === 0 ? (
-          <p className="mt-10">Ingen aktuelle arrangementer at vise.</p>
+            <div className="border py-4 rounded-lg space-y-1.5 mb-5">
+              <p className="font-semibold text-center">Ingen aktuelle arrangementer at vise.</p>
+            </div>
         ) : (
           visibleEvents
             .filter(

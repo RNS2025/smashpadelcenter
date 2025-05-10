@@ -10,14 +10,14 @@ import {
 import Animation from "../../components/misc/Animation.tsx";
 import HomeBar from "../../components/misc/HomeBar.tsx";
 import { useUser } from "../../context/UserContext.tsx";
-import { useEffect } from "react";
+import {useEffect} from "react";
 
 export const TournamentTabs = () => {
   const { user } = useUser();
 
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
 
   return (
     <>
@@ -35,24 +35,31 @@ export const TournamentTabs = () => {
           >
             <HomeScreenCard
               icon={
-                <InformationCircleIcon className="size-10" aria-hidden="true" />
+                <InformationCircleIcon
+                  className="size-10"
+                  aria-hidden="true"
+                />
               }
               title="Regler og informationer"
               description="Læs turneringsreglerne og informationer"
               link="/turneringer/info"
             />
             <HomeScreenCard
-              icon={<CheckCircleIcon className="size-10" aria-hidden="true" />}
+              icon={
+                <CheckCircleIcon className="size-10" aria-hidden="true" />
+              }
               title="Indtjekning"
               description="Tjek ind til DPF-turneringer"
               link="/turneringer/check-in"
             />
-            <HomeScreenCard
-              icon={<QueueListIcon className="size-10" aria-hidden="true" />}
-              title="Lodtrækninger"
-              description="Se lodtrækninger for kommende turnering"
-              link="/turneringer/lodtrækninger"
-            />
+              {user?.role === "admin" && (
+              <HomeScreenCard
+                  icon={<QueueListIcon className="size-10" aria-hidden="true" />}
+                  title="Lodtrækninger"
+                  description="Se lodtrækninger for kommende turnering"
+                  link="/turneringer/lodtrækninger"
+              />
+                )}
             <HomeScreenCard
               icon={<MapIcon className="size-10" aria-hidden="true" />}
               title="Baneoversigt"
@@ -62,7 +69,10 @@ export const TournamentTabs = () => {
             {user?.role === "admin" && (
               <HomeScreenCard
                 icon={
-                  <RectangleGroupIcon className="size-10" aria-hidden="true" />
+                  <RectangleGroupIcon
+                    className="size-10"
+                    aria-hidden="true"
+                  />
                 }
                 title="Resultater"
                 description="Indtast resultater for DPF-kampe"

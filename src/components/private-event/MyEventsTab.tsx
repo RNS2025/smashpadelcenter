@@ -101,7 +101,13 @@ export const MyEventsTab = () => {
   }, [userLoading, user, navigate]);
 
   if (userLoading || loading) {
-    return <LoadingSpinner />;
+    return (
+        <>
+            <div className="w-full flex justify-center items-center">
+            <LoadingSpinner />
+            </div>
+        </>
+    )
   }
 
   if (error) {
@@ -120,6 +126,16 @@ export const MyEventsTab = () => {
     );
   }
 
+  if (loading) {
+    return (
+        <>
+          <div className="w-full flex justify-center items-center">
+            <LoadingSpinner />
+          </div>
+        </>
+    )
+  }
+
   return (
     <>
       <Helmet>
@@ -128,7 +144,9 @@ export const MyEventsTab = () => {
 
       <div className="text-sm cursor-pointer">
         {privateEvents.length === 0 ? (
-          <p className="mt-10">Du har ingen kommende arrangementer.</p>
+            <div className="border py-4 rounded-lg space-y-1.5 mb-5">
+              <p className="font-semibold text-center">Du har ingen kommende arrangementer.</p>
+            </div>
         ) : (
           privateEvents.map((event) => (
             <div

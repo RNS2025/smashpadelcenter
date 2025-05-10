@@ -9,12 +9,13 @@ import { PadelMatch } from "../../../types/PadelMatch";
 import { useUser } from "../../../context/UserContext";
 import {filterPassedTime, getNextHalfHour, handleHiddenTimes} from "../../../utils/dateUtils";
 import {ChevronDownIcon, ChevronUpIcon} from "@heroicons/react/24/outline";
+import LoadingSpinner from "../../misc/LoadingSpinner.tsx";
 
 registerLocale("da", da);
 
 export const CreateMatchForm = () => {
   const navigate = useNavigate();
-  const { user } = useUser();
+  const { user, loading } = useUser();
 
   const [selectedDate, setSelectedDate] = useState(getNextHalfHour);
   const [selectedReserved, setSelectedReserved] = useState<number>(0);
@@ -124,6 +125,16 @@ export const CreateMatchForm = () => {
   ];
   const playingTimeArray = [60, 90, 120];
   const matchTypeArray = ["Herre", "Dame", "Mix", "Blandet"];
+
+  if (loading) {
+    return (
+        <>
+          <div className="w-full flex justify-center items-center">
+            <LoadingSpinner />
+          </div>
+        </>
+    )
+  }
 
   return (
     <div className="w-full bg-white rounded-xl p-4 text-gray-900">

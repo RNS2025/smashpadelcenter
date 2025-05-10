@@ -13,7 +13,7 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-    const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
   const [allUsers, setAllUsers] = useState<DaoGroupUser[]>([]);
   type Panel = "search" | "notifications" | "dropdown" | null;
   const [activePanel, setActivePanel] = useState<Panel>(null);
