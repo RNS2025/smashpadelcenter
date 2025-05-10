@@ -3,10 +3,11 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "../../../../context/UserContext.tsx";
 import { ChevronRightIcon } from "@heroicons/react/24/outline";
+import LoadingSpinner from "../../../misc/LoadingSpinner.tsx";
 
 export const GroupsTab = () => {
     const navigate = useNavigate();
-    const { user } = useUser();
+    const { user, loading } = useUser();
     const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
     const toggleGroup = (groupId: string) => {
@@ -20,6 +21,16 @@ export const GroupsTab = () => {
             return newSet;
         });
     };
+
+    if (loading) {
+        return (
+            <>
+                <div className="w-full flex justify-center items-center">
+                    <LoadingSpinner />
+                </div>
+            </>
+        )
+    }
 
     return (
         <>

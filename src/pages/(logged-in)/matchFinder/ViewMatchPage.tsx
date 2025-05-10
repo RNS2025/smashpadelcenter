@@ -24,7 +24,7 @@ import PlayerInfoDialog from "../../../components/matchFinder/misc/PlayerInfoDia
 import { MatchInvitedPlayersDialog } from "../../../components/matchFinder/misc/MatchInvitePlayersDialog.tsx";
 import { safeFormatDate } from "../../../utils/dateUtils.ts";
 import usePolling from "../../../hooks/usePolling.ts";
-import {createCalendarURL} from "../../../utils/ICSFile.ts";
+import {createICSFile, downloadICSFile} from "../../../utils/ICSFile.ts";
 
 export const ViewMatchPage = () => {
   const navigate = useNavigate();
@@ -532,7 +532,14 @@ export const ViewMatchPage = () => {
   }
 
   if (loading) {
-    return <LoadingSpinner />;
+    return (
+        <>
+          <HomeBar backPage="/hjem" />
+          <div className="w-full h-[calc(100vh-150px)] flex justify-center items-center">
+            <LoadingSpinner />
+          </div>
+        </>
+    )
   }
 
   if (error && !match) {
@@ -719,18 +726,17 @@ export const ViewMatchPage = () => {
             )}
 
           {user && match?.participants.includes(user?.username) && (
-              <button className="w-full text-lg bg-cyan-500 rounded-lg py-2 px-4 text-white">
-              <a
-                  href={createCalendarURL(
-                      "Padelkamp",
-                      match!.description,
-                      match!.location,
-                      new Date(match!.matchDateTime),
-                      new Date(match!.endTime)
-                  )}
-              >
+              <button onClick={() => {
+                const ics = createICSFile(
+                    "Padelkamp",
+                    match!.description!,
+                    match!.location,
+                    new Date(match!.matchDateTime),
+                    new Date(match!.endTime)
+                );
+                downloadICSFile(ics, `padelkamp-${match!.id}.ics`);
+              }} className="w-full text-lg bg-cyan-500 rounded-lg py-2 px-4 text-white">
                 Tilføj til kalender
-              </a>
               </button>
           )}
 

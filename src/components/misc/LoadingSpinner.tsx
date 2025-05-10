@@ -11,15 +11,10 @@ const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({ size = "medium" }) => {
     large: "h-8 w-8",
   }[size];
 
-  const marginClass = {
-    small: "mr-2",
-    medium: "mr-3",
-    large: "mr-3",
-  }[size];
 
   return (
     <svg
-      className={`animate-spin ${sizeClass} ${marginClass}`}
+      className={`animate-spin ${sizeClass}`}
       viewBox="0 0 24 24"
     >
       <circle

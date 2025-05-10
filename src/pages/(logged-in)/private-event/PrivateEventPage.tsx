@@ -7,10 +7,11 @@ import communityApi from "../../../services/makkerborsService.ts";
 import { useUser } from "../../../context/UserContext.tsx";
 import mockEvents from "../../../utils/mock/mockEvents.ts";
 import { LockClosedIcon, LockOpenIcon } from "@heroicons/react/24/outline";
+import LoadingSpinner from "../../../components/misc/LoadingSpinner.tsx";
 
 export const PrivateEventPage = () => {
   const navigate = useNavigate();
-  const { user } = useUser();
+  const { user, loading } = useUser();
   const [joinRequestsCount, setJoinRequestsCount] = useState(0);
   const [showClosedEvents, setShowClosedEvents] = useState(false);
 
@@ -44,6 +45,17 @@ export const PrivateEventPage = () => {
 
     fetchJoinRequestsCount().then();
   }, [useMockData, user]);
+
+  if (loading) {
+    return (
+        <>
+          <HomeBar backPage="/hjem" />
+          <div className="w-full h-[calc(100vh-150px)] flex justify-center items-center">
+            <LoadingSpinner />
+          </div>
+        </>
+    )
+  }
 
   return (
       <>

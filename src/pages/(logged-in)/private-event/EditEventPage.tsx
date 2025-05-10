@@ -127,7 +127,7 @@ export const EditEventPage = () => {
                     endTime: selectedEndDate.toISOString(),
                     location,
                     level: levelRangeRequired
-                        ? `${levelRange[0]} - ${levelRange[1]}`
+                        ? `${levelRange[0].toFixed(1)} - ${levelRange[1].toFixed(1)}`
                         : undefined,
                     openRegistration,
                     participants: participants,
