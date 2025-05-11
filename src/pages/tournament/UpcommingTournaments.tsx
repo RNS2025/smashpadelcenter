@@ -1,9 +1,10 @@
 import { useEffect, useState, useMemo, useCallback, FC } from "react";
 import axios from "axios";
 import { format, parseISO, addDays, isBefore } from "date-fns";
-import HomeBar from "../../components/misc/HomeBar"; // Assuming this exists
-import Animation from "../../components/misc/Animation"; // Assuming this exists
-import AlertMessage from "../../components/tournaments/check-in/AlertMessage"; // Assuming this exists
+import HomeBar from "../../components/misc/HomeBar";
+import Animation from "../../components/misc/Animation";
+import AlertMessage from "../../components/tournaments/check-in/AlertMessage";
+import {safeFormatDate} from "../../utils/dateUtils.ts";
 
 // --- Constants and Types (Ideally in separate constants.ts or types.ts files) ---
 interface TournamentClass {
@@ -59,7 +60,7 @@ const REGIONS = [
 ];
 
 const MONTHS = [
-  { value: "", label: "Alle Måneder" },
+  { value: "", label: "Alle måneder" },
   { value: "01", label: "Januar" },
   { value: "02", label: "Februar" },
   { value: "03", label: "Marts" },
@@ -214,42 +215,46 @@ const TournamentCard: FC<TournamentCardProps> = ({ tournament }) => {
       </div>
       <div className="p-5 flex flex-col flex-grow text-gray-300">
         <h3
-          className="font-semibold text-lg mb-1 text-gray-100 line-clamp-2"
+          className="font-semibold text-sm mb-1 text-gray-100 line-clamp-2"
           title={tournament.EventName}
         >
           {tournament.EventName}
         </h3>
-        <p
-          className="text-sm text-gray-400 mb-1 line-clamp-1"
-          title={tournament.Address || "Adresse ikke angivet"}
-        >
-          <span role="img" aria-label="Location pin">
-            📍
-          </span>{" "}
-          {tournament.Address || "Adresse ikke angivet"}
+        <p className="text-xs text-gray-400 mb-3 flex gap-2" title={tournament.Address || "Adresse ikke angivet"}>
+          <span role="img" aria-label="Location pin">📍</span>{" "}
+          {(tournament.Address || "Adresse ikke angivet")
+              .replace(/\b(Denmark|Danmark)\b/gi, "")
+              .replace(/,\s*,/g, ", ")
+              .replace(/,\s*$/, "")
+              .trim()}
         </p>
-        <p className="text-sm text-gray-400 mb-3">
+        <p className="text-xs text-gray-400 mb-3 flex gap-1">
           <span role="img" aria-label="Calendar">
             📅
-          </span>{" "}
-          {format(parseISO(tournament.StartDate), "MMM d, yyyy")} -{" "}
-          {format(parseISO(tournament.EndDate), "MMM d, yyyy")}
+          </span>
+          {new Date(tournament.StartDate).getDay() !== new Date(tournament.EndDate).getDay()
+              ? `${safeFormatDate(tournament.StartDate, "dd. MMM")} - ${safeFormatDate(tournament.EndDate, "dd. MMM")}`
+              : safeFormatDate(tournament.StartDate, "dd. MMM")}
         </p>
 
         {tournament.Classes && tournament.Classes.length > 0 && (
           <div className="mb-4">
             <p className="text-xs text-gray-500 mb-1.5 font-medium">
-              Tilgængelige Klasser:
+              Tilgængelige rækker:
             </p>
-            <div className="flex flex-wrap gap-1.5">
-              {tournament.Classes.slice(0, 3).map((c) => (
-                <span
-                  key={c.Id}
-                  className="bg-blue-500 bg-opacity-30 text-blue-300 text-xs px-2 py-1 rounded-full"
-                >
-                  {c.Name}
-                </span>
-              ))}
+            <div className="grid grid-cols-2 text-center gap-1">
+              {tournament.Classes.slice(0, 3).map((c) => {
+                const dpfMatch = c.Name.match(/DPF\d+/g);
+                const dpfOnly = dpfMatch ? dpfMatch[0] : "";
+                return dpfOnly && (
+                    <span
+                        key={c.Id}
+                        className="bg-blue-500 bg-opacity-30 text-blue-300 text-xxs py-1 rounded-full"
+                    >
+                      {dpfOnly}
+                    </span>
+                );
+              })}
               {tournament.Classes.length > 3 && (
                 <span className="bg-slate-700 text-gray-300 text-xs px-2 py-1 rounded-full">
                   +{tournament.Classes.length - 3} mere
@@ -449,7 +454,7 @@ const TournamentFilters: FC<TournamentFiltersProps> = ({
                 htmlFor="classFilter"
                 className="block text-sm font-medium mb-1 text-gray-300"
               >
-                DPF Klasse
+                DPF-række
               </label>
               <select
                 id="classFilter"
@@ -518,14 +523,19 @@ const UpcomingTournaments: FC = () => {
   const [hasMore, setHasMore] = useState<boolean>(true);
 
   const classOptions = useMemo(() => {
-    const allClasses = new Set<string>(VALID_DPF_CLASSES);
+    const allClasses = Array.from(new Set(VALID_DPF_CLASSES));
     return [
-      { value: "", label: "Alle Klasser" },
-      ...Array.from(allClasses)
-        .sort()
-        .map((name) => ({ value: name, label: name })),
+      { value: "", label: "Alle rækker" },
+      ...allClasses
+          .sort((a, b) => {
+            const numA = parseInt(a.replace("DPF", ""), 10);
+            const numB = parseInt(b.replace("DPF", ""), 10);
+            return numA - numB;
+          })
+          .map((name) => ({ value: name, label: name })),
     ];
   }, []);
+
 
   const isCacheValid = useCallback((cachedData: CachedData): boolean => {
     if (!cachedData || !cachedData.timestamp) return false;
@@ -914,7 +924,7 @@ const UpcomingTournaments: FC = () => {
             )}
 
             {!loading.initial && filteredTournaments.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {filteredTournaments.map((tournament) => (
                   <TournamentCard
                     key={tournament.EventId}
