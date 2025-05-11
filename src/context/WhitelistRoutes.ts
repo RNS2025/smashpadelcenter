@@ -20,4 +20,5 @@ export const WHITELIST_ROUTES = [
   "/glemt-adgangskode",
   "/reset-password/:token",
   "/install",
+  "/lunarGlobal",
 ];
