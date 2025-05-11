@@ -186,7 +186,7 @@ const TournamentCard: FC<TournamentCardProps> = ({ tournament }) => {
 
   return (
     <div className="bg-slate-800 shadow-xl rounded-xl overflow-hidden hover:ring-2 hover:ring-blue-500 transition-all duration-300 flex flex-col">
-      <div className="relative h-48 bg-slate-700">
+      <div className="relative h-24 bg-slate-700">
         <img
           src={tournament.PosterUrl || placeholderImage}
           alt={`Poster for ${tournament.EventName}`}
