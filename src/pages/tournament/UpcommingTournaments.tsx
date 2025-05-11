@@ -43,6 +43,7 @@ const CACHE_DURATION_DAYS = 1;
 
 const VALID_DPF_CLASSES = [
   "DPF25",
+  "DPF35",
   "DPF50",
   "DPF100",
   "DPF200",
@@ -349,7 +350,7 @@ const TournamentFilters: FC<TournamentFiltersProps> = ({
             <path d="M3 3a1 1 0 000 2h14a1 1 0 100-2H3zm0 6a1 1 0 000 2h14a1 1 0 100-2H3zm0 6a1 1 0 000 2h14a1 1 0 100-2H3z" />
           </svg>
           <span className="font-semibold">
-            {filterCount > 0 ? `Filtre Anvendt (${filterCount})` : "Vis Filtre"}
+            {filterCount > 0 ? `Filtre Anvendt (${filterCount})` : "Vis filtre"}
           </span>
         </div>
         <svg
@@ -804,11 +805,10 @@ const UpcomingTournaments: FC = () => {
             <header className="pt-8 pb-10 text-center relative">
               <div className="absolute inset-0 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 opacity-10 blur-3xl"></div>
               <h1 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 relative z-10">
-                DPF Turneringer
+                DPF-turneringer
               </h1>
               <p className="mt-3 text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto relative z-10">
-                Udforsk kommende padel-turneringer i hele Danmark. Filtrer, find
-                og gør dig klar til at konkurrere!
+                Udforsk kommende padel-turneringer i hele Danmark. Filtrer, find, og gør dig klar til at konkurrere!
               </p>
             </header>
 

@@ -26,6 +26,7 @@ export const CreateMatchForm = () => {
   const [location, setLocation] = useState<string>("SMASH Padelcenter Horsens");
   const [description, setDescription] = useState<string>("");
   const [deadline, setDeadline] = useState<number>(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [reservedPlayers, setReservedPlayers] = useState(
     [] as { name: string; level: number }[]
@@ -43,6 +44,7 @@ export const CreateMatchForm = () => {
 
   const handleCreateMatch = async (event: FormEvent) => {
     event.preventDefault();
+    setIsSubmitting(true);
 
     try {
       const matchData: Omit<PadelMatch, "id"> = {
@@ -75,7 +77,10 @@ export const CreateMatchForm = () => {
       navigate("/makkerbørs/minekampe");
     } catch (error) {
       console.error("Error creating match:", error);
+      setIsSubmitting(false);
       alert("Fejl ved oprettelse af kamp");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -437,9 +442,10 @@ export const CreateMatchForm = () => {
 
         <button
           type="submit"
+          disabled={isSubmitting}
           className="bg-cyan-500 rounded-lg py-2 px-4 text-white"
         >
-          Opret kamp
+          {isSubmitting ? "Opretter..." : "Opret kamp"}
         </button>
       </form>
     </div>

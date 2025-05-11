@@ -46,7 +46,7 @@ const MatchesTab = () => {
                     return allPlayersConfirmed ? (
                         <li
                             key={match.id}
-                            className={`border p-2 rounded-lg ${isWinner ? "bg-gradient-to-t from-blue-500 to-blue-900" : isDraw ? "border-gray-600 text-black" : "bg-gradient-to-br from-red-500 to-red-900"}`}
+                            className={`border-4 p-2 rounded-lg text-black ${isWinner ? "border-blue-500 bg-blue-100" : isDraw ? "bg-gray-100 border-gray-800" : "bg-red-100 border-red-500"}`}
                         >
                             <div className="flex justify-between text-xs border-b border-gray-600">
                                 <h1>
@@ -72,7 +72,7 @@ const MatchesTab = () => {
                                 </div>
                             </div>
                             <div className="flex flex-col items-center justify-center gap-2 mt-2 text-sm">
-                                <h1 className="bg-gradient-to-br from-blue-400 to-blue-800 rounded-xl p-2">{match.team1Sets} - {match.team2Sets}</h1>
+                                <h1 className="bg-blue-400 rounded-xl p-2 font-semibold">{match.team1Sets} - {match.team2Sets}</h1>
                                 <h1>
                                     ({Object.values(match.score || {})
                                     .filter((set) => set?.score)

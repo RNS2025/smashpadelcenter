@@ -3,7 +3,6 @@ import { useProfileContext } from "../../../context/ProfileContext";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import { safeFormatDate } from "../../../utils/dateUtils.ts";
 import {
-  CheckCircleIcon,
   QuestionMarkCircleIcon,
 } from "@heroicons/react/24/outline";
 import { useEffect, useState } from "react";
@@ -33,13 +32,9 @@ const OverviewTab = () => {
   const fetchMatches = async () => {
     const allMatches = await communityApi.getMatches();
     const filteredMatches = allMatches.filter((match) => profile && match.participants.includes(profile.username) || profile && match.reservedSpots.map((reserved) => reserved.name).includes(profile.username));
-    const upcoming = filteredMatches.filter(
-      (match: PadelMatch) => new Date(match.endTime) > new Date()
-    );
+    const upcoming = filteredMatches.filter((match: PadelMatch) => new Date(match.endTime) > new Date() && match.deadline && (new Date(match.deadline) > new Date()));
     const former = filteredMatches.filter((match) => match.participants.length === match.totalSpots)
-        .filter(
-      (match: PadelMatch) => new Date(match.endTime) <= new Date()
-    );
+        .filter((match: PadelMatch) => new Date(match.endTime) <= new Date());
     return { upcoming, former };
   };
 
@@ -91,7 +86,7 @@ const OverviewTab = () => {
             <p className="text-xs text-gray-600">Nederlag</p>
           </div>
           <div className="col-span-3 mt-2">
-            <div className="w-full bg-gray-200 rounded-full h-2.5">
+            <div className="w-full bg-white rounded-full h-2.5">
               <div className="bg-cyan-500 h-2.5 rounded-full" style={{ width: `${winRate}%` }}>
 
               </div>
@@ -147,10 +142,8 @@ const OverviewTab = () => {
                 </div>
                 <div className="flex justify-between text-xs pt-2">
                   <div className="flex items-center gap-2">
-                    {match.participants.length !== match.totalSpots ? (
+                    {match.participants.length !== match.totalSpots && (
                       <QuestionMarkCircleIcon className="size-8 text-gray-800" />
-                    ) : (
-                      <CheckCircleIcon className="size-8 text-green-800" />
                     )}
                     <div>
                       <h1>Niveau:</h1>

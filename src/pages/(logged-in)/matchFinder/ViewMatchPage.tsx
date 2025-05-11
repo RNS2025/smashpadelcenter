@@ -705,7 +705,7 @@ export const ViewMatchPage = () => {
             !match!.joinRequests.includes(user.username) && (
               <button
                 onClick={handleJoinMatch}
-                className="bg-cyan-500 rounded-lg py-2 px-4 text-white"
+                className="w-full bg-cyan-500 rounded-lg py-2 px-4 text-white"
               >
                 Tilmeld kamp
               </button>

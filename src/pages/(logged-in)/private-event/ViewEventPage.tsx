@@ -182,7 +182,7 @@ export const ViewEventPage = () => {
       const updatedEvent = await communityApi.confirmDeclinePrivateEvent(event.id, username);
       console.log("Updated event after confirm:", updatedEvent);
       if (!updatedEvent || !Array.isArray(updatedEvent.participants)) {
-        setError("Invalid match data returned");
+        setError("Invalid event data returned");
         alert("Der opstod en fejl – prøv igen.");
       }
       setEvent(updatedEvent);
@@ -424,7 +424,7 @@ export const ViewEventPage = () => {
 
           {/* Empty spots */}
           {event.totalSpots > 8 ? (
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-3 gap-2">
                 {[...Array(event.totalSpots - event.participants.length)].map(
                     (_, index) => (
                         <div
@@ -605,9 +605,9 @@ export const ViewEventPage = () => {
               !event!.joinRequests.includes(user.username) && (
                   <button
                       onClick={handleJoinEvent}
-                      className="bg-cyan-500 rounded-lg py-2 px-4 text-white"
+                      className="w-full bg-cyan-500 rounded-lg py-2 px-4 text-white"
                   >
-                    Tilmeld kamp
+                    Tilmeld arrangement
                   </button>
               )}
 
@@ -626,13 +626,13 @@ export const ViewEventPage = () => {
           {user && event?.participants.includes(user?.username) && (
               <button onClick={() => {
                 const ics = createICSFile(
-                    "Padelkamp",
+                    event!.title,
                     event!.description!,
                     event!.location,
                     new Date(event!.eventDateTime),
                     new Date(event!.endTime)
                 );
-                downloadICSFile(ics, `padelkamp-${event!.id}.ics`);
+                downloadICSFile(ics, `${event?.title}-${event!.id}.ics`);
               }} className="w-full text-lg bg-cyan-500 rounded-lg py-2 px-4 text-white">
                 Tilføj til kalender
               </button>
