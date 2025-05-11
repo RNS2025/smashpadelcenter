@@ -25,6 +25,7 @@ import { MatchInvitedPlayersDialog } from "../../../components/matchFinder/misc/
 import { safeFormatDate } from "../../../utils/dateUtils.ts";
 import usePolling from "../../../hooks/usePolling.ts";
 import {createICSFile, downloadICSFile} from "../../../utils/ICSFile.ts";
+import Overlay from "../../../components/misc/Overlay.tsx";
 
 export const ViewMatchPage = () => {
   const navigate = useNavigate();
@@ -577,11 +578,7 @@ export const ViewMatchPage = () => {
         <PlayerInfoDialog user={selectedUser!} />
       </div>
 
-      <div
-        className={`min-h-screen fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center ${
-          !inviteDialogVisible ? "hidden" : ""
-        }`}
-      >
+      <Overlay isVisible={inviteDialogVisible}>
         <MatchInvitedPlayersDialog
           match={match!}
           onInvite={async () => {
@@ -593,7 +590,7 @@ export const ViewMatchPage = () => {
             setInviteDialogVisible(false);
           }}
         />
-      </div>
+      </Overlay>
 
       <HomeBar />
       <Animation>

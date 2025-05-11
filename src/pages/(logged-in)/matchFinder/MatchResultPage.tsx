@@ -48,7 +48,13 @@ export const MatchResultPage = () => {
 
 
     if (!match || !matchId || !user) {
-        return <LoadingSpinner />
+        return (
+            <>
+                <div className="w-full flex justify-center items-center">
+                    <LoadingSpinner />
+                </div>
+            </>
+        )
     }
 
     const totalLength = safeFormatDate(match.matchDateTime, "EEEE | dd. MMMM | HH:mm").length + safeFormatDate(match.endTime, "HH:mm").length;

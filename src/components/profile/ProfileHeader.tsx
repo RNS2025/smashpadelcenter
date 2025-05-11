@@ -13,7 +13,7 @@ export const ProfileHeader = ({ profile, rankedInProfile }: { profile: User | nu
     const isAdmin = profile.username === "admin";
 
     return (
-        <div className="bg-white shadow-md rounded-lg p-5 mb-6 border border-gray-200">
+        <div className="bg-gradient-to-br from-gray-100 to-gray-300 shadow-lg rounded-lg p-5 mb-6 border border-cyan-500">
             <div className="flex flex-col items-center gap-2">
 
                 <div className="w-full grid grid-cols-3 items-center justify-items-center">
@@ -25,11 +25,11 @@ export const ProfileHeader = ({ profile, rankedInProfile }: { profile: User | nu
                 />
 
                 <div className="flex flex-col gap-2">
-                        <span className="bg-cyan-200 text-cyan-800 px-2 py-1 rounded font-medium text-sm text-center">
+                        <span className="bg-cyan-200 text-cyan-800 px-2 py-1 rounded font-semibold text-sm text-center">
                             Niveau {profile.skillLevel}
                         </span>
                     {isAdmin && (
-                        <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded font-medium text-sm text-center">
+                        <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded font-semibold text-sm text-center">
                                 Admin
                             </span>
                     )}
@@ -46,7 +46,7 @@ export const ProfileHeader = ({ profile, rankedInProfile }: { profile: User | nu
                     </h1>
                     <p className="text-gray-600">@{profile.username}</p>
                         {profile.username === user?.username && (
-                        <button onClick={() => navigate(`/profil/${profile?.username}/rediger`)} type="button" className="bg-cyan-500 rounded p-1.5 px-4 text-xs">
+                        <button onClick={() => navigate(`/profil/${profile?.username}/rediger`)} type="button" className="bg-gradient-to-b from-cyan-400 to-cyan-700 rounded p-1.5 px-4 text-xs">
                             Rediger profil
                         </button>
                         )}

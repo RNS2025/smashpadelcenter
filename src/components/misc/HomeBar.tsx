@@ -71,7 +71,7 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
     };
 
   return (
-    <header className="bg-white top-0 sticky z-50">
+    <header className="bg-gradient-to-b from-white to-gray-300 shadow-lg top-0 sticky z-50">
       <div className="flex h-16 items-center px-4 justify-between">
         <div className="flex items-center gap-6">
           <div className={`${location.pathname === "/hjem" ? "hidden" : ""}`}>

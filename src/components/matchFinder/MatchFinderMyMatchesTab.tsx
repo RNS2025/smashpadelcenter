@@ -9,6 +9,8 @@ import { useUser } from "../../context/UserContext";
 import { registerLocale } from "react-datepicker";
 import { da } from "date-fns/locale";
 import {calculateTimeDifference, isMatchDeadlinePassed, safeFormatDate} from "../../utils/dateUtils";
+import ConfirmMatchResultDialog from "./misc/ConfirmMatchResultDialog.tsx";
+import Overlay from "../misc/Overlay.tsx";
 registerLocale("da", da);
 
 export const MatchFinderMyMatchesTab = () => {
@@ -16,6 +18,8 @@ export const MatchFinderMyMatchesTab = () => {
   const { user } = useUser();
 
   const [matches, setMatches] = useState<PadelMatch[]>([]);
+  const [confirmDialogVisible, setConfirmDialogVisible] = useState(false);
+  const [selectedMatch, setSelectedMatch] = useState<PadelMatch | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -32,6 +36,18 @@ export const MatchFinderMyMatchesTab = () => {
             return matchEnd > new Date() || isFull;
           })
               .filter((match) => match.username === user.username || (match.participants.includes(user.username) || match.invitedPlayers.includes(user.username)))
+              .filter((match) => {
+                const totalParticipants = match.participants.length;
+
+                if (totalParticipants === 2 || totalParticipants === 3) {
+                  return match.playersConfirmedResult.length !== 2;
+                }
+
+                if (totalParticipants === 4) {
+                  return match.playersConfirmedResult.length < 3;
+                }
+                return true;
+              })
               .sort((a, b) => {
             const aDate = new Date(a.matchDateTime).getTime();
             const bDate = new Date(b.matchDateTime).getTime();
@@ -52,6 +68,28 @@ export const MatchFinderMyMatchesTab = () => {
     fetchMatches().then();
   }, [user?.username]);
 
+  const handleSubmitResult = async () => {
+    if (!selectedMatch || !user?.username) return;
+
+    const confirmMatch: PadelMatch = {
+      ...selectedMatch,
+      playersConfirmedResult: [...(selectedMatch.playersConfirmedResult || []), user.username],
+    };
+
+    try {
+      const userConfirmed = confirm("Er du sikker på, at du vil bekræfte dette resultat?");
+      if (userConfirmed) {
+        await communityApi.submitConfirmResult(selectedMatch.id, confirmMatch);
+        setConfirmDialogVisible(false);
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error("Error updating match:", error);
+      alert("Der opstod en fejl ved bekræftelse af resultatet.");
+    }
+  };
+
+
 
   if (loading) {
     return (
@@ -67,11 +105,30 @@ export const MatchFinderMyMatchesTab = () => {
     return <div>{error}</div>;
   }
 
+  const matchReservesOnly =  (match: PadelMatch) => {
+    return match.reservedSpots.length === 3;
+  }
+
   return (
     <>
       <Helmet>
         <title>Mine kampe</title>
       </Helmet>
+
+      <Overlay isVisible={confirmDialogVisible}>
+        <ConfirmMatchResultDialog
+            match={selectedMatch}
+            onConfirm={handleSubmitResult}
+            onDecline={() => {
+              const userDecline = confirm("Er du sikker på, at du vil afvise resultatet?");
+                if (userDecline) {
+                    setConfirmDialogVisible(false);
+                }
+            }}
+            onClose={() => setConfirmDialogVisible(false)}
+        />
+      </Overlay>
+
 
 
 
@@ -80,8 +137,7 @@ export const MatchFinderMyMatchesTab = () => {
             <div className="border p-4 rounded-lg space-y-1.5 mb-5">
               <p className="text-center py-4 font-semibold">Ingen aktuelle kampe at vise.</p>
             </div>
-        ) : (
-            matches.map((match) => (
+        ) : (matches.map((match) => (
           <div
               onClick={() => {
                 if (!match.deadline || !isMatchDeadlinePassed(match.deadline)) {
@@ -94,18 +150,33 @@ export const MatchFinderMyMatchesTab = () => {
             ${match.participants.length + match.reservedSpots.length === match.totalSpots ? "border-green-500" : ""}
             `}
           >
-            {new Date(match.endTime) < new Date() &&
-                (match.participants.length + match.reservedSpots.length === match.totalSpots) && (
+            {!matchReservesOnly(match) && new Date(match.endTime) < new Date() && (match.participants.length + match.reservedSpots.length === match.totalSpots) && match.username === user?.username && (
                     <div
                         onClick={(e) => {
                           e.stopPropagation();
-                          navigate(`/makkerbørs/${match.id}/indtastresultat`)
+                          if (user && !match.playersConfirmedResult.includes(user?.username)) {
+                            navigate(`/makkerbørs/${match.id}/indtastresultat`)
+                          }
                         }}
                         className={`absolute inset-0 bg-black bg-opacity-80 flex items-center justify-center rounded-lg z-10`}
                     >
-                      <span className="text-white text-lg text-center font-semibold">{user && match.playersConfirmedResult.includes(user?.username) ? "Resultat afventer bekræftelse fra medspillere"  : "Indtast resultat"}</span>
+                      <span className="text-white text-lg text-center font-semibold animate-pulse">{user && match.playersConfirmedResult.includes(user?.username) ? "Resultat afventer bekræftelse fra medspillere"  : "Indtast resultat"}</span>
                     </div>
                 )}
+
+            {!matchReservesOnly(match) && new Date(match.endTime) < new Date() && (match.participants.length + match.reservedSpots.length === match.totalSpots) && match.username !== user?.username && (
+                <div
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (match.playersConfirmedResult.includes(match.username)) {
+                      setSelectedMatch(match);
+                      setConfirmDialogVisible(true);
+                    }}}
+                    className={`absolute inset-0 bg-black bg-opacity-80 flex items-center justify-center rounded-lg z-10`}
+                >
+                  <span className="text-white text-lg text-center font-semibold animate-pulse">{user && !match.playersConfirmedResult.includes(match.username) ? "Afventer kampejerens resultat" : "Bekræft resultat"}</span>
+                </div>
+            )}
 
 
 
