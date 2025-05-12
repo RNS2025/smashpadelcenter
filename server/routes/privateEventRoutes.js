@@ -47,7 +47,7 @@ router.post("/:eventId/invite", async (req, res) => {
       "INVITATION_SENT",
       {
         eventId: req.params.eventId,
-        participantIds: usernames,
+        userIds: usernames,
       },
       usernames
     );

@@ -33,8 +33,8 @@ router.post("/login", (req, res, next) => {
     res.cookie("token", token, {
       httpOnly: true,
       secure: isProduction, // Only secure in production
-      sameSite: isProduction ? "none" : "lax", // "none" for cross-origin in production, "lax" for development
-      maxAge: 24 * 60 * 60 * 1000, // 1 day
+      // "none" for cross-origin in production, "lax" for development
+      maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year (effectively "forever" in browser terms)
     });
 
     logger.info("User logged in successfully", {

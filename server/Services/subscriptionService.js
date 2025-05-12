@@ -178,7 +178,7 @@ const sendPadelMatchNotification = async (eventType, matchDetails, userIds) => {
         title: "Invitation behandlet",
         body: `Invitationen til kamp er blevet behandlet.`,
         category: "makkerbors",
-        recipients: participantIds,
+        recipients: [requesterId],
       },
       MATCH_FULL: {
         title: "Kamp fyldt",
@@ -288,7 +288,7 @@ const sendPrivateEventNotification = async (
         title: "Ny invitation til arrangement",
         body: `Du er blevet inviteret til arrangement.`,
         category: "events",
-        recipients: participantIds,
+        recipients: userIds,
       },
       INVITATION_PROCESSED: {
         title: "Invitation behandlet",
