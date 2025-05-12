@@ -298,7 +298,7 @@ const InstallPage: React.FC = () => {
               Sådan installerer du SMASH App
             </h2>
             <p className="text-gray-300 text-center mb-4">
-              Følg disse simple trin for at installere app'en på din telefon:
+              Følg disse simple trin for at installere appen på din telefon:
             </p>
 
             {isFacebookBrowser ? (

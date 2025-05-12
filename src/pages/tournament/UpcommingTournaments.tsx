@@ -361,8 +361,8 @@ const TournamentFilters: FC<TournamentFiltersProps> = ({
           </svg>
           <span className="font-semibold">
             {filterCount > 0
-              ? `Filtrer Anvendt (${filterCount})`
-              : "Vis filtrer"}
+              ? `Filtre Anvendt (${filterCount})`
+              : "Vis filtre"}
           </span>
         </div>
         <svg
