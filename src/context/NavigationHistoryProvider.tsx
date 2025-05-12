@@ -51,7 +51,13 @@ const NavigationHistoryProvider: React.FC<{
       "/partner",
       "/arrangement",
       "/admin",
+      "/profil",
     ];
+
+    // Check if current path starts with /profil
+    if (location.pathname.startsWith("/profil")) {
+      return "/hjem";
+    }
 
     // If current page is a primary page, go directly to home
     if (primaryPages.includes(location.pathname)) {

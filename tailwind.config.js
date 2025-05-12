@@ -62,6 +62,21 @@ export default {
         },
         // spin keyframes are built-in
       },
+
+      // Custom utilities for scrollbar removal
+      utilities: {
+        ".no-scrollbar": {
+          /* Hide scrollbars but keep functionality */
+          "-ms-overflow-style": "none",
+          "scrollbar-width": "none",
+          "&::-webkit-scrollbar": {
+            display: "none",
+            width: "0",
+            height: "0",
+            background: "transparent",
+          },
+        },
+      },
     },
   },
   plugins: [
