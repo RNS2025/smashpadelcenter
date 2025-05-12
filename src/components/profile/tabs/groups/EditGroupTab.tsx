@@ -107,12 +107,14 @@ export const EditGroupTab = () => {
         (group) => group.id !== groupId
       );
 
-      const userConfirmed = confirm("Er du sikker på at du vil slette gruppen?");
+      const userConfirmed = confirm(
+        "Er du sikker på at du vil slette gruppen?"
+      );
       if (userConfirmed) {
-      await userProfileService.updateUserProfile(user.username, {
-        groups: updatedGroups,
-      });
-      navigate(`/profil/${user.username}/grupper`);
+        await userProfileService.updateUserProfile(user.username, {
+          groups: updatedGroups,
+        });
+        navigate(`/profil/${user.username}/grupper`);
       }
     } catch (error) {
       console.error("Error deleting group:", error);
@@ -211,7 +213,9 @@ export const EditGroupTab = () => {
                       className="bg-cyan-100 text-cyan-700 px-3 py-1 rounded-full text-sm"
                     >
                       <h1 className="truncate">
-                        {member.fullName ? `${member.fullName} (${member.username})` : member.username}
+                        {member.fullName
+                          ? `${member.fullName} (${member.username})`
+                          : member.username}
                       </h1>
                     </div>
                   ))}

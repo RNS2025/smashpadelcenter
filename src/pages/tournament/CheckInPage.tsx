@@ -211,7 +211,6 @@ const CheckInPage = () => {
 
   const handlePlayerClick = (playerId: string) => {
     if (selectedRowId) {
-      console.log("Navigating to player page:", playerId, selectedRowId);
       navigate(`/player/${playerId}/${selectedRowId}`);
     }
   };
@@ -238,7 +237,6 @@ const CheckInPage = () => {
     <>
       <HomeBar />
       <Animation>
-
         <div className="container mx-auto p-4">
           <h1 className="text-2xl font-bold mb-6">Indtjekning</h1>
 

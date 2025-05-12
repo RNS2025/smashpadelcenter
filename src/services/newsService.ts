@@ -108,7 +108,6 @@ const getNewsById = async (id: number): Promise<News> => {
 // Delete a news article
 const deleteNews = async (id: number | string): Promise<void> => {
   try {
-    console.log(`Attempting to delete news with ID: ${id}`);
     await api.delete(`/news/${id}`);
   } catch (error) {
     console.error("Error deleting news:", error);

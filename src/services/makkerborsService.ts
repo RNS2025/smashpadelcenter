@@ -13,20 +13,23 @@ const communityApi = {
     return response.data;
   },
 
-    updateMatch: async (
-        matchId: string,
-        update: Partial<Omit<PadelMatch, "id">>
-    ): Promise<PadelMatch> => {
-        const response = await api.patch(`/matches/${matchId}`, update);
-        return response.data;
-    },
+  updateMatch: async (
+    matchId: string,
+    update: Partial<Omit<PadelMatch, "id">>
+  ): Promise<PadelMatch> => {
+    const response = await api.patch(`/matches/${matchId}`, update);
+    return response.data;
+  },
 
   joinMatch: async (matchId: string, username: string): Promise<PadelMatch> => {
     const response = await api.post(`/matches/${matchId}/join`, { username });
     return response.data;
   },
 
-  playerCancelJoinMatch: async (matchId: string, username: string): Promise<PadelMatch> => {
+  playerCancelJoinMatch: async (
+    matchId: string,
+    username: string
+  ): Promise<PadelMatch> => {
     const response = await api.post(`/matches/${matchId}/player-cancel`, {
       username,
     });
@@ -77,9 +80,12 @@ const communityApi = {
     matchId: string,
     username: string
   ): Promise<PadelMatch> => {
-    const response = await api.post(`/matches/${matchId}/remove-reserved-player`, {
-      username,
-    });
+    const response = await api.post(
+      `/matches/${matchId}/remove-reserved-player`,
+      {
+        username,
+      }
+    );
     return response.data;
   },
 
@@ -93,19 +99,22 @@ const communityApi = {
     return response.data;
   },
 
-    submitMatchResult: async (
-        matchId: string,
-        matchResult: Partial<Omit<PadelMatch, "id">>
-    ): Promise<PadelMatch> => {
-        const response = await api.patch(`/matches/${matchId}/result`, matchResult);
-        return response.data;
-    },
+  submitMatchResult: async (
+    matchId: string,
+    matchResult: Partial<Omit<PadelMatch, "id">>
+  ): Promise<PadelMatch> => {
+    const response = await api.patch(`/matches/${matchId}/result`, matchResult);
+    return response.data;
+  },
 
   submitConfirmResult: async (
     matchId: string,
     matchResult: Partial<Omit<PadelMatch, "id">>
   ): Promise<PadelMatch> => {
-    const response = await api.patch(`/matches/${matchId}/confirm-result`, matchResult);
+    const response = await api.patch(
+      `/matches/${matchId}/confirm-result`,
+      matchResult
+    );
     return response.data;
   },
 
@@ -134,11 +143,6 @@ const communityApi = {
     const response = await api.get(`/matches/player/${username}`);
     return response.data;
   },
-
-
-
-
-
 
   //Private Arrangementer
   getPrivateEvents: async (): Promise<PrivateEvent[]> => {
@@ -169,8 +173,8 @@ const communityApi = {
     return response.data;
   },
   removePlayerFromEvent: async (
-      eventId: string,
-      username: string
+    eventId: string,
+    username: string
   ): Promise<PrivateEvent> => {
     const response = await api.post(`/private-event/${eventId}/remove-player`, {
       username,
@@ -184,7 +188,6 @@ const communityApi = {
     const response = await api.post(`/private-event/${eventId}/join`, {
       username,
     });
-    console.log("[DEBUG] Response from joinEvent:", response.data);
     return response.data;
   },
   confirmJoinEvent: async (
@@ -198,8 +201,8 @@ const communityApi = {
   },
 
   confirmAcceptPrivateEvent: async (
-      eventId: string,
-      username: string
+    eventId: string,
+    username: string
   ): Promise<PrivateEvent> => {
     const response = await api.post(`/private-event/${eventId}/confirm`, {
       username,
@@ -208,8 +211,8 @@ const communityApi = {
   },
 
   confirmDeclinePrivateEvent: async (
-      eventId: string,
-      username: string
+    eventId: string,
+    username: string
   ): Promise<PrivateEvent> => {
     const response = await api.post(`/private-event/${eventId}/decline`, {
       username,

@@ -14,8 +14,12 @@ import { useNavigate } from "react-router-dom";
 import communityApi from "../../../services/makkerborsService.ts";
 import { PrivateEvent } from "../../../types/PrivateEvent.ts";
 import { useUser } from "../../../context/UserContext.tsx";
-import {filterPassedTime, getNextHalfHour, handleHiddenTimes} from "../../../utils/dateUtils.ts";
-import {ChevronDownIcon, ChevronUpIcon} from "@heroicons/react/24/outline";
+import {
+  filterPassedTime,
+  getNextHalfHour,
+  handleHiddenTimes,
+} from "../../../utils/dateUtils.ts";
+import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
 
 registerLocale("da", da);
 
@@ -30,11 +34,13 @@ export const CreateEventForm = () => {
   const [courtBooked, setCourtBooked] = useState<boolean>(false);
   const [price, setPrice] = useState<number>(140);
   const [levelRangeRequired, setLevelRangeRequired] = useState<boolean>(false);
-  const [levelRange, setLevelRange] = useState<[number, number]>([user?.skillLevel || 2.0, (user?.skillLevel || 2.0) + 1]);
+  const [levelRange, setLevelRange] = useState<[number, number]>([
+    user?.skillLevel || 2.0,
+    (user?.skillLevel || 2.0) + 1,
+  ]);
   const [location, setLocation] = useState<string>("SMASH Padelcenter Horsens");
   const [openRegistration, setOpenRegistration] = useState<boolean>(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
 
   const [selectedStartDate, setSelectedStartDate] = useState(getNextHalfHour);
   const [selectedEndDate, setSelectedEndDate] = useState(
@@ -98,12 +104,10 @@ export const CreateEventForm = () => {
         accessUrl: "",
       };
 
-      console.log(eventData.level)
-
       const createdEvent = await communityApi.createPrivateEvent(eventData);
       const accessUrl = `/privat-arrangementer/${createdEvent.id}`;
       await communityApi.updatePrivateEvent(createdEvent.id, {
-        accessUrl
+        accessUrl,
       });
       navigate("/privat-arrangementer/minearrangementer");
     } catch (error: any) {
@@ -152,7 +156,6 @@ export const CreateEventForm = () => {
       return [min, newMax];
     });
   };
-
 
   const courtBookedArray = [
     { label: "Nej", value: false },
@@ -236,22 +239,22 @@ export const CreateEventForm = () => {
               </label>
               <div className="flex items-center gap-1 w-full">
                 <ChevronDownIcon
-                    onClick={() => setTotalSpots((prev) => Math.max(4, prev - 1))}
-                    className="size-10 text-gray-300 cursor-pointer"
+                  onClick={() => setTotalSpots((prev) => Math.max(4, prev - 1))}
+                  className="size-10 text-gray-300 cursor-pointer"
                 />
 
                 <input
-                    type="number"
-                    min={4}
-                    className="text-center rounded-lg w-full border-slate-800/80 bg-slate-800/80 disabled:text-gray-200 disabled:border-slate-800/80"
-                    value={totalSpots}
-                    onChange={(e) => setTotalSpots(parseInt(e.target.value))}
-                    required
-                    disabled
+                  type="number"
+                  min={4}
+                  className="text-center rounded-lg w-full border-slate-800/80 bg-slate-800/80 disabled:text-gray-200 disabled:border-slate-800/80"
+                  value={totalSpots}
+                  onChange={(e) => setTotalSpots(parseInt(e.target.value))}
+                  required
+                  disabled
                 />
                 <ChevronUpIcon
-                    onClick={() => setTotalSpots((prev) => Math.min(prev + 1))}
-                    className="size-10 text-gray-300 cursor-pointer"
+                  onClick={() => setTotalSpots((prev) => Math.min(prev + 1))}
+                  className="size-10 text-gray-300 cursor-pointer"
                 />
               </div>
             </div>
@@ -262,13 +265,16 @@ export const CreateEventForm = () => {
               </label>
               <div>
                 <input
-                    type="number"
-                    className="rounded-lg w-full border-slate-800/80 bg-slate-800/80 disabled:text-gray-200 disabled:border-slate-800/80"
-                    value={price}
-                    min={0}
-                    onChange={(e) => setPrice(parseFloat(e.target.value))}/>
+                  type="number"
+                  className="rounded-lg w-full border-slate-800/80 bg-slate-800/80 disabled:text-gray-200 disabled:border-slate-800/80"
+                  value={price}
+                  min={0}
+                  onChange={(e) => setPrice(parseFloat(e.target.value))}
+                />
 
-                <span className="absolute inset-y-0 top-9 right-3 flex items-center text-gray-500 text-sm lg:hidden">kr.</span>
+                <span className="absolute inset-y-0 top-9 right-3 flex items-center text-gray-500 text-sm lg:hidden">
+                  kr.
+                </span>
               </div>
             </div>
           </div>
@@ -350,18 +356,18 @@ export const CreateEventForm = () => {
             <div className="flex h-12">
               <div className="flex items-center w-full rounded-lg gap-3 pr-1">
                 {courtBookedArray.map(({ label, value }) => (
-                    <button
-                        type="button"
-                        key={label}
-                        onClick={() => setCourtBooked(value)}
-                        className={`p-2 w-full rounded-xl transition duration-300 ${
-                            courtBooked === value
-                                ? "bg-cyan-500/80 text-white "
-                                : "border-slate-800/80 bg-slate-800/80"
-                        }`}
-                    >
-                      {label}
-                    </button>
+                  <button
+                    type="button"
+                    key={label}
+                    onClick={() => setCourtBooked(value)}
+                    className={`p-2 w-full rounded-xl transition duration-300 ${
+                      courtBooked === value
+                        ? "bg-cyan-500/80 text-white "
+                        : "border-slate-800/80 bg-slate-800/80"
+                    }`}
+                  >
+                    {label}
+                  </button>
                 ))}
               </div>
             </div>
@@ -391,65 +397,62 @@ export const CreateEventForm = () => {
               </div>
 
               {levelRangeRequired && (
-                  <div className="flex flex-col gap-2">
-                    <div className="grid grid-cols-2 items-center text-center w-full">
+                <div className="flex flex-col gap-2">
+                  <div className="grid grid-cols-2 items-center text-center w-full">
                     <label className="font-semibold">Minimum</label>
                     <label className="font-semibold">Maksimum</label>
-                    </div>
+                  </div>
 
-                    <div className="flex h-12">
-                      <div className="flex justify-between items-center w-full rounded-lg gap-2 pr-1">
-                        <div className="grid grid-cols-2 items-center text-center w-full">
-                          <div className="flex items-center gap-1 p-4 rounded-xl">
-                            <ChevronDownIcon
-                                onClick={decrementMinLevel}
-                                className="size-10 text-black cursor-pointer"
-                            />
-                            <input
-                                className="text-center rounded-lg w-full disabled:text-black disabled:border-black"
-                                type="number"
-                                step="0.1"
-                                min="1.0"
-                                max="7.0"
-                                value={levelRange[0].toFixed(1)}
-                                onChange={handleMinChange}
-                                disabled
-                            />
-                            <ChevronUpIcon
-                                onClick={incrementMinLevel}
-                                className="size-10 text-black cursor-pointer"
-                            />
-                          </div>
+                  <div className="flex h-12">
+                    <div className="flex justify-between items-center w-full rounded-lg gap-2 pr-1">
+                      <div className="grid grid-cols-2 items-center text-center w-full">
+                        <div className="flex items-center gap-1 p-4 rounded-xl">
+                          <ChevronDownIcon
+                            onClick={decrementMinLevel}
+                            className="size-10 text-black cursor-pointer"
+                          />
+                          <input
+                            className="text-center rounded-lg w-full disabled:text-black disabled:border-black"
+                            type="number"
+                            step="0.1"
+                            min="1.0"
+                            max="7.0"
+                            value={levelRange[0].toFixed(1)}
+                            onChange={handleMinChange}
+                            disabled
+                          />
+                          <ChevronUpIcon
+                            onClick={incrementMinLevel}
+                            className="size-10 text-black cursor-pointer"
+                          />
+                        </div>
 
-                          <div className="flex items-center gap-1 p-4 w-full">
-                            <ChevronDownIcon
-                                onClick={decrementMaxLevel}
-                                className="size-10 text-black cursor-pointer"
-                            />
+                        <div className="flex items-center gap-1 p-4 w-full">
+                          <ChevronDownIcon
+                            onClick={decrementMaxLevel}
+                            className="size-10 text-black cursor-pointer"
+                          />
 
-                            <input
-                                className="text-center rounded-lg w-full disabled:text-black disabled:border-black"
-                                type="number"
-                                step="0.1"
-                                min={levelRange[0]}
-                                max="7.0"
-                                value={levelRange[1].toFixed(1)}
-                                onChange={handleMaxChange}
-                                disabled
-                            />
-                            <ChevronUpIcon
-                                onClick={incrementMaxLevel}
-                                className="size-10 text-black cursor-pointer"
-                            />
-                          </div>
+                          <input
+                            className="text-center rounded-lg w-full disabled:text-black disabled:border-black"
+                            type="number"
+                            step="0.1"
+                            min={levelRange[0]}
+                            max="7.0"
+                            value={levelRange[1].toFixed(1)}
+                            onChange={handleMaxChange}
+                            disabled
+                          />
+                          <ChevronUpIcon
+                            onClick={incrementMaxLevel}
+                            className="size-10 text-black cursor-pointer"
+                          />
                         </div>
                       </div>
                     </div>
                   </div>
+                </div>
               )}
-
-
-
             </div>
           </div>
 

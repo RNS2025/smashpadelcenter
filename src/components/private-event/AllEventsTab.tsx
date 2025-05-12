@@ -47,19 +47,17 @@ export const AllEventsTab = () => {
       events = mockEvents;
     } else {
       const response = await communityApi.getPrivateEvents();
-      events = response.filter((e) => {
-        return (
-            new Date(e.eventDateTime) > new Date()
-        )
-      })
-          .sort((a, b) => {
-        return (
-          new Date(a.eventDateTime).getTime() -
-          new Date(b.eventDateTime).getTime()
-        );
-      });
+      events = response
+        .filter((e) => {
+          return new Date(e.eventDateTime) > new Date();
+        })
+        .sort((a, b) => {
+          return (
+            new Date(a.eventDateTime).getTime() -
+            new Date(b.eventDateTime).getTime()
+          );
+        });
     }
-    console.log(events);
     return events;
   };
 
@@ -77,12 +75,12 @@ export const AllEventsTab = () => {
 
   if (loading) {
     return (
-        <>
-          <div className="w-full flex justify-center items-center">
-            <LoadingSpinner />
-          </div>
-        </>
-    )
+      <>
+        <div className="w-full flex justify-center items-center">
+          <LoadingSpinner />
+        </div>
+      </>
+    );
   }
 
   if (error) {
@@ -101,9 +99,11 @@ export const AllEventsTab = () => {
 
       <div className="text-sm cursor-pointer">
         {privateEvents.length === 0 ? (
-            <div className="border p-4 rounded-lg space-y-1.5 mb-5">
-              <p className="text-center py-4 font-semibold">Ingen aktuelle arrangementer at vise.</p>
-            </div>
+          <div className="border p-4 rounded-lg space-y-1.5 mb-5">
+            <p className="text-center py-4 font-semibold">
+              Ingen aktuelle arrangementer at vise.
+            </p>
+          </div>
         ) : (
           visibleEvents
             .filter(
@@ -120,10 +120,7 @@ export const AllEventsTab = () => {
               <div
                 onClick={
                   event.openRegistration
-                    ? () =>
-                        navigate(
-                          `/privat-arrangementer/${event.id}`
-                        )
+                    ? () => navigate(`/privat-arrangementer/${event.id}`)
                     : undefined
                 }
                 key={event.id}

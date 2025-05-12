@@ -23,7 +23,6 @@ export const friendService = {
     pendingRequests: Friend[];
   }> => {
     const response = await api.get("/friends");
-    console.log("Friends response:", response.data);
     return response.data;
   },
 };

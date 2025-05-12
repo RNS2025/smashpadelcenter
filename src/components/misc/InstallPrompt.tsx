@@ -15,7 +15,6 @@ const InstallPrompt: React.FC<InstallPromptProps> = ({
     if (!deferredPrompt) return;
     deferredPrompt.prompt();
     const { outcome } = await deferredPrompt.userChoice;
-    console.log(`User response to install prompt: ${outcome}`);
     if (outcome === "accepted") {
       setIsVisible(false);
     }
@@ -42,8 +41,8 @@ const InstallPrompt: React.FC<InstallPromptProps> = ({
             Installer SMASH Padel-app
           </h2>
           <p className="text-gray-600 text-center mb-4">
-            Få hurtigere adgang til SMASH Padelcenter med vores app. Installer den nu
-            for at få en bedre oplevelse!
+            Få hurtigere adgang til SMASH Padelcenter med vores app. Installer
+            den nu for at få en bedre oplevelse!
           </p>
           <div className="flex space-x-4">
             <button

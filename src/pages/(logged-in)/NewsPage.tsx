@@ -55,7 +55,6 @@ const NewsPage: React.FC = () => {
   const fetchNews = async () => {
     try {
       const data = await newsService.getNews();
-      console.log("Fetched news:", data);
       setNews(data);
       await fetchImages(data);
       setLoading(false);
@@ -176,7 +175,6 @@ const NewsPage: React.FC = () => {
       return;
     }
     try {
-      console.log("Deleting news with ID:", selectedNewsId);
       await newsService.deleteNews(selectedNewsId);
       setNews(news.filter((item) => item.id !== selectedNewsId));
       alert("News deleted successfully!");
@@ -193,7 +191,6 @@ const NewsPage: React.FC = () => {
     event: React.MouseEvent
   ) => {
     event.stopPropagation();
-    console.log("Selected news ID:", newsId);
     setFocusedNewsId(newsId); // Open modal
     if (role === "admin") {
       setSelectedNewsId(newsId); // Set for admin actions

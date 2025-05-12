@@ -4,7 +4,6 @@ import api from "../api/api"; // Adjust the path if necessary
 export const getAllEvents = async () => {
   try {
     const response = await api.get("/events");
-    console.log("Fetched events:", response.data); // Log the fetched events for debugging
     return response.data;
   } catch (error) {
     console.error("Error fetching events:", error);

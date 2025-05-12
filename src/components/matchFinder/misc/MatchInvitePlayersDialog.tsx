@@ -15,7 +15,7 @@ export const MatchInvitedPlayersDialog = ({
   onInvite: (match: PadelMatch) => void;
   onClose: () => void;
 }) => {
-  const {user} = useUser();
+  const { user } = useUser();
   const [allUsers, setAllUsers] = useState<DaoGroupUser[]>([]);
   const [selectedUsers, setSelectedUsers] = useState<DaoGroupUser[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -54,7 +54,6 @@ export const MatchInvitedPlayersDialog = ({
         invitedPlayers
       );
 
-      console.log("Updated match after inviting players:", updatedMatch);
       onInvite(updatedMatch);
     } catch (error: any) {
       console.error("Error inviting players:", error);

@@ -13,10 +13,10 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { useUser } from "../../../context/UserContext";
-import {useEffect, useState, useMemo, useCallback} from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { PadelMatch } from "../../../types/PadelMatch";
 import communityApi from "../../../services/makkerborsService";
-import {Navigate, useNavigate, useParams} from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 import LoadingSpinner from "../../../components/misc/LoadingSpinner";
 import { User } from "../../../types/user.ts";
 import userProfileService from "../../../services/userProfileService.ts";
@@ -24,7 +24,7 @@ import PlayerInfoDialog from "../../../components/matchFinder/misc/PlayerInfoDia
 import { MatchInvitedPlayersDialog } from "../../../components/matchFinder/misc/MatchInvitePlayersDialog.tsx";
 import { safeFormatDate } from "../../../utils/dateUtils.ts";
 import usePolling from "../../../hooks/usePolling.ts";
-import {createICSFile, downloadICSFile} from "../../../utils/ICSFile.ts";
+import { createICSFile, downloadICSFile } from "../../../utils/ICSFile.ts";
 import Overlay from "../../../components/misc/Overlay.tsx";
 
 export const ViewMatchPage = () => {
@@ -61,75 +61,93 @@ export const ViewMatchPage = () => {
     return null;
   };
 
-  const handleConfirmJoin = useCallback(async (username: string) => {
-    if (!match) return;
-    try {
-      console.log("Confirming join:", { matchId: match.id, username });
-      const updatedMatch = await communityApi.confirmJoinMatch(
+  const handleConfirmJoin = useCallback(
+    async (username: string) => {
+      if (!match) return;
+      try {
+        const updatedMatch = await communityApi.confirmJoinMatch(
           match.id,
           username
-      );
-      console.log("Updated match after confirm:", updatedMatch);
-      if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
-        setError("Invalid match data returned");
-        alert("Der opstod en fejl – prøv igen.");
+        );
+        if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
+          setError("Invalid match data returned");
+          alert("Der opstod en fejl – prøv igen.");
+        }
+        setMatch(updatedMatch);
+      } catch (error: any) {
+        console.error("Error confirming join:", error.response?.data);
+        alert(error.response?.data?.message || "Fejl ved bekræftelse");
+        setError("Fejl ved bekræftelse");
       }
-      setMatch(updatedMatch);
-    } catch (error: any) {
-      console.error("Error confirming join:", error.response?.data);
-      alert(error.response?.data?.message || "Fejl ved bekræftelse");
-      setError("Fejl ved bekræftelse");
-    }
-  },[match]);
+    },
+    [match]
+  );
 
-  const handleDeclineJoin = useCallback(async (username: string) => {
-    if (!match) return;
-    try {
-      const updatedMatch = await communityApi.rejectJoinMatch(
+  const handleDeclineJoin = useCallback(
+    async (username: string) => {
+      if (!match) return;
+      try {
+        const updatedMatch = await communityApi.rejectJoinMatch(
           match.id,
           username
-      );
-      console.log("Updated match after confirm:", updatedMatch);
-      if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
-        setError("Invalid match data returned");
-        alert("Der opstod en fejl – prøv igen.");
+        );
+        co.log("Updated match after confirm:", updatedMatch);
+        if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
+          setError("Invalid match data returned");
+          alert("Der opstod en fejl – prøv igen.");
+        }
+        setMatch(updatedMatch);
+      } catch (error: any) {
+        console.error("Error confirming join:", error);
+        alert(error.response?.data?.message || "Fejl ved afvisning");
+        setError("Fejl ved afvisning");
       }
-      setMatch(updatedMatch);
-    } catch (error: any) {
-      console.error("Error confirming join:", error);
-      alert(error.response?.data?.message || "Fejl ved afvisning");
-      setError("Fejl ved afvisning");
-    }
-  },[match]);
+    },
+    [match]
+  );
 
-  const handleRemovePlayerFromMatch = useCallback(async (username: string) => {
-    if (!match) return;
-    try {
-      const updatedMatch = await communityApi.removePlayer(match.id, username);
-      console.log("Updated match after confirm:", updatedMatch);
-      if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
-        setError("Invalid match data returned");
-        alert("Der opstod en fejl – prøv igen.");
+  const handleRemovePlayerFromMatch = useCallback(
+    async (username: string) => {
+      if (!match) return;
+      try {
+        const updatedMatch = await communityApi.removePlayer(
+          match.id,
+          username
+        );
+        if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
+          setError("Invalid match data returned");
+          alert("Der opstod en fejl – prøv igen.");
+        }
+        setMatch(updatedMatch);
+      } catch (error: any) {
+        console.error("Error confirming join:", error);
+        alert(error.response?.data?.message || "Fejl ved afvisning");
+        setError("Fejl ved afvisning");
       }
-      setMatch(updatedMatch);
-    } catch (error: any) {
-      console.error("Error confirming join:", error);
-      alert(error.response?.data?.message || "Fejl ved afvisning");
-      setError("Fejl ved afvisning");
-    }
-  },[match]);
+    },
+    [match]
+  );
 
-  const handleRemoveReservedPlayer = useCallback(async (username: string) => {
-    if (!match) return;
-    try {
-      const updatedMatch = await communityApi.removeReservedPlayer(match.id, username);
-      setMatch(updatedMatch);
-    } catch (error: any) {
-      console.error("Error confirming delete:", error);
-      alert(error.response?.data?.message || "Fejl ved sletning af reserveret spiller");
-      setError("Fejl ved sletning af reserveret spiller");
-    }
-  },[match]);
+  const handleRemoveReservedPlayer = useCallback(
+    async (username: string) => {
+      if (!match) return;
+      try {
+        const updatedMatch = await communityApi.removeReservedPlayer(
+          match.id,
+          username
+        );
+        setMatch(updatedMatch);
+      } catch (error: any) {
+        console.error("Error confirming delete:", error);
+        alert(
+          error.response?.data?.message ||
+            "Fejl ved sletning af reserveret spiller"
+        );
+        setError("Fejl ved sletning af reserveret spiller");
+      }
+    },
+    [match]
+  );
 
   // Memoized lists
   const participantList = useMemo(() => {
@@ -138,7 +156,13 @@ export const ViewMatchPage = () => {
     return participantProfiles.map((profile) => (
       <div key={profile.username} className="flex items-center gap-2">
         <div className="border rounded flex items-center px-1 w-full py-3">
-          <div onClick={() => {setSelectedUser(profile);setInfoDialogVisible(true);}} className="flex items-center gap-2 w-full pr-1 truncate">
+          <div
+            onClick={() => {
+              setSelectedUser(profile);
+              setInfoDialogVisible(true);
+            }}
+            className="flex items-center gap-2 w-full pr-1 truncate"
+          >
             <UserCircleIcon className="h-14" />
             <div className="flex flex-col gap-2">
               <h1>{profile.fullName}</h1>
@@ -174,27 +198,27 @@ export const ViewMatchPage = () => {
       <div key={reserved.name} className="flex items-center gap-2">
         <div className="border rounded flex items-center px-1 w-full py-3">
           <div className="flex items-center gap-2 w-full pr-1 truncate">
-          <UserCircleIcon className="h-14" />
-          <div className="flex flex-col gap-2">
-            <h1>{reserved.name}</h1>
-            <h1 className="italic text-gray-500">Reserveret plads</h1>
+            <UserCircleIcon className="h-14" />
+            <div className="flex flex-col gap-2">
+              <h1>{reserved.name}</h1>
+              <h1 className="italic text-gray-500">Reserveret plads</h1>
+            </div>
           </div>
-          </div>
-        <div className="flex items-center gap-2">
-          <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center size-12">
-            {reserved.level}
-          </div>
-          <div>
-          {match.username === user?.username && (
-              <XMarkIcon
+          <div className="flex items-center gap-2">
+            <div className="bg-cyan-500 text-white rounded-full flex items-center justify-center size-12">
+              {reserved.level}
+            </div>
+            <div>
+              {match.username === user?.username && (
+                <XMarkIcon
                   onClick={() => handleRemoveReservedPlayer}
                   className={`size-6 text-red-500 ${
-                      match.username !== user?.username ? "hidden" : ""
+                    match.username !== user?.username ? "hidden" : ""
                   }`}
-              />
-          )}
+                />
+              )}
+            </div>
           </div>
-        </div>
         </div>
       </div>
     ));
@@ -261,7 +285,6 @@ export const ViewMatchPage = () => {
       </div>
     ));
   }, [handleConfirmJoin, handleDeclineJoin, joinRequestProfiles, match]);
-  
 
   // Polling for match data
   const fetchMatch = useCallback(async () => {
@@ -323,7 +346,6 @@ export const ViewMatchPage = () => {
   usePolling(
     fetchMatch,
     (matchData) => {
-      console.log("Updating match:", matchData);
       setMatch(matchData);
     },
     {
@@ -440,7 +462,6 @@ export const ViewMatchPage = () => {
         match.id,
         user?.username
       );
-      console.log("Updated match after join:", updatedMatch);
       if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
         setError("Invalid match data returned");
         alert("Der opstod en fejl – prøv igen.");
@@ -460,7 +481,6 @@ export const ViewMatchPage = () => {
         match.id,
         username
       );
-      console.log("Updated match after confirm:", updatedMatch);
       if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
         setError("Invalid match data returned");
         alert("Der opstod en fejl – prøv igen.");
@@ -480,7 +500,6 @@ export const ViewMatchPage = () => {
         match.id,
         username
       );
-      console.log("Updated match after confirm:", updatedMatch);
       if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
         setError("Invalid match data returned");
         alert("Der opstod en fejl – prøv igen.");
@@ -512,7 +531,6 @@ export const ViewMatchPage = () => {
     }
   };
 
-
   const handleDeleteMatch = async () => {
     if (!match) return;
     try {
@@ -534,13 +552,13 @@ export const ViewMatchPage = () => {
 
   if (loading) {
     return (
-        <>
-          <HomeBar backPage="/hjem" />
-          <div className="w-full h-[calc(100vh-150px)] flex justify-center items-center">
-            <LoadingSpinner />
-          </div>
-        </>
-    )
+      <>
+        <HomeBar backPage="/hjem" />
+        <div className="w-full h-[calc(100vh-150px)] flex justify-center items-center">
+          <LoadingSpinner />
+        </div>
+      </>
+    );
   }
 
   if (error && !match) {
@@ -549,7 +567,7 @@ export const ViewMatchPage = () => {
         <Helmet>
           <title>Kampdetaljer</title>
         </Helmet>
-          <HomeBar />
+        <HomeBar />
         <Animation>
           <div className="mx-4 my-10">{error}</div>
         </Animation>
@@ -561,7 +579,6 @@ export const ViewMatchPage = () => {
     safeFormatDate(match!.matchDateTime, "EEEE | dd. MMMM | HH:mm").length +
     safeFormatDate(match!.endTime, "HH:mm").length;
   const isMatchFull = match!.participants.length === 4;
-
 
   return (
     <>
@@ -594,7 +611,6 @@ export const ViewMatchPage = () => {
 
       <HomeBar />
       <Animation>
-
         <div className="mx-4 my-10 space-y-4 text-sm">
           <h1
             className={`text-center font-semibold ${
@@ -618,7 +634,9 @@ export const ViewMatchPage = () => {
 
           {/* Participants */}
           {profilesLoading ? (
-            <div className="text-center text-gray-500">Indlæser profiler...</div>
+            <div className="text-center text-gray-500">
+              Indlæser profiler...
+            </div>
           ) : (
             participantList
           )}
@@ -698,7 +716,8 @@ export const ViewMatchPage = () => {
           </div>
 
           {/* Action buttons */}
-          {user?.username && match!.username !== user.username &&
+          {user?.username &&
+            match!.username !== user.username &&
             !match!.participants.includes(user.username) &&
             !match!.invitedPlayers.includes(user.username) &&
             !isMatchFull &&
@@ -709,7 +728,7 @@ export const ViewMatchPage = () => {
               >
                 Tilmeld kamp
               </button>
-              )}
+            )}
 
           {user?.username &&
             match!.username !== user.username &&
@@ -723,21 +742,23 @@ export const ViewMatchPage = () => {
             )}
 
           {user && match?.participants.includes(user?.username) && (
-              <button onClick={() => {
+            <button
+              onClick={() => {
                 const ics = createICSFile(
-                    "Padelkamp",
-                    match!.description!,
-                    match!.location,
-                    new Date(match!.matchDateTime),
-                    new Date(match!.endTime)
+                  "Padelkamp - " + match.username,
+                  match!.description!,
+                  match!.location,
+                  new Date(match!.matchDateTime),
+                  new Date(match!.endTime),
+                  match!.participants // <-- Tilføjet: Passer deltagerne fra match objektet
                 );
                 downloadICSFile(ics, `padelkamp-${match!.id}.ics`);
-              }} className="w-full bg-slate-700 rounded-lg py-2 px-4 text-cyan-500 text-lg">
-                Tilføj til kalender
-              </button>
+              }}
+              className="w-full bg-slate-700 rounded-lg py-2 px-4 text-cyan-500 text-lg"
+            >
+              Tilføj til kalender
+            </button>
           )}
-
-
 
           {match!.username === user?.username && (
             <>
@@ -749,12 +770,11 @@ export const ViewMatchPage = () => {
                   Inviter spillere
                 </button>
 
-
                 <button
-                    onClick={() => {
-                      navigate(`/makkerbørs/${matchId}/rediger`)}
-                }
-                    className="w-full bg-slate-700 rounded-lg py-2 px-4 text-orange-500 text-lg"
+                  onClick={() => {
+                    navigate(`/makkerbørs/${matchId}/rediger`);
+                  }}
+                  className="w-full bg-slate-700 rounded-lg py-2 px-4 text-orange-500 text-lg"
                 >
                   Rediger kamp
                 </button>

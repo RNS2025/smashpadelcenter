@@ -2,17 +2,15 @@ import { Helmet } from "react-helmet-async";
 import { useProfileContext } from "../../../context/ProfileContext";
 import LoadingSpinner from "../../misc/LoadingSpinner";
 import { safeFormatDate } from "../../../utils/dateUtils.ts";
-import {
-  QuestionMarkCircleIcon,
-} from "@heroicons/react/24/outline";
+import { QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
 import { useEffect, useState } from "react";
 import usePolling from "../../../hooks/usePolling.ts";
 import communityApi from "../../../services/makkerborsService.ts";
 import { PadelMatch } from "../../../types/PadelMatch.ts";
-import {useNavigate} from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const OverviewTab = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
   const { profile, matches, matchesLoading, setMatches } = useProfileContext();
   const [isPageVisible, setIsPageVisible] = useState(true);
 
@@ -30,11 +28,23 @@ const OverviewTab = () => {
 
   // Polling for matches
   const fetchMatches = async () => {
-    const allMatches = await communityApi.getMatches();
-    const filteredMatches = allMatches.filter((match) => profile && match.participants.includes(profile.username) || profile && match.reservedSpots.map((reserved) => reserved.name).includes(profile.username));
-    const upcoming = filteredMatches.filter((match: PadelMatch) => new Date(match.endTime) > new Date() && match.deadline && (new Date(match.deadline) > new Date()));
-    const former = filteredMatches.filter((match) => match.participants.length === match.totalSpots)
-        .filter((match: PadelMatch) => new Date(match.endTime) <= new Date());
+    if (!profile) return { upcoming: [], former: [] };
+    const allMatches = await communityApi.getMatchesByUser(profile.username);
+    const filteredMatches = allMatches.filter(
+      (match) =>
+        (profile && match.participants.includes(profile.username)) ||
+        (profile &&
+          match.reservedSpots
+            .map((reserved) => reserved.name)
+            .includes(profile.username))
+    );
+    // Return all matches without filtering
+    const upcoming = filteredMatches.filter(
+      (match: PadelMatch) => new Date(match.endTime) > new Date()
+    );
+    const former = filteredMatches.filter(
+      (match: PadelMatch) => new Date(match.endTime) <= new Date()
+    );
     return { upcoming, former };
   };
 
@@ -87,9 +97,10 @@ const OverviewTab = () => {
           </div>
           <div className="col-span-3 mt-2">
             <div className="w-full bg-white rounded-full h-2.5">
-              <div className="bg-cyan-500 h-2.5 rounded-full" style={{ width: `${winRate}%` }}>
-
-              </div>
+              <div
+                className="bg-cyan-500 h-2.5 rounded-full"
+                style={{ width: `${winRate}%` }}
+              ></div>
             </div>
             <p className="text-xs text-center mt-1 text-gray-500">
               {winRate}% Sejrsprocent
@@ -122,13 +133,17 @@ const OverviewTab = () => {
           <ul className="space-y-2">
             {matches.upcoming.slice(0, 2).map((match) => (
               <li
-                  onClick={() => navigate(`/makkerbørs/${match.id}`)}
+                onClick={() => navigate(`/makkerbørs/${match.id}`)}
                 key={match.id}
                 className="border border-gray-900 p-2 rounded-lg text-gray-300"
               >
                 <div className="flex justify-between text-xs border-b border-gray-600">
                   <h1>
-                    {safeFormatDate(match.matchDateTime, "dd. MMMM | HH:mm").toUpperCase()} - {safeFormatDate(match.endTime, "HH:mm")}
+                    {safeFormatDate(
+                      match.matchDateTime,
+                      "dd. MMMM | HH:mm"
+                    ).toUpperCase()}{" "}
+                    - {safeFormatDate(match.endTime, "HH:mm")}
                   </h1>
                   <div className="flex gap-1">
                     <p>
@@ -155,7 +170,9 @@ const OverviewTab = () => {
                       ...match.participants,
                       ...match.reservedSpots.map((reserved) => reserved.name),
                     ].map((name, index) => (
-                      <p className="truncate text-center" key={index}>{name}</p>
+                      <p className="truncate text-center" key={index}>
+                        {name}
+                      </p>
                     ))}
                   </div>
                 </div>
@@ -163,9 +180,11 @@ const OverviewTab = () => {
             ))}
           </ul>
         ) : (
-            <div className="border p-2 rounded-lg text-gray-300">
-              <p className="py-4 text-center text-gray-300">Ingen kommende kampe.</p>
-            </div>
+          <div className="border p-2 rounded-lg text-gray-300">
+            <p className="py-4 text-center text-gray-300">
+              Ingen kommende kampe.
+            </p>
+          </div>
         )}
       </div>
     </>

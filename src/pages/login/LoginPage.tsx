@@ -36,8 +36,6 @@ export const LoginPage = () => {
 
     try {
       const response = await login(username, password);
-      console.log("Login response:", response); // Debug log
-
       if (response?.token) {
         // Store the token
         localStorage.setItem("token", response.token);
