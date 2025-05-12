@@ -51,7 +51,7 @@ const HomeScreenCard: FC<HomeScreenCardProps> = ({
       // Enhanced border, background, shadow, and hover animations
       // Added base glow animation and more aggressive hover states
       className={`
-         group relative rounded-xl sm:p-8 p-2 sm:size-60 size-44 shadow-lg transition-all duration-300 ease-in-out bg-white/5 backdrop-blur-sm border border-cyan-700/30 cursor-pointer
+         group relative rounded-xl sm:p-8 p-2 sm:size-60 size-36 shadow-lg transition-all duration-300 ease-in-out bg-white/5 backdrop-blur-sm border border-cyan-700/30 cursor-pointer
          ${
            disabled
              ? "opacity-50 cursor-not-allowed pointer-events-none"

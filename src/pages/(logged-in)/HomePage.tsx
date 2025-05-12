@@ -190,7 +190,7 @@ export const HomePage = () => {
 
       {/* Apply futuristic background and text color to the main container */}
       {/* Adjusted gradient slightly darker/more dramatic */}
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black text-gray-100">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black text-gray-100 px-4">
         {/* Increased vertical padding for more breathing room */}
         <main className="px-4 sm:px-6 lg:px-8 py-8">
           {/* Welcome Message - already has futuristic gradient */}
@@ -206,7 +206,7 @@ export const HomePage = () => {
             <div className="flex items-center justify-center">
               {/* Responsive Grid Layout with increased spacing */}
               {/* Adjusted gap for more separation */}
-              <div className="grid gap-6 lg:gap-20 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-4 mb-4">
+              <div className="grid gap-4 gap-y-10 lg:gap-20 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-4 mb-4">
                 {visibleItems.map((item) => (
                   <HomeScreenCard
                     key={item.link}
