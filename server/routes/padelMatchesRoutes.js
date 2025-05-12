@@ -125,14 +125,10 @@ router.post("/:id/accept", async (req, res) => {
     );
 
     // Notify the player who requested that their request was processed
-    await sendPadelMatchNotification(
-      "INVITATION_PROCESSED",
-      {
-        matchId: req.params.id,
-        requesterId: match.username,
-      },
-      [username]
-    );
+    await sendPadelMatchNotification("INVITATION_PROCESSED", {
+      matchId: req.params.id,
+      requesterId: match.username,
+    });
 
     logger.info("Successfully accepted user join", {
       matchId: req.params.id,
@@ -321,7 +317,7 @@ router.post("/:id/confirm", async (req, res) => {
     // Notify participant that the invitation was processed
     await sendPadelMatchNotification("REQUEST_PROCESSED", {
       matchId: req.params.id,
-      participantIds: username,
+      requesterId: username,
     });
 
     // Check if the match is now full
