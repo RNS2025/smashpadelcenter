@@ -36,6 +36,10 @@ export const EditMatchPage = () => {
     );
 
     useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
+
+    useEffect(() => {
         if (!matchId) return;
         const fetchMatch = async () => {
             try {
@@ -429,7 +433,7 @@ export const EditMatchPage = () => {
                                     />
 
                                     <input
-                                        className="text-center rounded-lg w-full"
+                                        className="text-center rounded-lg w-full border-slate-800/80 bg-slate-800/80 disabled:text-gray-200 disabled:border-slate-800/80"
                                         type="number"
                                         step="0.1"
                                         min={levelRange[0]}

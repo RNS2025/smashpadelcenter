@@ -412,7 +412,7 @@ export const CreateEventForm = () => {
                             className="size-10 text-black cursor-pointer"
                           />
                           <input
-                            className="text-center rounded-lg w-full disabled:text-black disabled:border-black"
+                              className="text-center rounded-lg w-full border-slate-800/80 bg-slate-800/80 disabled:text-gray-200 disabled:border-slate-800/80"
                             type="number"
                             step="0.1"
                             min="1.0"
@@ -434,7 +434,7 @@ export const CreateEventForm = () => {
                           />
 
                           <input
-                            className="text-center rounded-lg w-full disabled:text-black disabled:border-black"
+                              className="text-center rounded-lg w-full border-slate-800/80 bg-slate-800/80 disabled:text-gray-200 disabled:border-slate-800/80"
                             type="number"
                             step="0.1"
                             min={levelRange[0]}
