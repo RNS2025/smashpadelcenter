@@ -43,6 +43,10 @@ export const EditMatchPage = () => {
   );
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
+  useEffect(() => {
     if (!matchId) return;
     const fetchMatch = async () => {
       try {
@@ -447,6 +451,22 @@ export const EditMatchPage = () => {
 
                       <input
                         className="text-center rounded-lg w-full"
+                        type="number"
+                        step="0.1"
+                        min={levelRange[0]}
+                        max={levelRange[1]}
+                        value={
+                          reservedPlayers[i]?.level.toFixed(1) ??
+                          ((levelRange[0] + levelRange[1]) / 2).toFixed(1)
+                        }
+                        onChange={(e) => {
+                          const updated = [...reservedPlayers];
+                          updated[i].level = parseFloat(e.target.value);
+                          setReservedPlayers(updated);
+                        }}
+                      />
+                      <input
+                        className="text-center rounded-lg w-full border-slate-800/80 bg-slate-800/80 disabled:text-gray-200 disabled:border-slate-800/80"
                         type="number"
                         step="0.1"
                         min={levelRange[0]}
