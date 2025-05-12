@@ -133,7 +133,7 @@ const OverviewTab = () => {
           <ul className="space-y-2">
             {matches.upcoming.slice(0, 2).map((match) => (
               <li
-                onClick={() => navigate(`/makkerbørs/${match.id}`)}
+                onClick={() => navigate(`/makkerbørs/match/${match.id}`)}
                 key={match.id}
                 className="border p-2 rounded-lg text-gray-300"
               >

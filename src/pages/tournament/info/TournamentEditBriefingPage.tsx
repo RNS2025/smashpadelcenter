@@ -1,5 +1,4 @@
 import { Helmet } from "react-helmet-async";
-import HomeBar from "../../../components/misc/HomeBar.tsx";
 import Animation from "../../../components/misc/Animation.tsx";
 import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
@@ -52,7 +51,6 @@ export const TournamentEditBriefingPage = () => {
                 <title>Rediger briefing</title>
             </Helmet>
 
-            <HomeBar />
             <Animation>
                 <div className="my-5 p-4 lg:p-10">
                     {briefing && (

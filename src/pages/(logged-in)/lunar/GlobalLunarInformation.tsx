@@ -11,8 +11,6 @@ import {
   Match as MatchType,
   TeamStanding, // Ny import
 } from "../../../types/LunarGlobal"; // Antager at interfaces.ts er i samme mappe eller juster sti
-import HomeBar from "../../../components/misc/HomeBar";
-
 const API_BASE_URL = "https://api.rankedin.com/v1";
 
 // --- Indlejrede UI-komponenter (stylet med Tailwind CSS) ---
@@ -481,7 +479,6 @@ const LeagueStandingsPage: React.FC = () => {
 
   return (
     <>
-      <HomeBar />
       <div
         className={`min-h-screen ${pageBackground} text-slate-200 font-sans py-5 sm:py-7 px-2.5 sm:px-4`}
       >

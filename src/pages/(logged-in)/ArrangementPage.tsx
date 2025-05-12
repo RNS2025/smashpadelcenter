@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import HomeBar from "../../components/misc/HomeBar";
 
 const ArrangementPage: React.FC = () => {
   const [topOffset, setTopOffset] = useState<number>(160);
@@ -31,7 +30,6 @@ const ArrangementPage: React.FC = () => {
 
   return (
     <>
-      <HomeBar />
       <div
         style={{
           height: "100vh", // Locks the outer container to viewport height

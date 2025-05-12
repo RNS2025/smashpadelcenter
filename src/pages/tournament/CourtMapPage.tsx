@@ -2,7 +2,6 @@ import { Helmet } from "react-helmet-async";
 import CourtsMap from "../../components/tournaments/map/CourtsMap.tsx";
 import Animation from "../../components/misc/Animation.tsx";
 import { useEffect, useState } from "react";
-import HomeBar from "../../components/misc/HomeBar.tsx";
 import rankedInService from "../../services/rankedIn.ts";
 import LoadingSpinner from "../../components/misc/LoadingSpinner.tsx";
 import DpfMatch from "../../types/DpfMatch.ts";
@@ -129,7 +128,6 @@ export const CourtMapPage = () => {
       <Helmet>
         <title>Baneoversigt</title>
       </Helmet>
-      <HomeBar />
 
       <Animation>
         <div className="mt-5 flex max-lg:flex-col sm:space-y-10 space-y-0 lg:justify-between lg:px-10 max-lg:px-5">

@@ -8,7 +8,6 @@ import {PrivateEvent} from "../../../types/PrivateEvent.ts";
 import communityApi from "../../../services/makkerborsService.ts";
 import {ChevronDoubleDownIcon, ChevronDoubleUpIcon, ChevronDownIcon, ChevronUpIcon} from "@heroicons/react/24/outline";
 import DatePicker from "react-datepicker";
-import HomeBar from "../../../components/misc/HomeBar.tsx";
 import Animation from "../../../components/misc/Animation.tsx";
 
 export const EditEventPage = () => {
@@ -211,7 +210,6 @@ export const EditEventPage = () => {
                 <title>Rediger arrangement</title>
             </Helmet>
             
-            <HomeBar />
     <Animation>
         <div className="w-full bg-slate-800/70 rounded-xl p-4 text-gray-300">
                 {error && (

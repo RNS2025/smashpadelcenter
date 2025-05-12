@@ -1,6 +1,5 @@
 import { useRef, useState, useEffect } from "react";
 import LoadingSpinner from "../../components/misc/LoadingSpinner";
-import HomeBar from "../../components/misc/HomeBar.tsx";
 
 const BookCourtPage = () => {
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -50,7 +49,6 @@ const BookCourtPage = () => {
 
   return (
     <>
-      <HomeBar />
       <div
         className="iframe-container"
         style={{

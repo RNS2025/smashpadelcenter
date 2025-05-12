@@ -1,7 +1,6 @@
 import { useEffect, useState, useMemo, useCallback, FC } from "react";
 import axios from "axios";
 import { format, parseISO, addDays, isBefore } from "date-fns";
-import HomeBar from "../../components/misc/HomeBar";
 import Animation from "../../components/misc/Animation";
 import AlertMessage from "../../components/tournaments/check-in/AlertMessage";
 import { safeFormatDate } from "../../utils/dateUtils.ts";
@@ -810,7 +809,6 @@ const UpcomingTournaments: FC = () => {
 
   return (
     <>
-      <HomeBar />
       <Animation>
         <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800 text-gray-200">
           <div className="container mx-auto p-4 sm:p-6">

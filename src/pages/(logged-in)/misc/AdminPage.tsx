@@ -2,7 +2,6 @@ import { Helmet } from "react-helmet-async";
 import { useState, useEffect } from "react";
 import { getUsers, changeUserRole } from "../../../services/auth.ts";
 import { User } from "../../../types/user.ts";
-import HomeBar from "../../../components/misc/HomeBar.tsx";
 import { useUser } from "../../../context/UserContext.tsx";
 import CourtSchedule from "../../../components/CourtSchedule.tsx";
 
@@ -38,7 +37,6 @@ export const AdminPage = () => {
 
   return (
     <>
-      <HomeBar />
       <Helmet>
         <title>AdminPage</title>
       </Helmet>

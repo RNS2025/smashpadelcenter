@@ -8,7 +8,6 @@ import PlayerCheckInList from "../../components/tournaments/check-in/PlayerCheck
 import AlertMessage from "../../components/tournaments/check-in/AlertMessage.tsx";
 import { useUser } from "../../context/UserContext.tsx";
 import Animation from "../../components/misc/Animation.tsx";
-import HomeBar from "../../components/misc/HomeBar.tsx";
 import useTournaments from "../../hooks/useTournaments.ts";
 import rankedInService from "../../services/rankedIn.ts";
 import TournamentSelector from "../../components/tournaments/check-in/TournamentSelector.tsx";
@@ -235,7 +234,6 @@ const CheckInPage = () => {
 
   return (
     <>
-      <HomeBar />
       <Animation>
         <div className="container mx-auto p-4">
           <h1 className="text-2xl font-bold mb-6">Indtjekning</h1>

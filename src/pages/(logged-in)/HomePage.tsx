@@ -1,7 +1,6 @@
 import { Helmet } from "react-helmet-async";
 import { useEffect, useState } from "react";
 import { useUser } from "../../context/UserContext.tsx";
-import HomeBar from "../../components/misc/HomeBar.tsx";
 import Animation from "../../components/misc/Animation.tsx";
 import HomeScreenCard from "../../components/HomeScreen/HomeScreenCard.tsx";
 import LoadingSpinner from "../../components/misc/LoadingSpinner.tsx";
@@ -168,12 +167,10 @@ export const HomePage = () => {
   if (loading) {
     return (
       <>
-        <HomeBar />
         {/* Apply futuristic background even to loading screen for consistency */}
         {/* Ensuring min-h-screen for loading as well */}
         <div className="w-full min-h-[calc(100vh-100px)] flex justify-center items-center bg-gradient-to-br from-gray-900 to-black text-gray-100">
           {/* Adjusted gradient slightly darker/more dramatic */}
-          {/* Adjust height calc if HomeBar height changes */}
           <LoadingSpinner />
         </div>
       </>
@@ -199,8 +196,6 @@ export const HomePage = () => {
       {/* Apply futuristic background and text color to the main container */}
       {/* Adjusted gradient slightly darker/more dramatic */}
       <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black text-gray-100">
-        <HomeBar />
-
         {/* Increased vertical padding for more breathing room */}
         <main className="px-4 sm:px-6 lg:px-8 py-8">
           {/* Welcome Message - already has futuristic gradient */}

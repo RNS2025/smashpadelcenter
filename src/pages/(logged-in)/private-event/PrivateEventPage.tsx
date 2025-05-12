@@ -1,4 +1,3 @@
-import HomeBar from "../../../components/misc/HomeBar";
 import Animation from "../../../components/misc/Animation";
 import { Outlet, useNavigate } from "react-router-dom";
 import PrivateEventTabMenu from "../../../components/private-event/PrivateEventTabMenu.tsx";
@@ -27,11 +26,15 @@ export const PrivateEventPage = () => {
         setJoinRequestsCount(total);
       } else {
         try {
-          const tournaments = await communityApi.getPrivateEventsForUser(user?.username);
-            if (!tournaments || tournaments.length === 0) {
-                return;
-            }
-            const filteredTournaments = tournaments.filter((t) => new Date(t.eventDateTime) > new Date());
+          const tournaments = await communityApi.getPrivateEventsForUser(
+            user?.username
+          );
+          if (!tournaments || tournaments.length === 0) {
+            return;
+          }
+          const filteredTournaments = tournaments.filter(
+            (t) => new Date(t.eventDateTime) > new Date()
+          );
           const total = filteredTournaments.reduce(
             (sum: number, t: any) => sum + (t.joinRequests?.length || 0),
             0
@@ -48,58 +51,56 @@ export const PrivateEventPage = () => {
 
   if (loading) {
     return (
-        <>
-          <HomeBar backPage="/hjem" />
-          <div className="w-full h-[calc(100vh-150px)] flex justify-center items-center">
-            <LoadingSpinner />
-          </div>
-        </>
-    )
+      <>
+        <div className="w-full h-[calc(100vh-150px)] flex justify-center items-center">
+          <LoadingSpinner />
+        </div>
+      </>
+    );
   }
 
   return (
-      <>
-      <HomeBar backPage="/hjem" />
-    <Animation>
-      <div className="sm:mx-20 my-10">
-        <div className="flex justify-center mb-5">
-          <PrivateEventTabMenu joinRequestsCount={joinRequestsCount} />
-        </div>
+    <>
+      <Animation>
+        <div className="sm:mx-20 my-10">
+          <div className="flex justify-center mb-5">
+            <PrivateEventTabMenu joinRequestsCount={joinRequestsCount} />
+          </div>
 
-        <div className="flex justify-between items-center max-sm:mt-5 mx-4 mb-4">
-          <button
-            onClick={() => navigate("opretarrangement")}
-            className="w-full bg-slate-700 rounded-lg py-2 px-4 text-cyan-500"
-          >
-            Opret arrangement
-          </button>
-        </div>
+          <div className="flex justify-between items-center max-sm:mt-5 mx-4 mb-4">
+            <button
+              onClick={() => navigate("opretarrangement")}
+              className="w-full bg-slate-700 rounded-lg py-2 px-4 text-cyan-500"
+            >
+              Opret arrangement
+            </button>
+          </div>
 
-        <div className="flex justify-between items-center max-sm:mt-5 mx-4 mb-4">
-          <div
-            onClick={() => setShowClosedEvents((prevState) => !prevState)}
-            className={`flex items-center gap-1 ${
-              !location.pathname.includes("allearrangementer") ? "hidden" : ""
-            }`}
-          >
-            {showClosedEvents ? (
-              <LockClosedIcon className="h-5 w-5 text-yellow-500" />
-            ) : (
-              <LockOpenIcon className="h-5 w-5 text-yellow-500" />
-            )}
+          <div className="flex justify-between items-center max-sm:mt-5 mx-4 mb-4">
+            <div
+              onClick={() => setShowClosedEvents((prevState) => !prevState)}
+              className={`flex items-center gap-1 ${
+                !location.pathname.includes("allearrangementer") ? "hidden" : ""
+              }`}
+            >
+              {showClosedEvents ? (
+                <LockClosedIcon className="h-5 w-5 text-yellow-500" />
+              ) : (
+                <LockOpenIcon className="h-5 w-5 text-yellow-500" />
+              )}
 
-            <label htmlFor="showClosedEvents" className="text-gray-500">
-              {!showClosedEvents ? "Vis" : "Skjul"} lukkede arrangementer
-            </label>
+              <label htmlFor="showClosedEvents" className="text-gray-500">
+                {!showClosedEvents ? "Vis" : "Skjul"} lukkede arrangementer
+              </label>
+            </div>
+          </div>
+
+          <div className="mx-4">
+            <Outlet context={{ showClosedEvents }} />
           </div>
         </div>
-
-        <div className="mx-4">
-          <Outlet context={{ showClosedEvents }} />
-        </div>
-      </div>
-    </Animation>
-      </>
+      </Animation>
+    </>
   );
 };
 

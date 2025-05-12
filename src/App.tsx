@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { UserProvider } from "./context/UserContext";
+import NavigationHistoryProvider from "./context/NavigationHistoryProvider";
 import LoadingSpinner from "./components/misc/LoadingSpinner.tsx";
 import InstallPrompt from "./components/misc/InstallPrompt.tsx";
 import InstallPage from "./pages/installPage.tsx"; // New import
@@ -60,6 +61,7 @@ import ResetPasswordPage from "./pages/login/ResetPasswordPage.tsx";
 import ForgotPasswordPage from "./pages/login/ForgotPasswordPage.tsx";
 import UpcommingTournaments from "./pages/tournament/UpcommingTournaments.tsx";
 import LeagueStandingsPage from "./pages/(logged-in)/lunar/GlobalLunarInformation.tsx";
+import HomeBar from "./components/misc/HomeBar.tsx";
 
 function AppContent() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -137,7 +139,6 @@ function AppContent() {
       </div>
     );
   }
-
   return (
     <>
       {shouldShowPrompt && (
@@ -146,6 +147,10 @@ function AppContent() {
           onDismiss={handleDismiss}
         />
       )}
+
+      {/* Always show HomeBar regardless of route */}
+      <HomeBar />
+
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<LoginPage />} />
@@ -191,14 +196,17 @@ function AppContent() {
               <Route path="minekampe" element={<MatchFinderMyMatchesTab />} />
               <Route path="afventer" element={<MatchFinderAwaitingTab />} />
             </Route>
-            <Route path="/makkerbørs/:matchId" element={<ViewMatchPage />} />
+            <Route
+              path="/makkerbørs/match/:matchId"
+              element={<ViewMatchPage />}
+            />
             <Route path="/makkerbørs/opretkamp" element={<CreateMatchPage />} />
             <Route
-              path="/makkerbørs/:matchId/indtastresultat"
+              path="/makkerbørs/match/:matchId/indtastresultat"
               element={<MatchResultPage />}
             />
             <Route
-              path="/makkerbørs/:matchId/rediger"
+              path="/makkerbørs/match/:matchId/rediger"
               element={<EditMatchPage />}
             />
 
@@ -280,7 +288,9 @@ function App() {
   return (
     <HelmetProvider>
       <UserProvider>
-        <AppContent />
+        <NavigationHistoryProvider>
+          <AppContent />
+        </NavigationHistoryProvider>
       </UserProvider>
     </HelmetProvider>
   );

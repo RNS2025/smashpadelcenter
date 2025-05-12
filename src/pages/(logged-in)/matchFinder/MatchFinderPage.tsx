@@ -1,13 +1,16 @@
-import {useEffect, useState} from "react";
-import {Helmet} from "react-helmet-async";
+import { useEffect, useState } from "react";
+import { Helmet } from "react-helmet-async";
 import Animation from "../../../components/misc/Animation.tsx";
-import HomeBar from "../../../components/misc/HomeBar.tsx";
 import "react-datepicker/dist/react-datepicker.css";
-import {Outlet, useLocation, useNavigate} from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import MatchFinderTabMenu from "../../../components/matchFinder/MatchFinderTabMenu.tsx";
-import {useUser} from "../../../context/UserContext";
+import { useUser } from "../../../context/UserContext";
 import communityApi from "../../../services/makkerborsService";
-import {BoltIcon, LockClosedIcon, LockOpenIcon} from "@heroicons/react/24/outline";
+import {
+  BoltIcon,
+  LockClosedIcon,
+  LockOpenIcon,
+} from "@heroicons/react/24/outline";
 import LoadingSpinner from "../../../components/misc/LoadingSpinner.tsx";
 import usePolling from "../../../hooks/usePolling.ts";
 
@@ -39,8 +42,8 @@ export const MatchFinderPage = () => {
       .filter((match) => match.username === user?.username)
       .filter((match) => new Date(match.matchDateTime) > new Date());
     return myMatches.reduce(
-        (sum, match) => sum + (match.joinRequests?.length || 0),
-        0
+      (sum, match) => sum + (match.joinRequests?.length || 0),
+      0
     );
   };
 
@@ -57,13 +60,12 @@ export const MatchFinderPage = () => {
 
   if (loading) {
     return (
-        <>
-          <HomeBar backPage="/hjem" />
-          <div className="w-full h-[calc(100vh-150px)] flex justify-center items-center">
+      <>
+        <div className="w-full h-[calc(100vh-150px)] flex justify-center items-center">
           <LoadingSpinner />
-          </div>
-        </>
-  )
+        </div>
+      </>
+    );
   }
 
   if (!isAuthenticated) {
@@ -77,7 +79,6 @@ export const MatchFinderPage = () => {
         <title>Makkerbørs</title>
       </Helmet>
 
-      <HomeBar backPage="/hjem" />
       <Animation>
         <div className="sm:mx-20 my-10">
           <div className="flex justify-center mb-5">
@@ -85,7 +86,7 @@ export const MatchFinderPage = () => {
           </div>
           <div className="flex justify-between items-center max-sm:mt-5 mx-4 mb-4">
             <button
-              onClick={() => navigate("opretkamp")}
+              onClick={() => navigate("match/opretkamp")}
               className="w-full bg-slate-700 rounded-lg py-2 px-4 text-cyan-500"
             >
               Opret kamp

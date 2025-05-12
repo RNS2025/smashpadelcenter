@@ -35,8 +35,14 @@ export const MatchFinderMyMatchesTab = () => {
           console.log(data);
 
           const sortedData = data
-              .filter((match => match.reservedSpots.length !== 3))
-              .filter((match => new Date(match.matchDateTime) > new Date() || (new Date(match.matchDateTime) < new Date() && match.participants.length + match.reservedSpots.length === match.totalSpots)))
+            .filter((match) => match.reservedSpots.length !== 3)
+            .filter(
+              (match) =>
+                new Date(match.matchDateTime) > new Date() ||
+                (new Date(match.matchDateTime) < new Date() &&
+                  match.participants.length + match.reservedSpots.length ===
+                    match.totalSpots)
+            )
             .filter((match) => {
               const matchEnd = new Date(match.endTime);
               const isFull =
@@ -161,7 +167,7 @@ export const MatchFinderMyMatchesTab = () => {
             <div
               onClick={() => {
                 if (!match.deadline || !isMatchDeadlinePassed(match.deadline)) {
-                  navigate(`/makkerbørs/${match.id}`);
+                  navigate(`/makkerbørs/match/${match.id}`);
                 }
               }}
               key={match.id}
@@ -190,7 +196,9 @@ export const MatchFinderMyMatchesTab = () => {
                         user &&
                         !match.playersConfirmedResult.includes(user?.username)
                       ) {
-                        navigate(`/makkerbørs/${match.id}/indtastresultat`);
+                        navigate(
+                          `/makkerbørs/match/${match.id}/indtastresultat`
+                        );
                       }
                     }}
                     className={`absolute inset-0 bg-black bg-opacity-80 flex items-center justify-center rounded-lg z-10`}

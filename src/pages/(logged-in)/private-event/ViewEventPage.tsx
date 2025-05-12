@@ -1,5 +1,4 @@
 import { Helmet } from "react-helmet-async";
-import HomeBar from "../../../components/misc/HomeBar";
 import Animation from "../../../components/misc/Animation";
 import { useUser } from "../../../context/UserContext.tsx";
 import { Navigate, useNavigate, useParams } from "react-router-dom";
@@ -308,7 +307,6 @@ export const ViewEventPage = () => {
   if (loading) {
     return (
       <>
-        <HomeBar backPage="/hjem" />
         <div className="w-full h-[calc(100vh-150px)] flex justify-center items-center">
           <LoadingSpinner />
         </div>
@@ -322,7 +320,6 @@ export const ViewEventPage = () => {
         <Helmet>
           <title>Detaljer for arrangement</title>
         </Helmet>
-        <HomeBar backPage="/privat-arrangementer/minearrangementer"/>
         <Animation>
           <div className="mx-4 my-10">{error || "Arrangement ikke fundet"}</div>
         </Animation>
@@ -362,7 +359,6 @@ export const ViewEventPage = () => {
         <EventShowParticipantsDialog event={event} onClose={() => setShowParticipants(false)} />
       </Overlay>
 
-      <HomeBar />
       <Animation>
         <div className="mx-4 my-10 space-y-4 text-sm">
           <h1 className="text-center font-semibold text-xl">{event.title}</h1>

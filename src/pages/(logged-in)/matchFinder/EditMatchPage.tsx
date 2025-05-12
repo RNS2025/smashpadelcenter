@@ -12,7 +12,6 @@ import DatePicker from "react-datepicker";
 import { setHours, setMinutes } from "date-fns";
 import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
 import Animation from "../../../components/misc/Animation.tsx";
-import HomeBar from "../../../components/misc/HomeBar.tsx";
 import { Helmet } from "react-helmet-async";
 
 export const EditMatchPage = () => {
@@ -128,7 +127,7 @@ export const EditMatchPage = () => {
       };
 
       await communityApi.updateMatch(matchId, matchData);
-      navigate(`/makkerbørs/${matchId}`);
+      navigate(`/makkerbørs/match/${matchId}`);
     } catch (error) {
       console.error("Error updating match:", error);
       setIsSubmitting(false);
@@ -190,7 +189,6 @@ export const EditMatchPage = () => {
       <Helmet>
         <title>Rediger kamp</title>
       </Helmet>
-      <HomeBar />
       <Animation>
         <div className="w-full bg-slate-800/70 rounded-xl p-4 text-gray-300">
           <form className="space-y-10" onSubmit={handleUpdateMatch}>

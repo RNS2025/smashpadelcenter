@@ -6,7 +6,6 @@ import PlayerData from "../../types/PlayerData.ts";
 import { format } from "date-fns";
 import { da } from "date-fns/locale";
 import Animation from "../../components/misc/Animation.tsx";
-import HomeBar from "../../components/misc/HomeBar.tsx";
 
 const PlayerPage = () => {
   const { playerId, rowId } = useParams<{
@@ -71,7 +70,6 @@ const PlayerPage = () => {
 
   return (
     <>
-      <HomeBar />
       <Animation>
         <div className="mx-auto p-6 max-w-4xl">
           {/* Player Profile Section */}

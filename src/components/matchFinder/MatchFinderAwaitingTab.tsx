@@ -8,7 +8,11 @@ import { useNavigate } from "react-router-dom";
 import { useUser } from "../../context/UserContext";
 import { registerLocale } from "react-datepicker";
 import { da } from "date-fns/locale";
-import {calculateTimeDifference, isMatchDeadlinePassed, safeFormatDate} from "../../utils/dateUtils";
+import {
+  calculateTimeDifference,
+  isMatchDeadlinePassed,
+  safeFormatDate,
+} from "../../utils/dateUtils";
 registerLocale("da", da);
 
 export const MatchFinderAwaitingTab = () => {
@@ -23,13 +27,18 @@ export const MatchFinderAwaitingTab = () => {
     const fetchMatches = async () => {
       try {
         const data = await communityApi.getMatches();
-        const awaitingMatches = data.filter(
-          (match) => (user?.username && new Date(match.matchDateTime) >= new Date() && match.joinRequests.includes(user?.username))
-        ).sort((a, b) => {
+        const awaitingMatches = data
+          .filter(
+            (match) =>
+              user?.username &&
+              new Date(match.matchDateTime) >= new Date() &&
+              match.joinRequests.includes(user?.username)
+          )
+          .sort((a, b) => {
             const aDate = new Date(a.matchDateTime).getTime();
             const bDate = new Date(b.matchDateTime).getTime();
             return aDate - bDate;
-        });
+          });
         setMatches(awaitingMatches);
         setLoading(false);
       } catch (err) {
@@ -43,18 +52,17 @@ export const MatchFinderAwaitingTab = () => {
 
   if (loading) {
     return (
-        <>
-          <div className="w-full flex justify-center items-center">
-            <LoadingSpinner />
-          </div>
-        </>
-    )
+      <>
+        <div className="w-full flex justify-center items-center">
+          <LoadingSpinner />
+        </div>
+      </>
+    );
   }
 
   if (error) {
     return <div>{error}</div>;
   }
-
 
   return (
     <>
@@ -64,26 +72,54 @@ export const MatchFinderAwaitingTab = () => {
 
       <div className="text-sm ">
         {matches.length === 0 ? (
-            <div className="border p-4 rounded-lg space-y-1.5 mb-5">
-              <p className="text-center py-4 font-semibold">Du har ingen aktive tilmeldingsanmodninger.</p>
-            </div>
+          <div className="border p-4 rounded-lg space-y-1.5 mb-5">
+            <p className="text-center py-4 font-semibold">
+              Du har ingen aktive tilmeldingsanmodninger.
+            </p>
+          </div>
         ) : (
           matches.map((match) => (
             <div
-                onClick={match.deadline && !isMatchDeadlinePassed(match.deadline) ? () => navigate(`/makkerbørs/${match.id}`) : undefined}
-                key={match.id}
-                className="border border-yellow-500 rounded-lg p-4 space-y-1.5 cursor-pointer mb-5"
+              onClick={
+                match.deadline && !isMatchDeadlinePassed(match.deadline)
+                  ? () => navigate(`/makkerbørs/match/${match.id}`)
+                  : undefined
+              }
+              key={match.id}
+              className="border border-yellow-500 rounded-lg p-4 space-y-1.5 cursor-pointer mb-5"
             >
               <h1 className="font-semibold">
                 {match.deadline && isMatchDeadlinePassed(match.deadline)
-                    ? `(${safeFormatDate(match.matchDateTime, "dd/MM - HH:mm")}) Kamp annulleret: Deadline nået.`
-                    : `${safeFormatDate(match.matchDateTime, "EEEE | dd. MMMM | HH:mm").toUpperCase()} - ${safeFormatDate(match.endTime, "HH:mm")}`
-                }
+                  ? `(${safeFormatDate(
+                      match.matchDateTime,
+                      "dd/MM - HH:mm"
+                    )}) Kamp annulleret: Deadline nået.`
+                  : `${safeFormatDate(
+                      match.matchDateTime,
+                      "EEEE | dd. MMMM | HH:mm"
+                    ).toUpperCase()} - ${safeFormatDate(
+                      match.endTime,
+                      "HH:mm"
+                    )}`}
               </h1>
               {match.deadline && (
-                  <h1 className="text-gray-500 italic">
-                    Deadline: {calculateTimeDifference(match.matchDateTime, match.deadline).hours > 1 ? `${calculateTimeDifference(match.matchDateTime, match.deadline).hours} timer før` : `${calculateTimeDifference(match.matchDateTime, match.deadline).hours} time før`}
-                  </h1>
+                <h1 className="text-gray-500 italic">
+                  Deadline:{" "}
+                  {calculateTimeDifference(match.matchDateTime, match.deadline)
+                    .hours > 1
+                    ? `${
+                        calculateTimeDifference(
+                          match.matchDateTime,
+                          match.deadline
+                        ).hours
+                      } timer før`
+                    : `${
+                        calculateTimeDifference(
+                          match.matchDateTime,
+                          match.deadline
+                        ).hours
+                      } time før`}
+                </h1>
               )}
 
               <div className="flex justify-between border-b border-gray-600">

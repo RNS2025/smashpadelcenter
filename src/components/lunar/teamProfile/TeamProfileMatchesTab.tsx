@@ -86,7 +86,7 @@ export const TeamProfileMatchesTab = () => {
                                             </p>
                                         )}
                                         <button
-                                            onClick={() => navigate(`${match.MatchId}`)}
+                                            onClick={() => navigate(`/match/${match.MatchId}`)}
                                             className={`bg-cyan-500 rounded text-white p-1 px-2 ${match.ShowUpcomingInfoText ? "hidden" : ""}`}>Info</button>
                                     </td>
                                 </tr>

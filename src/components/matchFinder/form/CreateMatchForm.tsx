@@ -7,8 +7,12 @@ import { useNavigate } from "react-router-dom";
 import communityApi from "../../../services/makkerborsService";
 import { PadelMatch } from "../../../types/PadelMatch";
 import { useUser } from "../../../context/UserContext";
-import {filterPassedTime, getNextHalfHour, handleHiddenTimes} from "../../../utils/dateUtils";
-import {ChevronDownIcon, ChevronUpIcon} from "@heroicons/react/24/outline";
+import {
+  filterPassedTime,
+  getNextHalfHour,
+  handleHiddenTimes,
+} from "../../../utils/dateUtils";
+import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
 import LoadingSpinner from "../../misc/LoadingSpinner.tsx";
 
 registerLocale("da", da);
@@ -21,7 +25,10 @@ export const CreateMatchForm = () => {
   const [selectedReserved, setSelectedReserved] = useState<number>(0);
   const [courtBooked, setCourtBooked] = useState<boolean>(false);
   const [selectedPlayingTime, setSelectedPlayingTime] = useState<number>(90);
-  const [levelRange, setLevelRange] = useState<[number, number]>([user?.skillLevel && user?.skillLevel - 0.2 || 2.0, (user?.skillLevel || 2.0) + 0.2]);
+  const [levelRange, setLevelRange] = useState<[number, number]>([
+    (user?.skillLevel && user?.skillLevel - 0.2) || 2.0,
+    (user?.skillLevel || 2.0) + 0.2,
+  ]);
   const [selectedMatchType, setSelectedMatchType] = useState<string>("Herre");
   const [location, setLocation] = useState<string>("SMASH Padelcenter Horsens");
   const [description, setDescription] = useState<string>("");
@@ -69,12 +76,17 @@ export const CreateMatchForm = () => {
         location,
         matchType: selectedMatchType,
         score: {},
-        deadline: deadline != 0 ? new Date(selectedDate.getTime() - (deadline * 60) * 60 * 1000).toISOString() : undefined,
+        deadline:
+          deadline != 0
+            ? new Date(
+                selectedDate.getTime() - deadline * 60 * 60 * 1000
+              ).toISOString()
+            : undefined,
         playersConfirmedResult: [],
       };
 
       await communityApi.createMatch(matchData);
-      navigate("/makkerbørs/minekampe");
+      navigate("/makkerbørs/match/minekampe");
     } catch (error) {
       console.error("Error creating match:", error);
       setIsSubmitting(false);
@@ -133,19 +145,18 @@ export const CreateMatchForm = () => {
 
   if (loading) {
     return (
-        <>
-          <div className="w-full flex justify-center items-center">
-            <LoadingSpinner />
-          </div>
-        </>
-    )
+      <>
+        <div className="w-full flex justify-center items-center">
+          <LoadingSpinner />
+        </div>
+      </>
+    );
   }
 
   return (
     <div className="w-full bg-slate-800/70 rounded-xl p-4 text-gray-300">
       <form className="space-y-10" onSubmit={handleCreateMatch}>
         <div className="lg:grid grid-cols-3 gap-4 max-lg:flex max-lg:flex-col">
-
           <div>
             <label className="font-semibold" htmlFor="center">
               Vælg center
@@ -192,23 +203,15 @@ export const CreateMatchForm = () => {
               Deadline
             </label>
             <select
-                className="w-full rounded-lg border-slate-800/80 bg-slate-800/80 h-12 pr-1 text-sm"
-                id="center"
-                value={deadline}
-                onChange={(e) => setDeadline(parseInt(e.target.value))}
+              className="w-full rounded-lg border-slate-800/80 bg-slate-800/80 h-12 pr-1 text-sm"
+              id="center"
+              value={deadline}
+              onChange={(e) => setDeadline(parseInt(e.target.value))}
             >
-              <option value={0}>
-                Ingen deadline
-              </option>
-              <option value={1}>
-                1 time før
-              </option>
-              <option value={2}>
-                2 timer før
-              </option>
-              <option value={3}>
-                3 timer før
-              </option>
+              <option value={0}>Ingen deadline</option>
+              <option value={1}>1 time før</option>
+              <option value={2}>2 timer før</option>
+              <option value={3}>3 timer før</option>
             </select>
           </div>
 
@@ -236,8 +239,6 @@ export const CreateMatchForm = () => {
             </div>
           </div>
 
-
-
           <div>
             <label className="font-semibold" htmlFor="reserverede">
               Bane er booket
@@ -251,8 +252,8 @@ export const CreateMatchForm = () => {
                     onClick={() => setCourtBooked(value)}
                     className={`p-2 w-full rounded-xl transition duration-300 ${
                       courtBooked === value
-                          ? "bg-cyan-500/80 text-white "
-                          : "border-slate-800/80 bg-slate-800/80"
+                        ? "bg-cyan-500/80 text-white "
+                        : "border-slate-800/80 bg-slate-800/80"
                     }`}
                   >
                     {label}
@@ -278,44 +279,44 @@ export const CreateMatchForm = () => {
                   <div className="grid grid-cols-2 items-center text-center w-full">
                     <div className="flex items-center gap-1 p-4 rounded-xl">
                       <ChevronDownIcon
-                          onClick={decrementMinLevel}
-                          className="size-10 text-gray-300 cursor-pointer"
+                        onClick={decrementMinLevel}
+                        className="size-10 text-gray-300 cursor-pointer"
                       />
                       <input
-                          className="text-center rounded-lg w-full border-slate-800/80 bg-slate-800/80 disabled:text-gray-200 disabled:border-slate-800/80"
-                          type="number"
-                          step="0.1"
-                          min="1.0"
-                          max="7.0"
-                          value={levelRange[0].toFixed(1)}
-                          onChange={handleMinChange}
-                          disabled
+                        className="text-center rounded-lg w-full border-slate-800/80 bg-slate-800/80 disabled:text-gray-200 disabled:border-slate-800/80"
+                        type="number"
+                        step="0.1"
+                        min="1.0"
+                        max="7.0"
+                        value={levelRange[0].toFixed(1)}
+                        onChange={handleMinChange}
+                        disabled
                       />
                       <ChevronUpIcon
-                          onClick={incrementMinLevel}
-                          className="size-10 text-gray-300 cursor-pointer"
+                        onClick={incrementMinLevel}
+                        className="size-10 text-gray-300 cursor-pointer"
                       />
                     </div>
 
                     <div className="flex items-center gap-1 p-4 w-full">
                       <ChevronDownIcon
-                          onClick={decrementMaxLevel}
-                          className="size-10 text-gray-300 cursor-pointer"
+                        onClick={decrementMaxLevel}
+                        className="size-10 text-gray-300 cursor-pointer"
                       />
 
                       <input
-                          className="text-center rounded-lg w-full border-slate-800/80 bg-slate-800/80 disabled:text-gray-200 disabled:border-slate-800/80"
-                          type="number"
-                          step="0.1"
-                          min={levelRange[0]}
-                          max="7.0"
-                          value={levelRange[1].toFixed(1)}
-                          onChange={handleMaxChange}
-                          disabled
+                        className="text-center rounded-lg w-full border-slate-800/80 bg-slate-800/80 disabled:text-gray-200 disabled:border-slate-800/80"
+                        type="number"
+                        step="0.1"
+                        min={levelRange[0]}
+                        max="7.0"
+                        value={levelRange[1].toFixed(1)}
+                        onChange={handleMaxChange}
+                        disabled
                       />
                       <ChevronUpIcon
-                          onClick={incrementMaxLevel}
-                          className="size-10 text-gray-300 cursor-pointer"
+                        onClick={incrementMaxLevel}
+                        className="size-10 text-gray-300 cursor-pointer"
                       />
                     </div>
                   </div>
@@ -337,8 +338,8 @@ export const CreateMatchForm = () => {
                     onClick={() => setSelectedMatchType(option)}
                     className={`max-lg:w-full lg:w-20 p-2 text-sm rounded-xl transition duration-300 ${
                       selectedMatchType === option
-                          ? "bg-cyan-500/80 text-white "
-                          : "border-slate-800/80 bg-slate-800/80"
+                        ? "bg-cyan-500/80 text-white "
+                        : "border-slate-800/80 bg-slate-800/80"
                     }`}
                   >
                     {option}
@@ -361,8 +362,8 @@ export const CreateMatchForm = () => {
                     onClick={() => setSelectedReserved(spot)}
                     className={`p-2 w-full rounded-xl transition duration-300 ${
                       selectedReserved === spot
-                          ? "bg-cyan-500/80 text-white "
-                          : "border-slate-800/80 bg-slate-800/80"
+                        ? "bg-cyan-500/80 text-white "
+                        : "border-slate-800/80 bg-slate-800/80"
                     }`}
                   >
                     {spot}
@@ -372,58 +373,70 @@ export const CreateMatchForm = () => {
             </div>
 
             {[...Array(selectedReserved)].map((_, i) => (
-                <div key={i} className="grid grid-cols-2 gap-2 mt-2">
-                  <input
-                      type="text"
-                      placeholder="Spillernavn"
-                      className="rounded-lg w-full border-slate-800/80 bg-slate-800/80 text-sm"
-                      value={reservedPlayers[i]?.name ?? ""}
-                      onChange={(e) => {
-                        const newPlayers = [...reservedPlayers];
-                        if (!newPlayers[i]) newPlayers[i] = { name: "", level: (levelRange[0] + levelRange[1]) / 2 };
-                        newPlayers[i].name = e.target.value;
-                        setReservedPlayers(newPlayers);
-                      }}
-                      required
+              <div key={i} className="grid grid-cols-2 gap-2 mt-2">
+                <input
+                  type="text"
+                  placeholder="Spillernavn"
+                  className="rounded-lg w-full border-slate-800/80 bg-slate-800/80 text-sm"
+                  value={reservedPlayers[i]?.name ?? ""}
+                  onChange={(e) => {
+                    const newPlayers = [...reservedPlayers];
+                    if (!newPlayers[i])
+                      newPlayers[i] = {
+                        name: "",
+                        level: (levelRange[0] + levelRange[1]) / 2,
+                      };
+                    newPlayers[i].name = e.target.value;
+                    setReservedPlayers(newPlayers);
+                  }}
+                  required
+                />
+
+                <div className="flex items-center gap-1 w-full">
+                  <ChevronDownIcon
+                    onClick={() => {
+                      const updated = [...reservedPlayers];
+                      updated[i].level = Math.max(
+                        levelRange[0],
+                        parseFloat((updated[i].level - 0.1).toFixed(1))
+                      );
+                      setReservedPlayers(updated);
+                    }}
+                    className="size-10 text-gray-300 cursor-pointer"
                   />
 
-                  <div className="flex items-center gap-1 w-full">
-                    <ChevronDownIcon
-                        onClick={() => {
-                          const updated = [...reservedPlayers];
-                          updated[i].level = Math.max(levelRange[0], parseFloat((updated[i].level - 0.1).toFixed(1)));
-                          setReservedPlayers(updated);
-                        }}
-                        className="size-10 text-gray-300 cursor-pointer"
-                    />
+                  <input
+                    className="text-center rounded-lg w-full border-slate-800/80 bg-slate-800/80 disabled:text-gray-200 disabled:border-slate-800/80"
+                    type="number"
+                    step="0.1"
+                    min={levelRange[0]}
+                    max={levelRange[1]}
+                    value={
+                      reservedPlayers[i]?.level.toFixed(1) ??
+                      ((levelRange[0] + levelRange[1]) / 2).toFixed(1)
+                    }
+                    onChange={(e) => {
+                      const updated = [...reservedPlayers];
+                      updated[i].level = parseFloat(e.target.value);
+                      setReservedPlayers(updated);
+                    }}
+                    disabled
+                  />
 
-                    <input
-                        className="text-center rounded-lg w-full border-slate-800/80 bg-slate-800/80 disabled:text-gray-200 disabled:border-slate-800/80"
-                        type="number"
-                        step="0.1"
-                        min={levelRange[0]}
-                        max={levelRange[1]}
-                        value={reservedPlayers[i]?.level.toFixed(1) ?? ((levelRange[0] + levelRange[1]) / 2).toFixed(1)}
-                        onChange={(e) => {
-                          const updated = [...reservedPlayers];
-                          updated[i].level = parseFloat(e.target.value);
-                          setReservedPlayers(updated);
-                        }}
-                        disabled
-                    />
-
-                    <ChevronUpIcon
-                        onClick={() => {
-                          const updated = [...reservedPlayers];
-                          updated[i].level = Math.min(levelRange[1], parseFloat((updated[i].level + 0.1).toFixed(1)));
-                          setReservedPlayers(updated);
-                        }}
-                        className="size-10 text-gray-300 cursor-pointer"
-                    />
-                  </div>
+                  <ChevronUpIcon
+                    onClick={() => {
+                      const updated = [...reservedPlayers];
+                      updated[i].level = Math.min(
+                        levelRange[1],
+                        parseFloat((updated[i].level + 0.1).toFixed(1))
+                      );
+                      setReservedPlayers(updated);
+                    }}
+                    className="size-10 text-gray-300 cursor-pointer"
+                  />
                 </div>
+              </div>
             ))}
-
           </div>
 
           <div>

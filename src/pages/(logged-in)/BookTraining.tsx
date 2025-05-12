@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from "react";
 import { Helmet } from "react-helmet-async";
 import { Trainer } from "../../types/Trainer";
 import { useUser } from "../../context/UserContext";
-import HomeBar from "../../components/misc/HomeBar";
 import Animation from "../../components/misc/Animation";
 import HomeScreenCard from "../../components/HomeScreen/HomeScreenCard";
 import { UserIcon, AcademicCapIcon } from "@heroicons/react/24/outline";
@@ -96,7 +95,6 @@ const BookTraining: React.FC = () => {
       <Helmet>
         <title>Book Training</title>
       </Helmet>
-        <HomeBar backPage="/hjem" />
       <Animation>
         <div className="flex flex-col items-center justify-center min-h-screen -mt-20 overflow-y-hidden">
           <h1 className="text-3xl font-bold text-black text-center mb-8">

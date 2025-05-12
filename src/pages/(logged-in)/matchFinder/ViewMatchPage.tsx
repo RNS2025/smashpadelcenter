@@ -1,6 +1,5 @@
 import { Helmet } from "react-helmet-async";
 import Animation from "../../../components/misc/Animation";
-import HomeBar from "../../../components/misc/HomeBar";
 import {
   BoltIcon,
   MapPinIcon,
@@ -557,7 +556,6 @@ export const ViewMatchPage = () => {
   if (loading) {
     return (
       <>
-        <HomeBar backPage="/hjem" />
         <div className="w-full h-[calc(100vh-150px)] flex justify-center items-center">
           <LoadingSpinner />
         </div>
@@ -571,7 +569,6 @@ export const ViewMatchPage = () => {
         <Helmet>
           <title>Kampdetaljer</title>
         </Helmet>
-        <HomeBar />
         <Animation>
           <div className="mx-4 my-10">{error}</div>
         </Animation>
@@ -613,7 +610,6 @@ export const ViewMatchPage = () => {
         />
       </Overlay>
 
-      <HomeBar backPage="/makkerbørs/allekampe"/>
       <Animation>
         <div className="mx-4 my-10 space-y-4 text-sm">
           <h1
@@ -777,7 +773,7 @@ export const ViewMatchPage = () => {
 
                 <button
                   onClick={() => {
-                    navigate(`/makkerbørs/${matchId}/rediger`);
+                    navigate(`/makkerbørs/match/${matchId}/rediger`);
                   }}
                   className="w-full bg-slate-700 rounded-lg py-2 px-4 text-orange-500 text-lg"
                 >

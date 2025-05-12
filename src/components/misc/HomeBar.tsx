@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef, useMemo } from "react"; // Added useRef for click outside logic
 import { useLocation, useNavigate } from "react-router-dom";
 import { useUser } from "../../context/UserContext";
+import { useNavigationHistory } from "../../context/useNavigationHistory";
 import NotificationSelector from "../NotificationSelector"; // Assuming this component exists and is styled internally or will be styled separately
 import BackArrow from "./BackArrow"; // Assuming this component exists and handles navigation back
 import {
@@ -16,14 +17,102 @@ import feedbackService from "../../services/feedbackService.ts"; // Assuming thi
 
 type Panel = "search" | "notifications" | "dropdown" | null;
 
-const HomeBar = ({ backPage }: { backPage?: string }) => {
+const HomeBar = () => {
   const { user, logout } = useUser();
   const navigate = useNavigate();
   const location = useLocation();
+  const { getClosestHomePage } = useNavigationHistory();
 
   const [searchQuery, setSearchQuery] = useState("");
   const [allUsers, setAllUsers] = useState<DaoGroupUser[]>([]);
   const [activePanel, setActivePanel] = useState<Panel>(null);
+
+  // Determine appropriate back page based on current route and navigation history
+  const getBackPage = () => {
+    // Default fallback route
+    let backPage = "/hjem";
+
+    // Handle main sections - they typically go back to home
+    if (location.pathname === "/hjem" || location.pathname === "/") {
+      // No back button needed on home
+      return null;
+    }
+
+    // Check for closest home page from navigation history first
+    const closestHomePage = getClosestHomePage();
+    if (closestHomePage && closestHomePage !== location.pathname) {
+      return closestHomePage;
+    }
+
+    // Handle specific routes based on URL patterns if no suitable page found in history
+
+    // Tournament related pages
+    if (location.pathname.startsWith("/turneringer")) {
+      if (location.pathname === "/turneringer") {
+        backPage = "/hjem";
+      } else {
+        backPage = "/turneringer";
+      }
+    }
+
+    // MatchFinder (Makkerbørs) related pages
+    if (location.pathname.startsWith("/makkerbørs")) {
+      if (location.pathname === "/makkerbørs") {
+        backPage = "/hjem";
+      } else if (
+        location.pathname.includes("/indtastresultat") ||
+        location.pathname.includes("/opretkamp") ||
+        location.pathname.includes("/redigerkamp")
+      ) {
+        backPage = "/makkerbørs";
+      } else if (location.pathname.includes("/makkerbørs/")) {
+        // Individual match view
+        backPage = "/makkerbørs/match/allekampe";
+      }
+    }
+
+    // Private events related pages
+    if (location.pathname.startsWith("/privat-arrangementer")) {
+      if (location.pathname === "/privat-arrangementer") {
+        backPage = "/hjem";
+      } else if (location.pathname.includes("/opretarrangement")) {
+        backPage = "/privat-arrangementer";
+      } else if (location.pathname.includes("/privat-arrangementer/")) {
+        // Check for individual event view
+        const parts = location.pathname.split("/");
+        if (parts.length > 2 && parts[2].length > 0) {
+          // It's likely viewing a specific event
+          backPage = "/privat-arrangementer/minearrangementer";
+        }
+      }
+    }
+
+    // Lunar leagues related pages
+    if (location.pathname.startsWith("/holdligaer")) {
+      if (location.pathname === "/holdligaer") {
+        backPage = "/hjem";
+      } else {
+        // Check if it's a team profile
+        if (location.pathname.includes("/hold/")) {
+          // Get the last stored lunar tab from session storage
+          const lastLunarTab = sessionStorage.getItem("lastLigaTab");
+          backPage = lastLunarTab || "/holdligaer";
+        }
+      }
+    }
+
+    // Profiles
+    if (location.pathname.startsWith("/profil")) {
+      backPage = "/hjem";
+    }
+
+    // Admin
+    if (location.pathname.startsWith("/admin")) {
+      backPage = "/hjem";
+    }
+
+    return backPage;
+  };
 
   // Refs for closing panels on clicks outside
   const searchPanelRef = useRef<HTMLDivElement>(null);
@@ -132,7 +221,6 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
       }
     }
   };
-
   const handleFeedback = async () => {
     if (!user) return;
 
@@ -164,7 +252,6 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
     navigate(`/profil/${username}`);
     setActivePanel(null); // Close the search panel
   };
-
   return (
     // Styled header matching LeagueStandingsPage theme
     <header className="bg-gray-800 shadow-xl top-0 sticky z-50">
@@ -176,24 +263,33 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
         {/* Left section: Back Arrow and Feedback Icon */}
         <div className="flex items-center gap-4 sm:gap-6">
           {" "}
-          {/* Adjusted gap */}
-          {/* Back Arrow - assuming it's styled internally or inherits text color */}
-          <div className={`${location.pathname === "/hjem" ? "hidden" : ""}`}>
-            <BackArrow backPage={backPage} /> {/* Added style classes */}
+          {/* Adjusted gap */}{" "}
+          {/* Back Arrow - hide on home page or when we don't have a back page */}
+          <div
+            className={`${
+              location.pathname === "/hjem" || getBackPage() === null
+                ? "hidden"
+                : ""
+            }`}
+          >
+            <BackArrow backPage={getBackPage() || undefined} />{" "}
+            {/* Handle null case */}
           </div>
-          {/* Feedback Icon */}
-          <ExclamationCircleIcon
-            onClick={handleFeedback}
-            className="size-10 sm:size-8 text-red-500 cursor-pointer transition-opacity"
-            title="Send Feedback" // Added title for accessibility
-          />
+          {/* Feedback Icon - Only show when user is logged in */}
+          {user && (
+            <ExclamationCircleIcon
+              onClick={handleFeedback}
+              className="size-10 sm:size-8 text-red-500 cursor-pointer transition-opacity"
+              title="Send Feedback" // Added title for accessibility
+            />
+          )}
         </div>
-        {/* Right section: User-specific content */}
-        {user && (
-          <div className="flex items-center gap-4 sm:gap-6">
-            {" "}
-            {/* Adjusted gap */}
-            {/* Desktop Navigation (hidden on small screens) */}
+        {/* Right section: Always visible with conditional user-specific content */}
+        <div className="flex items-center gap-4 sm:gap-6">
+          {" "}
+          {/* Adjusted gap */}
+          {/* Desktop Navigation (hidden on small screens) - Only visible for logged in users */}
+          {user && (
             <nav aria-label="Global" className="hidden sm:block">
               <ul className="flex items-center gap-4 sm:gap-6">
                 {" "}
@@ -226,228 +322,235 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
                 </li>
               </ul>
             </nav>
-            {/* Icons Section */}
-            <div className="flex items-center gap-3 sm:gap-4">
-              {" "}
-              {/* Adjusted gap */}
-              {/* Home Icon */}
+          )}
+          {/* Icons Section - Conditionally show based on user state */}
+          <div className="flex items-center gap-3 sm:gap-4">
+            {" "}
+            {/* Adjusted gap */}
+            {/* Home Icon - Always visible except on home page */}
+            {location.pathname !== "/hjem" && (
               <HomeIcon
                 onClick={() => navigate("/hjem")}
-                className={
-                  `size-7 sm:size-8 cursor-pointer transition-color
-                                    ${
-                                      location.pathname === "/hjem"
-                                        ? "hidden"
-                                        : "text-slate-400"
-                                    }` // Hide on home, set default color
-                }
+                className="size-7 sm:size-8 cursor-pointer transition-color text-slate-400"
                 title="Hjem" // Added title
               />
-              {/* Search Icon */}
-              <button
-                ref={searchIconRef}
-                onClick={() => togglePanel("search")}
-                className="rounded"
-              >
-                {" "}
-                {/* Wrap in button for focus state */}
-                <MagnifyingGlassIcon
-                  className={
-                    `size-7 sm:size-8 cursor-pointer transition-colors
+            )}
+            {/* User-specific icons - Only show for logged in users */}
+            {user && (
+              <>
+                {/* Search Icon */}
+                <button
+                  ref={searchIconRef}
+                  onClick={() => togglePanel("search")}
+                  className="rounded"
+                >
+                  {" "}
+                  {/* Wrap in button for focus state */}
+                  <MagnifyingGlassIcon
+                    className={
+                      `size-7 sm:size-8 cursor-pointer transition-colors
                                         ${
                                           activePanel === "search"
                                             ? "text-brand-primary"
                                             : "text-slate-400"
                                         }` // Active/inactive color
-                  }
-                  title="Søg Bruger" // Added title
-                />
-              </button>
-              {/* Notifications Icon */}
-              <button
-                ref={bellIconRef}
-                onClick={() => togglePanel("notifications")}
-                className="rounded"
-              >
-                {" "}
-                {/* Wrap in button for focus state */}
-                <BellIcon
-                  className={
-                    `size-7 sm:size-8 cursor-pointer transition-colors
+                    }
+                    title="Søg Bruger" // Added title
+                  />
+                </button>
+                {/* Notifications Icon */}
+                <button
+                  ref={bellIconRef}
+                  onClick={() => togglePanel("notifications")}
+                  className="rounded"
+                >
+                  {" "}
+                  {/* Wrap in button for focus state */}
+                  <BellIcon
+                    className={
+                      `size-7 sm:size-8 cursor-pointer transition-colors
                                         ${
                                           activePanel === "notifications"
                                             ? "text-brand-primary"
                                             : "text-slate-400"
                                         }` // Active/inactive color
-                  }
-                  title="Notifikationer" // Added title
-                />
-              </button>
-              {/* Mobile Menu Icon (hidden on large screens) */}
-              <button
-                ref={menuIconRef}
-                onClick={() => togglePanel("dropdown")}
-                className="sm:hidden rounded"
-              >
-                {" "}
-                {/* Wrap in button, keep sm:hidden */}
-                <Bars3Icon
-                  className={
-                    `size-7 sm:size-8 cursor-pointer transition-colors
+                    }
+                    title="Notifikationer" // Added title
+                  />
+                </button>
+                {/* Mobile Menu Icon (hidden on large screens) */}
+                <button
+                  ref={menuIconRef}
+                  onClick={() => togglePanel("dropdown")}
+                  className="sm:hidden rounded"
+                >
+                  {" "}
+                  {/* Wrap in button, keep sm:hidden */}
+                  <Bars3Icon
+                    className={
+                      `size-7 sm:size-8 cursor-pointer transition-colors
                                         ${
                                           activePanel === "dropdown"
                                             ? "text-brand-primary"
                                             : "text-slate-400"
                                         }` // Active/inactive color
-                  }
-                  title="Menu" // Added title
-                />
-              </button>
-            </div>
+                    }
+                    title="Menu" // Added title
+                  />
+                </button>
+              </>
+            )}
           </div>
-        )}
-      </div>
-      {/* Notifications Panel (Positioned below the header) */}
-      {activePanel === "notifications" && user && (
-        <div
-          ref={notificationsPanelRef}
-          className="absolute right-0 mt-0 w-full sm:w-96 z-50 bg-slate-800 shadow-xl rounded-md border border-slate-700 overflow-hidden"
-        >
-          {" "}
-          {/* Dark style, width, border, overflow */}
-          {/* Assuming NotificationSelector is styled internally */}
-          <NotificationSelector userId={user.username} />
         </div>
-      )}
-      {/* Search Panel (Positioned below the header, full width on small screens) */}
-      {activePanel === "search" && (
-        <div
-          ref={searchPanelRef}
-          className="absolute left-0 right-0 z-10 bg-slate-800 shadow-xl border border-slate-700 animate-fadeInDown"
-        >
-          {" "}
-          {/* Dark style, full width horizontal, border */}
-          <div className="p-2 sm:p-3">
-            {" "}
-            {/* Add padding inside the panel */}
-            <input
-              type="text"
-              className="w-full h-10 px-3 py-2 text-sm bg-slate-750 text-slate-200 border border-slate-600 rounded-md placeholder-slate-500 transition-all duration-150" // Styled input
-              placeholder="Søg efter bruger..." // Updated placeholder text
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              // No need for onBlur here as we have click outside logic
-            />
-            {searchQuery && (
-              <div className="mt-2 bg-slate-700 border border-slate-600 rounded-md overflow-y-auto max-h-40 custom-scrollbar">
+      </div>{" "}
+      {/* Only show panels when a user is logged in */}
+      {user && (
+        <>
+          {/* Notifications Panel (Positioned below the header) */}
+          {activePanel === "notifications" && (
+            <div
+              ref={notificationsPanelRef}
+              className="absolute right-0 mt-0 w-full sm:w-96 z-50 bg-slate-800 shadow-xl rounded-md border border-slate-700 overflow-hidden"
+            >
+              {" "}
+              {/* Dark style, width, border, overflow */}
+              {/* Assuming NotificationSelector is styled internally */}
+              <NotificationSelector userId={user.username} />
+            </div>
+          )}
+
+          {/* Search Panel (Positioned below the header, full width on small screens) */}
+          {activePanel === "search" && (
+            <div
+              ref={searchPanelRef}
+              className="absolute left-0 right-0 z-10 bg-slate-800 shadow-xl border border-slate-700 animate-fadeInDown"
+            >
+              {" "}
+              {/* Dark style, full width horizontal, border */}
+              <div className="p-2 sm:p-3">
                 {" "}
-                {/* Styled results container */}
-                {filteredUsers.length > 0 ? (
-                  filteredUsers.map((user) => (
-                    <div
-                      key={user.id}
-                      onClick={() => handleUserResultClick(user.username)}
-                      className="px-3 py-2 cursor-pointer text-slate-200 text-sm transition-colors truncate" // Styled result item
-                    >
-                      <h1>
-                        {user.fullName
-                          ? `${user.fullName} (${user.username})`
-                          : user.username}
-                      </h1>
-                    </div>
-                  ))
-                ) : (
-                  <div className="px-3 py-2 text-slate-500 text-sm italic">
+                {/* Add padding inside the panel */}
+                <input
+                  type="text"
+                  className="w-full h-10 px-3 py-2 text-sm bg-slate-750 text-slate-200 border border-slate-600 rounded-md placeholder-slate-500 transition-all duration-150" // Styled input
+                  placeholder="Søg efter bruger..." // Updated placeholder text
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  // No need for onBlur here as we have click outside logic
+                />
+                {searchQuery && (
+                  <div className="mt-2 bg-slate-700 border border-slate-600 rounded-md overflow-y-auto max-h-40 custom-scrollbar">
                     {" "}
-                    {/* Styled no results message */}
-                    Ingen brugere fundet
+                    {/* Styled results container */}
+                    {filteredUsers.length > 0 ? (
+                      filteredUsers.map((user) => (
+                        <div
+                          key={user.id}
+                          onClick={() => handleUserResultClick(user.username)}
+                          className="px-3 py-2 cursor-pointer text-slate-200 text-sm transition-colors truncate" // Styled result item
+                        >
+                          <h1>
+                            {user.fullName
+                              ? `${user.fullName} (${user.username})`
+                              : user.username}
+                          </h1>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="px-3 py-2 text-slate-500 text-sm italic">
+                        {" "}
+                        {/* Styled no results message */}
+                        Ingen brugere fundet
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
-            )}
-          </div>
-        </div>
-      )}
-      {/* Mobile Dropdown Menu (Positioned below the header, right aligned, hidden on small screens) */}
-      {activePanel === "dropdown" && user && (
-        <div
-          ref={dropdownPanelRef}
-          className="absolute right-0 mt-0 w-48 rounded-md bg-slate-800 shadow-lg ring-1 ring-slate-700 animate-fadeInDown sm:hidden"
-        >
-          {" "}
-          {/* Dark style, width, border, shadow, hidden on sm+ */}
-          <div className="py-1" role="none">
-            <button // Use button for click events and styling
-              onClick={() => {
-                navigate(`/profil/${user?.username}`);
-                setActivePanel(null);
-              }}
-              className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors" // Styled item
-              role="menuitem" // ARIA role
+            </div>
+          )}
+
+          {/* Mobile Dropdown Menu (Positioned below the header, right aligned, hidden on small screens) */}
+          {activePanel === "dropdown" && (
+            <div
+              ref={dropdownPanelRef}
+              className="absolute right-0 mt-0 w-48 rounded-md bg-slate-800 shadow-lg ring-1 ring-slate-700 animate-fadeInDown sm:hidden"
             >
-              Profil
-            </button>
-            <button
-                onClick={() => {
-                  navigate(`/makkerbørs`);
-                  setActivePanel(null);
-                }}
-                className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors"
-                role="menuitem"
-            >
-              Makkerbørs
-            </button>
-            <button
-                onClick={() => {
-                  navigate(`/privat-arrangementer`);
-                  setActivePanel(null);
-                }}
-                className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors"
-                role="menuitem"
-            >
-              Privat-arrangementer
-            </button>
-            <button
-                onClick={() => {
-                  navigate(`/holdligaer`);
-                  setActivePanel(null);
-                }}
-                className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors"
-                role="menuitem"
-            >
-              Holdligaer
-            </button>
-            <button
-                onClick={() => {
-                  navigate(`/turneringer`);
-                  setActivePanel(null);
-                }}
-                className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors"
-                role="menuitem"
-            >
-              DPF-universet
-            </button>
-            {user?.role === "admin" && (
-              <button // Use button
-                onClick={() => {
-                  navigate("/admin");
-                  setActivePanel(null);
-                }}
-                className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors" // Styled item
-                role="menuitem" // ARIA role
-              >
-                Admin Panel
-              </button>
-            )}
-            <button // Use button
-              onClick={handleLogout}
-              className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors" // Styled item
-              role="menuitem" // ARIA role
-            >
-              Log ud
-            </button>
-          </div>
-        </div>
+              {" "}
+              {/* Dark style, width, border, shadow, hidden on sm+ */}
+              <div className="py-1" role="none">
+                <button // Use button for click events and styling
+                  onClick={() => {
+                    navigate(`/profil/${user?.username}`);
+                    setActivePanel(null);
+                  }}
+                  className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors" // Styled item
+                  role="menuitem" // ARIA role
+                >
+                  Profil
+                </button>
+                <button
+                  onClick={() => {
+                    navigate(`/makkerbørs`);
+                    setActivePanel(null);
+                  }}
+                  className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors"
+                  role="menuitem"
+                >
+                  Makkerbørs
+                </button>
+                <button
+                  onClick={() => {
+                    navigate(`/privat-arrangementer`);
+                    setActivePanel(null);
+                  }}
+                  className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors"
+                  role="menuitem"
+                >
+                  Privat-arrangementer
+                </button>
+                <button
+                  onClick={() => {
+                    navigate(`/holdligaer`);
+                    setActivePanel(null);
+                  }}
+                  className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors"
+                  role="menuitem"
+                >
+                  Holdligaer
+                </button>
+                <button
+                  onClick={() => {
+                    navigate(`/turneringer`);
+                    setActivePanel(null);
+                  }}
+                  className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors"
+                  role="menuitem"
+                >
+                  DPF-universet
+                </button>
+                {user?.role === "admin" && (
+                  <button // Use button
+                    onClick={() => {
+                      navigate("/admin");
+                      setActivePanel(null);
+                    }}
+                    className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors" // Styled item
+                    role="menuitem" // ARIA role
+                  >
+                    Admin Panel
+                  </button>
+                )}
+                <button // Use button
+                  onClick={handleLogout}
+                  className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors" // Styled item
+                  role="menuitem" // ARIA role
+                >
+                  Log ud
+                </button>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </header>
   );

@@ -8,7 +8,6 @@ import {
   RectangleGroupIcon,
 } from "@heroicons/react/24/outline";
 import Animation from "../../components/misc/Animation.tsx";
-import HomeBar from "../../components/misc/HomeBar.tsx";
 import { useUser } from "../../context/UserContext.tsx";
 import { useEffect } from "react";
 
@@ -25,7 +24,6 @@ export const TournamentTabs = () => {
         <title>Turneringer</title>
       </Helmet>
 
-      <HomeBar backPage={user ? "/hjem" : "/"} />
       <Animation>
         <div className="flex my-5 items-center justify-center">
           <div
