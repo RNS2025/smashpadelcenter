@@ -1,486 +1,509 @@
-import {useNavigate, useParams} from "react-router-dom";
-import {useUser} from "../../../context/UserContext.tsx";
-import {ChangeEvent, FormEvent, useEffect, useState} from "react";
-import {filterPassedTime, getNextHalfHour, handleHiddenTimes} from "../../../utils/dateUtils.ts";
-import {PadelMatch} from "../../../types/PadelMatch.ts";
+import { useNavigate, useParams } from "react-router-dom";
+import { useUser } from "../../../context/UserContext.tsx";
+import { ChangeEvent, FormEvent, useEffect, useState } from "react";
+import {
+  filterPassedTime,
+  getNextHalfHour,
+  handleHiddenTimes,
+} from "../../../utils/dateUtils.ts";
+import { PadelMatch } from "../../../types/PadelMatch.ts";
 import communityApi from "../../../services/makkerborsService.ts";
 import DatePicker from "react-datepicker";
-import {setHours, setMinutes} from "date-fns";
-import {ChevronDownIcon, ChevronUpIcon} from "@heroicons/react/24/outline";
+import { setHours, setMinutes } from "date-fns";
+import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
 import Animation from "../../../components/misc/Animation.tsx";
 import HomeBar from "../../../components/misc/HomeBar.tsx";
 import { Helmet } from "react-helmet-async";
 
 export const EditMatchPage = () => {
-    const navigate = useNavigate();
-    const { user } = useUser();
-    const { matchId } = useParams<{ matchId: string }>();
+  const navigate = useNavigate();
+  const { user } = useUser();
+  const { matchId } = useParams<{ matchId: string }>();
 
-    const [selectedDate, setSelectedDate] = useState(getNextHalfHour);
-    const [participants, setParticipants] = useState<string[]>([]);
-    const [joinRequests, setJoinRequests] = useState<string[]>([]);
-    const [invitedPlayers, setInvitedPlayers] = useState<string[]>([]);
-    const [selectedReserved, setSelectedReserved] = useState<number>(0);
-    const [courtBooked, setCourtBooked] = useState<boolean>(false);
-    const [selectedPlayingTime, setSelectedPlayingTime] = useState<number>(90);
-    const [levelRange, setLevelRange] = useState<[number, number]>([user?.skillLevel || 2.0, (user?.skillLevel || 2.0) + 1]);
-    const [selectedMatchType, setSelectedMatchType] = useState<string>("Herre");
-    const [location, setLocation] = useState<string>("SMASH Padelcenter Horsens");
-    const [description, setDescription] = useState<string>("");
-    const [deadline, setDeadline] = useState<number>(0);
-    const [createdAt, setCreatedAt] = useState<string>(new Date().toISOString());
-    const [isSubmitting, setIsSubmitting] = useState(false);
+  const [selectedDate, setSelectedDate] = useState(getNextHalfHour);
+  const [participants, setParticipants] = useState<string[]>([]);
+  const [joinRequests, setJoinRequests] = useState<string[]>([]);
+  const [invitedPlayers, setInvitedPlayers] = useState<string[]>([]);
+  const [selectedReserved, setSelectedReserved] = useState<number>(0);
+  const [courtBooked, setCourtBooked] = useState<boolean>(false);
+  const [selectedPlayingTime, setSelectedPlayingTime] = useState<number>(90);
+  const [levelRange, setLevelRange] = useState<[number, number]>([
+    user?.skillLevel || 2.0,
+    (user?.skillLevel || 2.0) + 1,
+  ]);
+  const [selectedMatchType, setSelectedMatchType] = useState<string>("Herre");
+  const [location, setLocation] = useState<string>("SMASH Padelcenter Horsens");
+  const [description, setDescription] = useState<string>("");
+  const [deadline, setDeadline] = useState<number>(0);
+  const [createdAt, setCreatedAt] = useState<string>(new Date().toISOString());
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-    const [reservedPlayers, setReservedPlayers] = useState(
-        [] as { name: string; level: number }[]
-    );
+  const [reservedPlayers, setReservedPlayers] = useState(
+    [] as { name: string; level: number }[]
+  );
 
-    useEffect(() => {
-        if (!matchId) return;
-        const fetchMatch = async () => {
-            try {
-                const response = await communityApi.getMatchById(matchId)
-                setParticipants(response.participants);
-                setJoinRequests(response.joinRequests);
-                setInvitedPlayers(response.invitedPlayers);
-                setSelectedDate(new Date(response.matchDateTime));
-                setSelectedReserved(response.reservedSpots.length);
-                setCourtBooked(response.courtBooked);
-                setSelectedPlayingTime(
-                    (new Date(response.endTime).getTime() - new Date(response.startTime).getTime()) / (60 * 1000)
-                );
-                setLevelRange(() => {
-                    const [minStr, maxStr] = response.level.split(" - ");
-                    return [parseFloat(minStr), parseFloat(maxStr)];
-                });
-                setSelectedMatchType(response.matchType);
-                setLocation(response.location);
-                setDescription(response.description);
-                setDeadline(() => {
-                    if (!response.deadline) return 0;
-                    const diffMs = new Date(response.matchDateTime).getTime() - new Date(response.deadline).getTime();
-                    return Math.round(diffMs / (60 * 60 * 1000));
-                });
-                setReservedPlayers(
-                    response.reservedSpots.map((p) => ({
-                        name: p.name,
-                        level: parseFloat(p.level),
-                    }))
-                );
-                setCreatedAt(response.createdAt);
-
-            } catch (error) {
-                console.error("Error fetching match:", error);
-                alert("Fejl ved indlæsning af kamp");
-            }
-        }
-        fetchMatch().then();
-    }, [matchId]);
-
-    const handleUpdateMatch = async (event: FormEvent) => {
-        event.preventDefault();
-        setIsSubmitting(true);
-        if (!user || !matchId) return;
-        try {
-            const matchData: Omit<PadelMatch, "id"> = {
-                username: user!.username,
-                description: description,
-                level: `${levelRange[0].toFixed(1)} - ${levelRange[1].toFixed(1)}`,
-                participants: participants,
-                joinRequests: joinRequests,
-                invitedPlayers: invitedPlayers,
-                reservedSpots: reservedPlayers.map((p) => ({
-                    name: p.name,
-                    level: p.level.toFixed(1),
-                })),
-                totalSpots: 4,
-                matchDateTime: selectedDate.toISOString(),
-                startTime: selectedDate.toISOString(),
-                endTime: new Date(
-                    selectedDate.getTime() + selectedPlayingTime * 60 * 1000
-                ).toISOString(),
-                courtBooked,
-                location,
-                matchType: selectedMatchType,
-                score: {},
-                deadline: deadline != 0 ? new Date(selectedDate.getTime() - (deadline * 60) * 60 * 1000).toISOString() : undefined,
-                playersConfirmedResult: [],
-                createdAt: createdAt,
-            };
-
-            await communityApi.updateMatch(matchId, matchData);
-            navigate(`/makkerbørs/${matchId}`);
-        } catch (error) {
-            console.error("Error updating match:", error);
-            setIsSubmitting(false);
-            alert("Fejl ved opdatering af kamp");
-        } finally {
-            setIsSubmitting(false);
-        }
-    };
-
-    const handleMinChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const newMin = parseFloat(e.target.value);
-        setLevelRange([newMin, levelRange[1]]);
-    };
-
-    const handleMaxChange = (e: ChangeEvent<HTMLInputElement>) => {
-        const newMax = parseFloat(e.target.value);
-        setLevelRange([levelRange[0], newMax]);
-    };
-
-    const incrementMinLevel = () => {
-        setLevelRange(([min, max]) => {
-            const newMin = Math.min(7.0, parseFloat((min + 0.1).toFixed(1)));
-            const adjustedMax = Math.max(newMin, max);
-            return [newMin, adjustedMax];
+  useEffect(() => {
+    if (!matchId) return;
+    const fetchMatch = async () => {
+      try {
+        const response = await communityApi.getMatchById(matchId);
+        setParticipants(response.participants);
+        setJoinRequests(response.joinRequests);
+        setInvitedPlayers(response.invitedPlayers);
+        setSelectedDate(new Date(response.matchDateTime));
+        setSelectedReserved(response.reservedSpots.length);
+        setCourtBooked(response.courtBooked);
+        setSelectedPlayingTime(
+          (new Date(response.endTime).getTime() -
+            new Date(response.startTime).getTime()) /
+            (60 * 1000)
+        );
+        setLevelRange(() => {
+          const [minStr, maxStr] = response.level.split(" - ");
+          return [parseFloat(minStr), parseFloat(maxStr)];
         });
-    };
-
-    const decrementMinLevel = () => {
-        setLevelRange(([min, max]) => {
-            const newMin = Math.max(1.0, parseFloat((min - 0.1).toFixed(1)));
-            return [newMin, max];
+        setSelectedMatchType(response.matchType);
+        setLocation(response.location);
+        setDescription(response.description);
+        setDeadline(() => {
+          if (!response.deadline) return 0;
+          const diffMs =
+            new Date(response.matchDateTime).getTime() -
+            new Date(response.deadline).getTime();
+          return Math.round(diffMs / (60 * 60 * 1000));
         });
+        setReservedPlayers(
+          response.reservedSpots.map((p) => ({
+            name: p.name,
+            level: parseFloat(p.level),
+          }))
+        );
+        setCreatedAt(response.createdAt);
+      } catch (error) {
+        console.error("Error fetching match:", error);
+        alert("Fejl ved indlæsning af kamp");
+      }
     };
+    fetchMatch().then();
+  }, [matchId]);
 
-    const incrementMaxLevel = () => {
-        setLevelRange(([min, max]) => {
-            const newMax = Math.min(7.0, parseFloat((max + 0.1).toFixed(1)));
-            return [min, newMax];
-        });
-    };
+  const handleUpdateMatch = async (event: FormEvent) => {
+    event.preventDefault();
+    setIsSubmitting(true);
+    if (!user || !matchId) return;
+    try {
+      const matchData: Omit<PadelMatch, "id"> = {
+        username: user!.username,
+        description: description,
+        level: `${levelRange[0].toFixed(1)} - ${levelRange[1].toFixed(1)}`,
+        participants: participants,
+        joinRequests: joinRequests,
+        invitedPlayers: invitedPlayers,
+        reservedSpots: reservedPlayers.map((p) => ({
+          name: p.name,
+          level: p.level.toFixed(1),
+        })),
+        totalSpots: 4,
+        matchDateTime: selectedDate.toISOString(),
+        startTime: selectedDate.toISOString(),
+        endTime: new Date(
+          selectedDate.getTime() + selectedPlayingTime * 60 * 1000
+        ).toISOString(),
+        courtBooked,
+        location,
+        matchType: selectedMatchType,
+        score: {},
+        deadline:
+          deadline != 0
+            ? new Date(
+                selectedDate.getTime() - deadline * 60 * 60 * 1000
+              ).toISOString()
+            : undefined,
+        playersConfirmedResult: [],
+        createdAt: createdAt,
+      };
 
-    const decrementMaxLevel = () => {
-        setLevelRange(([min, max]) => {
-            const newMax = Math.max(min, parseFloat((max - 0.1).toFixed(1)));
-            return [min, newMax];
-        });
-    };
+      await communityApi.updateMatch(matchId, matchData);
+      navigate(`/makkerbørs/${matchId}`);
+    } catch (error) {
+      console.error("Error updating match:", error);
+      setIsSubmitting(false);
+      alert("Fejl ved opdatering af kamp");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
-    const availableSpotsArray = [0, 1, 2, 3];
-    const courtBookedArray = [
-        { label: "Nej", value: false },
-        { label: "Ja", value: true },
-    ];
-    const playingTimeArray = [60, 90, 120];
-    const matchTypeArray = ["Herre", "Dame", "Mix", "Blandet"];
+  const handleMinChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const newMin = parseFloat(e.target.value);
+    setLevelRange([newMin, levelRange[1]]);
+  };
 
-    return (
-        <>
-            <Helmet>
-                <title>Rediger kamp</title>
-            </Helmet>
-        <HomeBar />
-            <Animation>
+  const handleMaxChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const newMax = parseFloat(e.target.value);
+    setLevelRange([levelRange[0], newMax]);
+  };
 
-                <div className="w-full bg-slate-800/70 rounded-xl p-4 text-gray-300">
-            <form className="space-y-10" onSubmit={handleUpdateMatch}>
-                <div className="lg:grid grid-cols-3 gap-4 max-lg:flex max-lg:flex-col">
+  const incrementMinLevel = () => {
+    setLevelRange(([min, max]) => {
+      const newMin = Math.min(7.0, parseFloat((min + 0.1).toFixed(1)));
+      const adjustedMax = Math.max(newMin, max);
+      return [newMin, adjustedMax];
+    });
+  };
 
-                    <div>
-                        <label className="font-semibold" htmlFor="center">
-                            Vælg center
-                        </label>
-                        <select
-                            className="w-full rounded-lg border-slate-800/80 bg-slate-800/80 h-12 pr-1 text-sm"
-                            id="center"
-                            value={location}
-                            onChange={(e) => setLocation(e.target.value)}
+  const decrementMinLevel = () => {
+    setLevelRange(([min, max]) => {
+      const newMin = Math.max(1.0, parseFloat((min - 0.1).toFixed(1)));
+      return [newMin, max];
+    });
+  };
+
+  const incrementMaxLevel = () => {
+    setLevelRange(([min, max]) => {
+      const newMax = Math.min(7.0, parseFloat((max + 0.1).toFixed(1)));
+      return [min, newMax];
+    });
+  };
+
+  const decrementMaxLevel = () => {
+    setLevelRange(([min, max]) => {
+      const newMax = Math.max(min, parseFloat((max - 0.1).toFixed(1)));
+      return [min, newMax];
+    });
+  };
+
+  const availableSpotsArray = [0, 1, 2, 3];
+  const courtBookedArray = [
+    { label: "Nej", value: false },
+    { label: "Ja", value: true },
+  ];
+  const playingTimeArray = [60, 90, 120];
+  const matchTypeArray = ["Herre", "Dame", "Mix", "Blandet"];
+
+  return (
+    <>
+      <Helmet>
+        <title>Rediger kamp</title>
+      </Helmet>
+      <HomeBar />
+      <Animation>
+        <div className="w-full bg-slate-800/70 rounded-xl p-4 text-gray-300">
+          <form className="space-y-10" onSubmit={handleUpdateMatch}>
+            <div className="lg:grid grid-cols-3 gap-4 max-lg:flex max-lg:flex-col">
+              <div>
+                <label className="font-semibold" htmlFor="center">
+                  Vælg center
+                </label>
+                <select
+                  className="w-full rounded-lg border-slate-800/80 bg-slate-800/80 h-12 pr-1 text-sm"
+                  id="center"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                >
+                  <option value="SMASH Padelcenter Horsens">
+                    SMASH Padelcenter Horsens
+                  </option>
+                  <option value="SMASH Padelcenter Stensballe">
+                    SMASH Padelcenter Stensballe
+                  </option>
+                </select>
+              </div>
+
+              <div className="flex flex-col">
+                <label className="font-semibold" htmlFor="tidspunkt">
+                  Dato og tidspunkt
+                </label>
+                <DatePicker
+                  selected={selectedDate}
+                  onChange={(date) => setSelectedDate(date!)}
+                  showTimeSelect
+                  locale="da"
+                  timeFormat="HH:mm"
+                  timeIntervals={30}
+                  showWeekNumbers
+                  filterTime={filterPassedTime}
+                  minDate={new Date()}
+                  minTime={setHours(setMinutes(new Date(), 0), 5)}
+                  maxTime={setHours(setMinutes(new Date(), 0), 23)}
+                  dateFormat="dd. MMMM yyyy, HH:mm"
+                  className="w-full h-12 rounded-lg border-slate-800/80 bg-slate-800/80 text-sm pr-1"
+                  timeClassName={handleHiddenTimes}
+                />
+              </div>
+
+              <div>
+                <label className="font-semibold" htmlFor="deadline">
+                  Deadline
+                </label>
+                <select
+                  className="w-full rounded-lg border-slate-800/80 bg-slate-800/80 h-12 pr-1 text-sm"
+                  id="center"
+                  value={deadline}
+                  onChange={(e) => setDeadline(parseInt(e.target.value))}
+                >
+                  <option value={0}>Ingen deadline</option>
+                  <option value={1}>1 time før</option>
+                  <option value={2}>2 timer før</option>
+                  <option value={3}>3 timer før</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="font-semibold" htmlFor="spilletid">
+                  Spilletid
+                </label>
+                <div className="flex h-12">
+                  <div className="flex items-center w-full rounded-lg gap-6 pr-1">
+                    {playingTimeArray.map((option) => (
+                      <button
+                        type="button"
+                        key={option}
+                        onClick={() => setSelectedPlayingTime(option)}
+                        className={`p-2 w-full rounded-xl transition duration-300 ${
+                          selectedPlayingTime === option
+                            ? "bg-cyan-500/80 text-white "
+                            : "border-slate-800/80 bg-slate-800/80"
+                        }`}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="font-semibold" htmlFor="reserverede">
+                  Bane er booket
+                </label>
+                <div className="flex h-12">
+                  <div className="flex items-center w-full rounded-lg gap-6 pr-1">
+                    {courtBookedArray.map(({ label, value }) => (
+                      <button
+                        type="button"
+                        key={label}
+                        onClick={() => setCourtBooked(value)}
+                        className={`p-2 w-full rounded-xl transition duration-300 ${
+                          courtBooked === value
+                            ? "bg-cyan-500/80 text-white "
+                            : "border-slate-800/80 bg-slate-800/80"
+                        }`}
+                      >
+                        {label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-4">
+                <label className="font-semibold" htmlFor="niveauinterval">
+                  Niveauinterval
+                </label>
+
+                <div className="flex flex-col gap-2">
+                  <div className="grid grid-cols-2 items-center text-center w-full">
+                    <label className="font-semibold">Minimum</label>
+                    <label className="font-semibold">Maksimum</label>
+                  </div>
+
+                  <div className="flex h-12">
+                    <div className="flex justify-between items-center w-full rounded-lg gap-2 pr-1">
+                      <div className="grid grid-cols-2 items-center text-center w-full">
+                        <div className="flex items-center gap-1 p-4 rounded-xl">
+                          <ChevronDownIcon
+                            onClick={decrementMinLevel}
+                            className="size-10 text-gray-300 cursor-pointer"
+                          />
+                          <input
+                            className="text-center rounded-lg w-full border-slate-800/80 bg-slate-800/80 disabled:text-gray-200 disabled:border-slate-800/80"
+                            type="number"
+                            step="0.1"
+                            min="1.0"
+                            max="7.0"
+                            value={levelRange[0].toFixed(1)}
+                            onChange={handleMinChange}
+                            disabled
+                          />
+                          <ChevronUpIcon
+                            onClick={incrementMinLevel}
+                            className="size-10 text-gray-300 cursor-pointer"
+                          />
+                        </div>
+
+                        <div className="flex items-center gap-1 p-4 w-full">
+                          <ChevronDownIcon
+                            onClick={decrementMaxLevel}
+                            className="size-10 text-gray-300 cursor-pointer"
+                          />
+
+                          <input
+                            className="text-center rounded-lg w-full border-slate-800/80 bg-slate-800/80 disabled:text-gray-200 disabled:border-slate-800/80"
+                            type="number"
+                            step="0.1"
+                            min={levelRange[0]}
+                            max="7.0"
+                            value={levelRange[1].toFixed(1)}
+                            onChange={handleMaxChange}
+                            disabled
+                          />
+                          <ChevronUpIcon
+                            onClick={incrementMaxLevel}
+                            className="size-10 text-gray-300 cursor-pointer"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="font-semibold" htmlFor="kamptype">
+                  Kamptype
+                </label>
+                <div className="flex h-12">
+                  <div className="flex justify-between w-full items-center rounded-lg gap-6 pr-1">
+                    {matchTypeArray.map((option) => (
+                      <button
+                        type="button"
+                        key={option}
+                        onClick={() => setSelectedMatchType(option)}
+                        className={`max-lg:w-full lg:w-20 p-2 text-sm rounded-xl transition duration-300 ${
+                          selectedMatchType === option
+                            ? "bg-cyan-500/80 text-white "
+                            : "border-slate-800/80 bg-slate-800/80"
+                        }`}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="font-semibold" htmlFor="reserverede">
+                  Reserverede pladser
+                </label>
+                <div className="flex h-12">
+                  <div className="flex items-center w-full rounded-lg gap-6 pr-1">
+                    {availableSpotsArray.map((spot) => {
+                      const totalSpotsTaken = participants.length + spot;
+                      const isDisabled = totalSpotsTaken > 4;
+                      return (
+                        <button
+                          type="button"
+                          key={spot}
+                          onClick={() => setSelectedReserved(spot)}
+                          disabled={isDisabled}
+                          className={`p-2 w-full rounded-xl transition duration-300 ${
+                            selectedReserved === spot
+                              ? "bg-cyan-500/80 text-white"
+                              : isDisabled
+                              ? "bg-slate-800/50 text-gray-500 cursor-not-allowed"
+                              : "border-slate-800/80 bg-slate-800/80"
+                          }`}
                         >
-                            <option value="SMASH Padelcenter Horsens">
-                                SMASH Padelcenter Horsens
-                            </option>
-                            <option value="SMASH Padelcenter Stensballe">
-                                SMASH Padelcenter Stensballe
-                            </option>
-                        </select>
-                    </div>
-
-                    <div className="flex flex-col">
-                        <label className="font-semibold" htmlFor="tidspunkt">
-                            Dato og tidspunkt
-                        </label>
-                        <DatePicker
-                            selected={selectedDate}
-                            onChange={(date) => setSelectedDate(date!)}
-                            showTimeSelect
-                            locale="da"
-                            timeFormat="HH:mm"
-                            timeIntervals={30}
-                            showWeekNumbers
-                            filterTime={filterPassedTime}
-                            minDate={new Date()}
-                            minTime={setHours(setMinutes(new Date(), 0), 5)}
-                            maxTime={setHours(setMinutes(new Date(), 0), 23)}
-                            dateFormat="dd. MMMM yyyy, HH:mm"
-                            className="w-full h-12 rounded-lg border-slate-800/80 bg-slate-800/80 text-sm pr-1"
-                            timeClassName={handleHiddenTimes}
-                        />
-                    </div>
-
-                    <div>
-                        <label className="font-semibold" htmlFor="deadline">
-                            Deadline
-                        </label>
-                        <select
-                            className="w-full rounded-lg border-slate-800/80 bg-slate-800/80 h-12 pr-1 text-sm"
-                            id="center"
-                            value={deadline}
-                            onChange={(e) => setDeadline(parseInt(e.target.value))}
-                        >
-                            <option value={0}>
-                                Ingen deadline
-                            </option>
-                            <option value={1}>
-                                1 time før
-                            </option>
-                            <option value={2}>
-                                2 timer før
-                            </option>
-                            <option value={3}>
-                                3 timer før
-                            </option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label className="font-semibold" htmlFor="spilletid">
-                            Spilletid
-                        </label>
-                        <div className="flex h-12">
-                            <div className="flex items-center w-full rounded-lg gap-6 pr-1">
-                                {playingTimeArray.map((option) => (
-                                    <button
-                                        type="button"
-                                        key={option}
-                                        onClick={() => setSelectedPlayingTime(option)}
-                                        className={`p-2 w-full rounded-xl transition duration-300 ${
-                                            selectedPlayingTime === option
-                                                ? "bg-cyan-500/80 text-white "
-                                                : "border-slate-800/80 bg-slate-800/80"
-                                        }`}
-                                    >
-                                        {option}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-
-
-
-                    <div>
-                        <label className="font-semibold" htmlFor="reserverede">
-                            Bane er booket
-                        </label>
-                        <div className="flex h-12">
-                            <div className="flex items-center w-full rounded-lg gap-6 pr-1">
-                                {courtBookedArray.map(({ label, value }) => (
-                                    <button
-                                        type="button"
-                                        key={label}
-                                        onClick={() => setCourtBooked(value)}
-                                        className={`p-2 w-full rounded-xl transition duration-300 ${
-                                            courtBooked === value
-                                                ? "bg-cyan-500/80 text-white "
-                                                : "border-slate-800/80 bg-slate-800/80"
-                                        }`}
-                                    >
-                                        {label}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="flex flex-col gap-4">
-                        <label className="font-semibold" htmlFor="niveauinterval">
-                            Niveauinterval
-                        </label>
-
-                        <div className="flex flex-col gap-2">
-                            <div className="grid grid-cols-2 items-center text-center w-full">
-                                <label className="font-semibold">Minimum</label>
-                                <label className="font-semibold">Maksimum</label>
-                            </div>
-
-                            <div className="flex h-12">
-                                <div className="flex justify-between items-center w-full rounded-lg gap-2 pr-1">
-                                    <div className="grid grid-cols-2 items-center text-center w-full">
-                                        <div className="flex items-center gap-1 p-4 rounded-xl">
-                                            <ChevronDownIcon
-                                                onClick={decrementMinLevel}
-                                                className="size-10 text-gray-300 cursor-pointer"
-                                            />
-                                            <input
-                                                className="text-center rounded-lg w-full border-slate-800/80 bg-slate-800/80 disabled:text-gray-200 disabled:border-slate-800/80"
-                                                type="number"
-                                                step="0.1"
-                                                min="1.0"
-                                                max="7.0"
-                                                value={levelRange[0].toFixed(1)}
-                                                onChange={handleMinChange}
-                                                disabled
-                                            />
-                                            <ChevronUpIcon
-                                                onClick={incrementMinLevel}
-                                                className="size-10 text-gray-300 cursor-pointer"
-                                            />
-                                        </div>
-
-                                        <div className="flex items-center gap-1 p-4 w-full">
-                                            <ChevronDownIcon
-                                                onClick={decrementMaxLevel}
-                                                className="size-10 text-gray-300 cursor-pointer"
-                                            />
-
-                                            <input
-                                                className="text-center rounded-lg w-full border-slate-800/80 bg-slate-800/80 disabled:text-gray-200 disabled:border-slate-800/80"
-                                                type="number"
-                                                step="0.1"
-                                                min={levelRange[0]}
-                                                max="7.0"
-                                                value={levelRange[1].toFixed(1)}
-                                                onChange={handleMaxChange}
-                                                disabled
-                                            />
-                                            <ChevronUpIcon
-                                                onClick={incrementMaxLevel}
-                                                className="size-10 text-gray-300 cursor-pointer"
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label className="font-semibold" htmlFor="kamptype">
-                            Kamptype
-                        </label>
-                        <div className="flex h-12">
-                            <div className="flex justify-between w-full items-center rounded-lg gap-6 pr-1">
-                                {matchTypeArray.map((option) => (
-                                    <button
-                                        type="button"
-                                        key={option}
-                                        onClick={() => setSelectedMatchType(option)}
-                                        className={`max-lg:w-full lg:w-20 p-2 text-sm rounded-xl transition duration-300 ${
-                                            selectedMatchType === option
-                                                ? "bg-cyan-500/80 text-white "
-                                                : "border-slate-800/80 bg-slate-800/80"
-                                        }`}
-                                    >
-                                        {option}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label className="font-semibold" htmlFor="reserverede">
-                            Reserverede pladser
-                        </label>
-                        <div className="flex h-12">
-                            <div className="flex items-center w-full rounded-lg gap-6 pr-1">
-                                {availableSpotsArray.map((spot) => (
-                                    <button
-                                        type="button"
-                                        key={spot}
-                                        onClick={() => setSelectedReserved(spot)}
-                                        className={`p-2 w-full rounded-xl transition duration-300 ${
-                                            selectedReserved === spot
-                                                ? "bg-cyan-500/80 text-white "
-                                                : "border-slate-800/80 bg-slate-800/80"
-                                        }`}
-                                    >
-                                        {spot}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-
-                        {[...Array(selectedReserved)].map((_, i) => (
-                            <div key={i} className="grid grid-cols-2 gap-2 mt-2">
-                                <input
-                                    type="text"
-                                    placeholder="Spillernavn"
-                                    className="rounded-lg w-full border-slate-800/80 bg-slate-800/80 text-sm"
-                                    value={reservedPlayers[i]?.name ?? ""}
-                                    onChange={(e) => {
-                                        const newPlayers = [...reservedPlayers];
-                                        if (!newPlayers[i]) newPlayers[i] = { name: "", level: (levelRange[0] + levelRange[1]) / 2 };
-                                        newPlayers[i].name = e.target.value;
-                                        setReservedPlayers(newPlayers);
-                                    }}
-                                />
-
-                                <div className="flex items-center gap-1 w-full">
-                                    <ChevronDownIcon
-                                        onClick={() => {
-                                            const updated = [...reservedPlayers];
-                                            updated[i].level = Math.max(levelRange[0], parseFloat((updated[i].level - 0.1).toFixed(1)));
-                                            setReservedPlayers(updated);
-                                        }}
-                                        className="size-10 text-gray-300 cursor-pointer"
-                                    />
-
-                                    <input
-                                        className="text-center rounded-lg w-full"
-                                        type="number"
-                                        step="0.1"
-                                        min={levelRange[0]}
-                                        max={levelRange[1]}
-                                        value={reservedPlayers[i]?.level.toFixed(1) ?? ((levelRange[0] + levelRange[1]) / 2).toFixed(1)}
-                                        onChange={(e) => {
-                                            const updated = [...reservedPlayers];
-                                            updated[i].level = parseFloat(e.target.value);
-                                            setReservedPlayers(updated);
-                                        }}
-                                    />
-
-                                    <ChevronUpIcon
-                                        onClick={() => {
-                                            const updated = [...reservedPlayers];
-                                            updated[i].level = Math.min(levelRange[1], parseFloat((updated[i].level + 0.1).toFixed(1)));
-                                            setReservedPlayers(updated);
-                                        }}
-                                        className="size-10 text-gray-300 cursor-pointer"
-                                    />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-
-                    <div>
-                        <label className="font-semibold" htmlFor="bemærkninger">
-                            Bemærkninger
-                        </label>
-                        <div className="pr-1">
-              <textarea
-                  className="w-full rounded-lg h-12 border-slate-800/80 bg-slate-800/80 resize-none"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-              />
-                        </div>
-                    </div>
+                          {spot}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </div>
 
-                <button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="w-full bg-slate-700 rounded-lg py-2 px-4 text-cyan-500"
-                >
-                    {isSubmitting ? "Gemmer ændringer..." : "Gem kamp"}
-                </button>
-            </form>
+                {[...Array(selectedReserved)].map((_, i) => (
+                  <div key={i} className="grid grid-cols-2 gap-2 mt-2">
+                    <input
+                      type="text"
+                      placeholder="Spillernavn"
+                      className="rounded-lg w-full border-slate-800/80 bg-slate-800/80 text-sm"
+                      value={reservedPlayers[i]?.name ?? ""}
+                      onChange={(e) => {
+                        const newPlayers = [...reservedPlayers];
+                        if (!newPlayers[i])
+                          newPlayers[i] = {
+                            name: "",
+                            level: (levelRange[0] + levelRange[1]) / 2,
+                          };
+                        newPlayers[i].name = e.target.value;
+                        setReservedPlayers(newPlayers);
+                      }}
+                    />
+
+                    <div className="flex items-center gap-1 w-full">
+                      <ChevronDownIcon
+                        onClick={() => {
+                          const updated = [...reservedPlayers];
+                          updated[i].level = Math.max(
+                            levelRange[0],
+                            parseFloat((updated[i].level - 0.1).toFixed(1))
+                          );
+                          setReservedPlayers(updated);
+                        }}
+                        className="size-10 text-gray-300 cursor-pointer"
+                      />
+
+                      <input
+                        className="text-center rounded-lg w-full"
+                        type="number"
+                        step="0.1"
+                        min={levelRange[0]}
+                        max={levelRange[1]}
+                        value={
+                          reservedPlayers[i]?.level.toFixed(1) ??
+                          ((levelRange[0] + levelRange[1]) / 2).toFixed(1)
+                        }
+                        onChange={(e) => {
+                          const updated = [...reservedPlayers];
+                          updated[i].level = parseFloat(e.target.value);
+                          setReservedPlayers(updated);
+                        }}
+                      />
+
+                      <ChevronUpIcon
+                        onClick={() => {
+                          const updated = [...reservedPlayers];
+                          updated[i].level = Math.min(
+                            levelRange[1],
+                            parseFloat((updated[i].level + 0.1).toFixed(1))
+                          );
+                          setReservedPlayers(updated);
+                        }}
+                        className="size-10 text-gray-300 cursor-pointer"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div>
+                <label className="font-semibold" htmlFor="bemærkninger">
+                  Bemærkninger
+                </label>
+                <div className="pr-1">
+                  <textarea
+                    className="w-full rounded-lg h-12 border-slate-800/80 bg-slate-800/80 resize-none"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                  />
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full bg-slate-700 rounded-lg py-2 px-4 text-cyan-500"
+            >
+              {isSubmitting ? "Gemmer ændringer..." : "Gem kamp"}
+            </button>
+          </form>
         </div>
-            </Animation>
-        </>
-    );
+      </Animation>
+    </>
+  );
 };
 
 export default EditMatchPage;
