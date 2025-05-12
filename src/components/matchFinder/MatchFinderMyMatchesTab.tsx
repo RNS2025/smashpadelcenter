@@ -32,7 +32,6 @@ export const MatchFinderMyMatchesTab = () => {
       try {
         if (user?.username) {
           const data = await communityApi.getMatches();
-          console.log(data);
 
           const sortedData = data
             .filter((match) => match.reservedSpots.length !== 3)
@@ -76,7 +75,6 @@ export const MatchFinderMyMatchesTab = () => {
             });
 
           setMatches(sortedData);
-          console.log(sortedData);
         }
         setLoading(false);
       } catch (err) {

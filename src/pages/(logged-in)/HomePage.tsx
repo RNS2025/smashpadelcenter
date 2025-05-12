@@ -147,13 +147,8 @@ export const HomePage = () => {
 
     const initializeNotifications = async () => {
       try {
-        console.log(
-          "Attempting to initialize notifications for:",
-          user.username
-        );
         await setupNotifications(user.username);
         setNotificationsInitialized(true);
-        console.log("Notifications initialized successfully.");
       } catch (error) {
         console.error("Failed to initialize notifications:", error);
         // Optional: Provide user feedback about notification failure

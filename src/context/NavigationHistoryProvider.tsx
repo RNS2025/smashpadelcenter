@@ -17,11 +17,6 @@ const NavigationHistoryProvider: React.FC<{
       history[history.length - 1] !== location.pathname
     ) {
       setHistory((prev) => [...prev, location.pathname]);
-      // Log for debugging
-      console.log("Navigation history updated:", [
-        ...history,
-        location.pathname,
-      ]);
     }
 
     // Limit history size to prevent memory issues
