@@ -117,7 +117,7 @@ export const HomePage = () => {
 
             <HomeScreenCard
               icon={<TrophyIcon className="size-10" aria-hidden="true" />}
-              title="DPF Univers"
+              title="DPF-universet"
               description="Deltag i spændende turneringer"
               link="/turneringer"
             />

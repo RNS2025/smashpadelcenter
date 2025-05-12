@@ -40,6 +40,7 @@ export const ViewEventPage = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [infoDialogVisible, setInfoDialogVisible] = useState(false);
   const [inviteDialogVisible, setInviteDialogVisible] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const useMockData = false;
 
@@ -131,6 +132,7 @@ export const ViewEventPage = () => {
   }, [event]);
 
   const handleJoinEvent = async () => {
+    setIsSubmitting(true)
     if (
       !event ||
       !user?.username ||
@@ -149,8 +151,11 @@ export const ViewEventPage = () => {
       setEvent(updatedEvent);
     } catch (error: any) {
       console.error("Error joining event:", error);
+      setIsSubmitting(false)
       alert(error.response?.data?.message || "Fejl ved tilmelding");
       setError("Fejl ved tilmelding");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -625,8 +630,10 @@ export const ViewEventPage = () => {
             !event!.joinRequests.includes(user.username) && (
               <button
                 onClick={handleJoinEvent}
-                className="w-full bg-slate-700 rounded-lg py-2 px-4 text-cyan-500 text-lg"                  >
-                    Tilmeld arrangement
+                className="w-full bg-slate-700 rounded-lg py-2 px-4 text-cyan-500 text-lg"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Tilmelder..." : "Tilmeld arrangement"}
                   </button>
               )}
 

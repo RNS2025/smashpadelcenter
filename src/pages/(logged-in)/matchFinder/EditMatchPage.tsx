@@ -29,6 +29,7 @@ export const EditMatchPage = () => {
     const [description, setDescription] = useState<string>("");
     const [deadline, setDeadline] = useState<number>(0);
     const [createdAt, setCreatedAt] = useState<string>(new Date().toISOString());
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [reservedPlayers, setReservedPlayers] = useState(
         [] as { name: string; level: number }[]
@@ -78,6 +79,7 @@ export const EditMatchPage = () => {
 
     const handleUpdateMatch = async (event: FormEvent) => {
         event.preventDefault();
+        setIsSubmitting(true);
         if (!user || !matchId) return;
         try {
             const matchData: Omit<PadelMatch, "id"> = {
@@ -110,7 +112,10 @@ export const EditMatchPage = () => {
             navigate(`/makkerbørs/${matchId}`);
         } catch (error) {
             console.error("Error updating match:", error);
+            setIsSubmitting(false);
             alert("Fejl ved opdatering af kamp");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -169,7 +174,7 @@ export const EditMatchPage = () => {
         <HomeBar />
             <Animation>
 
-        <div className="bg-white rounded-xl p-4 text-gray-900 my-2 mx-1">
+                <div className="w-full bg-slate-800/70 rounded-xl p-4 text-gray-300">
             <form className="space-y-10" onSubmit={handleUpdateMatch}>
                 <div className="lg:grid grid-cols-3 gap-4 max-lg:flex max-lg:flex-col">
 
@@ -178,7 +183,7 @@ export const EditMatchPage = () => {
                             Vælg center
                         </label>
                         <select
-                            className="w-full rounded-lg border-gray-900 h-12 pr-1 text-sm"
+                            className="w-full rounded-lg border-slate-800/80 bg-slate-800/80 h-12 pr-1 text-sm"
                             id="center"
                             value={location}
                             onChange={(e) => setLocation(e.target.value)}
@@ -209,7 +214,7 @@ export const EditMatchPage = () => {
                             minTime={setHours(setMinutes(new Date(), 0), 5)}
                             maxTime={setHours(setMinutes(new Date(), 0), 23)}
                             dateFormat="dd. MMMM yyyy, HH:mm"
-                            className="w-full h-12 rounded-lg border-gray-900 text-sm pr-1"
+                            className="w-full h-12 rounded-lg border-slate-800/80 bg-slate-800/80 text-sm pr-1"
                             timeClassName={handleHiddenTimes}
                         />
                     </div>
@@ -219,7 +224,7 @@ export const EditMatchPage = () => {
                             Deadline
                         </label>
                         <select
-                            className="w-full rounded-lg border-gray-900 h-12 pr-1 text-sm"
+                            className="w-full rounded-lg border-slate-800/80 bg-slate-800/80 h-12 pr-1 text-sm"
                             id="center"
                             value={deadline}
                             onChange={(e) => setDeadline(parseInt(e.target.value))}
@@ -252,8 +257,8 @@ export const EditMatchPage = () => {
                                         onClick={() => setSelectedPlayingTime(option)}
                                         className={`p-2 w-full rounded-xl transition duration-300 ${
                                             selectedPlayingTime === option
-                                                ? "bg-cyan-500 text-white"
-                                                : "bg-gray-300"
+                                                ? "bg-cyan-500/80 text-white "
+                                                : "border-slate-800/80 bg-slate-800/80"
                                         }`}
                                     >
                                         {option}
@@ -278,8 +283,8 @@ export const EditMatchPage = () => {
                                         onClick={() => setCourtBooked(value)}
                                         className={`p-2 w-full rounded-xl transition duration-300 ${
                                             courtBooked === value
-                                                ? "bg-cyan-500 text-white"
-                                                : "bg-gray-300"
+                                                ? "bg-cyan-500/80 text-white "
+                                                : "border-slate-800/80 bg-slate-800/80"
                                         }`}
                                     >
                                         {label}
@@ -306,10 +311,10 @@ export const EditMatchPage = () => {
                                         <div className="flex items-center gap-1 p-4 rounded-xl">
                                             <ChevronDownIcon
                                                 onClick={decrementMinLevel}
-                                                className="size-10 text-black cursor-pointer"
+                                                className="size-10 text-gray-300 cursor-pointer"
                                             />
                                             <input
-                                                className="text-center rounded-lg w-full"
+                                                className="text-center rounded-lg w-full border-slate-800/80 bg-slate-800/80 disabled:text-gray-200 disabled:border-slate-800/80"
                                                 type="number"
                                                 step="0.1"
                                                 min="1.0"
@@ -320,18 +325,18 @@ export const EditMatchPage = () => {
                                             />
                                             <ChevronUpIcon
                                                 onClick={incrementMinLevel}
-                                                className="size-10 text-black cursor-pointer"
+                                                className="size-10 text-gray-300 cursor-pointer"
                                             />
                                         </div>
 
                                         <div className="flex items-center gap-1 p-4 w-full">
                                             <ChevronDownIcon
                                                 onClick={decrementMaxLevel}
-                                                className="size-10 text-black cursor-pointer"
+                                                className="size-10 text-gray-300 cursor-pointer"
                                             />
 
                                             <input
-                                                className="text-center rounded-lg w-full"
+                                                className="text-center rounded-lg w-full border-slate-800/80 bg-slate-800/80 disabled:text-gray-200 disabled:border-slate-800/80"
                                                 type="number"
                                                 step="0.1"
                                                 min={levelRange[0]}
@@ -342,7 +347,7 @@ export const EditMatchPage = () => {
                                             />
                                             <ChevronUpIcon
                                                 onClick={incrementMaxLevel}
-                                                className="size-10 text-black cursor-pointer"
+                                                className="size-10 text-gray-300 cursor-pointer"
                                             />
                                         </div>
                                     </div>
@@ -364,8 +369,8 @@ export const EditMatchPage = () => {
                                         onClick={() => setSelectedMatchType(option)}
                                         className={`max-lg:w-full lg:w-20 p-2 text-sm rounded-xl transition duration-300 ${
                                             selectedMatchType === option
-                                                ? "bg-cyan-500 text-white"
-                                                : "bg-gray-300"
+                                                ? "bg-cyan-500/80 text-white "
+                                                : "border-slate-800/80 bg-slate-800/80"
                                         }`}
                                     >
                                         {option}
@@ -388,8 +393,8 @@ export const EditMatchPage = () => {
                                         onClick={() => setSelectedReserved(spot)}
                                         className={`p-2 w-full rounded-xl transition duration-300 ${
                                             selectedReserved === spot
-                                                ? "bg-cyan-500 text-white"
-                                                : "bg-gray-300"
+                                                ? "bg-cyan-500/80 text-white "
+                                                : "border-slate-800/80 bg-slate-800/80"
                                         }`}
                                     >
                                         {spot}
@@ -403,7 +408,7 @@ export const EditMatchPage = () => {
                                 <input
                                     type="text"
                                     placeholder="Spillernavn"
-                                    className="rounded-lg w-full text-sm"
+                                    className="rounded-lg w-full border-slate-800/80 bg-slate-800/80 text-sm"
                                     value={reservedPlayers[i]?.name ?? ""}
                                     onChange={(e) => {
                                         const newPlayers = [...reservedPlayers];
@@ -420,7 +425,7 @@ export const EditMatchPage = () => {
                                             updated[i].level = Math.max(levelRange[0], parseFloat((updated[i].level - 0.1).toFixed(1)));
                                             setReservedPlayers(updated);
                                         }}
-                                        className="size-10 text-black cursor-pointer"
+                                        className="size-10 text-gray-300 cursor-pointer"
                                     />
 
                                     <input
@@ -443,7 +448,7 @@ export const EditMatchPage = () => {
                                             updated[i].level = Math.min(levelRange[1], parseFloat((updated[i].level + 0.1).toFixed(1)));
                                             setReservedPlayers(updated);
                                         }}
-                                        className="size-10 text-black cursor-pointer"
+                                        className="size-10 text-gray-300 cursor-pointer"
                                     />
                                 </div>
                             </div>
@@ -456,7 +461,7 @@ export const EditMatchPage = () => {
                         </label>
                         <div className="pr-1">
               <textarea
-                  className="w-full rounded-lg h-12 resize-none"
+                  className="w-full rounded-lg h-12 border-slate-800/80 bg-slate-800/80 resize-none"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
               />
@@ -466,9 +471,10 @@ export const EditMatchPage = () => {
 
                 <button
                     type="submit"
-                    className="bg-cyan-500 rounded-lg py-2 px-4 text-white"
+                    disabled={isSubmitting}
+                    className="w-full bg-slate-700 rounded-lg py-2 px-4 text-cyan-500"
                 >
-                    Gem ændringer
+                    {isSubmitting ? "Gemmer ændringer..." : "Gem kamp"}
                 </button>
             </form>
         </div>

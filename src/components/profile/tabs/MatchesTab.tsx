@@ -158,8 +158,8 @@ const MatchesTab = () => {
           })}
         </ul>
       ) : (
-        <div className="border border-gray-900 p-2 rounded-lg text-gray-800">
-          <p className="py-4 text-center text-gray-600">
+        <div className="border p-2 rounded-lg text-gray-300">
+          <p className="py-4 text-center">
             Ingen tidligere kampe.
           </p>
         </div>

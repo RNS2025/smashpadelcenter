@@ -53,7 +53,7 @@ export const ProfileHeader = ({ profile, rankedInProfile }: { profile: User | nu
                     </div>
 
 
-                    {profile.email && (
+                    {profile.email && profile.username === user?.username && (
                     <div className="flex gap-2 text-sm">
                         <EnvelopeIcon className="h-6 text-gray-300" />
                         <p className="text-gray-300">{profile.email}</p>
@@ -70,8 +70,8 @@ export const ProfileHeader = ({ profile, rankedInProfile }: { profile: User | nu
                     </div>
                     )}
 
-                    {profile.phoneNumber && (
-                    <div className="flex gap-2">
+                    {profile.phoneNumber && profile.username === user?.username && (
+                    <div className="flex gap-2 text-sm">
                         <PhoneIcon className="h-6 text-gray-300" />
                         <p className="text-gray-300">{profile.phoneNumber}</p>
                     </div>

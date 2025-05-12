@@ -21,7 +21,7 @@ export const CreateMatchForm = () => {
   const [selectedReserved, setSelectedReserved] = useState<number>(0);
   const [courtBooked, setCourtBooked] = useState<boolean>(false);
   const [selectedPlayingTime, setSelectedPlayingTime] = useState<number>(90);
-  const [levelRange, setLevelRange] = useState<[number, number]>([user?.skillLevel || 2.0, (user?.skillLevel || 2.0) + 1]);
+  const [levelRange, setLevelRange] = useState<[number, number]>([user?.skillLevel && user?.skillLevel - 0.2 || 2.0, (user?.skillLevel || 2.0) + 0.2]);
   const [selectedMatchType, setSelectedMatchType] = useState<string>("Herre");
   const [location, setLocation] = useState<string>("SMASH Padelcenter Horsens");
   const [description, setDescription] = useState<string>("");

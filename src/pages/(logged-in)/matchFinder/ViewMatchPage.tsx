@@ -40,6 +40,7 @@ export const ViewMatchPage = () => {
   const [infoDialogVisible, setInfoDialogVisible] = useState(false);
   const [inviteDialogVisible, setInviteDialogVisible] = useState(false);
   const [profilesLoading, setProfilesLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const profileCache = useMemo(() => new Map<string, User>(), []);
 
   // Retry helper function
@@ -91,7 +92,6 @@ export const ViewMatchPage = () => {
           match.id,
           username
         );
-        co.log("Updated match after confirm:", updatedMatch);
         if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
           setError("Invalid match data returned");
           alert("Der opstod en fejl – prøv igen.");
@@ -451,6 +451,7 @@ export const ViewMatchPage = () => {
   }, [match, match?.joinRequests, profileCache]);
 
   const handleJoinMatch = async () => {
+    setIsSubmitting(true);
     if (
       !match ||
       !user?.username ||
@@ -469,8 +470,11 @@ export const ViewMatchPage = () => {
       setMatch(updatedMatch);
     } catch (error: any) {
       console.error("Error joining match:", error);
+      setIsSubmitting(false);
       alert(error.response?.data?.message || "Fejl ved tilmelding");
       setError("Fejl ved tilmelding");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -725,8 +729,9 @@ export const ViewMatchPage = () => {
               <button
                 onClick={handleJoinMatch}
                 className="w-full bg-slate-700 rounded-lg py-2 px-4 text-cyan-500 text-lg"
+                disabled={isSubmitting}
               >
-                Tilmeld kamp
+                {isSubmitting ? "Tilmelder..." : "Tilmeld kamp"}
               </button>
             )}
 

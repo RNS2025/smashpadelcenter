@@ -22,8 +22,8 @@ export const ProfileTabMenu = ({profile, user}: {
                     Overblik
                 </NavLink>
 
-                {profile.username === user?.username && (
                     <>
+                        {profile.username === user?.username && (
                         <NavLink
                         to={`/profil/${profile.username}/grupper`}
                         className={`font-semibold inline-flex items-center justify-center h-8 shrink-0 rounded-full gap-2 px-2 text-sm max-sm:text-xs
@@ -33,6 +33,7 @@ export const ProfileTabMenu = ({profile, user}: {
                     >
                         Grupper
                     </NavLink>
+                        )}
 
                         <NavLink
                             to={`/profil/${profile.username}/kamphistorik`}
@@ -44,6 +45,7 @@ export const ProfileTabMenu = ({profile, user}: {
                             Kamphistorik
                         </NavLink>
 
+                        {profile.username === user?.username && (
                         <NavLink
                         to={`/profil/${profile.username}/rediger`}
                         className={`font-semibold inline-flex items-center justify-center h-8 shrink-0 rounded-full gap-2 px-2 text-sm max-sm:text-xs
@@ -53,8 +55,8 @@ export const ProfileTabMenu = ({profile, user}: {
                     >
                         Rediger
                     </NavLink>
+                            )}
                     </>
-            )}
             </nav>
         </div>
     );

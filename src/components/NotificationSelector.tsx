@@ -148,7 +148,7 @@ const NotificationSelector: React.FC<NotificationSelectorProps> = ({
               align="center"
               mt={1}
             >
-              Preferences saved successfully!
+              Ændringer gemt!
             </Typography>
           )}
 
@@ -159,7 +159,7 @@ const NotificationSelector: React.FC<NotificationSelectorProps> = ({
               align="center"
               mt={1}
             >
-              Failed to save preferences. Please try again.
+              Ændringerne kunne ikke gemmes. Prøv igen.
             </Typography>
           )}
         </Box>

@@ -33,7 +33,8 @@ export const MatchFinderMyMatchesTab = () => {
         if (user?.username) {
           const data = await communityApi.getMatches();
 
-          const sortedData = data
+          const sortedData = data.
+          filter((match => new Date(match.matchDateTime) > new Date() && (match.participants.length + match.reservedSpots.length === match.totalSpots)))
             .filter((match) => {
               const matchEnd = new Date(match.endTime);
               const isFull =

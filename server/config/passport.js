@@ -11,12 +11,12 @@ passport.use(
       const user = await User.findOne({ username, provider: "local" });
       if (!user) {
         return done(null, false, {
-          message: "Incorrect username or not a local account.",
+          message: "Forkert brugernavn eller adgangskode.",
         });
       }
       const isMatch = await user.comparePassword(password);
       if (!isMatch) {
-        return done(null, false, { message: "Incorrect password." });
+        return done(null, false, { message: "Forkert adgangskode." });
       }
       return done(null, user);
     } catch (err) {
