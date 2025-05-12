@@ -116,7 +116,7 @@ const homeScreenItems = [
     description: "Se resultater fra Lunar ligaen",
     link: "/lunarGlobal",
     icon: <RectangleGroupIcon className="size-10" aria-hidden="true" />, // Maybe a more sports-related icon?
-    adminOnly: false,
+    adminOnly: true,
   },
   {
     title: "Admin Panel",

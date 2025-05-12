@@ -613,7 +613,7 @@ export const ViewMatchPage = () => {
         />
       </Overlay>
 
-      <HomeBar />
+      <HomeBar backPage="/makkerbørs/allekampe"/>
       <Animation>
         <div className="mx-4 my-10 space-y-4 text-sm">
           <h1

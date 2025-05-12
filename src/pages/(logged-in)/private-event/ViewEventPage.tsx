@@ -319,7 +319,7 @@ export const ViewEventPage = () => {
         <Helmet>
           <title>Detaljer for arrangement</title>
         </Helmet>
-        <HomeBar />
+        <HomeBar backPage="/privat-arrangementer/minearrangementer"/>
         <Animation>
           <div className="mx-4 my-10">{error || "Arrangement ikke fundet"}</div>
         </Animation>
