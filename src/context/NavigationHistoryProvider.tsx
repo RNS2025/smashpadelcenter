@@ -46,6 +46,8 @@ const NavigationHistoryProvider: React.FC<{
     const primaryPages = [
       "/makkerbørs",
       "/makkerb%C3%B8rs/allekampe",
+      "/makkerb%C3%B8rs/minekampe",
+      "/makkerb%C3%B8rs/afventer",
       "/privat-arrangementer",
       "/holdligaer",
       "/turneringer",
