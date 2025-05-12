@@ -28,8 +28,6 @@ export const TournamentRegulationsTab = () => {
           throw new Error("Kunne ikke finde turneringens ID");
         }
 
-        console.log(`Fetching regulations for tournament ID: ${tournamentId}`);
-
         // Step 3: Fetch the regulations for this tournament
         const response = await fetch(
           `https://api.rankedin.com/v1/tournament/GetRegulationsAsync?id=${tournamentId}`

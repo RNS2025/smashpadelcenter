@@ -266,11 +266,6 @@ const rankedInService = {
         },
       });
 
-      console.log(
-        "RankedInService Frontend - Response from API:",
-        response.data
-      );
-
       // Extract the matches from the response
       const matches = response.data.Matches || [];
 

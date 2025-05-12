@@ -65,12 +65,10 @@ export const ViewMatchPage = () => {
     async (username: string) => {
       if (!match) return;
       try {
-        console.log("Confirming join:", { matchId: match.id, username });
         const updatedMatch = await communityApi.confirmJoinMatch(
           match.id,
           username
         );
-        console.log("Updated match after confirm:", updatedMatch);
         if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
           setError("Invalid match data returned");
           alert("Der opstod en fejl – prøv igen.");
@@ -93,7 +91,7 @@ export const ViewMatchPage = () => {
           match.id,
           username
         );
-        console.log("Updated match after confirm:", updatedMatch);
+        co.log("Updated match after confirm:", updatedMatch);
         if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
           setError("Invalid match data returned");
           alert("Der opstod en fejl – prøv igen.");
@@ -116,7 +114,6 @@ export const ViewMatchPage = () => {
           match.id,
           username
         );
-        console.log("Updated match after confirm:", updatedMatch);
         if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
           setError("Invalid match data returned");
           alert("Der opstod en fejl – prøv igen.");
@@ -349,7 +346,6 @@ export const ViewMatchPage = () => {
   usePolling(
     fetchMatch,
     (matchData) => {
-      console.log("Updating match:", matchData);
       setMatch(matchData);
     },
     {
@@ -466,7 +462,6 @@ export const ViewMatchPage = () => {
         match.id,
         user?.username
       );
-      console.log("Updated match after join:", updatedMatch);
       if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
         setError("Invalid match data returned");
         alert("Der opstod en fejl – prøv igen.");
@@ -486,7 +481,6 @@ export const ViewMatchPage = () => {
         match.id,
         username
       );
-      console.log("Updated match after confirm:", updatedMatch);
       if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
         setError("Invalid match data returned");
         alert("Der opstod en fejl – prøv igen.");
@@ -506,7 +500,6 @@ export const ViewMatchPage = () => {
         match.id,
         username
       );
-      console.log("Updated match after confirm:", updatedMatch);
       if (!updatedMatch || !Array.isArray(updatedMatch.participants)) {
         setError("Invalid match data returned");
         alert("Der opstod en fejl – prøv igen.");

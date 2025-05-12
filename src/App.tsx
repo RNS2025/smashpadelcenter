@@ -105,7 +105,6 @@ function AppContent() {
     const handleAppInstalled = () => {
       setIsAppInstalled(true);
       setDeferredPrompt(null);
-      console.log("PWA was installed");
     };
 
     window.addEventListener("appinstalled", handleAppInstalled);

@@ -8,8 +8,6 @@ const ResetPasswordPage: React.FC = () => {
   // This extracts the token from URL
   const { token } = useParams<{ token: string }>();
 
-  console.log("Reset password token:", token); // Add this for debugging
-
   const navigate = useNavigate();
 
   const [password, setPassword] = useState("");

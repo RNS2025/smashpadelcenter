@@ -30,7 +30,6 @@ const OverviewTab = () => {
   const fetchMatches = async () => {
     if (!profile) return { upcoming: [], former: [] };
     const allMatches = await communityApi.getMatchesByUser(profile.username);
-    console.log("Fetched matches inside overview:", allMatches);
     const filteredMatches = allMatches.filter(
       (match) =>
         (profile && match.participants.includes(profile.username)) ||

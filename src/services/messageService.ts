@@ -6,8 +6,6 @@ const API_BASE_URL =
     ? "https://smashpadelcenter-api.onrender.com/api/v1"
     : "http://localhost:3001/api/v1";
 
-console.log(`MessageService using API at: ${API_BASE_URL}`);
-
 const api = axios.create({
   baseURL: API_BASE_URL,
   withCredentials: true,

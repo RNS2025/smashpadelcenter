@@ -6,7 +6,8 @@ import {
   ReactNode,
   ChangeEvent,
   FormEvent,
-  useCallback, Dispatch,
+  useCallback,
+  Dispatch,
   SetStateAction,
 } from "react";
 import { User } from "../types/user";
@@ -39,7 +40,13 @@ const ProfileContext = createContext<ProfileContextValue | undefined>(
   undefined
 );
 
-export function ProfileProvider({ children, username }: { children: ReactNode; username: string }) {
+export function ProfileProvider({
+  children,
+  username,
+}: {
+  children: ReactNode;
+  username: string;
+}) {
   const [profile, setProfile] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -59,13 +66,25 @@ export function ProfileProvider({ children, username }: { children: ReactNode; u
       const now = new Date();
 
       const upcomingMatches = userMatches
-          .filter((match) => new Date(match.matchDateTime) > now)
-          .sort((a, b) => new Date(a.matchDateTime).getTime() - new Date(b.matchDateTime).getTime());
+        .filter((match) => new Date(match.matchDateTime) > now)
+        .sort(
+          (a, b) =>
+            new Date(a.matchDateTime).getTime() -
+            new Date(b.matchDateTime).getTime()
+        );
 
       const formerMatches = userMatches
-          .filter((match) => new Date(match.endTime) <= now)
-          .filter((match) => match.participants.length + match.reservedSpots.length === match.totalSpots)
-          .sort((a, b) => new Date(b.matchDateTime).getTime() - new Date(a.matchDateTime).getTime());
+        .filter((match) => new Date(match.endTime) <= now)
+        .filter(
+          (match) =>
+            match.participants.length + match.reservedSpots.length ===
+            match.totalSpots
+        )
+        .sort(
+          (a, b) =>
+            new Date(b.matchDateTime).getTime() -
+            new Date(a.matchDateTime).getTime()
+        );
 
       setMatches({
         upcoming: upcomingMatches,
@@ -77,7 +96,6 @@ export function ProfileProvider({ children, username }: { children: ReactNode; u
       setMatchesLoading(false);
     }
   }, []);
-
 
   useEffect(() => {
     const fetchData = async () => {
@@ -92,7 +110,9 @@ export function ProfileProvider({ children, username }: { children: ReactNode; u
           setFormData(parsed);
         }
 
-        const profileData = await userProfileService.getOrCreateUserProfile(username);
+        const profileData = await userProfileService.getOrCreateUserProfile(
+          username
+        );
         setProfile(profileData);
         setFormData(profileData);
         localStorage.setItem("userProfile", JSON.stringify(profileData));
@@ -107,14 +127,11 @@ export function ProfileProvider({ children, username }: { children: ReactNode; u
     fetchData().then();
   }, [username]);
 
-  
   useEffect(() => {
     if (username && profile) {
-      console.log("Fetching matches for", username);
       fetchMatches().then();
     }
   }, [username, profile, fetchMatches]);
-
 
   const refreshMatches = async () => {
     await fetchMatches();
@@ -141,15 +158,12 @@ export function ProfileProvider({ children, username }: { children: ReactNode; u
       setIsSubmitting(false);
       return;
     }
-    console.log("Submitting formData:", formData);
     try {
       if (username) {
-        console.log("Updating profile for username:", username);
         await userProfileService.updateUserProfile(username, formData);
         const updated = await userProfileService.getOrCreateUserProfile(
-            username
+          username
         );
-        console.log("Updated profile:", updated);
         setProfile(updated);
         setFormData(updated);
         localStorage.setItem("userProfile", JSON.stringify(updated));

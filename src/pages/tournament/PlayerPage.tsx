@@ -27,20 +27,17 @@ const PlayerPage = () => {
       }
 
       try {
-        console.log("Fetching player data for:", { playerId, rowId });
         const playerMatches = await rankedInService.getPlayerMatches({
           playerId,
           rowId: rowId,
           language: "da",
         });
-        console.log("Player matches:", playerMatches);
         setMatches(playerMatches);
 
         const playerDetails = await rankedInService.getPlayerDetails(
           playerId,
           "da"
         );
-        console.log("Player details:", playerDetails);
         setPlayerData(playerDetails);
       } catch (err) {
         setError("Kunne ikke hente spillerdata.");
@@ -74,7 +71,7 @@ const PlayerPage = () => {
 
   return (
     <>
-        <HomeBar />
+      <HomeBar />
       <Animation>
         <div className="mx-auto p-6 max-w-4xl">
           {/* Player Profile Section */}

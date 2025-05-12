@@ -13,13 +13,11 @@ export function urlBase64ToUint8Array(base64String: string): Uint8Array {
 
 export async function setupNotifications(userId: string): Promise<void> {
   if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-    console.log("Push notifications not supported in this browser.");
     return;
   }
 
   try {
     const registration = await navigator.serviceWorker.register("/sw.js");
-    console.log("Service Worker registered:", registration.scope);
 
     // Check current permission state
     if (Notification.permission === "granted") {
@@ -32,11 +30,7 @@ export async function setupNotifications(userId: string): Promise<void> {
       const permission = await Notification.requestPermission();
       if (permission === "granted") {
         await subscribeUser(registration, userId);
-      } else {
-        console.log("Notification permission denied.");
       }
-    } else {
-      console.log("Notification permission previously denied.");
     }
   } catch (error) {
     console.error("Notification setup failed:", error);
@@ -62,13 +56,7 @@ export async function sendNotification(
       category,
     };
 
-    const response = await api.post("/notify", payload);
-
-    if (response.status === 200) {
-      console.log("Notification sent successfully.");
-    } else {
-      console.error("Failed to send notification:", response.data);
-    }
+    await api.post("/notify", payload);
   } catch (error) {
     console.error("Error sending notification:", error);
     throw error;
@@ -93,16 +81,11 @@ async function subscribeUser(
       applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
     });
 
-    // Log subscription object for debugging
-    console.log("Subscription object:", subscription.toJSON());
-
     // Send subscription to server
     await api.post("/subscribe", {
       subscription: subscription.toJSON(),
       userId,
     });
-
-    console.log("User subscribed to notifications with userId:", userId);
   } catch (error) {
     console.error("Failed to subscribe:", error);
     throw error;

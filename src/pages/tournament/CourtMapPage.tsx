@@ -49,7 +49,6 @@ export const CourtMapPage = () => {
         }
 
         setUpcomingTournamentEventId(eventId);
-        console.log("Upcoming tournament fetched, eventId:", eventId);
         setLoadingTournament(false);
       } catch (err) {
         console.error("Error fetching upcoming tournament:", err);
@@ -79,12 +78,6 @@ export const CourtMapPage = () => {
             selectedCourtLabel
           );
 
-        console.log(
-          "Fetched matches for court:",
-          ongoingMatch,
-          upcomingMatch,
-          secondUpcomingMatch
-        );
         setOnGoingMatch(ongoingMatch);
         setUpcommingMatch(upcomingMatch);
         setSecondUpcomingMatch(secondUpcomingMatch || null);

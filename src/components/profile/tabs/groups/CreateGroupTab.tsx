@@ -33,8 +33,6 @@ export const CreateGroupTab = () => {
 
   useEffect(() => {
     const fetchUsers = async () => {
-      console.log("CreateGroupTab: Fetching users...");
-
       setAllUsers([]); // Reset allUsers
       setSelectedUsers([]); // Reset selectedUsers
       setGroupName(""); // Reset groupName
@@ -48,19 +46,16 @@ export const CreateGroupTab = () => {
       }
 
       if (useMockData) {
-        console.log("Using mock data");
         const filteredMockUsers = mockUsers.filter(
           (u) => u.username !== user.username
         );
         setAllUsers(filteredMockUsers);
       } else {
         try {
-          console.log("Fetching users from API");
           const response = await userProfileService.getAllUsers();
           const filteredResponse = (response || []).filter(
             (u) => u.username !== user.username
           );
-          console.log("Fetched users:", filteredResponse);
           setAllUsers(filteredResponse);
         } catch (error) {
           console.error("Error fetching users:", error);
@@ -70,7 +65,6 @@ export const CreateGroupTab = () => {
     };
     fetchUsers().then();
   }, [useMockData, user?.username]);
-
 
   const handleCreateGroup = async (event: FormEvent) => {
     event.preventDefault();
@@ -195,7 +189,9 @@ export const CreateGroupTab = () => {
                       className="bg-cyan-100 text-cyan-700 px-3 py-1 rounded-full text-sm"
                     >
                       <h1 className="truncate">
-                        {member.fullName ? `${member.fullName} (${member.username})` : member.username}
+                        {member.fullName
+                          ? `${member.fullName} (${member.username})`
+                          : member.username}
                       </h1>
                     </div>
                   ))}

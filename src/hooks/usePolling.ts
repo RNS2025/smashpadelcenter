@@ -30,7 +30,6 @@ const usePolling = <T>(
     const handleVisibilityChange = () => {
       const visible = document.visibilityState === "visible";
       setIsVisible(visible);
-      console.log("Visibility changed:", visible);
     };
 
     document.addEventListener("visibilitychange", handleVisibilityChange);
@@ -56,7 +55,6 @@ const usePolling = <T>(
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
         intervalRef.current = null;
-        console.log("Polling stopped: page hidden or disabled");
       }
       return;
     }
@@ -68,7 +66,6 @@ const usePolling = <T>(
       }
 
       try {
-        console.log("Polling match data");
         const data = await fetchFn();
         lastPollTime.current = now;
 

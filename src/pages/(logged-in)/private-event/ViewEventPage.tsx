@@ -60,7 +60,6 @@ export const ViewEventPage = () => {
 
       try {
         const fetched = await communityApi.getEventById(eventId);
-        console.log(fetched);
         setEvent(fetched);
       } catch (err) {
         console.error("Fejl ved hentning af event:", err);
@@ -143,7 +142,6 @@ export const ViewEventPage = () => {
         event.id,
         user?.username
       );
-      console.log("Updated event after join:", updatedEvent);
       if (!updatedEvent || !Array.isArray(updatedEvent.participants)) {
         setError("Invalid event data returned");
         alert("Der opstod en fejl – prøv igen.");
@@ -163,7 +161,6 @@ export const ViewEventPage = () => {
         event.id,
         participant
       );
-      console.log("Updated event after confirm:", updatedEvent);
       if (!updatedEvent || !Array.isArray(updatedEvent.participants)) {
         setError("Invalid event data returned");
         alert("Der opstod en fejl – prøv igen.");
@@ -187,7 +184,6 @@ export const ViewEventPage = () => {
           event.id,
           username
         );
-        console.log("Updated event after confirm:", updatedEvent);
         if (!updatedEvent || !Array.isArray(updatedEvent.participants)) {
           setError("Invalid event data returned");
           alert("Der opstod en fejl – prøv igen.");
@@ -227,7 +223,6 @@ export const ViewEventPage = () => {
         event.id,
         username
       );
-      console.log("Updated event after reject:", updatedEvent);
       if (!updatedEvent || !Array.isArray(updatedEvent.participants)) {
         setError("Invalid event data returned");
         alert("Der opstod en fejl – prøv igen.");
@@ -247,7 +242,6 @@ export const ViewEventPage = () => {
         event.id,
         username
       );
-      console.log("Updated event after accept:", updatedEvent);
       if (!updatedEvent || !Array.isArray(updatedEvent.participants)) {
         setError("Invalid event data returned");
         alert("Der opstod en fejl – prøv igen.");
@@ -271,7 +265,6 @@ export const ViewEventPage = () => {
           event.id,
           username
         );
-        console.log("Updated event after removing player:", updatedEvent);
         setEvent(updatedEvent);
       }
     } catch (error: any) {
