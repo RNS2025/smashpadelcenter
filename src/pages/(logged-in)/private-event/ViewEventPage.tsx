@@ -23,9 +23,11 @@ import {
 } from "@heroicons/react/24/outline";
 import mockEvents from "../../../utils/mock/mockEvents.ts";
 import userProfileService from "../../../services/userProfileService.ts";
-import EventInvitedPlayersDialog from "../../../components/private-event/misc/EventInvitePlayersDialog.tsx";
+import EventInvitePlayersDialog from "../../../components/private-event/misc/EventInvitePlayersDialog.tsx";
 import { XIcon } from "lucide-react";
 import { createICSFile, downloadICSFile } from "../../../utils/ICSFile.ts";
+import Overlay from "../../../components/misc/Overlay.tsx";
+import EventShowParticipantsDialog from "../../../components/private-event/misc/EventShowParticipantsDialog.tsx";
 
 export const ViewEventPage = () => {
   const { user } = useUser();
@@ -40,6 +42,7 @@ export const ViewEventPage = () => {
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [infoDialogVisible, setInfoDialogVisible] = useState(false);
   const [inviteDialogVisible, setInviteDialogVisible] = useState(false);
+  const [showParticipants, setShowParticipants] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const useMockData = false;
@@ -338,21 +341,12 @@ export const ViewEventPage = () => {
         <title>Detaljer for arrangement</title>
       </Helmet>
 
-      <div
-        onClick={() => setInfoDialogVisible(false)}
-        className={`min-h-screen fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center ${
-          !infoDialogVisible ? "hidden" : ""
-        }`}
-      >
+      <Overlay isVisible={infoDialogVisible}>
         <PlayerInfoDialog user={selectedUser!} />
-      </div>
+      </Overlay>
 
-      <div
-        className={`min-h-screen fixed inset-0 z-50 bg-black bg-opacity-60 flex items-center justify-center ${
-          !inviteDialogVisible ? "hidden" : ""
-        }`}
-      >
-        <EventInvitedPlayersDialog
+      <Overlay isVisible={inviteDialogVisible}>
+        <EventInvitePlayersDialog
           event={event}
           onInvite={async () => {
             setInviteDialogVisible(false);
@@ -362,18 +356,23 @@ export const ViewEventPage = () => {
             setInviteDialogVisible(false);
           }}
         />
-      </div>
+      </Overlay>
+      
+      <Overlay isVisible={showParticipants}>
+        <EventShowParticipantsDialog event={event} onClose={() => setShowParticipants(false)} />
+      </Overlay>
 
       <HomeBar />
       <Animation>
         <div className="mx-4 my-10 space-y-4 text-sm">
+          <h1 className="text-center font-semibold text-xl">{event.title}</h1>
           <h1
             className={`text-center font-semibold ${
               totalLength > 31
-                ? "text-lg"
-                : totalLength > 37
                 ? "text-md"
-                : "text-xl"
+                : totalLength > 37
+                ? "text-sm"
+                : "text-lg"
             }`}
           >
             {safeFormatDate(
@@ -383,12 +382,9 @@ export const ViewEventPage = () => {
             - {safeFormatDate(event.endTime, "HH:mm")}
           </h1>
 
-          <h1 className="text-center text-gray-500 italic text-sm">
-            Tryk på et spillernavn for at se mere information
-          </h1>
 
           {/* Participants */}
-          {participantProfiles.map((profile) => (
+          {participantProfiles.slice(0, 1).map((profile) => (
             <>
               <div className="flex items-center gap-2">
                 <div
@@ -433,51 +429,6 @@ export const ViewEventPage = () => {
               </div>
             </>
           ))}
-
-          {/* Empty spots */}
-          {event.totalSpots > 8 ? (
-            <div className="grid grid-cols-3 gap-2">
-              {[...Array(event.totalSpots - event.participants.length)].map(
-                (_, index) => (
-                  <div
-                    key={`empty-${index}`}
-                    className="border border-gray-500 rounded flex items-center px-1 py-2"
-                  >
-                    <UserCircleIcon className="size-10 text-gray-500" />
-                    <div className="w-full pr-1 truncate">
-                      <h1 className="text-sm text-gray-500">Ledig plads</h1>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="bg-gray-500 text-white rounded-full flex items-center justify-center size-5">
-                        ?
-                      </div>
-                    </div>
-                  </div>
-                )
-              )}
-            </div>
-          ) : (
-            <>
-              {[...Array(event.totalSpots - event.participants.length)].map(
-                (_, index) => (
-                  <div
-                    key={`empty-${index}`}
-                    className="border border-gray-500 rounded flex items-center px-1 py-2"
-                  >
-                    <UserCircleIcon className="size-20 text-gray-500" />
-                    <div className="w-full pr-1 truncate">
-                      <h1 className="text-xl text-gray-500">Ledig plads</h1>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="bg-gray-500 text-white rounded-full flex items-center justify-center size-12">
-                        ?
-                      </div>
-                    </div>
-                  </div>
-                )
-              )}
-            </>
-          )}
 
           {/* Join requests (visible to creator) */}
           {event.username === user?.username &&
@@ -545,7 +496,7 @@ export const ViewEventPage = () => {
 
           <div className="grid grid-cols-2 text-center text-gray-300 gap-3">
             <div
-              className={`bg-white rounded flex justify-center items-center gap-1 py-4 ${
+              className={`border-slate-800/80 bg-slate-800/80 rounded flex justify-center items-center gap-1 py-4 ${
                 !event.level ? "hidden" : ""
               }`}
             >
@@ -582,6 +533,11 @@ export const ViewEventPage = () => {
                 {event.eventFormat}
               </h1>
             </div>
+          </div>
+
+          <div className="border-slate-800/80 bg-slate-800/80 rounded w-full text-gray-300 p-4 flex justify-center gap-2 text-xl">
+            <h1 className="font-semibold">Antal pladser:</h1>
+            <h1>{event.participants.length} / {event.totalSpots}</h1>
           </div>
 
           {event.price && event.price > 0 && (
@@ -622,6 +578,14 @@ export const ViewEventPage = () => {
           </div>
 
           {/* Action buttons */}
+
+          <button
+              onClick={() => setShowParticipants(true)}
+              className="w-full bg-slate-700 rounded-lg py-2 px-4 text-yellow-500 text-lg"
+          >
+            Se deltagere
+          </button>
+
           {user?.username &&
             event!.username !== user.username &&
             !event!.participants.includes(user.username) &&

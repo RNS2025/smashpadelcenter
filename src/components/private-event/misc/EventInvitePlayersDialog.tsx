@@ -6,7 +6,7 @@ import { PrivateEvent } from "../../../types/PrivateEvent.ts";
 import { DaoGroupUser } from "../../../types/daoGroupAllUsers.ts";
 import { useUser } from "../../../context/UserContext.tsx";
 
-export const EventInvitedPlayersDialog = ({
+export const EventInvitePlayersDialog = ({
   event,
   onInvite,
   onClose,
@@ -207,4 +207,4 @@ export const EventInvitedPlayersDialog = ({
   );
 };
 
-export default EventInvitedPlayersDialog;
+export default EventInvitePlayersDialog;

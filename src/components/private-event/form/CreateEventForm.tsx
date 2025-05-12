@@ -19,7 +19,7 @@ import {
   getNextHalfHour,
   handleHiddenTimes,
 } from "../../../utils/dateUtils.ts";
-import { ChevronDownIcon, ChevronUpIcon } from "@heroicons/react/24/outline";
+import {ChevronDoubleDownIcon, ChevronDoubleUpIcon, ChevronDownIcon, ChevronUpIcon} from "@heroicons/react/24/outline";
 
 registerLocale("da", da);
 
@@ -238,6 +238,10 @@ export const CreateEventForm = () => {
                 Antal pladser
               </label>
               <div className="flex items-center gap-1 w-full">
+                <ChevronDoubleDownIcon
+                    onClick={() => setTotalSpots((prev) => Math.max(4, prev - 4))}
+                    className="size-10 text-gray-300 cursor-pointer"
+                />
                 <ChevronDownIcon
                   onClick={() => setTotalSpots((prev) => Math.max(4, prev - 1))}
                   className="size-10 text-gray-300 cursor-pointer"
@@ -255,6 +259,10 @@ export const CreateEventForm = () => {
                 <ChevronUpIcon
                   onClick={() => setTotalSpots((prev) => Math.min(prev + 1))}
                   className="size-10 text-gray-300 cursor-pointer"
+                />
+                <ChevronDoubleUpIcon
+                    onClick={() => setTotalSpots((prev) => Math.min(prev + 4))}
+                    className="size-10 text-gray-300 cursor-pointer"
                 />
               </div>
             </div>

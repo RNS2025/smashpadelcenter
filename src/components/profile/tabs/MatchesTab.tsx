@@ -44,7 +44,7 @@ const MatchesTab = () => {
             return allPlayersConfirmed ? (
               <li
                 key={match.id}
-                className={`border-4 p-2 rounded-lg text-black ${
+                className={`border-2 p-2 rounded-lg text-black ${
                   isWinner
                     ? "border-blue-500 bg-blue-100"
                     : isDraw

@@ -59,7 +59,7 @@ export function ProfileProvider({
   const [matchesLoading, setMatchesLoading] = useState(true);
 
   const fetchMatches = useCallback(async () => {
-    if (!username) return;
+    if (!username || !profile) return;
     setMatchesLoading(true);
     try {
       const userMatches = await communityApi.getMatchesByUser(username);
