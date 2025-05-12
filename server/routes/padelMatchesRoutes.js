@@ -175,14 +175,10 @@ router.post("/:id/invite", async (req, res) => {
     );
 
     // Notify the invited players
-    await sendPadelMatchNotification(
-      "INVITATION_SENT",
-      {
-        matchId: req.params.id,
-        participantIds: usernames,
-      },
-      usernames
-    );
+    await sendPadelMatchNotification("INVITATION_SENT", {
+      matchId: req.params.id,
+      userIds: usernames,
+    });
 
     logger.info("Players invited to padel match", {
       matchId: req.params.id,
@@ -323,14 +319,10 @@ router.post("/:id/confirm", async (req, res) => {
     );
 
     // Notify participant that the invitation was processed
-    await sendPadelMatchNotification(
-      "REQUEST_PROCESSED",
-      {
-        matchId: req.params.id,
-        participantIds: username,
-      },
-      updatedMatch.participants
-    );
+    await sendPadelMatchNotification("REQUEST_PROCESSED", {
+      matchId: req.params.id,
+      participantIds: username,
+    });
 
     // Check if the match is now full
     const participantsCount = updatedMatch.participants?.length || 0;
