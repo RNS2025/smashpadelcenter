@@ -316,6 +316,15 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       localStorage.removeItem(AUTH_TIMESTAMP_KEY);
       localStorage.removeItem("token");
 
+      // Clear SessionStorage
+      sessionStorage.clear();
+
+      // Clear user data and authentication state
+      setUser(null);
+      setIsAuthenticated(false);
+      setError(null);
+      setLoading(false);
+
       // Reset refs
       lastAuthCheck.current = 0;
       authCheckCompleted.current = false;
