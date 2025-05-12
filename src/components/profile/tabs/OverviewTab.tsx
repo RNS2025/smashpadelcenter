@@ -135,7 +135,7 @@ const OverviewTab = () => {
               <li
                 onClick={() => navigate(`/makkerbørs/${match.id}`)}
                 key={match.id}
-                className="border border-gray-900 p-2 rounded-lg text-gray-300"
+                className="border p-2 rounded-lg text-gray-300"
               >
                 <div className="flex justify-between text-xs border-b border-gray-600">
                   <h1>

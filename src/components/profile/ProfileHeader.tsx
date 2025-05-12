@@ -72,7 +72,7 @@ export const ProfileHeader = ({ profile, rankedInProfile }: { profile: User | nu
 
                     {profile.phoneNumber && profile.username === user?.username && (
                     <div className="flex gap-2 text-sm">
-                        <PhoneIcon className="h-6 text-gray-300" />
+                        <PhoneIcon className="h-5 text-gray-300" />
                         <p className="text-gray-300">{profile.phoneNumber}</p>
                     </div>
                     )}
