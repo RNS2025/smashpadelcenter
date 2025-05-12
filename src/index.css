@@ -6,24 +6,21 @@
   --text-xxs: 0.625rem;
 }
 
+/* Global scrollbar removal for all elements */
+* {
+  scrollbar-width: none !important;        /* Firefox */
+  -ms-overflow-style: none !important;     /* IE and Edge */
+}
+
+*::-webkit-scrollbar {
+  display: none !important;                /* Chrome, Safari, Opera */
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
 html {
-  @apply font-sans;
-
-  /* Hide scrollbars in all modern browsers */
-  -ms-overflow-style: none;     /* IE and Edge */
-  scrollbar-width: none;        /* Firefox */
+  font-family: 'Varela Round', sans-serif;
 }
 
-html::-webkit-scrollbar {
-  display: none;                /* Chrome, Safari, Opera */
-}
-
-body {
-  /* Optional: also apply to body if needed */
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-body::-webkit-scrollbar {
-  display: none;
-}
+/* No need for empty body rule */
