@@ -164,7 +164,7 @@ export const HomePage = () => {
               />
             )}
 
-            {user?.username === "admin" && (
+            {user?.role === "admin" && (
               <HomeScreenCard
                 icon={
                   <PresentationChartBarIcon
