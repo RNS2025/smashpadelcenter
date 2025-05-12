@@ -69,7 +69,7 @@ export const PrivateEventPage = () => {
         <div className="flex justify-between items-center max-sm:mt-5 mx-4 mb-4">
           <button
             onClick={() => navigate("opretarrangement")}
-            className="bg-gradient-to-b from-cyan-300 to-cyan-700 rounded px-2 py-2 text-white"
+            className="w-full bg-slate-700 rounded-lg py-2 px-4 text-cyan-500"
           >
             Opret arrangement
           </button>

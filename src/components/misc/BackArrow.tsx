@@ -20,9 +20,9 @@ const BackArrow = ({ backPage }: { backPage?: string }) => {
   return (
     <div
       onClick={handleNavigateBack}
-      className="h-8 w-8 shrink-0 rounded-full p-1 border-2 border-[#06a8c6] cursor-pointer flex items-center justify-center hover:bg-[#06a8c6] transition-colors duration-200"
+      className="size-10 shrink-0 rounded-full p-1 cursor-pointer flex items-center justify-center transition-colors duration-200"
     >
-      <ArrowLongLeftIcon className="h-full w-full text-white font-bold stroke-2" />
+      <ArrowLongLeftIcon className="h-full w-full text-cyan-500 font-bold stroke-2" />
     </div>
   );
 };

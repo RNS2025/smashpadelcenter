@@ -142,7 +142,7 @@ export const CreateMatchForm = () => {
   }
 
   return (
-    <div className="w-full bg-white rounded-xl p-4 text-gray-900">
+    <div className="w-full bg-slate-800/70 rounded-xl p-4 text-gray-300">
       <form className="space-y-10" onSubmit={handleCreateMatch}>
         <div className="lg:grid grid-cols-3 gap-4 max-lg:flex max-lg:flex-col">
 
@@ -151,7 +151,7 @@ export const CreateMatchForm = () => {
               Vælg center
             </label>
             <select
-              className="w-full rounded-lg border-gray-900 h-12 pr-1 text-sm"
+              className="w-full rounded-lg border-slate-800/80 bg-slate-800/80 h-12 pr-1 text-sm"
               id="center"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
@@ -182,7 +182,7 @@ export const CreateMatchForm = () => {
               minTime={setHours(setMinutes(new Date(), 0), 5)}
               maxTime={setHours(setMinutes(new Date(), 0), 23)}
               dateFormat="dd. MMMM yyyy, HH:mm"
-              className="w-full h-12 rounded-lg border-gray-900 text-sm pr-1"
+              className="w-full h-12 rounded-lg border-slate-800/80 bg-slate-800/80 text-sm pr-1"
               timeClassName={handleHiddenTimes}
             />
           </div>
@@ -192,7 +192,7 @@ export const CreateMatchForm = () => {
               Deadline
             </label>
             <select
-                className="w-full rounded-lg border-gray-900 h-12 pr-1 text-sm"
+                className="w-full rounded-lg border-slate-800/80 bg-slate-800/80 h-12 pr-1 text-sm"
                 id="center"
                 value={deadline}
                 onChange={(e) => setDeadline(parseInt(e.target.value))}
@@ -225,8 +225,8 @@ export const CreateMatchForm = () => {
                     onClick={() => setSelectedPlayingTime(option)}
                     className={`p-2 w-full rounded-xl transition duration-300 ${
                       selectedPlayingTime === option
-                        ? "bg-cyan-500 text-white "
-                        : "bg-gray-300 "
+                        ? "bg-cyan-500/80 text-white "
+                        : "border-slate-800/80 bg-slate-800/80"
                     }`}
                   >
                     {option}
@@ -251,8 +251,8 @@ export const CreateMatchForm = () => {
                     onClick={() => setCourtBooked(value)}
                     className={`p-2 w-full rounded-xl transition duration-300 ${
                       courtBooked === value
-                        ? "bg-cyan-500 text-white"
-                        : "bg-gray-300 "
+                          ? "bg-cyan-500/80 text-white "
+                          : "border-slate-800/80 bg-slate-800/80"
                     }`}
                   >
                     {label}
@@ -279,10 +279,10 @@ export const CreateMatchForm = () => {
                     <div className="flex items-center gap-1 p-4 rounded-xl">
                       <ChevronDownIcon
                           onClick={decrementMinLevel}
-                          className="size-10 text-black cursor-pointer"
+                          className="size-10 text-gray-300 cursor-pointer"
                       />
                       <input
-                          className="text-center rounded-lg w-full disabled:text-black disabled:border-black"
+                          className="text-center rounded-lg w-full border-slate-800/80 bg-slate-800/80 disabled:text-gray-200 disabled:border-slate-800/80"
                           type="number"
                           step="0.1"
                           min="1.0"
@@ -293,18 +293,18 @@ export const CreateMatchForm = () => {
                       />
                       <ChevronUpIcon
                           onClick={incrementMinLevel}
-                          className="size-10 text-black cursor-pointer"
+                          className="size-10 text-gray-300 cursor-pointer"
                       />
                     </div>
 
                     <div className="flex items-center gap-1 p-4 w-full">
                       <ChevronDownIcon
                           onClick={decrementMaxLevel}
-                          className="size-10 text-black cursor-pointer"
+                          className="size-10 text-gray-300 cursor-pointer"
                       />
 
                       <input
-                          className="text-center rounded-lg w-full disabled:text-black disabled:border-black"
+                          className="text-center rounded-lg w-full border-slate-800/80 bg-slate-800/80 disabled:text-gray-200 disabled:border-slate-800/80"
                           type="number"
                           step="0.1"
                           min={levelRange[0]}
@@ -315,7 +315,7 @@ export const CreateMatchForm = () => {
                       />
                       <ChevronUpIcon
                           onClick={incrementMaxLevel}
-                          className="size-10 text-black cursor-pointer"
+                          className="size-10 text-gray-300 cursor-pointer"
                       />
                     </div>
                   </div>
@@ -337,8 +337,8 @@ export const CreateMatchForm = () => {
                     onClick={() => setSelectedMatchType(option)}
                     className={`max-lg:w-full lg:w-20 p-2 text-sm rounded-xl transition duration-300 ${
                       selectedMatchType === option
-                        ? "bg-cyan-500 text-white"
-                        : "bg-gray-300"
+                          ? "bg-cyan-500/80 text-white "
+                          : "border-slate-800/80 bg-slate-800/80"
                     }`}
                   >
                     {option}
@@ -361,8 +361,8 @@ export const CreateMatchForm = () => {
                     onClick={() => setSelectedReserved(spot)}
                     className={`p-2 w-full rounded-xl transition duration-300 ${
                       selectedReserved === spot
-                        ? "bg-cyan-500 text-white"
-                        : "bg-gray-300"
+                          ? "bg-cyan-500/80 text-white "
+                          : "border-slate-800/80 bg-slate-800/80"
                     }`}
                   >
                     {spot}
@@ -376,7 +376,7 @@ export const CreateMatchForm = () => {
                   <input
                       type="text"
                       placeholder="Spillernavn"
-                      className="rounded-lg w-full text-sm "
+                      className="rounded-lg w-full border-slate-800/80 bg-slate-800/80 text-sm"
                       value={reservedPlayers[i]?.name ?? ""}
                       onChange={(e) => {
                         const newPlayers = [...reservedPlayers];
@@ -394,11 +394,11 @@ export const CreateMatchForm = () => {
                           updated[i].level = Math.max(levelRange[0], parseFloat((updated[i].level - 0.1).toFixed(1)));
                           setReservedPlayers(updated);
                         }}
-                        className="size-10 text-black cursor-pointer"
+                        className="size-10 text-gray-300 cursor-pointer"
                     />
 
                     <input
-                        className="text-center rounded-lg w-full disabled:text-black disabled:border-black"
+                        className="text-center rounded-lg w-full border-slate-800/80 bg-slate-800/80 disabled:text-gray-200 disabled:border-slate-800/80"
                         type="number"
                         step="0.1"
                         min={levelRange[0]}
@@ -418,7 +418,7 @@ export const CreateMatchForm = () => {
                           updated[i].level = Math.min(levelRange[1], parseFloat((updated[i].level + 0.1).toFixed(1)));
                           setReservedPlayers(updated);
                         }}
-                        className="size-10 text-black cursor-pointer"
+                        className="size-10 text-gray-300 cursor-pointer"
                     />
                   </div>
                 </div>
@@ -432,7 +432,7 @@ export const CreateMatchForm = () => {
             </label>
             <div className="pr-1">
               <textarea
-                className="w-full rounded-lg h-12 resize-none"
+                className="w-full rounded-lg h-12 border-slate-800/80 bg-slate-800/80 resize-none"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
@@ -443,7 +443,7 @@ export const CreateMatchForm = () => {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="bg-cyan-500 rounded-lg py-2 px-4 text-white"
+          className="w-full bg-slate-700 rounded-lg py-2 px-4 text-cyan-500"
         >
           {isSubmitting ? "Opretter..." : "Opret kamp"}
         </button>

@@ -74,7 +74,7 @@ export const LeagueTeamProfilePage = () => {
       <>
       <HomeBar backPage={lastLunarTab}/>
     <Animation>
-      <div className="max-h-[calc(100vh-100px)] mx-2 sm:mx-10 p-4 bg-white mt-5 shadow-md rounded-lg">
+      <div className="max-h-[calc(100vh-100px)] mx-2 sm:mx-10 p-4 bg-slate-800/80 mt-5 shadow-md rounded-lg">
         <div className="flex gap-5 px-2">
           <img
             src={team.HomeClubImageUrl}
@@ -82,10 +82,10 @@ export const LeagueTeamProfilePage = () => {
             className="w-16 h-16 sm:w-32 sm:h-32 rounded-full object-cover"
           />
           <div className="w-full">
-            <h1 className="sm:text-xl md:text-3xl font-bold text-gray-800 mb-2">
+            <h1 className="sm:text-xl md:text-3xl font-bold text-gray-200 mb-2">
               {cachedName || ""}
             </h1>
-            <div className="flex flex-col gap-2 max-sm:text-sm text-gray-600">
+            <div className="flex flex-col gap-2 max-sm:text-sm text-gray-300">
               {team.Initiator.map((initiator) => (
                 <div className="flex gap-2" key={initiator.Id}>
                   <dt className="font-semibold">Admin:</dt>

@@ -167,7 +167,7 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
 
   return (
     // Styled header matching LeagueStandingsPage theme
-    <header className="bg-slate-900 shadow-xl top-0 sticky z-50 text-slate-200">
+    <header className="bg-gray-800 shadow-xl top-0 sticky z-50">
       {" "}
       {/* Dark background, shadow, sticky, z-index, default text color */}
       <div className="flex h-16 items-center px-4 sm:px-6 justify-between">
@@ -184,7 +184,7 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
           {/* Feedback Icon */}
           <ExclamationCircleIcon
             onClick={handleFeedback}
-            className="size-7 sm:size-8 text-red-500 cursor-pointer hover:opacity-80 transition-opacity" // Adjusted size, kept red, added hover
+            className="size-10 sm:size-8 text-red-500 cursor-pointer transition-opacity"
             title="Send Feedback" // Added title for accessibility
           />
         </div>
@@ -201,7 +201,7 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
                 <li>
                   <button // Use button for click events
                     onClick={() => navigate(`/profil/${user?.username}`)}
-                    className="text-slate-200 text-sm font-medium hover:text-brand-primary transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2 focus:ring-offset-slate-900" // Styled link
+                    className="text-slate-200 text-sm font-medium transition-colors cursor-pointer"
                   >
                     Profil
                   </button>
@@ -210,7 +210,7 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
                   <li>
                     <button // Use button for click events
                       onClick={() => navigate("/admin")}
-                      className="text-slate-200 text-sm font-medium hover:text-brand-primary transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2 focus:ring-offset-slate-900" // Styled link
+                      className="text-slate-200 text-sm font-medium transition-colors cursor-pointer" // Styled link
                     >
                       Admin Panel
                     </button>
@@ -219,7 +219,7 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
                 <li>
                   <button // Use button for click events
                     onClick={handleLogout}
-                    className="text-slate-200 text-sm font-medium hover:text-brand-primary transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2 focus:ring-offset-slate-900" // Styled link
+                    className="text-slate-200 text-sm font-medium transition-colors cursor-pointer" // Styled link
                   >
                     Log ud
                   </button>
@@ -234,7 +234,7 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
               <HomeIcon
                 onClick={() => navigate("/hjem")}
                 className={
-                  `size-7 sm:size-8 cursor-pointer hover:text-brand-primary transition-colors focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2 focus:ring-offset-slate-900
+                  `size-7 sm:size-8 cursor-pointer transition-color
                                     ${
                                       location.pathname === "/hjem"
                                         ? "hidden"
@@ -247,13 +247,13 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
               <button
                 ref={searchIconRef}
                 onClick={() => togglePanel("search")}
-                className="focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2 focus:ring-offset-slate-900 rounded"
+                className="rounded"
               >
                 {" "}
                 {/* Wrap in button for focus state */}
                 <MagnifyingGlassIcon
                   className={
-                    `size-7 sm:size-8 cursor-pointer hover:text-brand-primary transition-colors
+                    `size-7 sm:size-8 cursor-pointer transition-colors
                                         ${
                                           activePanel === "search"
                                             ? "text-brand-primary"
@@ -267,13 +267,13 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
               <button
                 ref={bellIconRef}
                 onClick={() => togglePanel("notifications")}
-                className="focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2 focus:ring-offset-slate-900 rounded"
+                className="rounded"
               >
                 {" "}
                 {/* Wrap in button for focus state */}
                 <BellIcon
                   className={
-                    `size-7 sm:size-8 cursor-pointer hover:text-brand-primary transition-colors
+                    `size-7 sm:size-8 cursor-pointer transition-colors
                                         ${
                                           activePanel === "notifications"
                                             ? "text-brand-primary"
@@ -287,13 +287,13 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
               <button
                 ref={menuIconRef}
                 onClick={() => togglePanel("dropdown")}
-                className="sm:hidden focus:outline-none focus:ring-2 focus:ring-brand-primary focus:ring-offset-2 focus:ring-offset-slate-900 rounded"
+                className="sm:hidden rounded"
               >
                 {" "}
                 {/* Wrap in button, keep sm:hidden */}
                 <Bars3Icon
                   className={
-                    `size-7 sm:size-8 cursor-pointer hover:text-brand-primary transition-colors
+                    `size-7 sm:size-8 cursor-pointer transition-colors
                                         ${
                                           activePanel === "dropdown"
                                             ? "text-brand-primary"
@@ -332,7 +332,7 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
             {/* Add padding inside the panel */}
             <input
               type="text"
-              className="w-full h-10 px-3 py-2 text-sm bg-slate-750 text-slate-200 border border-slate-600 rounded-md placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-brand-primary transition-all duration-150" // Styled input
+              className="w-full h-10 px-3 py-2 text-sm bg-slate-750 text-slate-200 border border-slate-600 rounded-md placeholder-slate-500 transition-all duration-150" // Styled input
               placeholder="Søg efter bruger..." // Updated placeholder text
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -347,7 +347,7 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
                     <div
                       key={user.id}
                       onClick={() => handleUserResultClick(user.username)}
-                      className="px-3 py-2 cursor-pointer text-slate-200 text-sm hover:bg-slate-600 hover:text-white transition-colors truncate" // Styled result item
+                      className="px-3 py-2 cursor-pointer text-slate-200 text-sm transition-colors truncate" // Styled result item
                     >
                       <h1>
                         {user.fullName
@@ -372,7 +372,7 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
       {activePanel === "dropdown" && user && (
         <div
           ref={dropdownPanelRef}
-          className="absolute right-0 mt-0 w-48 rounded-md bg-slate-800 shadow-lg ring-1 ring-slate-700 ring-opacity-5 focus:outline-none animate-fadeInDown sm:hidden"
+          className="absolute right-0 mt-0 w-48 rounded-md bg-slate-800 shadow-lg ring-1 ring-slate-700 animate-fadeInDown sm:hidden"
         >
           {" "}
           {/* Dark style, width, border, shadow, hidden on sm+ */}
@@ -382,7 +382,7 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
                 navigate(`/profil/${user?.username}`);
                 setActivePanel(null);
               }}
-              className="block w-full text-left px-4 py-2 text-sm text-slate-200 hover:bg-slate-700 hover:text-white transition-colors focus:outline-none focus:bg-slate-700" // Styled item
+              className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors" // Styled item
               role="menuitem" // ARIA role
             >
               Profil
@@ -393,7 +393,7 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
                   navigate("/admin");
                   setActivePanel(null);
                 }}
-                className="block w-full text-left px-4 py-2 text-sm text-slate-200 hover:bg-slate-700 hover:text-white transition-colors focus:outline-none focus:bg-slate-700" // Styled item
+                className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors" // Styled item
                 role="menuitem" // ARIA role
               >
                 Admin Panel
@@ -401,7 +401,7 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
             )}
             <button // Use button
               onClick={handleLogout}
-              className="block w-full text-left px-4 py-2 text-sm text-slate-200 hover:bg-slate-700 hover:text-white transition-colors focus:outline-none focus:bg-slate-700" // Styled item
+              className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors" // Styled item
               role="menuitem" // ARIA role
             >
               Log ud

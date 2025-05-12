@@ -28,14 +28,14 @@ const RowSelector: React.FC<RowSelectorProps> = ({
       ) : (
         <div className="flex">
           <select
-              className="border rounded-md p-2 text-black max-sm:w-full max-sm:text-sm truncate pr-8"
+              className="border-slate-800/80 bg-slate-800/80 rounded-md p-2 text-gray-300 max-sm:w-full max-sm:text-sm truncate pr-8"
               value={selectedRowId || ""}
               onChange={(e) => onSelect(e.target.value)}>
             <option value="" disabled>
               Vælg række
             </option>
             {rows.map((row) => (
-                <option key={row.Id} value={row.Id} className="text-black max-sm:text-xs max-sm:truncate max-sm:pr-2">
+                <option key={row.Id} value={row.Id} className="text-gray-300 max-sm:text-xs max-sm:truncate max-sm:pr-2">
                   {row.Name}
                 </option>
             ))}

@@ -82,7 +82,7 @@ const MatchesTab = () => {
                             </div>
                         </li>
                     ) : (
-                        <li key={match.id} className="border p-2 rounded-lg border-gray-600 bg-gray-200 text-gray-800">
+                        <li key={match.id} className="border p-2 rounded-lg border-slate-800/80 bg-slate-800/80 text-gray-300">
                             <div className="flex justify-between text-xs border-b border-gray-600">
                                 <h1>
                                     {safeFormatDate(match.matchDateTime, "dd. MMMM | HH:mm").toUpperCase()} - {safeFormatDate(match.endTime, "HH:mm")}
@@ -96,7 +96,7 @@ const MatchesTab = () => {
                             <div className="flex justify-between text-xs pt-2 items-center">
                                 <div className="flex items-center gap-4">
                                     {!match.playersConfirmedResult.includes(profile.username) && (
-                                        <QuestionMarkCircleIcon className="size-8 text-black" />
+                                        <QuestionMarkCircleIcon className="size-8 text-gray-300" />
                                     )}
                                     <div>
                                         <h1>Niveau:</h1>

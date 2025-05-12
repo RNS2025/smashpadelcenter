@@ -68,14 +68,15 @@ const TeamListTable = ({
             <input
                 type="text"
                 placeholder="Søg efter hold..."
-                className="max-sm:w-64 max-sm:text-xs w-96 text-gray-900 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500"
+                className="max-sm:w-64 max-sm:text-xs w-96
+                text-gray-300 px-4 py-2 border bg-slate-800/80 border-slate-800/80 rounded-lg"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
             />
 
             <div className="overflow-auto max-h-[calc(100vh-240px)] rounded-lg shadow-lg my-5">
-                <table className="min-w-full divide-y-2 divide-gray-200 bg-white text-gray-900 text-sm rounded">
-                    <thead className="text-left bg-gray-300 font-bold">
+                <table className="min-w-full divide-y-2 divide-cyan-500 bg-slate-700/80 text-gray-200 text-sm rounded">
+                    <thead className="text-left bg-slate-800/80 font-bold">
                     <tr>
                         <th className="px-4 py-2 cursor-pointer w-[70%]">
                             <div className="flex items-center gap-2" onClick={() => handleSort("Name")}>
@@ -94,7 +95,7 @@ const TeamListTable = ({
                     </tr>
                     </thead>
 
-                    <tbody className="divide-y divide-gray-300">
+                    <tbody className="divide-y divide-cyan-500">
                     {loading ? (
                         <tr>
                             <td colSpan={3}>

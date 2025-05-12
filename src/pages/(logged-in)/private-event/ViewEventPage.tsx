@@ -525,7 +525,7 @@ export const ViewEventPage = () => {
               </div>
             )}
 
-          <div className="grid grid-cols-2 text-center text-black gap-3">
+          <div className="grid grid-cols-2 text-center text-gray-300 gap-3">
             <div
               className={`bg-white rounded flex justify-center items-center gap-1 py-4 ${
                 !event.level ? "hidden" : ""
@@ -535,27 +535,27 @@ export const ViewEventPage = () => {
               <h1 className="h-5">{event.level}</h1>
             </div>
 
-            <div className="bg-white rounded flex justify-center items-center gap-1 py-4">
+            <div className="border-slate-800/80 bg-slate-800/80 rounded flex justify-center items-center gap-1 py-4">
               <MapPinIcon className="h-6 text-red-500" />
               <h1 className="h-5">{event.location.split(" ")[2]}</h1>
             </div>
 
             {event.courtBooked ? (
-              <div className="bg-white rounded flex justify-center items-center gap-1 py-4">
+              <div className="border-slate-800/80 bg-slate-800/80 rounded flex justify-center items-center gap-1 py-4">
                 <CheckCircleIcon className="h-6 rounded-lg text-green-500" />
                 <h1 className="h-5">
                   {event.participants.length > 4 ? "Baner" : "Bane"} er booket
                 </h1>
               </div>
             ) : (
-              <div className="bg-white rounded flex justify-center items-center gap-1 py-4">
+              <div className="border-slate-800/80 bg-slate-800/80 rounded flex justify-center items-center gap-1 py-4">
                 <XCircleIcon className="h-6 rounded-lg text-red-500" />
                 <h1 className="h-5">Bane ikke booket</h1>
               </div>
             )}
 
             <div
-              className={`bg-white rounded flex justify-center items-center gap-1 py-4 ${
+              className={`border-slate-800/80 bg-slate-800/80 rounded flex justify-center items-center gap-1 py-4 ${
                 !event.eventFormat ? "hidden" : ""
               }`}
             >
@@ -576,11 +576,11 @@ export const ViewEventPage = () => {
                         });
                       }
                     }}
-                    className="bg-white rounded flex flex-col justify-center items-center gap-2 py-4"
+                    className="border-slate-800/80 bg-slate-800/80 rounded flex flex-col justify-center items-center gap-2 py-4"
                 >
                   <div className="flex items-center">
                   <CurrencyDollarIcon className="size-10 rounded-lg text-yellow-600 bg-gradient-to-b" />
-                  <h1 className="text-black text-lg truncate overflow-hidden whitespace-nowrap">
+                  <h1 className="text-gray-300 text-lg truncate overflow-hidden whitespace-nowrap">
                     {event.price} kr. {eventHost?.phoneNumber && `til ${eventHost.phoneNumber}`}
                   </h1>
                   </div>
@@ -592,7 +592,7 @@ export const ViewEventPage = () => {
           )}
 
 
-          <div className="bg-white rounded w-full text-black p-4 flex flex-col gap-2">
+          <div className="border-slate-800/80 bg-slate-800/80 rounded w-full text-gray-300 p-4 flex flex-col gap-2">
             <h1 className="font-semibold">Bemærkninger</h1>
             <p>{event.description || "Ingen bemærkninger."}</p>
           </div>
@@ -605,8 +605,7 @@ export const ViewEventPage = () => {
               !event!.joinRequests.includes(user.username) && (
                   <button
                       onClick={handleJoinEvent}
-                      className="w-full bg-cyan-500 rounded-lg py-2 px-4 text-white"
-                  >
+                      className="w-full bg-slate-700 rounded-lg py-2 px-4 text-cyan-500 text-lg"                  >
                     Tilmeld arrangement
                   </button>
               )}
@@ -617,7 +616,7 @@ export const ViewEventPage = () => {
               event!.joinRequests.includes(user.username) && (
                   <button
                       onClick={() => handleCancelJoinRequest(user.username)}
-                      className="w-full text-lg bg-red-500 rounded-lg py-2 px-4 text-white"
+                      className="w-full bg-slate-700 rounded-lg py-2 px-4 text-red-500 text-lg"
                   >
                     Fjern tilmeldingsanmodning
                   </button>
@@ -633,7 +632,7 @@ export const ViewEventPage = () => {
                     new Date(event!.endTime)
                 );
                 downloadICSFile(ics, `${event?.title}-${event!.id}.ics`);
-              }} className="w-full text-lg bg-cyan-500 rounded-lg py-2 px-4 text-white">
+              }} className="w-full bg-slate-700 rounded-lg py-2 px-4 text-cyan-500 text-lg">
                 Tilføj til kalender
               </button>
           )}
@@ -643,7 +642,7 @@ export const ViewEventPage = () => {
               <div className="flex flex-col w-full gap-4 text-lg">
                 <button
                   onClick={() => setInviteDialogVisible(true)}
-                  className="bg-green-500 rounded-lg py-2 px-4 text-white"
+                  className="w-full bg-slate-700 rounded-lg py-2 px-4 text-green-500 text-lg"
                 >
                   Inviter spillere
                 </button>
@@ -652,14 +651,14 @@ export const ViewEventPage = () => {
                     onClick={() => {
                       navigate(`/privat-arrangementer/${eventId}/rediger`)}
                     }
-                    className="bg-orange-500 rounded-lg py-2 px-4 text-white"
+                    className="w-full bg-slate-700 rounded-lg py-2 px-4 text-orange-500 text-lg"
                 >
                   Rediger arrangement
                 </button>
 
                 <button
                   onClick={handleDeleteEvent}
-                  className="bg-red-500 rounded-lg py-2 px-4 text-white"
+                  className="w-full bg-slate-700 rounded-lg py-2 px-4 text-red-500 text-lg"
                 >
                   Slet arrangement
                 </button>

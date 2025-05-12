@@ -41,7 +41,7 @@ export const GroupsTab = () => {
             <div>
                 <button
                     onClick={() => navigate("opretgruppe")}
-                    className="bg-cyan-500 rounded-lg py-2 px-4 text-sm"
+                    className="w-full bg-slate-700 rounded-lg py-2 px-4 text-cyan-500 text-sm"
                 >
                     Ny gruppe
                 </button>
@@ -51,8 +51,8 @@ export const GroupsTab = () => {
                 <div key={group.id} className="mt-4 space-y-2">
                     <div className="flex justify-between items-center">
                         <div>
-                            <h2 onClick={() => navigate(`${group.id}`)} className="text-lg font-semibold text-gray-800">{group.name}</h2>
-                            <p className="text-sm text-gray-600">Medlemmer: {group.members.length}</p>
+                            <h2 onClick={() => navigate(`${group.id}`)} className="text-lg font-semibold text-gray-300">{group.name}</h2>
+                            <p className="text-sm text-gray-300">Medlemmer: {group.members.length}</p>
                         </div>
 
                         <div
@@ -60,7 +60,7 @@ export const GroupsTab = () => {
                             onClick={() => toggleGroup(group.id)}
                         >
                             <ChevronRightIcon
-                                className={`h-6 text-gray-800 transition-transform duration-300 transform ${
+                                className={`h-6 text-gray-300 transition-transform duration-300 transform ${
                                     expandedGroups.has(group.id) ? "rotate-90" : "rotate-0"
                                 }`}
                             />
@@ -68,7 +68,7 @@ export const GroupsTab = () => {
                     </div>
 
                     {expandedGroups.has(group.id) && (
-                        <div className="text-gray-700 space-y-1">
+                        <div className="text-gray-300 space-y-1">
                             {group.members.map((member, index) => (
                                 <div key={index} className="border-b py-1">
                                     {member}

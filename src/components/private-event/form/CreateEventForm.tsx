@@ -170,7 +170,7 @@ export const CreateEventForm = () => {
   ];
 
   return (
-    <div className="w-full bg-white rounded-xl p-4 text-gray-900">
+    <div className="w-full bg-slate-800/70 rounded-xl p-4 text-gray-300">
       {error && (
         <div className="mb-4 text-red-500">
           {error}
@@ -193,7 +193,7 @@ export const CreateEventForm = () => {
             <div className="pr-1">
               <input
                 type="text"
-                className="w-full rounded-lg h-12 resize-none"
+                className="w-full rounded-lg border-slate-800/80 bg-slate-800/80 h-12 pr-1 text-sm"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 required
@@ -207,7 +207,7 @@ export const CreateEventForm = () => {
             </label>
             <div className="pr-1">
               <textarea
-                className="w-full rounded-lg h-24 resize-none"
+                className="w-full rounded-lg h-24 resize-none border-slate-800/80 bg-slate-800/80 text-sm"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
@@ -222,7 +222,7 @@ export const CreateEventForm = () => {
               <input
                 type="text"
                 placeholder={"F.eks. americano, mexicano..."}
-                className="w-full rounded-lg h-12 resize-none"
+                className="w-full rounded-lg border-slate-800/80 bg-slate-800/80 h-12 pr-1 text-sm"
                 value={eventFormat}
                 onChange={(e) => setEventFormat(e.target.value)}
               />
@@ -230,20 +230,20 @@ export const CreateEventForm = () => {
           </div>
 
           <div className="max-sm:grid max-sm:grid-cols-2 max-sm:gap-4">
-            <div>
+            <div className="flex flex-col items-center gap-2">
               <label className="font-semibold" htmlFor="pladser">
                 Antal pladser
               </label>
               <div className="flex items-center gap-1 w-full">
                 <ChevronDownIcon
                     onClick={() => setTotalSpots((prev) => Math.max(4, prev - 1))}
-                    className="size-10 text-black cursor-pointer"
+                    className="size-10 text-gray-300 cursor-pointer"
                 />
 
                 <input
                     type="number"
                     min={4}
-                    className="w-full rounded-lg h-12 resize-none text-center"
+                    className="text-center rounded-lg w-full border-slate-800/80 bg-slate-800/80 disabled:text-gray-200 disabled:border-slate-800/80"
                     value={totalSpots}
                     onChange={(e) => setTotalSpots(parseInt(e.target.value))}
                     required
@@ -251,24 +251,24 @@ export const CreateEventForm = () => {
                 />
                 <ChevronUpIcon
                     onClick={() => setTotalSpots((prev) => Math.min(prev + 1))}
-                    className="size-10 text-black cursor-pointer"
+                    className="size-10 text-gray-300 cursor-pointer"
                 />
               </div>
             </div>
 
-            <div className="relative">
+            <div className="flex flex-col items-center gap-2 relative">
               <label className="font-semibold" htmlFor="turneringsformat">
                 Pris pr. deltager
               </label>
               <div>
                 <input
                     type="number"
-                    className="w-full rounded-lg h-12 resize-none"
+                    className="rounded-lg w-full border-slate-800/80 bg-slate-800/80 disabled:text-gray-200 disabled:border-slate-800/80"
                     value={price}
                     min={0}
                     onChange={(e) => setPrice(parseFloat(e.target.value))}/>
 
-                <span className="absolute inset-y-1 top-8 right-3 flex items-center text-gray-500 text-sm lg:hidden">kr.</span>
+                <span className="absolute inset-y-0 top-9 right-3 flex items-center text-gray-500 text-sm lg:hidden">kr.</span>
               </div>
             </div>
           </div>
@@ -290,7 +290,7 @@ export const CreateEventForm = () => {
               minTime={setHours(setMinutes(new Date(), 0), 5)}
               maxTime={setHours(setMinutes(new Date(), 0), 23)}
               dateFormat="dd. MMMM yyyy, HH:mm"
-              className="w-full h-12 rounded-lg border-gray-900 text-sm pr-1"
+              className="w-full h-12 rounded-lg border-slate-800/80 bg-slate-800/80 text-sm pr-1"
               timeClassName={handleHiddenTimes}
               required
             />
@@ -317,7 +317,7 @@ export const CreateEventForm = () => {
               }
               maxTime={setHours(setMinutes(new Date(), 0), 23)}
               dateFormat="dd. MMMM yyyy, HH:mm"
-              className="w-full h-12 rounded-lg border-gray-900 text-sm pr-1"
+              className="w-full h-12 rounded-lg border-slate-800/80 bg-slate-800/80 text-sm pr-1"
               timeClassName={handleHiddenTimes}
               required
             />
@@ -328,7 +328,7 @@ export const CreateEventForm = () => {
               Vælg center
             </label>
             <select
-              className="w-full rounded-lg border-gray-900 h-12 pr-1 text-sm"
+                className="w-full rounded-lg border-slate-800/80 bg-slate-800/80 h-12 pr-1 text-sm"
               id="center"
               value={location}
               onChange={(e) => setLocation(e.target.value)}
@@ -356,8 +356,8 @@ export const CreateEventForm = () => {
                         onClick={() => setCourtBooked(value)}
                         className={`p-2 w-full rounded-xl transition duration-300 ${
                             courtBooked === value
-                                ? "bg-cyan-500 text-white"
-                                : "bg-gray-300"
+                                ? "bg-cyan-500/80 text-white "
+                                : "border-slate-800/80 bg-slate-800/80"
                         }`}
                     >
                       {label}
@@ -381,8 +381,8 @@ export const CreateEventForm = () => {
                     onClick={() => setLevelRangeRequired(value)}
                     className={`p-2 w-full rounded-xl transition duration-300 ${
                       levelRangeRequired === value
-                        ? "bg-cyan-500 text-white"
-                        : "bg-gray-300"
+                          ? "bg-cyan-500/80 text-white "
+                          : "border-slate-800/80 bg-slate-800/80"
                     }`}
                   >
                     {label}
@@ -466,8 +466,8 @@ export const CreateEventForm = () => {
                     onClick={() => setOpenRegistration(value)}
                     className={`p-2 w-full rounded-xl transition duration-300 ${
                       openRegistration === value
-                        ? "bg-cyan-500 text-white"
-                        : "bg-gray-300"
+                          ? "bg-cyan-500/80 text-white "
+                          : "border-slate-800/80 bg-slate-800/80"
                     }`}
                   >
                     {label}
@@ -481,7 +481,7 @@ export const CreateEventForm = () => {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="bg-cyan-500 rounded-lg py-2 px-4 text-white"
+          className="w-full bg-slate-700 rounded-lg py-2 px-4 text-cyan-500"
         >
           {isSubmitting ? "Opretter..." : "Opret arrangement"}
         </button>

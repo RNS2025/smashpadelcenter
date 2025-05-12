@@ -71,13 +71,13 @@ const PlayerCheckInList: FC<PlayerCheckInListProps> = ({
                 return (
                   <li
                     key={key} // Use the combined key
-                    className="flex flex-col gap-4 p-4 bg-white shadow rounded-lg"
+                    className="flex flex-col gap-4 p-4 border-slate-800/80 bg-slate-800/80 shadow rounded-lg"
                   >
                     <div className="flex justify-between items-center">
                       <div className="flex flex-col gap-2">
                         {player1 && (
                           <span
-                            className="text-gray-800 font-semibold cursor-pointer"
+                            className="text-gray-300 font-semibold cursor-pointer"
                             onClick={() => onPlayerClick(player1.RankedInId)}
                           >
                             {player1.Name}
@@ -85,7 +85,7 @@ const PlayerCheckInList: FC<PlayerCheckInListProps> = ({
                         )}
                         {player2 && (
                           <span
-                            className="text-gray-800 font-semibold cursor-pointer"
+                            className="text-gray-300 font-semibold cursor-pointer"
                             onClick={() => onPlayerClick(player2.RankedInId)}
                           >
                             {player2.Name}
@@ -109,9 +109,9 @@ const PlayerCheckInList: FC<PlayerCheckInListProps> = ({
                             onCheckInToggle(playerIds, playerNames);
                           }}
                           disabled={isCheckingIn || tournamentNotToday}
-                          className="h-5 w-5 text-cyan-500"
+                          className="h-5 w-5 text-cyan-500 rounded-lg"
                         />
-                        <span className="ml-2 text-gray-700">Tjek ind</span>
+                        <span className="ml-2 text-gray-300">Tjek ind</span>
                       </label>
                     </div>
                   </li>

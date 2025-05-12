@@ -38,26 +38,26 @@ export const TeamProfileMatchesTab = () => {
             </Helmet>
 
             {memoizedMatches.length > 0 && (
-                <div className="overflow-auto h-[calc(100vh-380px)] rounded-lg border border-gray-200 shadow-lg my-5 text-xxs">
-                    <table className="min-w-[320px] w-full divide-y-2 divide-gray-200 bg-white">
-                        <thead className="bg-gray-300 font-bold">
+                <div className="overflow-auto h-[calc(100vh-380px)] rounded-lg shadow-lg my-5 text-xxs">
+                    <table className="min-w-[320px] w-full divide-y-2 divide-cyan-500 bg-slate-700/80">
+                        <thead className="bg-slate-800/80 font-bold">
                         <tr>
-                            <th className="py-2 text-gray-900 select-none">
+                            <th className="py-2 text-gray-300 select-none">
                                 <div className="flex items-center justify-center">
                                     Dato
                                 </div>
                             </th>
-                            <th className="py-2 text-gray-900 select-none">
+                            <th className="py-2 text-gray-300 select-none">
                                 <div className="flex items-center justify-center">
                                     Hjemmehold
                                 </div>
                             </th>
-                            <th className="py-2 text-gray-900 select-none">
+                            <th className="py-2 text-gray-300 select-none">
                                 <div className="flex items-center justify-center ">
                                     Udehold
                                 </div>
                             </th>
-                            <th className="py-2 text-gray-900 select-none">
+                            <th className="py-2 text-gray-300 select-none">
                                 <div className="flex items-center justify-center">
                                     Resultat
                                 </div>
@@ -65,18 +65,19 @@ export const TeamProfileMatchesTab = () => {
                         </tr>
                         </thead>
 
-                        <tbody className="divide-y divide-gray-200">
+                        <tbody className="divide-y divide-cyan-500">
                         {memoizedMatches.map((match) => (
                                 <Fragment key={match.MatchId}>
                                 <tr>
-                                    <td className="px-2 py-4 font-medium text-gray-900">{match.Details.Date}</td>
-                                    <td className={`px-2 py-4 font-medium text-gray-900 text-center ${match.Team1.IsWinner ? "font-semibold" : ""}`}>
+                                    <td className="px-2 py-4 font-medium text-gray-300">{match.Details.Date}</td>
+                                    <td className={`px-2 py-4 font-medium text-gray-300 text-center ${match.Team1.IsWinner ? "text-green-500" : ""}`}>
                                         {match.Team1.Name}
                                     </td>
-                                    <td className={`px-2-4 py-4 font-medium text-gray-900 text-center ${match.Team2.IsWinner ? "font-semibold" : ""}`}>
+                                    <td className={`px-2-4 py-4 font-medium text-gray-300 text-center ${match.Team2.IsWinner ? "text-green-500" : ""}`}>
                                         {match.Team2.Name}
                                     </td>
-                                    <td className="px-2 py-4 font-medium text-gray-900 text-center">
+                                    <td className="grid grid-rows-3 px-2 py-4 font-medium text-gray-300 text-center">
+                                        <div></div>
                                         {!match.ShowPlayerEnterResultButton && (
                                             <p className={`${match.ShowPlayerEnterResultButton ? "font-semibold" : ""}`}>
                                                 {match.ShowResults
@@ -86,14 +87,14 @@ export const TeamProfileMatchesTab = () => {
                                         )}
                                         <button
                                             onClick={() => navigate(`${match.MatchId}`)}
-                                            className={`bg-sky-900 rounded text-white p-1 ${match.ShowUpcomingInfoText ? "hidden" : ""}`}>Se kampdetaljer</button>
+                                            className={`bg-cyan-500 rounded text-white p-1 px-2 ${match.ShowUpcomingInfoText ? "hidden" : ""}`}>Info</button>
                                     </td>
                                 </tr>
 
                                 {match.isUpcoming && (
                                     <tr key={`${match.MatchId}-extra`}>
-                                        <td colSpan={5} className="px-2 py-2 text-xxs text-gray-600 border-t-2 border-white">
-                                            <div className="flex justify-center items-center gap-1 text-gray-600">
+                                        <td colSpan={5} className="px-2 py-2 text-xxs text-gray-300 border-t-2 border-white">
+                                            <div className="flex justify-center items-center gap-1 text-gray-300">
                                                 <ClockIcon className="h-5"/>
                                                 <p className="pt-0.5">{match.Date}</p>
 

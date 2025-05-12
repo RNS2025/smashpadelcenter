@@ -2,7 +2,6 @@ import { Helmet } from "react-helmet-async";
 import { useNavigate, useParams } from "react-router-dom";
 import { useUser } from "../../../../context/UserContext.tsx";
 import { FormEvent, useEffect, useState } from "react";
-import { mockUsers } from "../../../../utils/mock/mockUsers.ts";
 import userProfileService from "../../../../services/userProfileService.ts";
 import BackArrow from "../../../misc/BackArrow.tsx";
 import { DaoGroupUser } from "../../../../types/daoGroupAllUsers.ts";
@@ -18,53 +17,52 @@ export const EditGroupTab = () => {
   const [error, setError] = useState<string | null>(null);
 
   const filteredUsers = allUsers.filter(
-    (u) =>
-      (u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        u.fullName?.toLowerCase().includes(searchQuery.toLowerCase())) &&
-      !selectedUsers.some((member: DaoGroupUser) => member.id === u.id)
+      (u) =>
+          u.username !== user?.username &&
+          (u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+              u.fullName?.toLowerCase().includes(searchQuery.toLowerCase())) &&
+          !selectedUsers.some((member: DaoGroupUser) => member.id === u.id)
   );
+
 
   const handleSelectUser = (user: DaoGroupUser) => {
     setSelectedUsers((prev) => [...prev, user]);
     setSearchQuery("");
   };
 
-  const useMockData = false;
-
   useEffect(() => {
-    const fetchUsersAndGroup = async () => {
-      if (useMockData) {
-        setAllUsers(mockUsers);
-      } else {
-        try {
-          const response = await userProfileService.getAllUsers();
-          console.log("Respons fra konsol:", response)
-          setAllUsers(response || []);
-        } catch (error) {
-          console.error("Error fetching users:", error);
-          setError("Der opstod en fejl under indlæsning af brugere.");
-        }
-      }
-
-      if (user && groupId) {
-        const userGroups = user.groups || [];
-        const group = userGroups.find((g) => g.id === groupId);
-
-        if (group) {
-          setGroupName(group.name);
-          const groupMembers = group.members || [];
-          const members = allUsers.filter((u) =>
-            groupMembers.includes(u.username)
-          );
-          setSelectedUsers(members);
-        } else {
-          setError("Gruppen blev ikke fundet.");
-        }
+    const fetchAllUsers = async () => {
+      try {
+        const response = await userProfileService.getAllUsers();
+        const filteredUsers = (response || []).filter(
+            (u) => u.username !== user?.username
+        );
+        setAllUsers(filteredUsers);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        setError("Der opstod en fejl under indlæsning af brugere.");
       }
     };
 
-    fetchUsersAndGroup().then();
-  }, [user, groupId, useMockData, allUsers]);
+    fetchAllUsers().then();
+  }, [user]);
+
+  useEffect(() => {
+    if (!user || !groupId || allUsers.length === 0) return;
+
+    const userGroups = user.groups || [];
+    const group = userGroups.find((g) => g.id === groupId);
+
+    if (group) {
+      setGroupName(group.name);
+      const groupMembers = group.members || [];
+      const members = allUsers.filter((u) => groupMembers.includes(u.username));
+      setSelectedUsers(members);
+    } else {
+      setError("Gruppen blev ikke fundet.");
+    }
+  }, [user, groupId, allUsers]);
+
 
   const handleEditGroup = async (event: FormEvent) => {
     event.preventDefault();
@@ -130,7 +128,7 @@ export const EditGroupTab = () => {
 
       <BackArrow />
 
-      <div className="w-full bg-white rounded-xl p-4 text-gray-900">
+      <div className="w-full bg-slate-800/80 rounded-xl p-4 text-gray-300">
         {error && (
           <div className="mb-4 text-red-500">
             {error}
@@ -154,7 +152,7 @@ export const EditGroupTab = () => {
               <div className="pr-1">
                 <input
                   type="text"
-                  className="w-full rounded-lg h-12 resize-none"
+                  className="w-full rounded-lg h-12 border-slate-800/80 bg-slate-800/80 resize-none text-gray-300"
                   value={groupName}
                   onChange={(e) => setGroupName(e.target.value)}
                   required
@@ -169,13 +167,13 @@ export const EditGroupTab = () => {
               <div className="relative pr-1">
                 <input
                   type="text"
-                  className="w-full rounded-lg h-12 resize-none"
+                  className="w-full rounded-lg h-12 border-slate-800/80 bg-slate-800/80 resize-none text-gray-300"
                   placeholder="Søg efter spillere..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
                 {searchQuery && (
-                  <div className="absolute z-10 bg-white w-full border border-black rounded mt-1 max-h-40 overflow-y-auto">
+                    <div className="absolute z-10 border-slate-800/80 bg-slate-800 w-3/4 border rounded mt-1 max-h-40 overflow-y-auto">
                     {filteredUsers.length > 0 ? (
                       filteredUsers.map((member) => (
                         <div
@@ -222,10 +220,10 @@ export const EditGroupTab = () => {
             )}
           </div>
 
-          <div className="flex justify-between">
+          <div className="flex flex-col gap-4">
             <button
               type="submit"
-              className="bg-cyan-500 rounded-lg py-2 px-4 text-white"
+              className="w-full bg-slate-700 rounded-lg py-2 px-4 text-cyan-500"
             >
               Gem gruppe
             </button>
@@ -233,7 +231,7 @@ export const EditGroupTab = () => {
             <button
               type="button"
               onClick={handleDeleteGroup}
-              className="bg-red-500 rounded-lg py-2 px-4 text-white"
+              className="w-full bg-slate-700 rounded-lg py-2 px-4 text-red-500"
             >
               Slet gruppe
             </button>

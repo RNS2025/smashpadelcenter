@@ -31,31 +31,31 @@ export const TeamProfileStandingsTab = () => {
             </Helmet>
 
             {standings.length > 0 && (
-                <div className="overflow-auto h-[calc(100vh-380px)] rounded-lg border border-gray-200 shadow-lg my-5 text-xxs">
-                    <table className="min-w-[320px] w-full divide-y-2 divide-gray-200 bg-white">
-                        <thead className="bg-gray-300 font-bold">
+                <div className="overflow-auto h-[calc(100vh-380px)] rounded-lg shadow-lg my-5 text-xxs">
+                    <table className="min-w-[320px] w-full divide-y-2 divide-cyan-500 bg-slate-700/80">
+                        <thead className="bg-slate-800/80 font-bold">
                         <tr>
-                            <th className="py-2 text-gray-900 select-none w-[10%] sm:w-[30%]">
+                            <th className="py-2 text-gray-300 select-none w-[10%] sm:w-[30%]">
                                 <div className="flex items-center justify-center">
                                     Holdnavn
                                 </div>
                             </th>
-                            <th className="py-2 text-gray-900 select-none">
+                            <th className="py-2 text-gray-300 select-none">
                                 <div className="flex items-center justify-center">
                                     KS
                                 </div>
                             </th>
-                            <th className="py-2 text-gray-900 select-none">
+                            <th className="py-2 text-gray-300 select-none">
                                 <div className="flex items-center justify-center">
                                     W-L
                                 </div>
                             </th>
-                            <th className="py-2 text-gray-900 select-none">
+                            <th className="py-2 text-gray-300 select-none">
                                 <div className="flex items-center justify-center">
                                     Enkeltkampe
                                 </div>
                             </th>
-                            <th className="py-2 text-gray-900 select-none">
+                            <th className="py-2 text-gray-300 select-none">
                                 <div className="flex items-center justify-center">
                                     Sæt
                                 </div>
@@ -63,23 +63,23 @@ export const TeamProfileStandingsTab = () => {
                         </tr>
                         </thead>
 
-                        <tbody className="divide-y divide-gray-200">
+                        <tbody className="divide-y divide-cyan-500">
                         {standings.map((teamStanding) => (
                             <tr key={teamStanding.Standing}>
-                                <td className="px-2 py-4 font-medium text-gray-900 flex gap-4">
+                                <td className="px-2 py-4 font-medium text-gray-300 flex gap-4">
                                     <p>{teamStanding.Standing}.</p>
                                     <p>{teamStanding.ParticipantName}</p>
                                 </td>
-                                <td className="py-2 font-medium text-gray-900 text-center">
+                                <td className="py-2 font-medium text-gray-300 text-center">
                                     {teamStanding.Played}
                                 </td>
-                                <td className="py-2 font-medium text-gray-900 text-center">
+                                <td className="py-2 font-medium text-gray-300 text-center">
                                     {teamStanding.Wins} - {teamStanding.Losses}
                                 </td>
-                                <td className="py-2 font-medium text-gray-900 text-center">
+                                <td className="py-2 font-medium text-gray-300 text-center">
                                     {teamStanding.GamesWon} - {teamStanding.GamesLost}
                                 </td>
-                                <td className="py-2 font-medium text-gray-900 text-center">
+                                <td className="py-2 font-medium text-gray-300 text-center">
                                     {teamStanding.TeamGamesWon} - {teamStanding.TeamGamesLost}
                                 </td>
                             </tr>

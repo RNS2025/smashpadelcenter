@@ -61,7 +61,7 @@ const ProfilePage = () => {
           <ProfileHeader profile={profile} rankedInProfile={rankedInProfile} />
 
         {/* Tab Content */}
-        <div className="bg-gradient-to-br from-gray-100 to-gray-300 shadow-lg rounded-lg p-6 border border-cyan-500">
+        <div className="bg-slate-800/70 shadow-lg rounded-lg p-6 border border-cyan-500">
           <div className="mb-2">
           <ProfileTabMenu profile={profile} user={user} />
           </div>

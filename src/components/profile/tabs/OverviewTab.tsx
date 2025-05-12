@@ -63,27 +63,27 @@ const OverviewTab = () => {
       </Helmet>
 
       <div>
-        <h3 className="text-lg font-semibold text-gray-800 mt-4 mb-2">
+        <h3 className="text-lg font-semibold text-gray-300 mt-4 mb-2">
           Statistik
         </h3>
         <div className="grid grid-cols-3 gap-4">
           <div className="text-center">
-            <p className="text-2xl font-bold text-gray-800">
+            <p className="text-2xl font-bold text-gray-300">
               {profile.stats?.matches || 0}
             </p>
-            <p className="text-xs text-gray-600">Kampe</p>
+            <p className="text-xs text-gray-500">Kampe</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-gray-800">
+            <p className="text-2xl font-bold text-gray-300">
               {profile.stats?.wins || 0}
             </p>
-            <p className="text-xs text-gray-600">Sejre</p>
+            <p className="text-xs text-gray-500">Sejre</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-gray-800">
+            <p className="text-2xl font-bold text-gray-300">
               {profile.stats?.losses || 0}
             </p>
-            <p className="text-xs text-gray-600">Nederlag</p>
+            <p className="text-xs text-gray-500">Nederlag</p>
           </div>
           <div className="col-span-3 mt-2">
             <div className="w-full bg-white rounded-full h-2.5">
@@ -91,26 +91,26 @@ const OverviewTab = () => {
 
               </div>
             </div>
-            <p className="text-xs text-center mt-1 text-gray-600">
+            <p className="text-xs text-center mt-1 text-gray-500">
               {winRate}% Sejrsprocent
             </p>
           </div>
         </div>
 
-        <h3 className="text-lg font-semibold text-gray-800 mt-4 mb-2">
+        <h3 className="text-lg font-semibold text-gray-300 mt-4 mb-2">
           Spilleroplysninger
         </h3>
-        <p className="text-gray-800">
+        <p className="text-gray-300">
           <strong>Position:</strong> {profile.position}
         </p>
-        <p className="text-gray-800">
+        <p className="text-gray-300">
           <strong>Spillestil:</strong> {profile.playingStyle}
         </p>
-        <p className="text-gray-800">
+        <p className="text-gray-300">
           <strong>Udstyr:</strong> {profile.equipment}
         </p>
 
-        <h3 className="text-lg font-semibold text-gray-800 mt-4 mb-2">
+        <h3 className="text-lg font-semibold text-gray-300 mt-4 mb-2">
           Kommende Kampe
         </h3>
 
@@ -124,7 +124,7 @@ const OverviewTab = () => {
               <li
                   onClick={() => navigate(`/makkerbørs/${match.id}`)}
                 key={match.id}
-                className="border border-gray-900 p-2 rounded-lg text-gray-800"
+                className="border border-gray-900 p-2 rounded-lg text-gray-300"
               >
                 <div className="flex justify-between text-xs border-b border-gray-600">
                   <h1>
@@ -143,7 +143,7 @@ const OverviewTab = () => {
                 <div className="flex justify-between text-xs pt-2">
                   <div className="flex items-center gap-2">
                     {match.participants.length !== match.totalSpots && (
-                      <QuestionMarkCircleIcon className="size-8 text-gray-800" />
+                      <QuestionMarkCircleIcon className="size-8 text-gray-300" />
                     )}
                     <div>
                       <h1>Niveau:</h1>
@@ -163,8 +163,8 @@ const OverviewTab = () => {
             ))}
           </ul>
         ) : (
-            <div className="border border-gray-900 p-2 rounded-lg text-gray-800">
-              <p className="py-4 text-center text-gray-600">Ingen kommende kampe.</p>
+            <div className="border p-2 rounded-lg text-gray-300">
+              <p className="py-4 text-center text-gray-300">Ingen kommende kampe.</p>
             </div>
         )}
       </div>

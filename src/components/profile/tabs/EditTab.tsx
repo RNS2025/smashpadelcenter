@@ -20,11 +20,11 @@ const EditTab = () => {
                 <div className="flex gap-2">
                 <label
                     htmlFor="fullName"
-                    className="block text-sm font-medium text-gray-600"
+                    className="block text-sm font-medium text-gray-300"
                 >
                   Fulde navn
                 </label>
-                <InformationCircleIcon onClick={() => alert("Din RankedIn-profil tilkobles automatisk, hvis dit fulde navn matcher navnet på din RankedIn-konto.")} className="h-5 text-[#2f3f7d]" />
+                <InformationCircleIcon onClick={() => alert("Din RankedIn-profil tilkobles automatisk, hvis dit fulde navn matcher navnet på din RankedIn-konto.")} className="h-5 text-cyan-500" />
                 </div>
                 <input
                     type="text"
@@ -32,12 +32,13 @@ const EditTab = () => {
                     id="fullName"
                     value={formData.fullName || ""}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm text-gray-800"/>
+                    className="mt-1 block w-full rounded-md border-slate-800/80 bg-slate-800/80 shadow-sm sm:text-sm text-gray-300"
+                />
               </div>
               <div>
                 <label
                     htmlFor="username"
-                    className="block text-sm font-medium text-gray-600"
+                    className="block text-sm font-medium text-gray-300"
                 >
                   Brugernavn
                 </label>
@@ -47,13 +48,14 @@ const EditTab = () => {
                     id="username"
                     value={formData.username || ""}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm sm:text-sm text-gray-800 bg-gray-100 cursor-not-allowed"
-                    disabled/>
+                    className="mt-1 block w-full rounded-md border-slate-800/80 bg-slate-800/80 shadow-sm sm:text-sm text-gray-300"
+                    disabled
+                />
               </div>
               <div>
                 <label
                     htmlFor="rankedInId"
-                    className="block text-sm font-medium text-gray-600"
+                    className="block text-sm font-medium text-gray-300"
                 >
                   RankedIn ID
                 </label>
@@ -63,13 +65,13 @@ const EditTab = () => {
                     id="rankedInId"
                     value={formData.rankedInId || ""}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm text-gray-800"
+                    className="mt-1 block w-full rounded-md border-slate-800/80 bg-slate-800/80 shadow-sm sm:text-sm text-gray-300"
                     />
               </div>
               <div>
                 <label
                     htmlFor="email"
-                    className="block text-sm font-medium text-gray-600"
+                    className="block text-sm font-medium text-gray-300"
                 >
                   Email
                 </label>
@@ -79,12 +81,13 @@ const EditTab = () => {
                     id="email"
                     value={formData.email || ""}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm text-gray-800"/>
+                    className="mt-1 block w-full rounded-md border-slate-800/80 bg-slate-800/80 shadow-sm sm:text-sm text-gray-300"
+                />
               </div>
               <div>
                 <label
                     htmlFor="phoneNumber"
-                    className="block text-sm font-medium text-gray-600"
+                    className="block text-sm font-medium text-gray-300"
                 >
                   Telefon
                 </label>
@@ -94,12 +97,13 @@ const EditTab = () => {
                     id="phoneNumber"
                     value={formData.phoneNumber || ""}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm text-gray-800"/>
+                    className="mt-1 block w-full rounded-md border-slate-800/80 bg-slate-800/80 shadow-sm sm:text-sm text-gray-300"
+                />
               </div>
               <div>
                 <label
                     htmlFor="skillLevel"
-                    className="block text-sm font-medium text-gray-600"
+                    className="block text-sm font-medium text-gray-300"
                 >
                   Niveau (1-5)
                 </label>
@@ -112,12 +116,13 @@ const EditTab = () => {
                     step="0.1"
                     value={formData.skillLevel || ""}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm text-gray-800"/>
+                    className="mt-1 block w-full rounded-md border-slate-800/80 bg-slate-800/80 shadow-sm sm:text-sm text-gray-300"
+                />
               </div>
               <div>
                 <label
                     htmlFor="position"
-                    className="block text-sm font-medium text-gray-600"
+                    className="block text-sm font-medium text-gray-300"
                 >
                   Position
                 </label>
@@ -126,7 +131,7 @@ const EditTab = () => {
                     id="position"
                     value={formData.position || ""}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm text-gray-800"
+                    className="mt-1 block w-full rounded-md border-slate-800/80 bg-slate-800/80 shadow-sm sm:text-sm text-gray-300"
                 >
                   <option value="Venstre">Venstre</option>
                   <option value="Højre">Højre</option>
@@ -136,7 +141,7 @@ const EditTab = () => {
               <div className="col-span-1 md:col-span-2">
                 <label
                     htmlFor="playingStyle"
-                    className="block text-sm font-medium text-gray-600"
+                    className="block text-sm font-medium text-gray-300"
                 >
                   Spillestil
                 </label>
@@ -146,12 +151,13 @@ const EditTab = () => {
                     id="playingStyle"
                     value={formData.playingStyle || ""}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm text-gray-800"/>
+                    className="mt-1 block w-full rounded-md border-slate-800/80 bg-slate-800/80 shadow-sm sm:text-sm text-gray-300"
+                />
               </div>
               <div className="col-span-1 md:col-span-2">
                 <label
                     htmlFor="equipment"
-                    className="block text-sm font-medium text-gray-600"
+                    className="block text-sm font-medium text-gray-300"
                 >
                   Udstyr
                 </label>
@@ -161,14 +167,15 @@ const EditTab = () => {
                     rows={3}
                     value={formData.equipment || ""}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm text-gray-800"/>
+                    className="mt-1 block w-full rounded-md border-slate-800/80 bg-slate-800/80 shadow-sm sm:text-sm text-gray-300 resize-none"
+                />
               </div>
             </div>
             <div className="mt-6">
               <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="inline-flex justify-center py-2 px-4 rounded-lg text-sm font-medium text-white bg-cyan-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  className="w-full inline-flex justify-center py-2 px-4 rounded-lg text-sm font-medium text-cyan-500 bg-slate-700 transition duration-300 disabled:bg-gray-400 disabled:cursor-not-allowed"
               >
                 {isSubmitting ? "Gemmer..." : "Gem profil"}
               </button>

@@ -509,7 +509,7 @@ const LeagueStandingsPage: React.FC = () => {
             />
           )}
 
-          <section className="bg-slate-800/60 backdrop-blur-md shadow-xl rounded-lg p-4 sm:p-5 mb-6 sm:mb-8 animate-fadeInDown">
+          <section className="bg-slate-800/80 backdrop-blur-md shadow-xl rounded-lg p-4 sm:p-5 mb-6 sm:mb-8 animate-fadeInDown">
             <div className="space-y-4 sm:space-y-5">
               <div>
                 <StyledSelect

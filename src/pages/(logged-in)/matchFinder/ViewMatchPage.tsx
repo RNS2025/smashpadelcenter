@@ -663,36 +663,36 @@ export const ViewMatchPage = () => {
             )}
 
           {/* Match details */}
-          <div className="grid grid-cols-2 text-center text-black gap-3">
-            <div className="bg-white rounded flex justify-center items-center gap-1 py-4">
+          <div className="grid grid-cols-2 text-center text-gray-300 gap-3">
+            <div className="border-slate-800/80 bg-slate-800/80 rounded flex justify-center items-center gap-1 py-4">
               <BoltIcon className="h-6 text-yellow-500" />
               <h1 className="h-5">{match!.level}</h1>
             </div>
 
-            <div className="bg-white rounded flex justify-center items-center gap-1 py-4">
+            <div className="border-slate-800/80 bg-slate-800/80 rounded flex justify-center items-center gap-1 py-4">
               <MapPinIcon className="h-6 text-red-500" />
               <h1 className="h-5">{match!.location.split(" ")[2]}</h1>
             </div>
 
             {match!.courtBooked ? (
-              <div className="bg-white rounded flex justify-center items-center gap-1 py-4">
+              <div className="border-slate-800/80 bg-slate-800/80 rounded flex justify-center items-center gap-1 py-4">
                 <CheckCircleIcon className="h-6 rounded-lg text-green-500" />
                 <h1 className="h-5">Bane er booket</h1>
               </div>
             ) : (
-              <div className="bg-white rounded flex justify-center items-center gap-1 py-4">
+              <div className="border-slate-800/80 bg-slate-800/80 rounded flex justify-center items-center gap-1 py-4">
                 <XCircleIcon className="h-6 rounded-lg text-red-500" />
                 <h1 className="h-5">Bane ikke booket</h1>
               </div>
             )}
 
-            <div className="bg-white rounded flex justify-center items-center gap-1 py-4">
+            <div className="border-slate-800/80 bg-slate-800/80 rounded flex justify-center items-center gap-1 py-4">
               <UserGroupIcon className="h-6 rounded-lg text-white bg-gradient-to-b from-sky-400 to-pink-400" />
               <h1 className="h-5">{match!.matchType}</h1>
             </div>
           </div>
 
-          <div className="bg-white rounded w-full text-black p-4 flex flex-col gap-2">
+          <div className="border-slate-800/80 bg-slate-800/80 rounded w-full text-gray-300 p-4 flex flex-col gap-2">
             <h1 className="font-semibold">Bemærkninger</h1>
             <p>{match!.description || "Ingen bemærkninger."}</p>
           </div>
@@ -705,7 +705,7 @@ export const ViewMatchPage = () => {
             !match!.joinRequests.includes(user.username) && (
               <button
                 onClick={handleJoinMatch}
-                className="w-full bg-cyan-500 rounded-lg py-2 px-4 text-white"
+                className="w-full bg-slate-700 rounded-lg py-2 px-4 text-cyan-500 text-lg"
               >
                 Tilmeld kamp
               </button>
@@ -716,7 +716,7 @@ export const ViewMatchPage = () => {
             match!.joinRequests.includes(user.username) && (
               <button
                 onClick={() => handleCancelJoinRequest(user.username)}
-                className="w-full text-lg bg-red-500  rounded-lg py-2 px-4 text-white"
+                className="w-full bg-slate-700 rounded-lg py-2 px-4 text-red-500 text-lg"
               >
                 Fjern tilmeldingsanmodning
               </button>
@@ -732,7 +732,7 @@ export const ViewMatchPage = () => {
                     new Date(match!.endTime)
                 );
                 downloadICSFile(ics, `padelkamp-${match!.id}.ics`);
-              }} className="w-full text-lg bg-cyan-500 rounded-lg py-2 px-4 text-white">
+              }} className="w-full bg-slate-700 rounded-lg py-2 px-4 text-cyan-500 text-lg">
                 Tilføj til kalender
               </button>
           )}
@@ -744,7 +744,7 @@ export const ViewMatchPage = () => {
               <div className="flex flex-col w-full gap-4 text-lg">
                 <button
                   onClick={() => setInviteDialogVisible(true)}
-                  className="bg-green-500  rounded-lg py-2 px-4 text-white"
+                  className="w-full bg-slate-700 rounded-lg py-2 px-4 text-green-500 text-lg"
                 >
                   Inviter spillere
                 </button>
@@ -754,14 +754,14 @@ export const ViewMatchPage = () => {
                     onClick={() => {
                       navigate(`/makkerbørs/${matchId}/rediger`)}
                 }
-                    className="bg-orange-500 rounded-lg py-2 px-4 text-white"
+                    className="w-full bg-slate-700 rounded-lg py-2 px-4 text-orange-500 text-lg"
                 >
                   Rediger kamp
                 </button>
 
                 <button
                   onClick={handleDeleteMatch}
-                  className="bg-red-500 rounded-lg py-2 px-4 text-white"
+                  className="w-full bg-slate-700 rounded-lg py-2 px-4 text-red-500 text-lg"
                 >
                   Slet kamp
                 </button>

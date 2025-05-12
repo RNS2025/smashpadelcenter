@@ -92,14 +92,14 @@ export const MatchInvitedPlayersDialog = ({
 
   return (
     <>
-      <div className="overflow-hidden w-11/12 rounded-lg shadow-2xl bg-white p-4 text-black">
+      <div className="overflow-hidden w-11/12 rounded-lg shadow-2xl bg-slate-800/80 p-4 text-gray-300">
         <div className="flex flex-col items-center">
           <div className="flex flex-col gap-8 mt-5 p-4 w-full">
             {user && (
               <div>
                 <label
                   htmlFor="grupper"
-                  className="block text-sm font-medium text-gray-700"
+                  className="block text-sm font-medium"
                 >
                   Vælg en gruppe
                 </label>
@@ -108,7 +108,7 @@ export const MatchInvitedPlayersDialog = ({
                   id="grupper"
                   name="grupper"
                   defaultValue=""
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-cyan-500 focus:ring-cyan-500 sm:text-sm"
+                  className="w-full rounded-lg border-slate-800/80 bg-slate-800/80 h-12 pr-1 text-sm"
                   onChange={(e) => handleGroupSelect(e.target.value)}
                 >
                   <option value="">Ingen gruppe</option>
@@ -124,20 +124,20 @@ export const MatchInvitedPlayersDialog = ({
             <div>
               <label
                 htmlFor="spillere"
-                className="block text-sm font-medium text-gray-700"
+                className="block text-sm font-medium"
               >
                 Enkelte spillere
               </label>
               <input
                 type="text"
-                className="w-full rounded-lg h-12"
+                className="rounded-lg w-full border-slate-800/80 bg-slate-800/80 text-sm h-12"
                 placeholder="Søg efter spillere..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
 
               {searchQuery && (
-                <div className="absolute z-10 bg-white w-full border border-black rounded mt-1 max-h-40 overflow-y-auto">
+                  <div className="absolute z-10 border-slate-800/80 bg-slate-800 w-3/4 border rounded mt-1 max-h-40 overflow-y-auto">
                   {filteredUsers.length > 0 ? (
                     filteredUsers.map((member) => (
                       <div
