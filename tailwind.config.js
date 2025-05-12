@@ -15,7 +15,7 @@ export default {
         "slate-950": "#020617", // Standard slate-950 from Tailwind v3.3+
 
         // Brand colors used for accents, gradients, etc.
-        "brand-primary": "#00E5A1", // Example vibrant primary color (Green-Teal)
+        "brand-primary": "#06b6d4", // Example vibrant primary color (Green-Teal)
         "brand-secondary": "#0077FF", // Example secondary color (Blue)
         "brand-accent": "#A64CEB", // Example accent color (Purple)
       },

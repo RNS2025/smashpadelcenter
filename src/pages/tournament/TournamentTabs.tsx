@@ -79,14 +79,6 @@ export const TournamentTabs = () => {
               description="Se kommende DPF turneringer"
               link="/turneringer/kommende"
             />
-            <HomeScreenCard
-              icon={
-                <RectangleGroupIcon className="size-10" aria-hidden="true" />
-              }
-              title="Lunar liga resultater"
-              description="Se resultater fra Lunar ligaen"
-              link="/lunarGlobal"
-            />
           </div>
         </div>
       </Animation>

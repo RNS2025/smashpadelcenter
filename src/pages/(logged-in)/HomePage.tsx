@@ -18,13 +18,15 @@ import {
   UsersIcon,
   CubeIcon,
   PresentationChartBarIcon,
+  RectangleGroupIcon,
 } from "@heroicons/react/24/outline";
 import { setupNotifications } from "../../utils/notifications";
 import LoadingSpinner from "../../components/misc/LoadingSpinner.tsx";
 
 export const HomePage = () => {
   const { user, loading } = useUser();
-  const [isNotificationsInitialized, setNotificationsInitialized] = useState(false);
+  const [isNotificationsInitialized, setNotificationsInitialized] =
+    useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -47,13 +49,13 @@ export const HomePage = () => {
 
   if (loading) {
     return (
-        <>
-          <HomeBar />
-          <div className="w-full h-[calc(100vh-150px)] flex justify-center items-center">
-            <LoadingSpinner />
-          </div>
-        </>
-    )
+      <>
+        <HomeBar />
+        <div className="w-full h-[calc(100vh-150px)] flex justify-center items-center">
+          <LoadingSpinner />
+        </div>
+      </>
+    );
   }
 
   return (
@@ -175,6 +177,14 @@ export const HomePage = () => {
                 link="/feedback"
               />
             )}
+            <HomeScreenCard
+              icon={
+                <RectangleGroupIcon className="size-10" aria-hidden="true" />
+              }
+              title="Følg med i Lunar Ligaen"
+              description="Se resultater fra Lunar ligaen"
+              link="/lunarGlobal"
+            />
           </div>
         </div>
       </Animation>

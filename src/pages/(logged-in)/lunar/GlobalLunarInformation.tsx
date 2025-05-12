@@ -1,40 +1,24 @@
-// interfaces.ts (as provided in thought process)
-// export interface OrganisationEvent { ... }
-// export interface OrganisationEventsResponse { ... }
-// export interface Team { ... }
-// export interface Match { ... }
-// export interface Round { ... }
-// export interface MatchesSectionModel { ... }
-// export interface Pool { ... }
-// export interface PoolsInfoResponse { ... }
-// export interface TeamStanding { ... } // New
-// export interface StandingsModel { ... } // New
-// export interface StandingsResponse { ... } // Updated
-// export interface GroupedPools { ... }
-
-// LeagueStandingsPage.tsx (combine everything)
-
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import {
   OrganisationEvent,
   OrganisationEventsResponse,
   Pool,
   PoolsInfoResponse,
-  StandingsResponse, // Updated to include StandingsModel
+  StandingsResponse, // Opdateret til at inkludere StandingsModel
   MatchesSectionModel,
   GroupedPools,
   Round as RoundType,
   Match as MatchType,
-  TeamStanding, // New import
-} from "./interfaces"; // Assuming interfaces.ts is in the same directory or adjust path
+  TeamStanding, // Ny import
+} from "../../../types/LunarGlobal"; // Antager at interfaces.ts er i samme mappe eller juster sti
 
 const API_BASE_URL = "https://api.rankedin.com/v1";
 
-// --- Embedded UI Components (Styled with Tailwind CSS) ---
-// (Include LoadingSpinner, AlertMessage, StyledSelect, TabButton, SearchInput components here)
-// ... (copy the component definitions from previous turns)
-// Ensure these components are exactly as in the previous good answers.
-// StyledSelectProps, TabButtonProps, LoadingSpinnerProps, AlertMessageProps, SearchInputProps interfaces also need to be included
+// --- Indlejrede UI-komponenter (stylet med Tailwind CSS) ---
+// (Inkludér LoadingSpinner, AlertMessage, StyledSelect, TabButton, SearchInput komponenter her)
+// ... (kopiér komponentdefinitionerne fra tidligere svar)
+// Sørg for, at disse komponenter er præcis som i de tidligere korrekte svar.
+// StyledSelectProps, TabButtonProps, LoadingSpinnerProps, AlertMessageProps, SearchInputProps grænseflader skal også inkluderes
 
 interface LoadingSpinnerProps {
   size?: "small" | "medium" | "large";
@@ -55,11 +39,6 @@ interface StyledSelectProps
 }
 interface TabButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   isActive: boolean;
-}
-interface SearchInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label?: string;
-  className?: string;
-  labelClassName?: string;
 }
 
 const LoadingSpinner: React.FC<LoadingSpinnerProps> = ({
@@ -215,7 +194,6 @@ const StyledSelect: React.FC<StyledSelectProps> = ({
               value={option.value}
               className="bg-slate-700 text-slate-200"
             >
-              {" "}
               {option.label}
             </option>
           ))}
@@ -264,50 +242,7 @@ const TabButton: React.FC<TabButtonProps> = ({
   );
 };
 
-const SearchInput: React.FC<SearchInputProps> = ({
-  label,
-  id,
-  className = "",
-  labelClassName = "",
-  ...props
-}) => {
-  return (
-    <div className={`w-full ${className}`}>
-      {label && (
-        <label
-          htmlFor={id}
-          className={`block text-xs font-semibold text-slate-400 mb-1.5 tracking-wide uppercase ${labelClassName}`}
-        >
-          {label}
-        </label>
-      )}
-      <div className="relative">
-        <input
-          id={id}
-          type="text"
-          {...props}
-          className="w-full pl-3 pr-10 py-2 bg-slate-750 border border-slate-600 text-slate-200 rounded-md shadow-sm focus:outline-none focus:ring-1 focus:ring-brand-primary focus:border-brand-primary transition-all duration-150 text-sm"
-        />
-        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2.5 text-slate-400">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-          >
-            <path
-              fillRule="evenodd"
-              d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"
-              clipRule="evenodd"
-            />
-          </svg>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// --- Main Page Component ---
+// --- Hovedsidekomponent ---
 const LeagueStandingsPage: React.FC = () => {
   const [organisationEvents, setOrganisationEvents] = useState<
     OrganisationEvent[]
@@ -322,15 +257,12 @@ const LeagueStandingsPage: React.FC = () => {
   >(null);
   const [selectedPool, setSelectedPool] = useState<Pool | null>(null);
   const [standings, setStandings] = useState<MatchesSectionModel | null>(null);
-  // New state for the general standings data
+  // Ny tilstand for generelle stillingsdata
   const [generalStandings, setGeneralStandings] = useState<
     TeamStanding[] | null
   >(null);
 
-  const [teamSearchTerm, setTeamSearchTerm] = useState<string>("");
-  const [teamSearchResults, setTeamSearchResults] = useState<
-    { groupKey: string; pool: Pool }[]
-  >([]);
+  const [teamSearchTerm] = useState<string>("");
 
   const [loadingStates, setLoadingStates] = useState({
     events: false,
@@ -346,9 +278,9 @@ const LeagueStandingsPage: React.FC = () => {
     if (!response.ok) {
       const errorData = await response
         .json()
-        .catch(() => ({ message: "Network response was not ok" }));
+        .catch(() => ({ message: "Netværkssvaret var ikke ok" }));
       throw new Error(
-        errorData.message || `HTTP error! status: ${response.status}`
+        errorData.message || `HTTP-fejl! status: ${response.status}`
       );
     }
     return response.json() as Promise<T>;
@@ -387,7 +319,7 @@ const LeagueStandingsPage: React.FC = () => {
         } else if (parts.length === 2) {
           groupName = parts[0];
         } else {
-          groupName = "Other";
+          groupName = "Andet";
         }
 
         if (!grouped[groupName]) {
@@ -407,19 +339,19 @@ const LeagueStandingsPage: React.FC = () => {
     []
   );
 
-  // --- Effects for Data Fetching ---
+  // --- Effekter til datahentning ---
   useEffect(() => {
     const getEvents = async () => {
       setLoadingStates((prev) => ({ ...prev, events: true }));
       setError(null);
       try {
         const data = await fetchDataInternal<OrganisationEventsResponse>(
-          `${API_BASE_URL}/Organization/GetOrganisationEventsAsync?organisationId=1420&IsFinished=false&Language=en&EventType=3&skip=0&take=20`
+          `${API_BASE_URL}/Organization/GetOrganisationEventsAsync?organisationId=1420&IsFinished=false&Language=da&EventType=3&skip=0&take=20`
         );
         setOrganisationEvents(data.payload);
       } catch (err) {
         setError((err as Error).message);
-        console.error("Failed to fetch events:", err);
+        console.error("Kunne ikke hente begivenheder:", err);
       } finally {
         setLoadingStates((prev) => ({ ...prev, events: false }));
       }
@@ -434,9 +366,7 @@ const LeagueStandingsPage: React.FC = () => {
       setSelectedPoolGroupKey(null);
       setSelectedPool(null);
       setStandings(null);
-      setGeneralStandings(null); // Clear general standings too
-      setTeamSearchTerm("");
-      setTeamSearchResults([]);
+      setGeneralStandings(null); // Ryd også generelle stillinger
       return;
     }
     const getPools = async () => {
@@ -447,9 +377,7 @@ const LeagueStandingsPage: React.FC = () => {
       setSelectedPoolGroupKey(null);
       setSelectedPool(null);
       setStandings(null);
-      setGeneralStandings(null); // Clear general standings too
-      setTeamSearchTerm("");
-      setTeamSearchResults([]);
+      setGeneralStandings(null); // Ryd også generelle stillinger
       try {
         const data = await fetchDataInternal<PoolsInfoResponse>(
           `${API_BASE_URL}/teamleague/GetPoolsInfoAsync?id=${selectedEvent.eventId}`
@@ -458,7 +386,7 @@ const LeagueStandingsPage: React.FC = () => {
         setGroupedPools(groupPoolsByNameInternal(data.Pools));
       } catch (err) {
         setError((err as Error).message);
-        console.error("Failed to fetch pools:", err);
+        console.error("Kunne ikke hente puljer:", err);
       } finally {
         setLoadingStates((prev) => ({ ...prev, pools: false }));
       }
@@ -469,36 +397,36 @@ const LeagueStandingsPage: React.FC = () => {
   useEffect(() => {
     if (!selectedPool || !selectedEvent) {
       setStandings(null);
-      setGeneralStandings(null); // Clear general standings too
+      setGeneralStandings(null); // Ryd også generelle stillinger
       return;
     }
     const getStandings = async () => {
       setLoadingStates((prev) => ({ ...prev, standings: true }));
       setError(null);
-      setStandings(null); // Clear old data
-      setGeneralStandings(null); // Clear old data for general standings
+      setStandings(null); // Ryd gamle data
+      setGeneralStandings(null); // Ryd gamle data for generelle stillinger
       try {
         const data = await fetchDataInternal<StandingsResponse>(
-          `${API_BASE_URL}/teamleague/GetStandingsSectionAsync?teamleagueId=${selectedEvent.eventId}&poolid=${selectedPool.Id}&language=en`
+          `${API_BASE_URL}/teamleague/GetStandingsSectionAsync?teamleagueId=${selectedEvent.eventId}&poolid=${selectedPool.Id}&language=da`
         );
         setStandings(data.MatchesSectionModel);
 
-        // --- Extract and set general standings ---
+        // --- Uddrag og sæt generelle stillinger ---
         if (data.Standings?.ScoresViewModels) {
-          // Safely access the nested array
+          // Sikker adgang til det indlejrede array
           setGeneralStandings(data.Standings.ScoresViewModels);
         } else {
-          // Handle case where general standings data might be missing
+          // Håndter tilfælde, hvor generelle stillingsdata muligvis mangler
           console.warn(
-            "General standings data (Standings.ScoresViewModels) not found in response."
+            "Generelle stillingsdata (Standings.ScoresViewModels) blev ikke fundet i svaret."
           );
-          setGeneralStandings([]); // Set to empty array to indicate no data
+          setGeneralStandings([]); // Sæt til tomt array for at indikere ingen data
         }
         // ----------------------------------------
       } catch (err) {
         setError((err as Error).message);
-        console.error("Failed to fetch standings:", err);
-        setGeneralStandings(null); // Clear on error
+        console.error("Kunne ikke hente stillinger:", err);
+        setGeneralStandings(null); // Ryd ved fejl
       } finally {
         setLoadingStates((prev) => ({ ...prev, standings: false }));
       }
@@ -506,65 +434,7 @@ const LeagueStandingsPage: React.FC = () => {
     getStandings();
   }, [selectedPool, selectedEvent, fetchDataInternal]);
 
-  // --- Effect for Team Search Filtering ---
-  useEffect(() => {
-    if (
-      teamSearchTerm.trim() === "" ||
-      Object.keys(groupedPools).length === 0
-    ) {
-      setTeamSearchResults([]);
-      return;
-    }
-
-    const lowerSearchTerm = teamSearchTerm.toLowerCase();
-    const results: { groupKey: string; pool: Pool }[] = [];
-    const addedPoolIds = new Set<number>();
-
-    for (const groupKey in groupedPools) {
-      if (groupedPools.hasOwnProperty(groupKey)) {
-        groupedPools[groupKey].forEach((pool) => {
-          if (!addedPoolIds.has(pool.Id)) {
-            // Ensure pool.Matches is actually an array before processing
-            if (!Array.isArray(pool.Matches)) {
-              // Handle or skip pools with malformed match data
-              // console.warn(`Skipping pool ${pool.Id} (${pool.Name}) due to invalid Matches data:`, pool.Matches);
-              return; // Skip this iteration of the forEach
-            }
-
-            // Use .some() on the guaranteed array
-            const hasMatch = pool.Matches.some((match) => {
-              // DEFENSIVE CHECK: Ensure match is a valid object and has team properties
-              if (
-                match === null ||
-                typeof match !== "object" ||
-                !match.Team1 ||
-                !match.Team2
-              ) {
-                // console.warn(`Skipping invalid match entry in pool ${pool.Id} (${pool.Name}):`, match);
-                return false; // This specific match is malformed, skip it
-              }
-              // Use optional chaining and nullish coalescing for Team names
-              const team1Name = match.Team1.Name?.toLowerCase() ?? ""; // Get name or default to empty string
-              const team2Name = match.Team2.Name?.toLowerCase() ?? ""; // Get name or default to empty string
-
-              return (
-                team1Name.includes(lowerSearchTerm) ||
-                team2Name.includes(lowerSearchTerm)
-              );
-            });
-
-            if (hasMatch) {
-              results.push({ groupKey, pool });
-              addedPoolIds.add(pool.Id);
-            }
-          }
-        });
-      }
-    }
-    setTeamSearchResults(results);
-  }, [teamSearchTerm, groupedPools]);
-
-  // --- Handlers ---
+  // --- Håndterere ---
   const handleEventChange = (
     eventReact: React.ChangeEvent<HTMLSelectElement>
   ) => {
@@ -578,9 +448,7 @@ const LeagueStandingsPage: React.FC = () => {
     setSelectedPoolGroupKey(groupKey);
     setSelectedPool(null);
     setStandings(null);
-    setGeneralStandings(null); // Clear general standings
-    setTeamSearchTerm("");
-    setTeamSearchResults([]);
+    setGeneralStandings(null); // Ryd generelle stillinger
   };
 
   const handlePoolChange = (poolId: number) => {
@@ -588,31 +456,9 @@ const LeagueStandingsPage: React.FC = () => {
       selectedPoolGroupKey ? groupedPools[selectedPoolGroupKey] : []
     ).find((p) => p.Id === poolId);
     setSelectedPool(poolToSelect || null);
-    // Standings fetch will be triggered by the useEffect when selectedPool changes
+    // Hentning af stillinger udløses af useEffect, når selectedPool ændres
   };
-
-  const handleTeamSearchInputChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setTeamSearchTerm(event.target.value);
-    setSelectedPoolGroupKey(null);
-    setSelectedPool(null);
-    setStandings(null);
-    setGeneralStandings(null); // Clear general standings
-    // Results update will happen in the useEffect
-  };
-
-  const handleSelectSearchResult = (groupKey: string, pool: Pool) => {
-    setSelectedPoolGroupKey(groupKey);
-    setSelectedPool(pool);
-    setStandings(null);
-    setGeneralStandings(null); // Clear old general standings immediately
-    setTeamSearchTerm("");
-    setTeamSearchResults([]);
-    // Standings fetch will be triggered by the useEffect when selectedPool changes
-  };
-
-  // --- Memoized Values ---
+  // --- Memoriserede værdier ---
   const currentPoolsInGroup = useMemo(
     () =>
       selectedPoolGroupKey ? groupedPools[selectedPoolGroupKey] || [] : [],
@@ -644,18 +490,18 @@ const LeagueStandingsPage: React.FC = () => {
                         dark:from-brand-primary/30 dark:via-brand-secondary/30 dark:to-brand-accent/30"
           ></div>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-50 relative">
-            Padel League Monitor
+            Lunar Liga
           </h1>
           <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm text-slate-400 max-w-2xl mx-auto">
-            Track live standings, divisions, and series for ongoing padel
-            leagues.
+            Følg live stillinger, divisioner og serier for igangværende
+            lunar-ligaer.
           </p>
         </header>
 
         {error && (
           <AlertMessage
             type="error"
-            message={`Error: ${error}. Please try again.`}
+            message={`Fejl: ${error}. Prøv igen.`}
             onClose={clearError}
           />
         )}
@@ -665,92 +511,41 @@ const LeagueStandingsPage: React.FC = () => {
             <div>
               <StyledSelect
                 id="event-select"
-                label="League Event"
+                label="Liga Begivenhed"
                 value={selectedEvent?.eventId || ""}
                 onChange={handleEventChange}
                 disabled={
                   loadingStates.events || organisationEvents.length === 0
                 }
                 options={eventOptions}
-                placeholder="-- Select League --"
+                placeholder="-- Vælg Liga --"
               />
               {loadingStates.events && (
                 <p className="text-xxs text-brand-primary/80 mt-1 animate-pulseSlow">
-                  Loading leagues...
+                  Indlæser ligaer...
                 </p>
               )}
             </div>
 
             {selectedEvent && (
               <div className="border-t border-slate-700/70 pt-4 sm:pt-5 space-y-3.5">
-                {/* Team Search Input */}
-                <SearchInput
-                  id="team-search"
-                  label="Search for a Team"
-                  placeholder="Enter team name..."
-                  value={teamSearchTerm}
-                  onChange={handleTeamSearchInputChange}
-                  disabled={loadingStates.pools}
-                />
-
-                {/* Team Search Results */}
-                {teamSearchTerm.trim() !== "" && (
-                  <div className="mt-3">
-                    {loadingStates.pools && (
-                      <p className="text-xxs text-brand-primary/80 animate-pulseSlow">
-                        Searching pools...
-                      </p>
-                    )}
-                    {!loadingStates.pools && teamSearchResults.length === 0 && (
-                      <p className="text-xs text-slate-500 italic">
-                        No pools found containing "{teamSearchTerm}"
-                      </p>
-                    )}
-                    {!loadingStates.pools && teamSearchResults.length > 0 && (
-                      <div>
-                        <label className="block text-xxs sm:text-xs font-semibold text-slate-400 mb-1.5 tracking-wide uppercase">
-                          Teams found in:
-                        </label>
-                        <div className="space-y-2 max-h-40 overflow-y-auto pr-2 custom-scrollbar">
-                          {teamSearchResults.map(({ groupKey, pool }) => (
-                            <button
-                              key={pool.Id}
-                              className="w-full text-left p-2 rounded-md bg-slate-700 hover:bg-slate-600 transition-colors duration-150"
-                              onClick={() =>
-                                handleSelectSearchResult(groupKey, pool)
-                              }
-                            >
-                              <span className="block text-sm text-slate-100">
-                                {pool.Name}
-                              </span>
-                              <span className="block text-xxs text-slate-400">
-                                ({groupKey})
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Division/Serie Group Selection (Hidden when searching) */}
+                {/* Valg af Division/Seriegruppe (Skjult ved søgning) */}
                 {showPoolGroupSelection && (
                   <div className="border-t border-slate-700/70 pt-4 sm:pt-5 space-y-3.5">
                     <div>
                       <label className="block text-xs font-semibold text-slate-400 mb-1.5 tracking-wide uppercase">
-                        Division / Serie Group
+                        Division / Seriegruppe
                       </label>
                       {loadingStates.pools && teamSearchTerm.trim() === "" && (
                         <p className="text-xxs text-brand-primary/80 animate-pulseSlow">
-                          Loading groups...
+                          Indlæser grupper...
                         </p>
                       )}
                       {!loadingStates.pools &&
                         Object.keys(groupedPools).length === 0 &&
                         !error && (
                           <p className="text-xs text-slate-500 italic">
-                            No division groups for this league.
+                            Ingen divisionsgrupper for denne liga.
                           </p>
                         )}
                       {Object.keys(groupedPools).length > 0 && (
@@ -772,7 +567,7 @@ const LeagueStandingsPage: React.FC = () => {
                     {selectedPoolGroupKey && currentPoolsInGroup.length > 0 && (
                       <div className="border-t border-slate-700/50 pt-3.5 sm:pt-4">
                         <label className="block text-xxs sm:text-xs font-semibold text-slate-400 mb-1.5 tracking-wide uppercase">
-                          Pool in "{selectedPoolGroupKey}"
+                          Pulje i "{selectedPoolGroupKey}"
                         </label>
                         <div className="flex flex-wrap gap-1.5 sm:gap-2">
                           {currentPoolsInGroup.map((pool) => (
@@ -798,26 +593,21 @@ const LeagueStandingsPage: React.FC = () => {
           </div>
         </section>
 
-        {/* Conditional rendering for Pool Name header and content sections */}
+        {/* Betinget gengivelse for puljenavnets overskrift og indholdssektioner */}
         {selectedPool && !loadingStates.standings && (
           <>
-            {/* General Standing Table */}
-            {/* Only show if generalStandings state is not null/undefined and has items */}
+            {/* Generel Stillings Tabel */}
+            {/* Vis kun, hvis generalStandings-tilstanden ikke er null/undefined og har elementer */}
             {generalStandings && generalStandings.length > 0 ? (
               <section className="animate-fadeIn mt-5 mb-6">
-                {" "}
-                {/* Added mt-5 mb-6 for spacing */}
                 <h3 className="text-lg sm:text-xl font-semibold text-slate-100 mb-3">
-                  General Standing:{" "}
+                  Generel Stilling:{" "}
                   <span className="text-brand-primary">
                     {selectedPool.Name}
-                  </span>{" "}
-                  {/* Add pool name to heading */}
+                  </span>
                 </h3>
                 <div className="bg-slate-800/70 backdrop-blur-sm shadow-lg rounded-md overflow-hidden border border-slate-700/60">
                   <div className="overflow-x-auto">
-                    {" "}
-                    {/* Make table scrollable on smaller screens */}
                     <table className="min-w-full divide-y divide-slate-700/60">
                       <thead className="bg-slate-750/40">
                         <tr>
@@ -825,37 +615,37 @@ const LeagueStandingsPage: React.FC = () => {
                             scope="col"
                             className="px-2.5 sm:px-3 py-2 text-left text-xxs sm:text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap"
                           >
-                            Rank
+                            Rang
                           </th>
                           <th
                             scope="col"
                             className="px-2.5 sm:px-3 py-2 text-left text-xxs sm:text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap"
                           >
-                            Team
+                            Hold
                           </th>
                           <th
                             scope="col"
                             className="px-2.5 sm:px-3 py-2 text-center text-xxs sm:text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap"
                           >
-                            Played
+                            Spillet
                           </th>
                           <th
                             scope="col"
                             className="px-2.5 sm:px-3 py-2 text-center text-xxs sm:text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap"
                           >
-                            Wins
+                            Sejre
                           </th>
                           <th
                             scope="col"
                             className="px-2.5 sm:px-3 py-2 text-center text-xxs sm:text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap"
                           >
-                            Losses
+                            Nederlag
                           </th>
                           <th
                             scope="col"
                             className="px-2.5 sm:px-3 py-2 text-center text-xxs sm:text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap"
                           >
-                            Games
+                            Kampe
                             <br />
                             Diff
                           </th>
@@ -863,9 +653,7 @@ const LeagueStandingsPage: React.FC = () => {
                             scope="col"
                             className="px-2.5 sm:px-3 py-2 text-center text-xxs sm:text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap"
                           >
-                            Team
-                            <br />
-                            Games
+                            Holdkampe
                             <br />
                             Diff
                           </th>
@@ -873,7 +661,7 @@ const LeagueStandingsPage: React.FC = () => {
                             scope="col"
                             className="px-2.5 sm:px-3 py-2 text-center text-xxs sm:text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap"
                           >
-                            Points
+                            Point
                             <br />
                             Diff
                           </th>
@@ -881,7 +669,7 @@ const LeagueStandingsPage: React.FC = () => {
                             scope="col"
                             className="px-2.5 sm:px-3 py-2 text-center text-xxs sm:text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap"
                           >
-                            Points
+                            Point
                           </th>
                         </tr>
                       </thead>
@@ -947,15 +735,13 @@ const LeagueStandingsPage: React.FC = () => {
                 </div>
               </section>
             ) : (
-              // Optional: Message if standings are expected but not available (e.g., new pool with no matches yet)
+              // Valgfri: Besked, hvis stillinger forventes, men ikke er tilgængelige (f.eks. ny pulje uden kampe endnu)
               !loadingStates.standings &&
               !error &&
               selectedPool &&
               generalStandings !== null &&
               generalStandings.length === 0 && (
                 <div className="bg-slate-800/60 backdrop-blur-md p-5 sm:p-6 rounded-md shadow-lg text-center border border-slate-700/60 mb-6 mt-5">
-                  {" "}
-                  {/* Added mb-6 and mt-5 for spacing */}
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="mx-auto h-10 w-10 text-slate-500"
@@ -971,19 +757,18 @@ const LeagueStandingsPage: React.FC = () => {
                     />
                   </svg>
                   <p className="mt-2.5 text-sm sm:text-base text-slate-400">
-                    General standing data not available for this pool yet.
+                    Generelle stillingsdata er endnu ikke tilgængelige for denne
+                    pulje.
                   </p>
                 </div>
               )
             )}
 
-            {/* Matches Section */}
+            {/* Kampsektion */}
             {standings && standings.Rounds.length > 0 ? (
               <section className="animate-fadeIn mt-5">
-                {" "}
-                {/* Added mt-5 for spacing from table above */}
                 <h2 className="text-lg sm:text-xl font-semibold text-slate-100 mb-2.5 sm:mb-3">
-                  Matches:{" "}
+                  Kampe:{" "}
                   <span className="text-brand-primary">
                     {selectedPool?.Name}
                   </span>
@@ -995,7 +780,7 @@ const LeagueStandingsPage: React.FC = () => {
                   >
                     <div className="bg-slate-750/70 px-3.5 sm:px-4 py-2.5 border-b border-slate-600/60">
                       <h3 className="text-sm sm:text-base font-semibold text-slate-100">
-                        Round {round.RoundNumber}
+                        Runde {round.RoundNumber}
                         <span className="text-xxs sm:text-xs text-slate-400 ml-1.5 tracking-tight">
                           ({round.RoundDate})
                         </span>
@@ -1006,11 +791,11 @@ const LeagueStandingsPage: React.FC = () => {
                         <thead className="bg-slate-750/40">
                           <tr>
                             {[
-                              "Time",
-                              "Home",
-                              "Score",
-                              "Away",
-                              "Venue",
+                              "Tid",
+                              "Hjemme",
+                              "Resultat",
+                              "Ude",
+                              "Sted",
                               "Info",
                             ].map((header) => (
                               <th
@@ -1074,7 +859,7 @@ const LeagueStandingsPage: React.FC = () => {
                                   </>
                                 ) : (
                                   <span className="text-xxs text-slate-500 italic">
-                                    N/A
+                                    Ikke tilgængelig
                                   </span>
                                 )}
                               </td>
@@ -1096,11 +881,11 @@ const LeagueStandingsPage: React.FC = () => {
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="text-brand-primary/80 hover:text-brand-primary hover:underline items-center inline-flex group"
-                                  title={`Details for match at ${
+                                  title={`Detaljer for kampen på ${
                                     match.Details.LocationName || match.Location
-                                  } on ${match.Details.Time}`}
+                                  } den ${match.Details.Time}`}
                                 >
-                                  View
+                                  Vis
                                   <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     className="h-2.5 w-2.5 ml-0.5 group-hover:translate-x-0.5 transition-transform"
@@ -1126,15 +911,13 @@ const LeagueStandingsPage: React.FC = () => {
                 ))}
               </section>
             ) : (
-              // Optional: Message if matches data is expected but not available
+              // Valgfri: Besked, hvis kampdata forventes, men ikke er tilgængelige
               !loadingStates.standings &&
               !error &&
               selectedPool &&
               generalStandings !== null &&
               standings?.Rounds?.length === 0 && (
                 <div className="bg-slate-800/60 backdrop-blur-md p-5 sm:p-6 rounded-md shadow-lg text-center border border-slate-700/60 mt-5">
-                  {" "}
-                  {/* Adjusted mt-5 */}
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="mx-auto h-10 w-10 text-slate-500"
@@ -1150,16 +933,16 @@ const LeagueStandingsPage: React.FC = () => {
                     />
                   </svg>
                   <p className="mt-2.5 text-sm sm:text-base text-slate-400">
-                    No matches found.
+                    Ingen kampe fundet.
                   </p>
                   <p className="text-xxs sm:text-xs text-slate-500">
-                    No scheduled/completed matches in this pool yet.
+                    Ingen planlagte/afsluttede kampe i denne pulje endnu.
                   </p>
                 </div>
               )
             )}
 
-            {/* Message if NEITHER matches NOR general standings are available */}
+            {/* Besked, hvis hverken kampe eller generelle stillinger er tilgængelige */}
             {!loadingStates.standings &&
               !error &&
               selectedPool &&
@@ -1167,8 +950,6 @@ const LeagueStandingsPage: React.FC = () => {
               generalStandings.length === 0 &&
               standings?.Rounds?.length === 0 && (
                 <div className="bg-slate-800/60 backdrop-blur-md p-5 sm:p-6 rounded-md shadow-lg text-center border border-slate-700/60 mt-5">
-                  {" "}
-                  {/* Adjusted mt-5 */}
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="mx-auto h-10 w-10 text-slate-500"
@@ -1184,26 +965,27 @@ const LeagueStandingsPage: React.FC = () => {
                     />
                   </svg>
                   <p className="mt-2.5 text-sm sm:text-base text-slate-400">
-                    No Standings or Matches Available
+                    Ingen Stillinger eller Kampe Tilgængelige
                   </p>
                   <p className="text-xxs sm:text-xs text-slate-500">
-                    Data for this pool couldn't be loaded or is not available.
+                    Data for denne pulje kunne ikke indlæses eller er ikke
+                    tilgængelige.
                   </p>
                 </div>
               )}
           </>
         )}
 
-        {/* Show loading spinner specifically for standings or pools */}
-        {loadingStates.standings && ( // Show standings spinner any time standings are loading
-          <LoadingSpinner message="Loading standings..." className="mt-5" />
+        {/* Vis indlæsningsspinner specifikt for stillinger eller puljer */}
+        {loadingStates.standings && (
+          <LoadingSpinner message="Indlæser stillinger..." className="mt-5" />
         )}
 
-        {/* Show pool loading spinner only when NOT loading standings and NOT searching */}
+        {/* Vis puljeindlæsningsspinner kun når IKKE stillinger indlæses og IKKE søges */}
         {loadingStates.pools &&
           !loadingStates.standings &&
           teamSearchTerm.trim() === "" && (
-            <LoadingSpinner message="Loading pools..." className="mt-5" />
+            <LoadingSpinner message="Indlæser puljer..." className="mt-5" />
           )}
       </div>
     </div>

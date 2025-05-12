@@ -29,7 +29,7 @@ export const getUserRole = async () => {
     const response = await api.get("/role");
     setToCache(cacheKey, response.data);
     return response.data;
-  } catch (error) {
+  } catch {
     throw new Error("Failed to fetch user role");
   }
 };
@@ -45,7 +45,7 @@ export const getUsername = async () => {
     const response = await api.get("/username");
     setToCache(cacheKey, response.data);
     return response.data;
-  } catch (error) {
+  } catch {
     throw new Error("Failed to fetch username");
   }
 };
@@ -61,7 +61,7 @@ export const getUsers = async () => {
     const response = await api.get("/users");
     setToCache(cacheKey, response.data);
     return response.data;
-  } catch (error) {
+  } catch {
     throw new Error("Failed to fetch users");
   }
 };
@@ -71,7 +71,7 @@ export const changeUserRole = async (username: string, role: string) => {
     const response = await api.post("/change-role", { username, role });
     clearCache("users"); // Invalidate users cache
     return response.data;
-  } catch (error) {
+  } catch {
     throw new Error("Failed to change user role");
   }
 };
