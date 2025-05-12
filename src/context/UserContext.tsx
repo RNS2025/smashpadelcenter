@@ -16,7 +16,7 @@ interface UserContextType {
   isAuthenticated: boolean;
   error: string | null;
   fetchUser: () => Promise<void>;
-  refreshUser: () => Promise<void>;
+  refreshUser: (forceRefresh?: boolean) => Promise<void>;
   logout: () => Promise<void>;
   loading: boolean;
 }
@@ -276,22 +276,21 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     refreshOnRouteChange.current = true;
     await fetchUserData(false, true);
   };
-
   // Lightweight refresh that doesn't trigger loading state and respects cache
-  const refreshUser = async () => {
+  const refreshUser = async (forceRefresh = false) => {
     try {
-      // Check cache timing first
+      // Check cache timing first, unless force refresh is requested
       const now = Date.now();
       const timeSinceLastCheck = now - lastAuthCheck.current;
 
-      if (timeSinceLastCheck < AUTH_CACHE_DURATION) {
+      if (!forceRefresh && timeSinceLastCheck < AUTH_CACHE_DURATION) {
         console.debug(
           `Skipping refresh (${timeSinceLastCheck}ms since last check)`
         );
         return;
       }
 
-      await fetchUserData(true, false);
+      await fetchUserData(true, forceRefresh);
     } catch (error) {
       console.error("Error refreshing user", error);
     }

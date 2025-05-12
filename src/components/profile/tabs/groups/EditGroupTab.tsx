@@ -9,7 +9,7 @@ import { DaoGroupUser } from "../../../../types/daoGroupAllUsers.ts";
 export const EditGroupTab = () => {
   const navigate = useNavigate();
   const { groupId } = useParams<{ groupId: string }>();
-  const { user, loading: userLoading } = useUser();
+  const { user, loading: userLoading, refreshUser } = useUser();
   const [allUsers, setAllUsers] = useState<DaoGroupUser[]>([]);
   const [groupName, setGroupName] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -17,13 +17,12 @@ export const EditGroupTab = () => {
   const [error, setError] = useState<string | null>(null);
 
   const filteredUsers = allUsers.filter(
-      (u) =>
-          u.username !== user?.username &&
-          (u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-              u.fullName?.toLowerCase().includes(searchQuery.toLowerCase())) &&
-          !selectedUsers.some((member: DaoGroupUser) => member.id === u.id)
+    (u) =>
+      u.username !== user?.username &&
+      (u.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        u.fullName?.toLowerCase().includes(searchQuery.toLowerCase())) &&
+      !selectedUsers.some((member: DaoGroupUser) => member.id === u.id)
   );
-
 
   const handleSelectUser = (user: DaoGroupUser) => {
     setSelectedUsers((prev) => [...prev, user]);
@@ -35,7 +34,7 @@ export const EditGroupTab = () => {
       try {
         const response = await userProfileService.getAllUsers();
         const filteredUsers = (response || []).filter(
-            (u) => u.username !== user?.username
+          (u) => u.username !== user?.username
         );
         setAllUsers(filteredUsers);
       } catch (error) {
@@ -63,7 +62,6 @@ export const EditGroupTab = () => {
     }
   }, [user, groupId, allUsers]);
 
-
   const handleEditGroup = async (event: FormEvent) => {
     event.preventDefault();
 
@@ -85,10 +83,10 @@ export const EditGroupTab = () => {
           ? { ...group, name: groupName, members: groupMembers }
           : group
       );
-
       await userProfileService.updateUserProfile(user.username, {
         groups: updatedGroups,
       });
+      await refreshUser(true);
       navigate(`/profil/${user.username}/grupper`);
     } catch (error) {
       console.error("Error creating group:", error);
@@ -114,6 +112,7 @@ export const EditGroupTab = () => {
         await userProfileService.updateUserProfile(user.username, {
           groups: updatedGroups,
         });
+        await refreshUser(true);
         navigate(`/profil/${user.username}/grupper`);
       }
     } catch (error) {
@@ -175,7 +174,7 @@ export const EditGroupTab = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
                 {searchQuery && (
-                    <div className="absolute z-10 border-slate-800/80 bg-slate-800 w-3/4 border rounded mt-1 max-h-40 overflow-y-auto">
+                  <div className="absolute z-10 border-slate-800/80 bg-slate-800 w-3/4 border rounded mt-1 max-h-40 overflow-y-auto">
                     {filteredUsers.length > 0 ? (
                       filteredUsers.map((member) => (
                         <div

@@ -9,7 +9,7 @@ import { DaoGroupUser } from "../../../../types/daoGroupAllUsers";
 
 export const CreateGroupTab = () => {
   const navigate = useNavigate();
-  const { user, loading: userLoading } = useUser();
+  const { user, loading: userLoading, refreshUser } = useUser();
   const [allUsers, setAllUsers] = useState<DaoGroupUser[]>([]);
   const [groupName, setGroupName] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState<string>("");
@@ -78,7 +78,6 @@ export const CreateGroupTab = () => {
       setError("Du skal være logget ind for at oprette en gruppe.");
       return;
     }
-
     try {
       const groupMembers = selectedUsers.map((member) => member.username);
 
@@ -87,10 +86,10 @@ export const CreateGroupTab = () => {
         name: groupName,
         members: groupMembers,
       };
-
       await userProfileService.updateUserProfile(user.username, {
         groups: [...(user.groups || []), newGroup],
       });
+      await refreshUser(true);
       navigate(`/profil/${user.username}/grupper`);
     } catch (error) {
       console.error("Error creating group:", error);
@@ -124,7 +123,10 @@ export const CreateGroupTab = () => {
         <form className="space-y-10" onSubmit={handleCreateGroup}>
           <div className="lg:grid grid-cols-3 gap-4 max-lg:flex max-lg:flex-col">
             <div>
-              <label className="font-semibold text-gray-300" htmlFor="gruppenavn">
+              <label
+                className="font-semibold text-gray-300"
+                htmlFor="gruppenavn"
+              >
                 Gruppenavn
               </label>
               <div className="pr-1">
@@ -139,7 +141,10 @@ export const CreateGroupTab = () => {
             </div>
 
             <div>
-              <label className="font-semibold text-gray-300" htmlFor="tilføjmedlemmer">
+              <label
+                className="font-semibold text-gray-300"
+                htmlFor="tilføjmedlemmer"
+              >
                 Tilføj medlemmer
               </label>
               <div className="relative pr-1">
@@ -151,8 +156,8 @@ export const CreateGroupTab = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
                 {searchQuery && (
-                    <div className="absolute z-10 border-slate-800/80 bg-slate-800 w-3/4 border rounded mt-1 max-h-40 overflow-y-auto">
-                      {filteredUsers.length > 0 ? (
+                  <div className="absolute z-10 border-slate-800/80 bg-slate-800 w-3/4 border rounded mt-1 max-h-40 overflow-y-auto">
+                    {filteredUsers.length > 0 ? (
                       filteredUsers.map((member) => (
                         <div
                           key={member.id}
@@ -176,7 +181,9 @@ export const CreateGroupTab = () => {
 
             {selectedUsers.length > 0 && (
               <div className="mt-4">
-                <h2 className="font-semibold mb-2 text-gray-300">Valgte medlemmer:</h2>
+                <h2 className="font-semibold mb-2 text-gray-300">
+                  Valgte medlemmer:
+                </h2>
                 <div className="flex flex-wrap gap-2">
                   {selectedUsers.map((member) => (
                     <div

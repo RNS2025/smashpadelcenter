@@ -5,7 +5,7 @@ interface UserContextType {
   isAuthenticated: boolean;
   error: string | null;
   fetchUser: () => Promise<void>;
-  refreshUser: () => Promise<void>;
+  refreshUser: (forceRefresh?: boolean) => Promise<void>;
   logout: () => Promise<void>;
   loading: boolean;
 }
