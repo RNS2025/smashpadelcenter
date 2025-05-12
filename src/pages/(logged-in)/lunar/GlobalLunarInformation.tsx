@@ -11,6 +11,7 @@ import {
   Match as MatchType,
   TeamStanding, // Ny import
 } from "../../../types/LunarGlobal"; // Antager at interfaces.ts er i samme mappe eller juster sti
+import HomeBar from "../../../components/misc/HomeBar";
 
 const API_BASE_URL = "https://api.rankedin.com/v1";
 
@@ -479,428 +480,257 @@ const LeagueStandingsPage: React.FC = () => {
   const pageBackground = "bg-slate-950";
 
   return (
-    <div
-      className={`min-h-screen ${pageBackground} text-slate-200 font-sans py-5 sm:py-7 px-2.5 sm:px-4`}
-    >
-      <div className="container mx-auto max-w-6xl">
-        <header className="pt-3 pb-6 sm:pb-8 text-center relative">
-          <div
-            className="absolute inset-x-0 top-0 h-32 -z-10 opacity-20 blur-3xl
+    <>
+      <HomeBar />
+      <div
+        className={`min-h-screen ${pageBackground} text-slate-200 font-sans py-5 sm:py-7 px-2.5 sm:px-4`}
+      >
+        <div className="container mx-auto max-w-6xl">
+          <header className="pt-3 pb-6 sm:pb-8 text-center relative">
+            <div
+              className="absolute inset-x-0 top-0 h-32 -z-10 opacity-20 blur-3xl
                         bg-gradient-to-tr from-brand-primary via-brand-secondary to-brand-accent
                         dark:from-brand-primary/30 dark:via-brand-secondary/30 dark:to-brand-accent/30"
-          ></div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-50 relative">
-            Lunar Liga
-          </h1>
-          <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm text-slate-400 max-w-2xl mx-auto">
-            Følg live stillinger, divisioner og serier for igangværende
-            lunar-ligaer.
-          </p>
-        </header>
+            ></div>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-slate-50 relative">
+              Lunar Liga
+            </h1>
+            <p className="mt-1.5 sm:mt-2 text-xs sm:text-sm text-slate-400 max-w-2xl mx-auto">
+              Følg live stillinger, divisioner og serier for igangværende
+              lunar-ligaer.
+            </p>
+          </header>
 
-        {error && (
-          <AlertMessage
-            type="error"
-            message={`Fejl: ${error}. Prøv igen.`}
-            onClose={clearError}
-          />
-        )}
+          {error && (
+            <AlertMessage
+              type="error"
+              message={`Fejl: ${error}. Prøv igen.`}
+              onClose={clearError}
+            />
+          )}
 
-        <section className="bg-slate-800/60 backdrop-blur-md shadow-xl rounded-lg p-4 sm:p-5 mb-6 sm:mb-8 animate-fadeInDown">
-          <div className="space-y-4 sm:space-y-5">
-            <div>
-              <StyledSelect
-                id="event-select"
-                label="Liga Begivenhed"
-                value={selectedEvent?.eventId || ""}
-                onChange={handleEventChange}
-                disabled={
-                  loadingStates.events || organisationEvents.length === 0
-                }
-                options={eventOptions}
-                placeholder="-- Vælg Liga --"
-              />
-              {loadingStates.events && (
-                <p className="text-xxs text-brand-primary/80 mt-1 animate-pulseSlow">
-                  Indlæser ligaer...
-                </p>
-              )}
-            </div>
-
-            {selectedEvent && (
-              <div className="border-t border-slate-700/70 pt-4 sm:pt-5 space-y-3.5">
-                {/* Valg af Division/Seriegruppe (Skjult ved søgning) */}
-                {showPoolGroupSelection && (
-                  <div className="border-t border-slate-700/70 pt-4 sm:pt-5 space-y-3.5">
-                    <div>
-                      <label className="block text-xs font-semibold text-slate-400 mb-1.5 tracking-wide uppercase">
-                        Division / Seriegruppe
-                      </label>
-                      {loadingStates.pools && teamSearchTerm.trim() === "" && (
-                        <p className="text-xxs text-brand-primary/80 animate-pulseSlow">
-                          Indlæser grupper...
-                        </p>
-                      )}
-                      {!loadingStates.pools &&
-                        Object.keys(groupedPools).length === 0 &&
-                        !error && (
-                          <p className="text-xs text-slate-500 italic">
-                            Ingen divisionsgrupper for denne liga.
-                          </p>
-                        )}
-                      {Object.keys(groupedPools).length > 0 && (
-                        <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                          {Object.keys(groupedPools).map((groupKey) => (
-                            <TabButton
-                              key={groupKey}
-                              onClick={() => handlePoolGroupChange(groupKey)}
-                              isActive={selectedPoolGroupKey === groupKey}
-                              disabled={loadingStates.pools}
-                            >
-                              {groupKey}
-                            </TabButton>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-
-                    {selectedPoolGroupKey && currentPoolsInGroup.length > 0 && (
-                      <div className="border-t border-slate-700/50 pt-3.5 sm:pt-4">
-                        <label className="block text-xxs sm:text-xs font-semibold text-slate-400 mb-1.5 tracking-wide uppercase">
-                          Pulje i "{selectedPoolGroupKey}"
-                        </label>
-                        <div className="flex flex-wrap gap-1.5 sm:gap-2">
-                          {currentPoolsInGroup.map((pool) => (
-                            <TabButton
-                              key={pool.Id}
-                              onClick={() => handlePoolChange(pool.Id)}
-                              isActive={selectedPool?.Id === pool.Id}
-                              disabled={loadingStates.pools}
-                            >
-                              {pool.Name.replace(
-                                `${selectedPoolGroupKey} - `,
-                                ""
-                              ) || pool.Name}
-                            </TabButton>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </div>
+          <section className="bg-slate-800/60 backdrop-blur-md shadow-xl rounded-lg p-4 sm:p-5 mb-6 sm:mb-8 animate-fadeInDown">
+            <div className="space-y-4 sm:space-y-5">
+              <div>
+                <StyledSelect
+                  id="event-select"
+                  label="Liga Begivenhed"
+                  value={selectedEvent?.eventId || ""}
+                  onChange={handleEventChange}
+                  disabled={
+                    loadingStates.events || organisationEvents.length === 0
+                  }
+                  options={eventOptions}
+                  placeholder="-- Vælg Liga --"
+                />
+                {loadingStates.events && (
+                  <p className="text-xxs text-brand-primary/80 mt-1 animate-pulseSlow">
+                    Indlæser ligaer...
+                  </p>
                 )}
               </div>
-            )}
-          </div>
-        </section>
 
-        {/* Betinget gengivelse for puljenavnets overskrift og indholdssektioner */}
-        {selectedPool && !loadingStates.standings && (
-          <>
-            {/* Generel Stillings Tabel */}
-            {/* Vis kun, hvis generalStandings-tilstanden ikke er null/undefined og har elementer */}
-            {generalStandings && generalStandings.length > 0 ? (
-              <section className="animate-fadeIn mt-5 mb-6">
-                <h3 className="text-lg sm:text-xl font-semibold text-slate-100 mb-3">
-                  Generel Stilling:{" "}
-                  <span className="text-brand-primary">
-                    {selectedPool.Name}
-                  </span>
-                </h3>
-                <div className="bg-slate-800/70 backdrop-blur-sm shadow-lg rounded-md overflow-hidden border border-slate-700/60">
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-slate-700/60">
-                      <thead className="bg-slate-750/40">
-                        <tr>
-                          <th
-                            scope="col"
-                            className="px-2.5 sm:px-3 py-2 text-left text-xxs sm:text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap"
-                          >
-                            Rang
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-2.5 sm:px-3 py-2 text-left text-xxs sm:text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap"
-                          >
-                            Hold
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-2.5 sm:px-3 py-2 text-center text-xxs sm:text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap"
-                          >
-                            Spillet
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-2.5 sm:px-3 py-2 text-center text-xxs sm:text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap"
-                          >
-                            Sejre
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-2.5 sm:px-3 py-2 text-center text-xxs sm:text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap"
-                          >
-                            Nederlag
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-2.5 sm:px-3 py-2 text-center text-xxs sm:text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap"
-                          >
-                            Kampe
-                            <br />
-                            Diff
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-2.5 sm:px-3 py-2 text-center text-xxs sm:text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap"
-                          >
-                            Holdkampe
-                            <br />
-                            Diff
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-2.5 sm:px-3 py-2 text-center text-xxs sm:text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap"
-                          >
-                            Point
-                            <br />
-                            Diff
-                          </th>
-                          <th
-                            scope="col"
-                            className="px-2.5 sm:px-3 py-2 text-center text-xxs sm:text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap"
-                          >
-                            Point
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-700/60">
-                        {generalStandings.map((team) => (
-                          <tr
-                            key={team.ParticipantId}
-                            className="hover:bg-slate-700/50 transition-colors duration-100"
-                          >
-                            <td className="px-2.5 sm:px-3 py-2.5 whitespace-nowrap text-xxs sm:text-xs text-center text-slate-300 tabular-nums">
-                              {team.Standing}
-                            </td>
-                            <td className="px-2.5 sm:px-3 py-2.5 whitespace-nowrap text-xxs sm:text-xs text-slate-200 truncate max-w-[120px] sm:max-w-[180px] font-medium">
-                              {team.ParticipantName}
-                            </td>
-                            <td className="px-2.5 sm:px-3 py-2.5 whitespace-nowrap text-xxs sm:text-xs text-center text-slate-300 tabular-nums">
-                              {team.Played}
-                            </td>
-                            <td className="px-2.5 sm:px-3 py-2.5 whitespace-nowrap text-xxs sm:text-xs text-center text-green-400 tabular-nums">
-                              {team.Wins}
-                            </td>
-                            <td className="px-2.5 sm:px-3 py-2.5 whitespace-nowrap text-xxs sm:text-xs text-center text-red-400 tabular-nums">
-                              {team.Losses}
-                            </td>
-                            <td
-                              className={`px-2.5 sm:px-3 py-2.5 whitespace-nowrap text-xxs sm:text-xs text-center tabular-nums ${
-                                team.GamesDifference >= 0
-                                  ? "text-green-400"
-                                  : "text-red-400"
-                              }`}
-                            >
-                              {team.GamesDifference >= 0 ? "+" : ""}
-                              {team.GamesDifference}
-                            </td>
-                            <td
-                              className={`px-2.5 sm:px-3 py-2.5 whitespace-nowrap text-xxs sm:text-xs text-center tabular-nums ${
-                                team.TeamGamesDifference >= 0
-                                  ? "text-green-400"
-                                  : "text-red-400"
-                              }`}
-                            >
-                              {team.TeamGamesDifference >= 0 ? "+" : ""}
-                              {team.TeamGamesDifference}
-                            </td>
-                            <td
-                              className={`px-2.5 sm:px-3 py-2.5 whitespace-nowrap text-xxs sm:text-xs text-center tabular-nums ${
-                                team.PointsDifference >= 0
-                                  ? "text-green-400"
-                                  : "text-red-400"
-                              }`}
-                            >
-                              {team.PointsDifference >= 0 ? "+" : ""}
-                              {team.PointsDifference}
-                            </td>
-                            <td className="px-2.5 sm:px-3 py-2.5 whitespace-nowrap text-xxs sm:text-xs text-center font-semibold text-brand-primary tabular-nums">
-                              {team.MatchPoints}
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </section>
-            ) : (
-              // Valgfri: Besked, hvis stillinger forventes, men ikke er tilgængelige (f.eks. ny pulje uden kampe endnu)
-              !loadingStates.standings &&
-              !error &&
-              selectedPool &&
-              generalStandings !== null &&
-              generalStandings.length === 0 && (
-                <div className="bg-slate-800/60 backdrop-blur-md p-5 sm:p-6 rounded-md shadow-lg text-center border border-slate-700/60 mb-6 mt-5">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="mx-auto h-10 w-10 text-slate-500"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={1.5}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M9 17.25v-.375m0 0H4.5m4.5 0H15M9 17.25a3 3 0 11-3-3m3 3a3 3 0 10-3-3m3 3H9m9 0H19.5m-4.5 0a3 3 0 11-3-3m3 3a3 3 0 10-3-3m3 3H15m0 0v-.375m0-.75H9m6 0H9m6 0v-.375m0 0a3 3 0 11-3-3m3 3a3 3 0 10-3-3m3 3H15m0 0h.008v.008zm0 0H19.5ZM19.5 12a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.0001 0 004.5 12m15 0v6.75a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 18.75V12m15 0a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.0001 0 004.5 12m15 0h-.008v-.008zm0 0H4.5"
-                    />
-                  </svg>
-                  <p className="mt-2.5 text-sm sm:text-base text-slate-400">
-                    Generelle stillingsdata er endnu ikke tilgængelige for denne
-                    pulje.
-                  </p>
-                </div>
-              )
-            )}
+              {selectedEvent && (
+                <div className="border-t border-slate-700/70 pt-4 sm:pt-5 space-y-3.5">
+                  {/* Valg af Division/Seriegruppe (Skjult ved søgning) */}
+                  {showPoolGroupSelection && (
+                    <div className="border-t border-slate-700/70 pt-4 sm:pt-5 space-y-3.5">
+                      <div>
+                        <label className="block text-xs font-semibold text-slate-400 mb-1.5 tracking-wide uppercase">
+                          Division / Seriegruppe
+                        </label>
+                        {loadingStates.pools &&
+                          teamSearchTerm.trim() === "" && (
+                            <p className="text-xxs text-brand-primary/80 animate-pulseSlow">
+                              Indlæser grupper...
+                            </p>
+                          )}
+                        {!loadingStates.pools &&
+                          Object.keys(groupedPools).length === 0 &&
+                          !error && (
+                            <p className="text-xs text-slate-500 italic">
+                              Ingen divisionsgrupper for denne liga.
+                            </p>
+                          )}
+                        {Object.keys(groupedPools).length > 0 && (
+                          <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                            {Object.keys(groupedPools).map((groupKey) => (
+                              <TabButton
+                                key={groupKey}
+                                onClick={() => handlePoolGroupChange(groupKey)}
+                                isActive={selectedPoolGroupKey === groupKey}
+                                disabled={loadingStates.pools}
+                              >
+                                {groupKey}
+                              </TabButton>
+                            ))}
+                          </div>
+                        )}
+                      </div>
 
-            {/* Kampsektion */}
-            {standings && standings.Rounds.length > 0 ? (
-              <section className="animate-fadeIn mt-5">
-                <h2 className="text-lg sm:text-xl font-semibold text-slate-100 mb-2.5 sm:mb-3">
-                  Kampe:{" "}
-                  <span className="text-brand-primary">
-                    {selectedPool?.Name}
-                  </span>
-                </h2>
-                {standings.Rounds.map((round: RoundType) => (
-                  <div
-                    key={round.RoundNumber}
-                    className="mb-6 bg-slate-800/70 backdrop-blur-sm shadow-lg rounded-md overflow-hidden border border-slate-700/60"
-                  >
-                    <div className="bg-slate-750/70 px-3.5 sm:px-4 py-2.5 border-b border-slate-600/60">
-                      <h3 className="text-sm sm:text-base font-semibold text-slate-100">
-                        Runde {round.RoundNumber}
-                        <span className="text-xxs sm:text-xs text-slate-400 ml-1.5 tracking-tight">
-                          ({round.RoundDate})
-                        </span>
-                      </h3>
+                      {selectedPoolGroupKey &&
+                        currentPoolsInGroup.length > 0 && (
+                          <div className="border-t border-slate-700/50 pt-3.5 sm:pt-4">
+                            <label className="block text-xxs sm:text-xs font-semibold text-slate-400 mb-1.5 tracking-wide uppercase">
+                              Pulje i "{selectedPoolGroupKey}"
+                            </label>
+                            <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                              {currentPoolsInGroup.map((pool) => (
+                                <TabButton
+                                  key={pool.Id}
+                                  onClick={() => handlePoolChange(pool.Id)}
+                                  isActive={selectedPool?.Id === pool.Id}
+                                  disabled={loadingStates.pools}
+                                >
+                                  {pool.Name.replace(
+                                    `${selectedPoolGroupKey} - `,
+                                    ""
+                                  ) || pool.Name}
+                                </TabButton>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                     </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </section>
+
+          {/* Betinget gengivelse for puljenavnets overskrift og indholdssektioner */}
+          {selectedPool && !loadingStates.standings && (
+            <>
+              {/* Generel Stillings Tabel */}
+              {/* Vis kun, hvis generalStandings-tilstanden ikke er null/undefined og har elementer */}
+              {generalStandings && generalStandings.length > 0 ? (
+                <section className="animate-fadeIn mt-5 mb-6">
+                  <h3 className="text-lg sm:text-xl font-semibold text-slate-100 mb-3">
+                    Generel Stilling:{" "}
+                    <span className="text-brand-primary">
+                      {selectedPool.Name}
+                    </span>
+                  </h3>
+                  <div className="bg-slate-800/70 backdrop-blur-sm shadow-lg rounded-md overflow-hidden border border-slate-700/60">
                     <div className="overflow-x-auto">
-                      <table className="min-w-full">
+                      <table className="min-w-full divide-y divide-slate-700/60">
                         <thead className="bg-slate-750/40">
                           <tr>
-                            {[
-                              "Tid",
-                              "Hjemme",
-                              "Resultat",
-                              "Ude",
-                              "Sted",
-                              "Info",
-                            ].map((header) => (
-                              <th
-                                key={header}
-                                scope="col"
-                                className="px-2.5 sm:px-3 py-2 text-left text-xxs sm:text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap"
-                              >
-                                {header}
-                              </th>
-                            ))}
+                            <th
+                              scope="col"
+                              className="px-2.5 sm:px-3 py-2 text-left text-xxs sm:text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap"
+                            >
+                              Rang
+                            </th>
+                            <th
+                              scope="col"
+                              className="px-2.5 sm:px-3 py-2 text-left text-xxs sm:text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap"
+                            >
+                              Hold
+                            </th>
+                            <th
+                              scope="col"
+                              className="px-2.5 sm:px-3 py-2 text-center text-xxs sm:text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap"
+                            >
+                              Spillet
+                            </th>
+                            <th
+                              scope="col"
+                              className="px-2.5 sm:px-3 py-2 text-center text-xxs sm:text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap"
+                            >
+                              Sejre
+                            </th>
+                            <th
+                              scope="col"
+                              className="px-2.5 sm:px-3 py-2 text-center text-xxs sm:text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap"
+                            >
+                              Nederlag
+                            </th>
+                            <th
+                              scope="col"
+                              className="px-2.5 sm:px-3 py-2 text-center text-xxs sm:text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap"
+                            >
+                              Kampe
+                              <br />
+                              Diff
+                            </th>
+                            <th
+                              scope="col"
+                              className="px-2.5 sm:px-3 py-2 text-center text-xxs sm:text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap"
+                            >
+                              Holdkampe
+                              <br />
+                              Diff
+                            </th>
+                            <th
+                              scope="col"
+                              className="px-2.5 sm:px-3 py-2 text-center text-xxs sm:text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap"
+                            >
+                              Point
+                              <br />
+                              Diff
+                            </th>
+                            <th
+                              scope="col"
+                              className="px-2.5 sm:px-3 py-2 text-center text-xxs sm:text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap"
+                            >
+                              Point
+                            </th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-700/60">
-                          {round.Matches.map((match: MatchType) => (
+                          {generalStandings.map((team) => (
                             <tr
-                              key={match.MatchId}
+                              key={team.ParticipantId}
                               className="hover:bg-slate-700/50 transition-colors duration-100"
                             >
-                              <td className="px-2.5 sm:px-3 py-2.5 whitespace-nowrap text-xxs sm:text-xs text-slate-300 tabular-nums">
-                                {match.Date}
+                              <td className="px-2.5 sm:px-3 py-2.5 whitespace-nowrap text-xxs sm:text-xs text-center text-slate-300 tabular-nums">
+                                {team.Standing}
+                              </td>
+                              <td className="px-2.5 sm:px-3 py-2.5 whitespace-nowrap text-xxs sm:text-xs text-slate-200 truncate max-w-[120px] sm:max-w-[180px] font-medium">
+                                {team.ParticipantName}
+                              </td>
+                              <td className="px-2.5 sm:px-3 py-2.5 whitespace-nowrap text-xxs sm:text-xs text-center text-slate-300 tabular-nums">
+                                {team.Played}
+                              </td>
+                              <td className="px-2.5 sm:px-3 py-2.5 whitespace-nowrap text-xxs sm:text-xs text-center text-green-400 tabular-nums">
+                                {team.Wins}
+                              </td>
+                              <td className="px-2.5 sm:px-3 py-2.5 whitespace-nowrap text-xxs sm:text-xs text-center text-red-400 tabular-nums">
+                                {team.Losses}
                               </td>
                               <td
-                                className={`px-2.5 sm:px-3 py-2.5 whitespace-nowrap text-xxs sm:text-xs truncate max-w-[100px] sm:max-w-[150px] ${
-                                  match.Team1.IsWinner
-                                    ? "font-semibold text-green-400"
-                                    : "text-slate-200"
+                                className={`px-2.5 sm:px-3 py-2.5 whitespace-nowrap text-xxs sm:text-xs text-center tabular-nums ${
+                                  team.GamesDifference >= 0
+                                    ? "text-green-400"
+                                    : "text-red-400"
                                 }`}
                               >
-                                {match.Team1.Name}
-                              </td>
-                              <td className="px-2.5 sm:px-3 py-2.5 whitespace-nowrap text-center">
-                                {match.ShowResults ? (
-                                  <>
-                                    <span
-                                      className={`px-1.5 py-0.5 rounded-sm text-xxs font-mono ${
-                                        match.Team1.Result ===
-                                        match.Team2.Result
-                                          ? "bg-slate-600 text-slate-300"
-                                          : match.Team1.IsWinner
-                                          ? "bg-green-600/30 text-green-300"
-                                          : "bg-slate-700 text-slate-300"
-                                      }`}
-                                    >
-                                      {match.Team1.Result}
-                                    </span>
-                                    <span className="mx-0.5 text-xxs text-slate-500">
-                                      -
-                                    </span>
-                                    <span
-                                      className={`px-1.5 py-0.5 rounded-sm text-xxs font-mono ${
-                                        match.Team1.Result ===
-                                        match.Team2.Result
-                                          ? "bg-slate-600 text-slate-300"
-                                          : match.Team2.IsWinner
-                                          ? "bg-green-600/30 text-green-300"
-                                          : "bg-slate-700 text-slate-300"
-                                      }`}
-                                    >
-                                      {match.Team2.Result}
-                                    </span>
-                                  </>
-                                ) : (
-                                  <span className="text-xxs text-slate-500 italic">
-                                    Ikke tilgængelig
-                                  </span>
-                                )}
+                                {team.GamesDifference >= 0 ? "+" : ""}
+                                {team.GamesDifference}
                               </td>
                               <td
-                                className={`px-2.5 sm:px-3 py-2.5 whitespace-nowrap text-xxs sm:text-xs truncate max-w-[100px] sm:max-w-[150px] ${
-                                  match.Team2.IsWinner
-                                    ? "font-semibold text-green-400"
-                                    : "text-slate-200"
+                                className={`px-2.5 sm:px-3 py-2.5 whitespace-nowrap text-xxs sm:text-xs text-center tabular-nums ${
+                                  team.TeamGamesDifference >= 0
+                                    ? "text-green-400"
+                                    : "text-red-400"
                                 }`}
                               >
-                                {match.Team2.Name}
+                                {team.TeamGamesDifference >= 0 ? "+" : ""}
+                                {team.TeamGamesDifference}
                               </td>
-                              <td className="px-2.5 sm:px-3 py-2.5 whitespace-nowrap text-xxs sm:text-xs text-slate-400 truncate max-w-[100px] sm:max-w-[120px]">
-                                {match.Location}
+                              <td
+                                className={`px-2.5 sm:px-3 py-2.5 whitespace-nowrap text-xxs sm:text-xs text-center tabular-nums ${
+                                  team.PointsDifference >= 0
+                                    ? "text-green-400"
+                                    : "text-red-400"
+                                }`}
+                              >
+                                {team.PointsDifference >= 0 ? "+" : ""}
+                                {team.PointsDifference}
                               </td>
-                              <td className="px-2.5 sm:px-3 py-2.5 whitespace-nowrap text-xxs sm:text-xs">
-                                <a
-                                  href={`https://rankedin.com${match.Url}`}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-brand-primary/80 hover:text-brand-primary hover:underline items-center inline-flex group"
-                                  title={`Detaljer for kampen på ${
-                                    match.Details.LocationName || match.Location
-                                  } den ${match.Details.Time}`}
-                                >
-                                  Vis
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-2.5 w-2.5 ml-0.5 group-hover:translate-x-0.5 transition-transform"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                    strokeWidth="3"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      d="M9 5l7 7-7 7"
-                                    />
-                                  </svg>
-                                </a>
+                              <td className="px-2.5 sm:px-3 py-2.5 whitespace-nowrap text-xxs sm:text-xs text-center font-semibold text-brand-primary tabular-nums">
+                                {team.MatchPoints}
                               </td>
                             </tr>
                           ))}
@@ -908,87 +738,264 @@ const LeagueStandingsPage: React.FC = () => {
                       </table>
                     </div>
                   </div>
-                ))}
-              </section>
-            ) : (
-              // Valgfri: Besked, hvis kampdata forventes, men ikke er tilgængelige
-              !loadingStates.standings &&
-              !error &&
-              selectedPool &&
-              generalStandings !== null &&
-              standings?.Rounds?.length === 0 && (
-                <div className="bg-slate-800/60 backdrop-blur-md p-5 sm:p-6 rounded-md shadow-lg text-center border border-slate-700/60 mt-5">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="mx-auto h-10 w-10 text-slate-500"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={1.5}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125V6.375c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v.001c0 .621.504 1.125 1.125 1.125z"
-                    />
-                  </svg>
-                  <p className="mt-2.5 text-sm sm:text-base text-slate-400">
-                    Ingen kampe fundet.
-                  </p>
-                  <p className="text-xxs sm:text-xs text-slate-500">
-                    Ingen planlagte/afsluttede kampe i denne pulje endnu.
-                  </p>
-                </div>
-              )
-            )}
-
-            {/* Besked, hvis hverken kampe eller generelle stillinger er tilgængelige */}
-            {!loadingStates.standings &&
-              !error &&
-              selectedPool &&
-              generalStandings !== null &&
-              generalStandings.length === 0 &&
-              standings?.Rounds?.length === 0 && (
-                <div className="bg-slate-800/60 backdrop-blur-md p-5 sm:p-6 rounded-md shadow-lg text-center border border-slate-700/60 mt-5">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="mx-auto h-10 w-10 text-slate-500"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={1.5}
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
-                    />
-                  </svg>
-                  <p className="mt-2.5 text-sm sm:text-base text-slate-400">
-                    Ingen Stillinger eller Kampe Tilgængelige
-                  </p>
-                  <p className="text-xxs sm:text-xs text-slate-500">
-                    Data for denne pulje kunne ikke indlæses eller er ikke
-                    tilgængelige.
-                  </p>
-                </div>
+                </section>
+              ) : (
+                // Valgfri: Besked, hvis stillinger forventes, men ikke er tilgængelige (f.eks. ny pulje uden kampe endnu)
+                !loadingStates.standings &&
+                !error &&
+                selectedPool &&
+                generalStandings !== null &&
+                generalStandings.length === 0 && (
+                  <div className="bg-slate-800/60 backdrop-blur-md p-5 sm:p-6 rounded-md shadow-lg text-center border border-slate-700/60 mb-6 mt-5">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="mx-auto h-10 w-10 text-slate-500"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={1.5}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M9 17.25v-.375m0 0H4.5m4.5 0H15M9 17.25a3 3 0 11-3-3m3 3a3 3 0 10-3-3m3 3H9m9 0H19.5m-4.5 0a3 3 0 11-3-3m3 3a3 3 0 10-3-3m3 3H15m0 0v-.375m0-.75H9m6 0H9m6 0v-.375m0 0a3 3 0 11-3-3m3 3a3 3 0 10-3-3m3 3H15m0 0h.008v.008zm0 0H19.5ZM19.5 12a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.0001 0 004.5 12m15 0v6.75a2.25 2.25 0 01-2.25 2.25H6.75A2.25 2.25 0 014.5 18.75V12m15 0a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.0001 0 004.5 12m15 0h-.008v-.008zm0 0H4.5"
+                      />
+                    </svg>
+                    <p className="mt-2.5 text-sm sm:text-base text-slate-400">
+                      Generelle stillingsdata er endnu ikke tilgængelige for
+                      denne pulje.
+                    </p>
+                  </div>
+                )
               )}
-          </>
-        )}
 
-        {/* Vis indlæsningsspinner specifikt for stillinger eller puljer */}
-        {loadingStates.standings && (
-          <LoadingSpinner message="Indlæser stillinger..." className="mt-5" />
-        )}
+              {/* Kampsektion */}
+              {standings && standings.Rounds.length > 0 ? (
+                <section className="animate-fadeIn mt-5">
+                  <h2 className="text-lg sm:text-xl font-semibold text-slate-100 mb-2.5 sm:mb-3">
+                    Kampe:{" "}
+                    <span className="text-brand-primary">
+                      {selectedPool?.Name}
+                    </span>
+                  </h2>
+                  {standings.Rounds.map((round: RoundType) => (
+                    <div
+                      key={round.RoundNumber}
+                      className="mb-6 bg-slate-800/70 backdrop-blur-sm shadow-lg rounded-md overflow-hidden border border-slate-700/60"
+                    >
+                      <div className="bg-slate-750/70 px-3.5 sm:px-4 py-2.5 border-b border-slate-600/60">
+                        <h3 className="text-sm sm:text-base font-semibold text-slate-100">
+                          Runde {round.RoundNumber}
+                          <span className="text-xxs sm:text-xs text-slate-400 ml-1.5 tracking-tight">
+                            ({round.RoundDate})
+                          </span>
+                        </h3>
+                      </div>
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full">
+                          <thead className="bg-slate-750/40">
+                            <tr>
+                              {[
+                                "Tid",
+                                "Hjemme",
+                                "Resultat",
+                                "Ude",
+                                "Sted",
+                                "Info",
+                              ].map((header) => (
+                                <th
+                                  key={header}
+                                  scope="col"
+                                  className="px-2.5 sm:px-3 py-2 text-left text-xxs sm:text-xs font-medium text-slate-400 uppercase tracking-wider whitespace-nowrap"
+                                >
+                                  {header}
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-700/60">
+                            {round.Matches.map((match: MatchType) => (
+                              <tr
+                                key={match.MatchId}
+                                className="hover:bg-slate-700/50 transition-colors duration-100"
+                              >
+                                <td className="px-2.5 sm:px-3 py-2.5 whitespace-nowrap text-xxs sm:text-xs text-slate-300 tabular-nums">
+                                  {match.Date}
+                                </td>
+                                <td
+                                  className={`px-2.5 sm:px-3 py-2.5 whitespace-nowrap text-xxs sm:text-xs truncate max-w-[100px] sm:max-w-[150px] ${
+                                    match.Team1.IsWinner
+                                      ? "font-semibold text-green-400"
+                                      : "text-slate-200"
+                                  }`}
+                                >
+                                  {match.Team1.Name}
+                                </td>
+                                <td className="px-2.5 sm:px-3 py-2.5 whitespace-nowrap text-center">
+                                  {match.ShowResults ? (
+                                    <>
+                                      <span
+                                        className={`px-1.5 py-0.5 rounded-sm text-xxs font-mono ${
+                                          match.Team1.Result ===
+                                          match.Team2.Result
+                                            ? "bg-slate-600 text-slate-300"
+                                            : match.Team1.IsWinner
+                                            ? "bg-green-600/30 text-green-300"
+                                            : "bg-slate-700 text-slate-300"
+                                        }`}
+                                      >
+                                        {match.Team1.Result}
+                                      </span>
+                                      <span className="mx-0.5 text-xxs text-slate-500">
+                                        -
+                                      </span>
+                                      <span
+                                        className={`px-1.5 py-0.5 rounded-sm text-xxs font-mono ${
+                                          match.Team1.Result ===
+                                          match.Team2.Result
+                                            ? "bg-slate-600 text-slate-300"
+                                            : match.Team2.IsWinner
+                                            ? "bg-green-600/30 text-green-300"
+                                            : "bg-slate-700 text-slate-300"
+                                        }`}
+                                      >
+                                        {match.Team2.Result}
+                                      </span>
+                                    </>
+                                  ) : (
+                                    <span className="text-xxs text-slate-500 italic">
+                                      Ikke tilgængelig
+                                    </span>
+                                  )}
+                                </td>
+                                <td
+                                  className={`px-2.5 sm:px-3 py-2.5 whitespace-nowrap text-xxs sm:text-xs truncate max-w-[100px] sm:max-w-[150px] ${
+                                    match.Team2.IsWinner
+                                      ? "font-semibold text-green-400"
+                                      : "text-slate-200"
+                                  }`}
+                                >
+                                  {match.Team2.Name}
+                                </td>
+                                <td className="px-2.5 sm:px-3 py-2.5 whitespace-nowrap text-xxs sm:text-xs text-slate-400 truncate max-w-[100px] sm:max-w-[120px]">
+                                  {match.Location}
+                                </td>
+                                <td className="px-2.5 sm:px-3 py-2.5 whitespace-nowrap text-xxs sm:text-xs">
+                                  <a
+                                    href={`https://rankedin.com${match.Url}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-brand-primary/80 hover:text-brand-primary hover:underline items-center inline-flex group"
+                                    title={`Detaljer for kampen på ${
+                                      match.Details.LocationName ||
+                                      match.Location
+                                    } den ${match.Details.Time}`}
+                                  >
+                                    Vis
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      className="h-2.5 w-2.5 ml-0.5 group-hover:translate-x-0.5 transition-transform"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      stroke="currentColor"
+                                      strokeWidth="3"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        d="M9 5l7 7-7 7"
+                                      />
+                                    </svg>
+                                  </a>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  ))}
+                </section>
+              ) : (
+                // Valgfri: Besked, hvis kampdata forventes, men ikke er tilgængelige
+                !loadingStates.standings &&
+                !error &&
+                selectedPool &&
+                generalStandings !== null &&
+                standings?.Rounds?.length === 0 && (
+                  <div className="bg-slate-800/60 backdrop-blur-md p-5 sm:p-6 rounded-md shadow-lg text-center border border-slate-700/60 mt-5">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="mx-auto h-10 w-10 text-slate-500"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={1.5}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125V6.375c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v.001c0 .621.504 1.125 1.125 1.125z"
+                      />
+                    </svg>
+                    <p className="mt-2.5 text-sm sm:text-base text-slate-400">
+                      Ingen kampe fundet.
+                    </p>
+                    <p className="text-xxs sm:text-xs text-slate-500">
+                      Ingen planlagte/afsluttede kampe i denne pulje endnu.
+                    </p>
+                  </div>
+                )
+              )}
 
-        {/* Vis puljeindlæsningsspinner kun når IKKE stillinger indlæses og IKKE søges */}
-        {loadingStates.pools &&
-          !loadingStates.standings &&
-          teamSearchTerm.trim() === "" && (
-            <LoadingSpinner message="Indlæser puljer..." className="mt-5" />
+              {/* Besked, hvis hverken kampe eller generelle stillinger er tilgængelige */}
+              {!loadingStates.standings &&
+                !error &&
+                selectedPool &&
+                generalStandings !== null &&
+                generalStandings.length === 0 &&
+                standings?.Rounds?.length === 0 && (
+                  <div className="bg-slate-800/60 backdrop-blur-md p-5 sm:p-6 rounded-md shadow-lg text-center border border-slate-700/60 mt-5">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="mx-auto h-10 w-10 text-slate-500"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={1.5}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+                      />
+                    </svg>
+                    <p className="mt-2.5 text-sm sm:text-base text-slate-400">
+                      Ingen Stillinger eller Kampe Tilgængelige
+                    </p>
+                    <p className="text-xxs sm:text-xs text-slate-500">
+                      Data for denne pulje kunne ikke indlæses eller er ikke
+                      tilgængelige.
+                    </p>
+                  </div>
+                )}
+            </>
           )}
+
+          {/* Vis indlæsningsspinner specifikt for stillinger eller puljer */}
+          {loadingStates.standings && (
+            <LoadingSpinner message="Indlæser stillinger..." className="mt-5" />
+          )}
+
+          {/* Vis puljeindlæsningsspinner kun når IKKE stillinger indlæses og IKKE søges */}
+          {loadingStates.pools &&
+            !loadingStates.standings &&
+            teamSearchTerm.trim() === "" && (
+              <LoadingSpinner message="Indlæser puljer..." className="mt-5" />
+            )}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
