@@ -42,9 +42,10 @@ const NavigationHistoryProvider: React.FC<{
       return "/hjem";
     }
 
-    // List of primary pages from home page that should go directly back to home
+    //PAGES THAT SHOULD GO DIRECTLY TO HOME
     const primaryPages = [
       "/makkerbørs",
+      "/makkerb%C3%B8rs/allekampe",
       "/privat-arrangementer",
       "/holdligaer",
       "/turneringer",
@@ -77,6 +78,11 @@ const NavigationHistoryProvider: React.FC<{
       const secondLastSlashIndex = oneUpPath.lastIndexOf("/");
       if (secondLastSlashIndex > 0) {
         return oneUpPath.substring(0, secondLastSlashIndex);
+      }
+
+      // Special case: If the one-up path is "/hjem", return it
+      if (oneUpPath === "/hjem") {
+        return oneUpPath;
       }
 
       // If can't go up further, return the one-up path anyway

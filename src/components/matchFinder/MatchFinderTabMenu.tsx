@@ -11,7 +11,7 @@ export const MatchFinderTabMenu = ({
     <div>
       <nav className="flex gap-6" aria-label="Tabs">
         <NavLink
-          to={`/makkerbørs/match/allekampe`}
+          to={`/makkerbørs/allekampe`}
           className={`inline-flex shrink-0 items-center gap-2 border-b-2 px-1 pb-4 text-sm font-medium
                                 ${
                                   location.pathname.includes("allekampe")
@@ -24,7 +24,7 @@ export const MatchFinderTabMenu = ({
         </NavLink>
 
         <NavLink
-          to={`/makkerbørs/match/minekampe`}
+          to={`/makkerbørs/minekampe`}
           className={`inline-flex shrink-0 items-center gap-2 border-b-2 px-1 pb-4 text-sm font-medium
                                 ${
                                   location.pathname.includes("minekampe")
@@ -41,7 +41,7 @@ export const MatchFinderTabMenu = ({
         </NavLink>
 
         <NavLink
-          to={`/makkerbørs/match/afventer`}
+          to={`/makkerbørs/afventer`}
           className={`inline-flex shrink-0 items-center gap-2 border-b-2 px-1 pb-4 text-sm font-medium
                                 ${
                                   location.pathname.includes("afventer")

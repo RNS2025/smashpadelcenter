@@ -67,7 +67,7 @@ const HomeBar = () => {
         backPage = "/makkerbørs";
       } else if (location.pathname.includes("/makkerbørs/")) {
         // Individual match view
-        backPage = "/makkerbørs/match/allekampe";
+        backPage = "/makkerbørs/allekampe";
       }
     }
 

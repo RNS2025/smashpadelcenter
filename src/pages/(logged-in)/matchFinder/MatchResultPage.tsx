@@ -122,7 +122,7 @@ export const MatchResultPage = () => {
       );
       if (userConfirmed) {
         await communityApi.submitMatchResult(matchId, matchResult);
-        navigate(`/makkerbørs/match/minekampe`);
+        navigate(`/makkerbørs/minekampe`);
       }
     } catch (error) {
       console.error("Error updating match:", error);

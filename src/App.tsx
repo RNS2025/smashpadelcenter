@@ -200,7 +200,10 @@ function AppContent() {
               path="/makkerbørs/match/:matchId"
               element={<ViewMatchPage />}
             />
-            <Route path="/makkerbørs/opretkamp" element={<CreateMatchPage />} />
+            <Route
+              path="/makkerbørs/match/opretkamp"
+              element={<CreateMatchPage />}
+            />
             <Route
               path="/makkerbørs/match/:matchId/indtastresultat"
               element={<MatchResultPage />}

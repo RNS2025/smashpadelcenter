@@ -86,7 +86,7 @@ export const CreateMatchForm = () => {
       };
 
       await communityApi.createMatch(matchData);
-      navigate("/makkerbørs/match/minekampe");
+      navigate("/makkerbørs/minekampe");
     } catch (error) {
       console.error("Error creating match:", error);
       setIsSubmitting(false);
