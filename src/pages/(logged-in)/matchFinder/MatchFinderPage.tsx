@@ -86,7 +86,7 @@ export const MatchFinderPage = () => {
           <div className="flex justify-between items-center max-sm:mt-5 mx-4 mb-4">
             <button
               onClick={() => navigate("opretkamp")}
-              className="bg-cyan-500 rounded px-2 py-2 text-white"
+              className="bg-gradient-to-b from-cyan-400 to-cyan-700 rounded px-2 py-2 text-white"
             >
               Opret kamp
             </button>

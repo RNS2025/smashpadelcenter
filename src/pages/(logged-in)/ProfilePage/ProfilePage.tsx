@@ -31,8 +31,8 @@ const ProfilePage = () => {
                 } else {
                     console.warn("No RankedIn profile found for", profile.fullName);
                 }
-            } catch (error) {
-                console.error("Error fetching RankedIn profile:", error);
+            } catch (err) {
+                console.error("Error fetching RankedIn profile:", err);
             }
         };
         fetchRankedInProfile().then();
@@ -61,7 +61,7 @@ const ProfilePage = () => {
           <ProfileHeader profile={profile} rankedInProfile={rankedInProfile} />
 
         {/* Tab Content */}
-        <div className="bg-white shadow-md rounded-lg p-6 border border-gray-200">
+        <div className="bg-gradient-to-br from-gray-100 to-gray-300 shadow-lg rounded-lg p-6 border border-cyan-500">
           <div className="mb-2">
           <ProfileTabMenu profile={profile} user={user} />
           </div>

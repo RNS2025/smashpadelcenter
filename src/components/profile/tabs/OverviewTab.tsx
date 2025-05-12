@@ -92,10 +92,9 @@ const OverviewTab = () => {
           </div>
           <div className="col-span-3 mt-2">
             <div className="w-full bg-gray-200 rounded-full h-2.5">
-              <div
-                className="bg-cyan-500 h-2.5 rounded-full"
-                style={{ width: `${winRate}%` }}
-              ></div>
+              <div className="bg-cyan-500 h-2.5 rounded-full" style={{ width: `${winRate}%` }}>
+
+              </div>
             </div>
             <p className="text-xs text-center mt-1 text-gray-600">
               {winRate}% Sejrsprocent

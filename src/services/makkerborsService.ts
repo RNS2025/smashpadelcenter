@@ -101,6 +101,14 @@ const communityApi = {
         return response.data;
     },
 
+  submitConfirmResult: async (
+    matchId: string,
+    matchResult: Partial<Omit<PadelMatch, "id">>
+  ): Promise<PadelMatch> => {
+    const response = await api.patch(`/matches/${matchId}/confirm-result`, matchResult);
+    return response.data;
+  },
+
   reserveSpots: async (
     matchId: string,
     spotIndex: number,

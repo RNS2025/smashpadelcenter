@@ -556,4 +556,25 @@ router.patch("/:id/result", async (req, res) => {
   }
 });
 
+// PATCH /api/v1/matches/:id/confirm-result - Confirm match result
+router.patch("/:id/confirm-result", async (req, res) => {
+  const matchId = req.params.id;
+  const resultPayload = req.body;
+
+  try {
+    const updatedMatch = await padelMatchService.confirmMatchResult(
+      matchId,
+      resultPayload
+    );
+    logger.info("Successfully confirmed match result", { matchId });
+    res.json(updatedMatch);
+  } catch (error) {
+    logger.error("Error confirming match result", {
+      matchId,
+      error: error.message,
+    });
+    res.status(400).json({ message: error.message });
+  }
+});
+
 module.exports = router;

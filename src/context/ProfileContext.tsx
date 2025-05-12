@@ -53,35 +53,31 @@ export function ProfileProvider({ children, username }: { children: ReactNode; u
 
   const fetchMatches = useCallback(async () => {
     if (!username) return;
+    setMatchesLoading(true);
     try {
-      setMatchesLoading(true);
       const userMatches = await communityApi.getMatchesByUser(username);
       const now = new Date();
+
       const upcomingMatches = userMatches
-        .filter((match) => new Date(match.matchDateTime) > now)
-        .sort(
-          (a, b) =>
-            new Date(a.matchDateTime).getTime() -
-            new Date(b.matchDateTime).getTime()
-        );
+          .filter((match) => new Date(match.matchDateTime) > now)
+          .sort((a, b) => new Date(a.matchDateTime).getTime() - new Date(b.matchDateTime).getTime());
+
       const formerMatches = userMatches
-        .filter((match) => new Date(match.matchDateTime) <= now)
-        .filter((match) => match.participants.length + match.reservedSpots.length === match.totalSpots)
-        .sort(
-          (a, b) =>
-            new Date(b.matchDateTime).getTime() -
-            new Date(a.matchDateTime).getTime());
+          .filter((match) => new Date(match.endTime) <= now)
+          .filter((match) => match.participants.length + match.reservedSpots.length === match.totalSpots)
+          .sort((a, b) => new Date(b.matchDateTime).getTime() - new Date(a.matchDateTime).getTime());
+
       setMatches({
         upcoming: upcomingMatches,
         former: formerMatches,
       });
-      console.log(matches)
-    } catch (err: any) {
+    } catch (err) {
       console.error("Error fetching match data:", err);
     } finally {
       setMatchesLoading(false);
     }
-  }, [username]);
+  }, []);
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -111,10 +107,14 @@ export function ProfileProvider({ children, username }: { children: ReactNode; u
     fetchData().then();
   }, [username]);
 
-
+  
   useEffect(() => {
-    fetchMatches().then();
-  }, [fetchMatches, username]);
+    if (username && profile) {
+      console.log("Fetching matches for", username);
+      fetchMatches().then();
+    }
+  }, [username, profile, fetchMatches]);
+
 
   const refreshMatches = async () => {
     await fetchMatches();
