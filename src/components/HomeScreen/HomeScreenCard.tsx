@@ -14,9 +14,8 @@ interface HomeScreenCardProps {
 // Define glow color for the icon/text shadow based on card content (optional)
 // You could pass a color prop to the card or derive it from the title/link
 const getCardGlowColor = (link: string) => {
-  if (link.includes("book")) return "text-cyan-400"; // Booking items glow cyan
+  if (link.includes("book") || link.includes("arrangement")) return "text-cyan-400"; // Booking items glow cyan
   if (
-    link.includes("arrangement") ||
     link.includes("turneringer") ||
     link.includes("holdligaer")
   )
@@ -52,34 +51,23 @@ const HomeScreenCard: FC<HomeScreenCardProps> = ({
       // Enhanced border, background, shadow, and hover animations
       // Added base glow animation and more aggressive hover states
       className={`
-         group relative rounded-xl sm:p-8 p-4 // Keep original padding
-         sm:size-60 size-36 // Keep original size
-         shadow-lg transition-all duration-300 ease-in-out
-         bg-white/5 backdrop-blur-sm // Glassmorphism background
-         border border-cyan-700/30 // More prominent base border color
-         cursor-pointer // Indicate it's clickable
+         group relative rounded-xl sm:p-8 p-2 sm:size-60 size-44 shadow-lg transition-all duration-300 ease-in-out bg-white/5 backdrop-blur-sm border border-cyan-700/30 cursor-pointer
          ${
            disabled
-             ? "opacity-50 cursor-not-allowed pointer-events-none" // Disabled state styles
-             : // More intense hover effects: stronger scale, more vibrant multi-color glow shadow
+             ? "opacity-50 cursor-not-allowed pointer-events-none"
+             :
                "hover:border-cyan-500/70 hover:shadow-multi-glow hover:scale-105 active:scale-[1.02]"
-         } // Used custom shadow, slightly higher scale, added active state
-         flex flex-col items-center text-center justify-center // Center content
-         animate-pulseGlow // Apply base subtle pulsing glow animation
+         } flex flex-col items-center text-center justify-center animate-pulseGlow
        `}
       onClick={handleClick} // Use the handleClick function
     >
-      {/* Overlay for a stronger pulsed border effect (optional, can be complex) */}
-      {/* <div className="absolute inset-[-2px] rounded-xl border-2 border-transparent group-hover:border-cyan-500 transition-all duration-300 pointer-events-none"></div> */}
 
-      {/* Ensure content is above potential pseudo-elements or background effects */}
       <div className="z-10 flex flex-col items-center text-center">
-        {/* Icon with brighter initial color, subtle hover color, and text shadow on hover */}
-        {/* Applied dynamic glow color based on card type */}
+
         <div
           className={`${glowColorClass} transition-colors duration-300 group-hover:text-white`}
         >
-          {/* Apply text shadow to the icon wrapper on hover */}
+
           <div
             className={`group-hover:text-shadow-md ${glowColorClass.replace(
               "text-",

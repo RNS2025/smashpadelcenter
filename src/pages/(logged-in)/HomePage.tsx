@@ -21,7 +21,6 @@ import {
   CubeIcon,
   PresentationChartBarIcon,
   RectangleGroupIcon,
-  UserCircleIcon,
 } from "@heroicons/react/24/outline";
 
 // --- Define Card Data ---
@@ -190,7 +189,7 @@ export const HomePage = () => {
   return (
     <>
       <Helmet>
-        <title>Hjem - SMASH Dashboard</title>
+        <title>Hjem - SMASH</title>
         <meta
           name="description"
           content="Your central hub for SMASH activities."
@@ -203,7 +202,7 @@ export const HomePage = () => {
         <HomeBar />
 
         {/* Increased vertical padding for more breathing room */}
-        <main className="px-4 sm:px-6 lg:px-8 py-16">
+        <main className="px-4 sm:px-6 lg:px-8 py-8">
           {/* Welcome Message - already has futuristic gradient */}
           {user?.username && (
             <h1 className="text-3xl md:text-4xl font-bold mb-12 text-center text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 drop-shadow-lg">
@@ -217,7 +216,7 @@ export const HomePage = () => {
             <div className="flex items-center justify-center">
               {/* Responsive Grid Layout with increased spacing */}
               {/* Adjusted gap for more separation */}
-              <div className="grid gap-12 lg:gap-20 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-4 mb-4">
+              <div className="grid gap-6 lg:gap-20 grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-4 mb-4">
                 {visibleItems.map((item) => (
                   <HomeScreenCard
                     key={item.link}
