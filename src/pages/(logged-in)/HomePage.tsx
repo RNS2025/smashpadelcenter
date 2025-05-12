@@ -164,7 +164,7 @@ export const HomePage = () => {
       <>
         {/* Apply futuristic background even to loading screen for consistency */}
         {/* Ensuring min-h-screen for loading as well */}
-        <div className="w-full min-h-[calc(100vh-100px)] flex justify-center items-center bg-gradient-to-br from-gray-900 to-black text-gray-100">
+        <div className="w-full min-h-[calc(100vh-100px)] flex justify-center items-center text-gray-100">
           {/* Adjusted gradient slightly darker/more dramatic */}
           <LoadingSpinner />
         </div>
@@ -190,7 +190,7 @@ export const HomePage = () => {
 
       {/* Apply futuristic background and text color to the main container */}
       {/* Adjusted gradient slightly darker/more dramatic */}
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black text-gray-100 px-4">
+      <div className="min-h-screen text-gray-100 px-4">
         {/* Increased vertical padding for more breathing room */}
         <main className="px-4 sm:px-6 lg:px-8 py-8">
           {/* Welcome Message - already has futuristic gradient */}
