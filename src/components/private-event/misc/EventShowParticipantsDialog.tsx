@@ -2,12 +2,14 @@ import {PrivateEvent} from "../../../types/PrivateEvent.ts";
 import {useEffect, useState} from "react";
 import {User} from "../../../types/user.ts";
 import userProfileService from "../../../services/userProfileService.ts";
+import LoadingSpinner from "../../misc/LoadingSpinner.tsx";
 
 export const EventShowParticipantsDialog = ({event, onClose,}: {
     event: PrivateEvent;
     onClose: () => void;
 }) => {
 
+    const [loading, setLoading] = useState(true);
     const [participants, setParticipants] = useState<User[]>([]);
 
     useEffect(() => {
@@ -19,10 +21,20 @@ export const EventShowParticipantsDialog = ({event, onClose,}: {
                 setParticipants(fetchedParticipants);
             } catch (error) {
                 console.error("Error fetching participants:", error);
+            } finally {
+                setLoading(false);
             }
         }
         fetchParticipants().then();
     }, [event.participants]);
+
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center h-screen">
+                <LoadingSpinner />
+            </div>
+        );
+    }
 
     return (
         <>

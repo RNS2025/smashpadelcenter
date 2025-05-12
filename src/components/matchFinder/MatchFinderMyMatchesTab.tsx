@@ -32,9 +32,11 @@ export const MatchFinderMyMatchesTab = () => {
       try {
         if (user?.username) {
           const data = await communityApi.getMatches();
+          console.log(data);
 
-          const sortedData = data.
-          filter((match => new Date(match.matchDateTime) > new Date() || (new Date(match.matchDateTime) < new Date() && match.participants.length + match.reservedSpots.length === match.totalSpots)))
+          const sortedData = data
+              .filter((match => match.reservedSpots.length !== 3))
+              .filter((match => new Date(match.matchDateTime) > new Date() || (new Date(match.matchDateTime) < new Date() && match.participants.length + match.reservedSpots.length === match.totalSpots)))
             .filter((match) => {
               const matchEnd = new Date(match.endTime);
               const isFull =
@@ -53,7 +55,7 @@ export const MatchFinderMyMatchesTab = () => {
               const totalParticipants = match.participants.length;
 
               if (totalParticipants === 2 || totalParticipants === 3) {
-                return match.playersConfirmedResult.length !== 2;
+                return match.playersConfirmedResult.length < totalParticipants;
               }
 
               if (totalParticipants === 4) {
@@ -68,6 +70,7 @@ export const MatchFinderMyMatchesTab = () => {
             });
 
           setMatches(sortedData);
+          console.log(sortedData);
         }
         setLoading(false);
       } catch (err) {

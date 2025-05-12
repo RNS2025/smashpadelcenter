@@ -29,6 +29,9 @@ const MatchesTab = () => {
           {matches.former.map((match) => {
             const allPlayersConfirmed = (() => {
               const totalParticipants = match.participants.length;
+              if (totalParticipants === 1) {
+                return match.playersConfirmedResult.length === 1;
+              }
               if (totalParticipants === 2 || totalParticipants === 3) {
                 return match.playersConfirmedResult.length === 2;
               }
@@ -77,19 +80,25 @@ const MatchesTab = () => {
                       <h1>{match.level}</h1>
                     </div>
                   </div>
-                  <div className="max-w-44 grid grid-cols-2 gap-2">
-                    {[
-                      ...match.participants,
-                      ...match.reservedSpots.map((r) => r.name),
-                    ].map((player, index) => (
+                  <div className="max-w-44 grid grid-cols-2 divide-x divide-black">
+                      <div className="pr-1">
+                    {match.winningTeam && match.winningTeam.map((player, index) => (
                       <p className="text-center truncate" key={index}>
                         {player}
                       </p>
                     ))}
+                      </div>
+                      <div className="pl-1">
+                    {match.losingTeam && match.losingTeam.map((player, index) => (
+                        <p className="text-center truncate" key={index}>
+                            {player}
+                        </p>
+                    ))}
+                      </div>
                   </div>
                 </div>
                 <div className="flex flex-col items-center justify-center gap-2 mt-2 text-sm">
-                  <h1 className="bg-blue-400 rounded-xl p-2 font-semibold">
+                  <h1 className={`rounded-xl p-2 font-semibold ${match.winningTeam?.includes(profile.username) ? "bg-blue-500 text-white" : "bg-red-500"}`}>
                     {match.team1Sets} - {match.team2Sets}
                   </h1>
                   <h1>

@@ -275,7 +275,7 @@ export const MatchResultPage = () => {
 
 
                     {totalSets > 0 && (
-                    <button type="button" onClick={handleSubmitResult} className="bg-cyan-500 p-2 px-4 rounded-lg mt-4">
+                    <button type="button" onClick={handleSubmitResult} className="w-full bg-slate-700/80 text-cyan-500 p-2 px-4 rounded-lg mt-4">
                         Indsend resultat
                     </button>
                     )}

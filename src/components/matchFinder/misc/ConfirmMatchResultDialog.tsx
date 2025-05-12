@@ -10,7 +10,7 @@ export const ConfirmMatchResultDialog = ({match, onConfirm, onDecline, onClose}:
 
     return (
         <>
-            <div className="overflow-hidden w-11/12 rounded-lg shadow-2xl bg-white p-4 text-black">
+            <div className="overflow-hidden w-11/12 rounded-lg shadow-2xl bg-slate-800/80 p-4 text-gray-200">
                 <div className="flex flex-col items-center">
                     <div className="flex flex-col gap-8 mt-5 p-4 w-full">
 
@@ -89,23 +89,23 @@ export const ConfirmMatchResultDialog = ({match, onConfirm, onDecline, onClose}:
 
                                     <h1 className="font-semibold">Bekræfter du dette resultat?</h1>
 
-                                    <div className="flex justify-between">
+                                    <div className="flex justify-between gap-6">
                                         <button
                                             onClick={onDecline}
-                                            className="bg-gradient-to-br from-red-400 to-red-800 text-white px-4 py-2 rounded-lg"
+                                            className="bg-slate-700/80 text-red-500 px-4 py-2 rounded-lg w-full"
                                         >
                                             Afvis
                                         </button>
                                         <button
                                             onClick={onConfirm}
-                                            className="bg-gradient-to-br from-green-400 to-green-800 text-white px-4 py-2 rounded-lg"
+                                            className="bg-slate-700/80 text-green-500 px-4 py-2 rounded-lg w-full"
                                         >
                                             Bekræft
                                         </button>
                                     </div>
                                     <button
                                         onClick={onClose}
-                                        className="bg-gradient-to-br from-gray-400 to-gray-800 text-white px-4 py-2 rounded-lg mt-4"
+                                        className="bg-slate-700/80 text-gray-300 px-4 py-2 rounded-lg mt-4"
                                     >
                                         Luk
                                     </button>
