@@ -3,9 +3,14 @@ import LoadingSpinner from "../../misc/LoadingSpinner.tsx";
 import { Helmet } from "react-helmet-async";
 import { safeFormatDate } from "../../../utils/dateUtils.ts";
 import { QuestionMarkCircleIcon } from "@heroicons/react/24/outline";
+import {useEffect} from "react";
 
 const MatchesTab = () => {
-  const { profile, matches, matchesLoading } = useProfileContext();
+  const { profile, matches, matchesLoading, refreshMatches } = useProfileContext();
+
+    useEffect(() => {
+        refreshMatches().then();
+    }, []);
 
   if (!profile)
     return (
