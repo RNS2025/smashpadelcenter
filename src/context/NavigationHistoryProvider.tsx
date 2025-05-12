@@ -52,10 +52,24 @@ const NavigationHistoryProvider: React.FC<{
       "/arrangement",
       "/admin",
       "/profil",
+      "/privat-arrangementer/minearrangementer",
+      "/privat-arrangementer/allearrangementer",
+      "/holdligaer",
     ];
 
     // Check if current path starts with /profil
     if (location.pathname.startsWith("/profil")) {
+      return "/hjem";
+    }
+
+    // Check if current path starts with /holdligaer but not deeper nested paths
+    if (location.pathname.startsWith("/holdligaer/")) {
+      // Count slashes to determine depth - we only want direct children
+      const pathDepth = location.pathname.split("/").filter(Boolean).length;
+      if (pathDepth === 2) {
+        return "/hjem";
+      }
+    } else if (location.pathname === "/holdligaer") {
       return "/hjem";
     }
 
