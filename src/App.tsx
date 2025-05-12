@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { UserProvider } from "./context/UserContext";
 import NavigationHistoryProvider from "./context/NavigationHistoryProvider";
@@ -68,6 +68,9 @@ function AppContent() {
   const [isAppInstalled, setIsAppInstalled] = useState(false);
   const [isPromptDismissed, setIsPromptDismissed] = useState(false);
   const { isAuthenticated, loading } = useUser();
+  const location = useLocation();
+  const hideHomeBarPaths = ["/", "/login"];
+  const showHomeBar = !hideHomeBarPaths.includes(location.pathname);
 
   useEffect(() => {
     // Check if app is already installed
@@ -141,16 +144,17 @@ function AppContent() {
   }
   return (
     <>
+      {" "}
       {shouldShowPrompt && (
         <InstallPrompt
           deferredPrompt={deferredPrompt}
           onDismiss={handleDismiss}
         />
       )}
-
-      {/* Always show HomeBar regardless of route */}
-      <HomeBar />
-
+      {/* Only show HomeBar on non-login paths */}
+      {location.pathname !== "/" && location.pathname !== "/login" && (
+        <HomeBar />
+      )}
       <Routes>
         {/* Public Routes */}
         <Route path="/" element={<LoginPage />} />
