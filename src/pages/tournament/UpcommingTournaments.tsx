@@ -4,7 +4,7 @@ import { format, parseISO, addDays, isBefore } from "date-fns";
 import HomeBar from "../../components/misc/HomeBar";
 import Animation from "../../components/misc/Animation";
 import AlertMessage from "../../components/tournaments/check-in/AlertMessage";
-import {safeFormatDate} from "../../utils/dateUtils.ts";
+import { safeFormatDate } from "../../utils/dateUtils.ts";
 
 // --- Constants and Types (Ideally in separate constants.ts or types.ts files) ---
 interface TournamentClass {
@@ -221,21 +221,30 @@ const TournamentCard: FC<TournamentCardProps> = ({ tournament }) => {
         >
           {tournament.EventName}
         </h3>
-        <p className="text-xs text-gray-400 mb-3 flex gap-2" title={tournament.Address || "Adresse ikke angivet"}>
-          <span role="img" aria-label="Location pin">📍</span>{" "}
+        <p
+          className="text-xs text-gray-400 mb-3 flex gap-2"
+          title={tournament.Address || "Adresse ikke angivet"}
+        >
+          <span role="img" aria-label="Location pin">
+            📍
+          </span>{" "}
           {(tournament.Address || "Adresse ikke angivet")
-              .replace(/\b(Denmark|Danmark)\b/gi, "")
-              .replace(/,\s*,/g, ", ")
-              .replace(/,\s*$/, "")
-              .trim()}
+            .replace(/\b(Denmark|Danmark)\b/gi, "")
+            .replace(/,\s*,/g, ", ")
+            .replace(/,\s*$/, "")
+            .trim()}
         </p>
         <p className="text-xs text-gray-400 mb-3 flex gap-1">
           <span role="img" aria-label="Calendar">
             📅
           </span>
-          {new Date(tournament.StartDate).getDay() !== new Date(tournament.EndDate).getDay()
-              ? `${safeFormatDate(tournament.StartDate, "dd. MMM")} - ${safeFormatDate(tournament.EndDate, "dd. MMM")}`
-              : safeFormatDate(tournament.StartDate, "dd. MMM")}
+          {new Date(tournament.StartDate).getDay() !==
+          new Date(tournament.EndDate).getDay()
+            ? `${safeFormatDate(
+                tournament.StartDate,
+                "dd. MMM"
+              )} - ${safeFormatDate(tournament.EndDate, "dd. MMM")}`
+            : safeFormatDate(tournament.StartDate, "dd. MMM")}
         </p>
 
         {tournament.Classes && tournament.Classes.length > 0 && (
@@ -247,13 +256,15 @@ const TournamentCard: FC<TournamentCardProps> = ({ tournament }) => {
               {tournament.Classes.slice(0, 3).map((c) => {
                 const dpfMatch = c.Name.match(/DPF\d+/g);
                 const dpfOnly = dpfMatch ? dpfMatch[0] : "";
-                return dpfOnly && (
+                return (
+                  dpfOnly && (
                     <span
-                        key={c.Id}
-                        className="bg-blue-500 bg-opacity-30 text-blue-300 text-xxs py-1 rounded-full"
+                      key={c.Id}
+                      className="bg-blue-500 bg-opacity-30 text-blue-300 text-xxs py-1 rounded-full"
                     >
                       {dpfOnly}
                     </span>
+                  )
                 );
               })}
               {tournament.Classes.length > 3 && (
@@ -350,7 +361,9 @@ const TournamentFilters: FC<TournamentFiltersProps> = ({
             <path d="M3 3a1 1 0 000 2h14a1 1 0 100-2H3zm0 6a1 1 0 000 2h14a1 1 0 100-2H3zm0 6a1 1 0 000 2h14a1 1 0 100-2H3z" />
           </svg>
           <span className="font-semibold">
-            {filterCount > 0 ? `Filtre Anvendt (${filterCount})` : "Vis filtre"}
+            {filterCount > 0
+              ? `Filtrer Anvendt (${filterCount})`
+              : "Vis filtrer"}
           </span>
         </div>
         <svg
@@ -484,7 +497,7 @@ const TournamentFilters: FC<TournamentFiltersProps> = ({
               className="w-full sm:w-auto px-4 py-2 text-sm bg-slate-600 hover:bg-slate-500 text-gray-200 rounded-md transition flex items-center justify-center"
               title="Ryd alle filtre"
             >
-              Ryd Filtre
+              Ryd Filtrer
             </button>
             <button
               onClick={() => {
@@ -528,15 +541,14 @@ const UpcomingTournaments: FC = () => {
     return [
       { value: "", label: "Alle rækker" },
       ...allClasses
-          .sort((a, b) => {
-            const numA = parseInt(a.replace("DPF", ""), 10);
-            const numB = parseInt(b.replace("DPF", ""), 10);
-            return numA - numB;
-          })
-          .map((name) => ({ value: name, label: name })),
+        .sort((a, b) => {
+          const numA = parseInt(a.replace("DPF", ""), 10);
+          const numB = parseInt(b.replace("DPF", ""), 10);
+          return numA - numB;
+        })
+        .map((name) => ({ value: name, label: name })),
     ];
   }, []);
-
 
   const isCacheValid = useCallback((cachedData: CachedData): boolean => {
     if (!cachedData || !cachedData.timestamp) return false;
@@ -808,7 +820,8 @@ const UpcomingTournaments: FC = () => {
                 DPF-turneringer
               </h1>
               <p className="mt-3 text-lg sm:text-xl text-slate-400 max-w-2xl mx-auto relative z-10">
-                Udforsk kommende padel-turneringer i hele Danmark. Filtrer, find, og gør dig klar til at konkurrere!
+                Udforsk kommende padel-turneringer i hele Danmark. Filtrer,
+                find, og gør dig klar til at konkurrere!
               </p>
             </header>
 
@@ -883,7 +896,7 @@ const UpcomingTournaments: FC = () => {
                           d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
                         />
                       </svg>
-                      Ryd Filtre ({activeFilterCount})
+                      Ryd Filtrer ({activeFilterCount})
                     </button>
                   )}
                   {hasMore && (
