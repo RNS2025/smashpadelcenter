@@ -59,6 +59,7 @@ import MatchesTab from "./components/profile/tabs/MatchesTab.tsx";
 import ResetPasswordPage from "./pages/login/ResetPasswordPage.tsx";
 import ForgotPasswordPage from "./pages/login/ForgotPasswordPage.tsx";
 import UpcommingTournaments from "./pages/tournament/UpcommingTournaments.tsx";
+import LeagueStandingsPage from "./pages/(logged-in)/lunar/GlobalLunarInformation.tsx";
 
 function AppContent() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -242,6 +243,7 @@ function AppContent() {
               <Route path="lunarliga4p" element={<LunarTeamsWomenTab />} />
               <Route path="hh-listen" element={<HHTeamsTab />} />
             </Route>
+            <Route path="/lunarGlobal" element={<LeagueStandingsPage />} />
 
             <Route
               path="/holdligaer/:teamId"

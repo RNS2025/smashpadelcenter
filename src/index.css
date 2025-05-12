@@ -1,9 +1,39 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
 
-@theme {
+:root {
   --text-xxs: 0.625rem;
+  /* Theme colors - reference for tailwind.config.js -> theme: { extend: { ... HERE ... } } */
+  /* 
+  colors: {
+    'brand-primary': '#00A9FF', // Example: Cyber Blue
+    'brand-secondary': '#A076F9', // Example: Neon Purple
+    'brand-accent': '#FF407D',  // Example: Hyper Pink
+    'slate-850': '#172033',
+    'slate-750': '#202d47',
+    'slate-950': '#0c1222', // For the main page background if you want it darker
+  },
+  animation: {
+    fadeInDown: 'fadeInDown 0.5s ease-out forwards',
+    fadeIn: 'fadeIn 0.3s ease-out forwards',
+    pulseSlow: 'pulseSlow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+  },
+  keyframes: {
+    fadeInDown: {
+      '0%': { opacity: '0', transform: 'translateY(-20px)' },
+      '100%': { opacity: '1', transform: 'translateY(0)' },
+    },
+    fadeIn: {
+      '0%': { opacity: '0' },
+      '100%': { opacity: '1' },
+    },
+    pulseSlow: {
+      '0%, 100%': { opacity: '1' },
+      '50%': { opacity: '.7' },
+    }
+  }
+  */
 }
 
 html {
