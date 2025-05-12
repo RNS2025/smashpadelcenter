@@ -177,6 +177,8 @@ export const HomePage = () => {
                 link="/feedback"
               />
             )}
+
+            {user?.role === "admin" && (
             <HomeScreenCard
               icon={
                 <RectangleGroupIcon className="size-10" aria-hidden="true" />
@@ -185,6 +187,7 @@ export const HomePage = () => {
               description="Se resultater fra Lunar ligaen"
               link="/lunarGlobal"
             />
+            )}
           </div>
         </div>
       </Animation>

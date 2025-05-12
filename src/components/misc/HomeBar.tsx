@@ -387,6 +387,46 @@ const HomeBar = ({ backPage }: { backPage?: string }) => {
             >
               Profil
             </button>
+            <button
+                onClick={() => {
+                  navigate(`/makkerbørs`);
+                  setActivePanel(null);
+                }}
+                className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors"
+                role="menuitem"
+            >
+              Makkerbørs
+            </button>
+            <button
+                onClick={() => {
+                  navigate(`/privat-arrangementer`);
+                  setActivePanel(null);
+                }}
+                className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors"
+                role="menuitem"
+            >
+              Privat-arrangementer
+            </button>
+            <button
+                onClick={() => {
+                  navigate(`/holdligaer`);
+                  setActivePanel(null);
+                }}
+                className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors"
+                role="menuitem"
+            >
+              Holdligaer
+            </button>
+            <button
+                onClick={() => {
+                  navigate(`/turneringer`);
+                  setActivePanel(null);
+                }}
+                className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors"
+                role="menuitem"
+            >
+              DPF-universet
+            </button>
             {user?.role === "admin" && (
               <button // Use button
                 onClick={() => {
