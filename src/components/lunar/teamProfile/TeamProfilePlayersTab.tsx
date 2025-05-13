@@ -34,7 +34,7 @@ export const TeamProfilePlayersTab = () => {
 
             {players.length > 0 && (
             <div className="overflow-auto h-[calc(100vh-380px)] rounded-lg shadow-lg my-5 text-xs">
-                <table className="min-w-full divide-y-2 divide-cyan-500 bg-slate-700/80">
+                <table className="min-w-full divide-y-2 divide-cyan-500 bg-slate-700/30">
                     <thead className="text-left bg-slate-800/80 font-bold">
                     <tr>
                         <th className="px-4 py-2 text-gray-300 select-none">

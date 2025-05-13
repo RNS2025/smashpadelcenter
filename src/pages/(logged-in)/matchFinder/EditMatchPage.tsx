@@ -190,7 +190,7 @@ export const EditMatchPage = () => {
         <title>Rediger kamp</title>
       </Helmet>
       <Animation>
-        <div className="w-full bg-slate-800/70 rounded-xl p-4 text-gray-300">
+        <div className="w-full bg-slate-800/30 rounded-xl p-4 text-gray-300">
           <form className="space-y-10" onSubmit={handleUpdateMatch}>
             <div className="lg:grid grid-cols-3 gap-4 max-lg:flex max-lg:flex-col">
               <div>

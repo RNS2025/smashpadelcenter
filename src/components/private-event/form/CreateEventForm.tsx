@@ -173,7 +173,7 @@ export const CreateEventForm = () => {
   ];
 
   return (
-    <div className="w-full bg-slate-800/70 rounded-xl p-4 text-gray-300">
+    <div className="w-full bg-slate-800/30 rounded-xl p-4 text-gray-300">
       {error && (
         <div className="mb-4 text-red-500">
           {error}
@@ -492,7 +492,7 @@ export const CreateEventForm = () => {
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full bg-slate-700 rounded-lg py-2 px-4 text-cyan-500"
+          className="w-full bg-slate-700/80 rounded-lg py-2 px-4 text-cyan-500"
         >
           {isSubmitting ? "Opretter..." : "Opret arrangement"}
         </button>

@@ -551,7 +551,7 @@ export const ViewEventPage = () => {
                 className="border-slate-800/80 bg-slate-800/80 rounded flex flex-col justify-center items-center gap-2 py-4"
               >
                 <div className="flex items-center">
-                  <CurrencyDollarIcon className="size-10 rounded-lg text-yellow-600 bg-gradient-to-b" />
+                  <CurrencyDollarIcon className="size-10 rounded-lg text-yellow-600" />
                   <h1 className="text-gray-300 text-lg truncate overflow-hidden whitespace-nowrap">
                     {event.price} kr.{" "}
                     {eventHost?.phoneNumber && `til ${eventHost.phoneNumber}`}

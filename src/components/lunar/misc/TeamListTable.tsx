@@ -75,7 +75,7 @@ const TeamListTable = ({
             />
 
             <div className="overflow-auto max-h-[calc(100vh-240px)] rounded-lg shadow-lg my-5">
-                <table className="min-w-full divide-y-2 divide-cyan-500 bg-slate-700/80 text-gray-200 text-sm rounded">
+                <table className="min-w-full divide-y-2 divide-cyan-500 bg-slate-700/30 text-gray-200 text-sm rounded">
                     <thead className="text-left bg-slate-800/80 font-bold">
                     <tr>
                         <th className="px-4 py-2 cursor-pointer w-[70%]">

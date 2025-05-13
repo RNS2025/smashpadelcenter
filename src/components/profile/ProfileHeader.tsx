@@ -13,7 +13,7 @@ export const ProfileHeader = ({ profile, rankedInProfile }: { profile: User | nu
     const isAdmin = profile.username === "admin";
 
     return (
-        <div className="bg-slate-800/70 shadow-lg rounded-lg p-5 mb-6 border border-cyan-500">
+        <div className="bg-slate-800/30 shadow-lg rounded-lg p-5 mb-6 border border-cyan-500">
             <div className="flex flex-col items-center gap-2">
 
                 <div className="w-full grid grid-cols-3 items-center justify-items-center">

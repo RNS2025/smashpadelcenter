@@ -52,12 +52,12 @@ const MatchesTab = () => {
             return allPlayersConfirmed ? (
               <li
                 key={match.id}
-                className={`border-2 p-2 rounded-lg text-black ${
+                className={`border-4 border-double p-2 rounded-lg text-gray-300 ${
                   isWinner
-                    ? "border-blue-500 bg-blue-100"
+                    ? "border-blue-500"
                     : isDraw
-                    ? "bg-gray-100 border-gray-800"
-                    : "bg-red-100 border-red-500"
+                    ? "border-gray-800"
+                    : "border-red-500"
                 }`}
               >
                 <div className="flex justify-between text-xs border-b border-gray-600">
@@ -78,42 +78,56 @@ const MatchesTab = () => {
                     <p>{match.matchType}</p>
                   </div>
                 </div>
-                <div className="flex justify-between text-xs pt-2 items-center">
-                  <div className="flex items-center gap-4">
-                    <div>
-                      <h1>Niveau:</h1>
-                      <h1>{match.level}</h1>
-                    </div>
-                  </div>
-                  <div className="max-w-44 grid grid-cols-2 divide-x divide-black">
-                      <div className="pr-1">
-                    {match.winningTeam && match.winningTeam.map((player, index) => (
-                      <p className="text-center truncate" key={index}>
-                        {player}
-                      </p>
-                    ))}
+
+
+                <div className="flex justify-between text-sm pt-2 items-center">
+                  <div className="w-full grid grid-rows-[auto_auto_auto] items-center">
+
+                      <div className="grid grid-cols-[160px_auto] items-center">
+                          {match.winningTeam && (
+                              <p className="w-40 truncate border-r border-white">
+                                  {match.winningTeam.join(" / ")}
+                              </p>
+                          )}
+
+                          <div className="w-full grid grid-cols-5 items-center text-center">
+                              <h1 className="border-r">{match.score?.firstSet?.score.split("-")[0]}</h1>
+                              <h1 className="border-r">{match.score?.secondSet?.score.split("-")[0]}</h1>
+                                <h1 className="border-r">{match.score?.thirdSet?.score.split("-")[0]}</h1>
+                                <h1 className="border-r">{match.score?.fourthSet?.score.split("-")[0]}</h1>
+                                <h1 className="border-r">{match.score?.fifthSet?.score.split("-")[0]}</h1>
+                          </div>
                       </div>
-                      <div className="pl-1">
-                    {match.losingTeam && match.losingTeam.map((player, index) => (
-                        <p className="text-center truncate" key={index}>
-                            {player}
-                        </p>
-                    ))}
+
+                      <div className="h-px bg-white"></div>
+
+                      <div className="grid grid-cols-[160px_auto] items-center">
+                          {match.losingTeam && (
+                              <p className="w-40 truncate border-r border-white">
+                                  {match.losingTeam.join(" / ")}
+                              </p>
+                          )}
+                          <div className="w-full grid grid-cols-5 items-center text-center">
+                              <h1 className="border-r">{match.score?.firstSet?.score.split("-")[1]}</h1>
+                              <h1 className="border-r">{match.score?.secondSet?.score.split("-")[1]}</h1>
+                              <h1 className="border-r">{match.score?.thirdSet?.score.split("-")[1]}</h1>
+                              <h1 className="border-r">{match.score?.fourthSet?.score.split("-")[1]}</h1>
+                              <h1 className="border-r">{match.score?.fifthSet?.score.split("-")[1]}</h1>
+                          </div>
                       </div>
+
+
                   </div>
                 </div>
                 <div className="flex flex-col items-center justify-center gap-2 mt-2 text-sm">
-                  <h1 className={`rounded-xl p-2 font-semibold ${match.winningTeam?.includes(profile.username) ? "bg-blue-500 text-white" : "bg-red-500"}`}>
+                  <h1 className={`rounded-xl p-2 font-semibold ${match.winningTeam?.includes(profile.username) ? "bg-gradient-to-t from-blue-300 from-5% to-blue-700 text-white" : "bg-gradient-to-t from-red-300 from-5% to-red-700 text-white"}`}>
                     {match.team1Sets} - {match.team2Sets}
                   </h1>
-                  <h1>
-                    (
-                    {Object.values(match.score || {})
-                      .filter((set) => set?.score)
-                      .map((set) => set.score)
-                      .join(", ")}
-                    )
-                  </h1>
+
+                    <div className="flex gap-1 text-xs italic text-gray-500">
+                        <h1>Niveau:</h1>
+                        <h1>{match.level}</h1>
+                    </div>
                 </div>
               </li>
             ) : (

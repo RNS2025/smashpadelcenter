@@ -39,7 +39,7 @@ export const TeamProfileMatchesTab = () => {
 
             {memoizedMatches.length > 0 && (
                 <div className="overflow-auto h-[calc(100vh-380px)] rounded-lg shadow-lg my-5 text-xxs">
-                    <table className="min-w-[320px] w-full divide-y-2 divide-cyan-500 bg-slate-700/80">
+                    <table className="min-w-[320px] w-full divide-y-2 divide-cyan-500 bg-slate-700/30">
                         <thead className="bg-slate-800/80 font-bold">
                         <tr>
                             <th className="py-2 text-gray-300 select-none">
@@ -86,8 +86,9 @@ export const TeamProfileMatchesTab = () => {
                                             </p>
                                         )}
                                         <button
-                                            onClick={() => navigate(`/match/${match.MatchId}`)}
-                                            className={`bg-cyan-500 rounded text-white p-1 px-2 ${match.ShowUpcomingInfoText ? "hidden" : ""}`}>Info</button>
+                                            onClick={() => navigate(`${match.MatchId}`)}
+                                            className={`bg-cyan-500 rounded text-white p-1 px-2 ${match.ShowUpcomingInfoText ? "hidden" : ""}`}>Info
+                                        </button>
                                     </td>
                                 </tr>
 

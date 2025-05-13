@@ -1,5 +1,5 @@
 import { Helmet } from "react-helmet-async";
-import { useParams } from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import { Fragment, useEffect, useState, useMemo } from "react";
 import { MatchDetails, TeamMatch } from "../../../types/LunarTypes.ts";
 import { fetchMatchDetails, fetchTeamMatches } from "../../../services/LigaService.ts";
@@ -7,6 +7,7 @@ import { fetchMatchDetails, fetchTeamMatches } from "../../../services/LigaServi
 export const TeamProfileMatchDetailsTab = () => {
     const { matchId } = useParams<{ matchId: string }>();
     const { teamId } = useParams<{ teamId: string }>();
+    const navigate = useNavigate();
 
     const [matchDetails, setMatchDetails] = useState<MatchDetails>();
     const [teamMatches, setTeamMatches] = useState<TeamMatch[]>([]);
@@ -48,9 +49,9 @@ export const TeamProfileMatchDetailsTab = () => {
                 <title>Kampdetaljer</title>
             </Helmet>
 
-            {matchDetails && currentMatch && (
+            {matchDetails && currentMatch && matchDetails.Matches.Matches[0].Challenger.Name !== "Pending " ? (
                 <div className="overflow-auto h-[calc(100vh-380px)] rounded-lg shadow-lg my-5 text-xxs">
-                    <table className="min-w-[320px] w-full divide-y-2 divide-cyan-500 bg-slate-700/80">
+                    <table className="min-w-[320px] w-full divide-y-2 divide-cyan-500 bg-slate-700/30">
                         <thead className="bg-slate-800/80 font-bold">
                         <tr>
                             <th className="px-2 py-2 text-gray-300 select-none w-[30%]">
@@ -108,6 +109,13 @@ export const TeamProfileMatchDetailsTab = () => {
                         ))}
                         </tbody>
                     </table>
+                </div>
+            ) : (
+                <div className="flex flex-col gap-6 items-center justify-center h-[calc(100vh-380px)]">
+                    <p className="text-gray-300">Kampdetaljer er ikke indtastet.</p>
+                    <button onClick={() => navigate(-1)} type="button" className="bg-slate-700/80 rounded w-full p-2 text-cyan-500">
+                        Gå tilbage
+                    </button>
                 </div>
             )}
         </>

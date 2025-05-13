@@ -34,7 +34,7 @@ export const MatchFinderMyMatchesTab = () => {
           const data = await communityApi.getMatches();
 
           const sortedData = data
-            .filter((match) => match.reservedSpots.length !== 3)
+            .filter((match) => match.reservedSpots.length === 3 && !match.playersConfirmedResult.includes(match.username))
             .filter(
               (match) =>
                 new Date(match.matchDateTime) > new Date() ||

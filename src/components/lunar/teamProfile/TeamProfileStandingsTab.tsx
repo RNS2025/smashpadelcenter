@@ -32,7 +32,7 @@ export const TeamProfileStandingsTab = () => {
 
             {standings.length > 0 && (
                 <div className="overflow-auto h-[calc(100vh-380px)] rounded-lg shadow-lg my-5 text-xxs">
-                    <table className="min-w-[320px] w-full divide-y-2 divide-cyan-500 bg-slate-700/80">
+                    <table className="min-w-[320px] w-full divide-y-2 divide-cyan-500 bg-slate-700/30">
                         <thead className="bg-slate-800/80 font-bold">
                         <tr>
                             <th className="py-2 text-gray-300 select-none w-[10%] sm:w-[30%]">

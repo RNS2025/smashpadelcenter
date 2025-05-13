@@ -211,7 +211,7 @@ export const EditEventPage = () => {
             </Helmet>
             
     <Animation>
-        <div className="w-full bg-slate-800/70 rounded-xl p-4 text-gray-300">
+        <div className="w-full bg-slate-800/30 rounded-xl p-4 text-gray-300">
                 {error && (
                     <div className="mb-4 text-red-500">
                         {error}

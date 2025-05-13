@@ -8,7 +8,6 @@ import LoadingSpinner from "../../../components/misc/LoadingSpinner.tsx";
 
 export const LeagueTeamProfilePage = () => {
   const { teamId } = useParams<{ teamId: string }>();
-  const lastLunarTab = sessionStorage.getItem("lastLigaTab") || "/holdligaer";
   const cachedName = teamId
     ? sessionStorage.getItem(`teamName_${teamId}`)
     : null;
@@ -75,7 +74,7 @@ export const LeagueTeamProfilePage = () => {
   return (
     <>
       <Animation>
-        <div className="max-h-[calc(100vh-100px)] mx-2 sm:mx-10 p-4 bg-slate-800/80 mt-5 shadow-md rounded-lg">
+        <div className="max-h-[calc(100vh-100px)] mx-2 sm:mx-10 p-4 bg-slate-800/30 mt-5 shadow-md rounded-lg">
           <div className="flex gap-5 px-2">
             <img
               src={team.HomeClubImageUrl}
