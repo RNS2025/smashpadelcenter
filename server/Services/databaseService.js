@@ -211,7 +211,7 @@ module.exports = {
 
   getUserStats: async (username) => {
     console.log(`[DEBUG] Getting stats for username: ${username}`);
-    const user = await User.findUserByUsername(username);
+    const user = await User.findOne(username);
     if (!user) throw new Error("User not found");
     const matches = await PadelMatch.find({
       participants: user.username,
