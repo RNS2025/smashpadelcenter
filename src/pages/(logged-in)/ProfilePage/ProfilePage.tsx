@@ -21,6 +21,7 @@ const ProfilePage = () => {
       setRankedInProfile({} as RankedInPlayerSearchResult);
       return;
     }
+    setRankedInProfile({} as RankedInPlayerSearchResult);
     const fetchRankedInProfile = async () => {
       try {
         const response = await rankedInService.searchPlayer(profile.fullName);
