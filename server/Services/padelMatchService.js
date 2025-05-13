@@ -24,30 +24,30 @@ const padelMatchService = {
   updateMatch: async (matchId, matchData) => {
     try {
       const match = await PadelMatch.findById(matchId);
-        if (!match) throw new Error("Match not found");
-        // Update match properties
-        Object.assign(match, matchData);
-        await match.save();
-        const updatedMatch = {
-          ...match.toObject(),
-          id: match._id.toString(),
-          participants: match.participants || [],
-          joinRequests: match.joinRequests || [],
-          reservedSpots: match.reservedSpots || [],
-          totalSpots: match.totalSpots || 4,
-        };
-        logger.debug("PadelMatchService: Match updated successfully", {
-          matchId,
-          matchData,
-        });
-        return updatedMatch;
+      if (!match) throw new Error("Match not found");
+      // Update match properties
+      Object.assign(match, matchData);
+      await match.save();
+      const updatedMatch = {
+        ...match.toObject(),
+        id: match._id.toString(),
+        participants: match.participants || [],
+        joinRequests: match.joinRequests || [],
+        reservedSpots: match.reservedSpots || [],
+        totalSpots: match.totalSpots || 4,
+      };
+      logger.debug("PadelMatchService: Match updated successfully", {
+        matchId,
+        matchData,
+      });
+      return updatedMatch;
     } catch (error) {
-        logger.error("PadelMatchService: Error updating match", {
-            matchId,
-            matchData,
-            error: error.message,
-        });
-        throw new Error("Error updating match: " + error.message);
+      logger.error("PadelMatchService: Error updating match", {
+        matchId,
+        matchData,
+        error: error.message,
+      });
+      throw new Error("Error updating match: " + error.message);
     }
   },
 
@@ -106,13 +106,12 @@ const padelMatchService = {
     }
 
     match.reservedSpots = match.reservedSpots.filter(
-        (spot) => spot.name !== username
+      (spot) => spot.name !== username
     );
 
     await match.save();
     return match;
   },
-
 
   rejectJoin: async (matchId, username) => {
     try {
@@ -529,7 +528,6 @@ const padelMatchService = {
         throw new Error("Error in match result");
       }
 
-
       Object.assign(match, matchResult);
 
       await match.save();
@@ -543,23 +541,101 @@ const padelMatchService = {
   confirmMatchResult: async (matchId, confirmResukt) => {
     try {
       const match = await PadelMatch.findById(matchId);
-        if (!match) {
-            throw new Error("Match not found");
-        }
+      if (!match) {
+        throw new Error("Match not found");
+      }
 
-        if (match.team1Sets === undefined || match.team2Sets === undefined) {
-            throw new Error("Error in match result");
-        }
+      if (match.team1Sets === undefined || match.team2Sets === undefined) {
+        throw new Error(
+          "Match result (sets) not submitted yet or error in match result"
+        );
+      }
 
-        Object.assign(match, confirmResukt);
-        await match.save();
-        return match;
+      Object.assign(match, confirmResukt);
+
+      let winningUsernames = [];
+      let losingUsernames = [];
+      let isDraw = false;
+
+      if (match.team1Sets > match.team2Sets) {
+        winningUsernames = Array.isArray(match.team1) ? [...match.team1] : [];
+        losingUsernames = Array.isArray(match.team2) ? [...match.team2] : [];
+        match.winningTeam = winningUsernames;
+        match.losingTeam = losingUsernames;
+        match.isDraw = false;
+      } else if (match.team2Sets > match.team1Sets) {
+        winningUsernames = Array.isArray(match.team2) ? [...match.team2] : [];
+        losingUsernames = Array.isArray(match.team1) ? [...match.team1] : [];
+        match.winningTeam = winningUsernames;
+        match.losingTeam = losingUsernames;
+        match.isDraw = false;
+      } else {
+        isDraw = true;
+        match.isDraw = true;
+        match.winningTeam = [];
+        match.losingTeam = [];
+      }
+      match.status = "completed";
+
+      // Update stats for all participants
+      if (Array.isArray(match.participants)) {
+        for (const username of match.participants) {
+          const user = await User.findOne({ username: username });
+          if (user) {
+            user.stats = user.stats || {};
+            user.stats.wins = user.stats.wins || 0;
+            user.stats.losses = user.stats.losses || 0;
+            user.stats.draws = user.stats.draws || 0;
+            user.stats.matches = user.stats.matches || 0;
+
+            if (isDraw) {
+              user.stats.draws += 1;
+            } else if (winningUsernames.includes(username)) {
+              user.stats.wins += 1;
+              user.stats.matches += 1;
+            } else if (losingUsernames.includes(username)) {
+              if (
+                (match.team1.includes(username) &&
+                  losingUsernames.every((u) => match.team1.includes(u))) ||
+                (match.team2.includes(username) &&
+                  losingUsernames.every((u) => match.team2.includes(u)))
+              ) {
+                user.stats.losses += 1;
+                user.stats.matches += 1;
+              } else if (!winningUsernames.includes(username)) {
+                logger.info(
+                  `User ${username} in match ${matchId} was not in winning or clearly defined losing team. W/L stats not updated.`
+                );
+              }
+            }
+            await user.save();
+            logger.info(
+              `Stats updated for user ${username} from match ${matchId}`
+            );
+          } else {
+            logger.warn(
+              `User ${username} not found during stat update for match ${matchId}`
+            );
+          }
+        }
+      } else {
+        logger.error(
+          `match.participants is not an array for match ${matchId}. Cannot update stats.`
+        );
+      }
+
+      await match.save();
+      // Return a plain object if other parts of the system expect it, or the Mongoose document
+      return match.toObject ? match.toObject() : match;
     } catch (error) {
-        console.error("Error confirming match result:", error.message);
-        throw new Error("Error confirming match result: " + error.message);
+      logger.error(`Error confirming match result for matchId ${matchId}:`, {
+        message: error.message,
+        stack: error.stack,
+      });
+      // It's good practice to re-throw a generic error or the specific error if the caller needs to handle it
+      throw new Error("Error confirming match result: " + error.message);
     }
-    },
+  },
 };
-
 
 module.exports = padelMatchService;
