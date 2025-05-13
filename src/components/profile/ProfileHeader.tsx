@@ -60,7 +60,7 @@ export const ProfileHeader = ({ profile, rankedInProfile }: { profile: User | nu
                     </div>
                     )}
 
-                    {rankedInProfile && rankedInProfile.points > 0 && (
+                    {rankedInProfile && rankedInProfile.points > 0 && rankedInProfile.participantName === profile.fullName && (
                     <div className="flex gap-2 text-sm">
                         <img src={rankedinLogo} alt={rankedinLogo} className="h-6 w-6 rounded-lg" />
                         <div>

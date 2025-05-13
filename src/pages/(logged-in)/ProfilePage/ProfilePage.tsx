@@ -17,16 +17,23 @@ const ProfilePage = () => {
     useState<RankedInPlayerSearchResult>({} as RankedInPlayerSearchResult);
 
   useEffect(() => {
-    if (!profile?.fullName) {
-      setRankedInProfile({} as RankedInPlayerSearchResult);
+    // Altid nulstil først – uanset hvad
+    setRankedInProfile({} as RankedInPlayerSearchResult);
+
+    // Hvis der ikke er noget navn, stop her
+    if (!profile?.fullName || profile.fullName.trim() === "") {
       return;
     }
-    setRankedInProfile({} as RankedInPlayerSearchResult);
+
     const fetchRankedInProfile = async () => {
       try {
         const response = await rankedInService.searchPlayer(profile.fullName);
         if (response.length > 0) {
-          setRankedInProfile(response[0]);
+          const result = response[0];
+
+          if (result.participantName === profile.fullName) {
+            setRankedInProfile(result);
+          }
         } else {
           console.warn("No RankedIn profile found for", profile.fullName);
         }
@@ -34,8 +41,11 @@ const ProfilePage = () => {
         console.error("Error fetching RankedIn profile:", err);
       }
     };
+
     fetchRankedInProfile().then();
   }, [profile?.fullName]);
+
+
 
   if (loading) {
     return (

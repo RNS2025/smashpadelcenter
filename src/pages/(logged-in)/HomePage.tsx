@@ -219,6 +219,12 @@ export const HomePage = () => {
                 ))}
               </div>
             </div>
+
+            {user && user.username === "charlotte_hoegel@hotmail.com" && (
+            <div className="border rounded p-2 mx-6 mt-4 text-sm">
+              Hej Charlotte - dit HH-hold er ikke i oversigten fordi I ikke har sat et SMASH-center som hjemmebane - I har faktisk ikke sat nogen hjemmebane overhovedet. Vi arbejder på at få alle HH-holdene ind i oversigten :) <br/> <br/>Mvh Luu
+            </div>
+            )}
           </Animation>
         </main>
 
