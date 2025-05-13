@@ -209,9 +209,9 @@ module.exports = {
     }
   },
 
-  getUserStats: async (userId) => {
-    console.log(`[DEBUG] Getting stats for userId: ${userId}`);
-    const user = await User.findById(userId);
+  getUserStats: async (username) => {
+    console.log(`[DEBUG] Getting stats for username: ${username}`);
+    const user = await User.findUserByUsername(username);
     if (!user) throw new Error("User not found");
     const matches = await PadelMatch.find({
       participants: user.username,
@@ -280,50 +280,58 @@ module.exports = {
   // Update existing getProfileWithMatches to ensure matches are returned
   getProfileWithMatches: async (userId) => {
     try {
-      const user = await User.findById(userId).populate("matchHistory");
-      if (!user) throw new Error("User not found");
-      const matches = await PadelMatch.find({
-        participants: user.username,
-      });
-      const now = new Date();
-      const pastMatches = matches
-        .filter((m) => new Date(m.matchDateTime) <= now)
-        .map((m) => ({
-          id: m._id.toString(),
-          date: new Date(m.matchDateTime).toISOString(),
-          opponent:
-            m.participants.filter((p) => p !== user.username).join(", ") ||
-            "Unknown",
-          score: m.score || "TBD",
-          result: m.result || "unknown",
-        }));
-      const stats = await module.exports.getUserStats(userId);
+      const user = await User.findById(userId)
+        .populate("matchHistory")
+        // Add any other necessary .populate() calls here if needed for the profile
+        .lean(); // .lean() returns a plain JavaScript object, good for read-only operations
+
+      if (!user) {
+        logger.error(
+          `DatabaseService: User not found in getProfileWithMatches with ID: ${userId}`
+        );
+        throw new Error("User not found");
+      }
+
+      // Construct the profile object to be returned, ensuring all necessary fields are present.
       return {
-        id: user._id.toString(),
+        _id: user._id,
         username: user.username,
-        email: user.email || "",
-        fullName: user.fullName || "",
-        phoneNumber: user.phoneNumber || "",
-        profilePictureUrl: user.profilePictureUrl || "/api/placeholder/150/150",
-        skillLevel: user.skillLevel || 1,
-        position: user.position || "Begge",
-        playingStyle: user.playingStyle || "",
-        equipment: user.equipment || "",
-        role: user.role || "user",
-        pastMatches,
-        stats,
-        groups: user.groups || [],
-        rankedInId: user.rankedInId || "",
+        email: user.email,
+        fullName: user.fullName,
+        profilePictureUrl: user.profilePictureUrl,
+        skillLevel: user.skillLevel,
+        position: user.position,
+        playingStyle: user.playingStyle,
+        equipment: user.equipment,
+        matchHistory: user.matchHistory, // Populated
+        groups: user.groups,
+        rankedInId: user.rankedInId,
+        createdAt: user.createdAt,
+        role: user.role, // Added role as it's often useful in profiles
+        // --- Ensure stats are included ---
+        stats: user.stats, // This will include matches, wins, losses, draws from the user document
+        // Add any other fields that should be part of the comprehensive profile
       };
     } catch (err) {
-      console.error("Error fetching profile with matches:", err.message);
-      throw new Error("Error fetching profile: " + err.message);
+      logger.error(
+        `DatabaseService: Error in getProfileWithMatches for userId ${userId}: ${err.message}`
+      );
+      throw err; // Re-throw the error to be handled by the calling route
     }
   },
 
   getProfileByUsername: async (username) => {
-    const user = await User.findOne({ username });
-    if (!user) throw new Error("User not found");
+    const user = await User.findOne({ username }); // This fetches the user document, including its 'stats' field
+    if (!user) {
+      logger.error(
+        `DatabaseService: User not found by username: ${username} in getProfileByUsername`
+      );
+      // It's important to throw an error that the route can catch and respond with a 404
+      throw new Error(`User profile not found for username: ${username}`);
+    }
+    // The 'user' object from findOne already contains the stats.
+    // Now, call getProfileWithMatches to potentially populate other details like matchHistory
+    // and ensure a consistent profile object structure.
     return await module.exports.getProfileWithMatches(user._id);
   },
 };
