@@ -580,42 +580,17 @@ const padelMatchService = {
       // Update stats for all participants
       if (Array.isArray(match.participants)) {
         for (const username of match.participants) {
-          const user = await User.findOne({ username: username });
+          const user = await User.findOne({ username });
           if (user) {
-            user.stats = user.stats || {};
-            user.stats.wins = user.stats.wins || 0;
-            user.stats.losses = user.stats.losses || 0;
-            user.stats.draws = user.stats.draws || 0;
-            user.stats.matches = user.stats.matches || 0;
-
+            user.stats.matches += 1;
             if (isDraw) {
               user.stats.draws += 1;
             } else if (winningUsernames.includes(username)) {
               user.stats.wins += 1;
-              user.stats.matches += 1;
             } else if (losingUsernames.includes(username)) {
-              if (
-                (match.team1.includes(username) &&
-                  losingUsernames.every((u) => match.team1.includes(u))) ||
-                (match.team2.includes(username) &&
-                  losingUsernames.every((u) => match.team2.includes(u)))
-              ) {
-                user.stats.losses += 1;
-                user.stats.matches += 1;
-              } else if (!winningUsernames.includes(username)) {
-                logger.info(
-                  `User ${username} in match ${matchId} was not in winning or clearly defined losing team. W/L stats not updated.`
-                );
-              }
+              user.stats.losses += 1;
             }
             await user.save();
-            logger.info(
-              `Stats updated for user ${username} from match ${matchId}`
-            );
-          } else {
-            logger.warn(
-              `User ${username} not found during stat update for match ${matchId}`
-            );
           }
         }
       } else {
