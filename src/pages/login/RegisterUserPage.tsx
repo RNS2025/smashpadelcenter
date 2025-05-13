@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { register } from "../../services/auth.ts";
 import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
+import {InformationCircleIcon} from "@heroicons/react/24/outline";
 
 export default function RegisterPage() {
   const [username, setUsername] = useState("");
@@ -185,12 +186,15 @@ export default function RegisterPage() {
                 {!successMessage && (
                   <>
                     <div className="col-span-6">
+                      <div className="flex items-center gap-2">
                       <label
                         htmlFor="username"
                         className="block text-sm font-medium text-left"
                       >
                         Brugernavn
                       </label>
+                      <InformationCircleIcon onClick={() => alert("Dit brugernavn bruges til at logge ind med, og det bliver vist på din profil. Det er også sådan andre spillere kan finde dig i appen – vælg derfor et navn, du let kan huske på, og som ikke indeholder følsom data.")} className="size-6" />
+                      </div>
 
                       <input
                           type="text"
