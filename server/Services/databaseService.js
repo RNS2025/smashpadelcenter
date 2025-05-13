@@ -300,6 +300,7 @@ module.exports = {
         fullName: user.fullName,
         profilePictureUrl: user.profilePictureUrl,
         skillLevel: user.skillLevel,
+        phoneNumber: user.phoneNumber,
         position: user.position,
         playingStyle: user.playingStyle,
         equipment: user.equipment,

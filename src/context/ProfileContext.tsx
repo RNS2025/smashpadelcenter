@@ -143,7 +143,12 @@ export function ProfileProvider({
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === "skillLevel" ? parseFloat(value) : value,
+      [ name ]:
+          name === "skillLevel"
+              ? parseFloat(value)
+              : name === "phoneNumber"
+                  ? value.toString()
+                  : value,
     }));
   };
 
@@ -164,6 +169,7 @@ export function ProfileProvider({
         const updated = await userProfileService.getOrCreateUserProfile(
           username
         );
+        console.log(updated);
         setProfile(updated);
         setFormData(updated);
         localStorage.setItem("userProfile", JSON.stringify(updated));

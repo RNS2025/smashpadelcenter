@@ -26,7 +26,7 @@ export const ProfileHeader = ({ profile, rankedInProfile }: { profile: User | nu
 
                 <div className="flex flex-col gap-2">
                         <span className="bg-cyan-200 text-cyan-800 px-2 py-1 rounded font-semibold text-sm text-center">
-                            Niveau {profile.skillLevel}
+                            Niveau {profile.skillLevel.toFixed(1)}
                         </span>
                     {isAdmin && (
                         <span className="bg-purple-100 text-purple-800 px-2 py-1 rounded font-semibold text-sm text-center">
