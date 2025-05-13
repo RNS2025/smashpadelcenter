@@ -119,7 +119,7 @@ const homeScreenItems = [
   {
     title: "Admin Panel",
     description: "Administrer platformen",
-    link: "admin",
+    link: "/admin",
     icon: <CogIcon className="size-10" aria-hidden="true" />,
     adminOnly: true,
   },

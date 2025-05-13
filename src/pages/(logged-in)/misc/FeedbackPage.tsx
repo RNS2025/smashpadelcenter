@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { Feedback } from "../../../types/Feedback.ts";
 import feedbackService from "../../../services/feedbackService.ts";
 import { safeFormatDate } from "../../../utils/dateUtils.ts";
+import Animation from "../../../components/misc/Animation.tsx";
 
 export const FeedbackPage = () => {
   const [feedback, setFeedback] = useState<Feedback[]>([]);
