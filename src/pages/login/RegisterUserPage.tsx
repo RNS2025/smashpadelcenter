@@ -193,7 +193,7 @@ export default function RegisterPage() {
                       >
                         Brugernavn
                       </label>
-                      <InformationCircleIcon onClick={() => alert("Dit brugernavn bruges til at logge ind med, og det bliver vist på din profil. Det er også sådan andre spillere kan finde dig i appen – vælg derfor et navn, du let kan huske på, og som ikke indeholder følsom data.")} className="size-6" />
+                      <InformationCircleIcon onClick={() => alert("Dit brugernavn bruges til at logge ind med, og det bliver vist på din profil. Det er også sådan andre spillere kan finde dig i appen – vælg derfor et navn, du let kan huske på, og som ikke indeholder følsom data.")} className="size-6 animate-pulseSlow" />
                       </div>
 
                       <input
