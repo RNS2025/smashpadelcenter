@@ -165,7 +165,7 @@ export const ViewMatchPage = () => {
             <UserCircleIcon className="h-14" />
             <div className="flex flex-col gap-2">
               <h1>{profile.fullName}</h1>
-              <h1>{profile.username}</h1>
+              <h1 className="italic text-gray-500">@{profile.username}</h1>
             </div>
           </div>
           <div className="flex items-center gap-2">

@@ -347,7 +347,12 @@ const TournamentFilters: FC<TournamentFiltersProps> = ({
   return (
     <div className="relative mb-6">
       <button
-        onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+        onClick={() => {
+          if (!isDropdownOpen) {
+            window.scrollTo(0, 200)
+          }
+          setIsDropdownOpen(!isDropdownOpen)
+        }}
         className="w-full flex justify-between items-center px-4 py-3 bg-slate-700 hover:bg-slate-600 text-white rounded-lg shadow-md transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-75"
       >
         <div className="flex items-center">
@@ -361,7 +366,7 @@ const TournamentFilters: FC<TournamentFiltersProps> = ({
           </svg>
           <span className="font-semibold">
             {filterCount > 0
-              ? `Filtre Anvendt (${filterCount})`
+              ? `Filtre anvendt (${filterCount})`
               : "Vis filtre"}
           </span>
         </div>
@@ -382,7 +387,7 @@ const TournamentFilters: FC<TournamentFiltersProps> = ({
       </button>
 
       {isDropdownOpen && (
-        <div className="absolute z-20 mt-2 w-full bg-slate-700 border border-slate-600 rounded-lg shadow-xl p-4 sm:p-6 animate-fadeInDown">
+        <div className="absolute z-20 max-sm:h-[calc(100vh-270px)] overflow-y-auto my-2 w-full bg-slate-700 border border-slate-600 rounded-lg shadow-xl p-4 sm:p-6 animate-fadeInDown">
           <div className="mb-5">
             <label className="block text-sm font-medium mb-1.5 text-gray-300">
               Region

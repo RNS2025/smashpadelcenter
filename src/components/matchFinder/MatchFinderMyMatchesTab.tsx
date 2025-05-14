@@ -32,9 +32,8 @@ export const MatchFinderMyMatchesTab = () => {
       try {
         if (user?.username) {
           const data = await communityApi.getMatches();
-
+          console.log(data);
           const sortedData = data
-            .filter((match) => match.reservedSpots.length === 3 && !match.playersConfirmedResult.includes(match.username))
             .filter(
               (match) =>
                 new Date(match.matchDateTime) > new Date() ||
@@ -68,6 +67,7 @@ export const MatchFinderMyMatchesTab = () => {
               }
               return true;
             })
+              .filter((match) => !(match.playersConfirmedResult.includes(match.username) && match.reservedSpots.length === 3))
             .sort((a, b) => {
               const aDate = new Date(a.matchDateTime).getTime();
               const bDate = new Date(b.matchDateTime).getTime();
@@ -182,7 +182,7 @@ export const MatchFinderMyMatchesTab = () => {
             }
             `}
             >
-              {!matchReservesOnly(match) &&
+              {matchReservesOnly(match) &&
                 new Date(match.endTime) < new Date() &&
                 match.participants.length + match.reservedSpots.length ===
                   match.totalSpots &&
