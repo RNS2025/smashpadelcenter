@@ -7,6 +7,8 @@ interface PrivateEvent {
   totalSpots: number;
   price?: number;
   courtBooked: boolean;
+  courtNames?: string[];
+  doorCode?: string;
   eventDateTime: string;
   startTime: string;
   endTime: string;

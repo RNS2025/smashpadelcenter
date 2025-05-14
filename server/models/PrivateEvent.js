@@ -31,6 +31,14 @@ const privateEventSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  courtNames: {
+    type: [String],
+    default: [],
+  },
+  doorCode: {
+    type: String,
+    required: false,
+  },
   eventDateTime: {
     type: String,
     required: true,

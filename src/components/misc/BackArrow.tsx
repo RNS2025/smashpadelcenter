@@ -2,15 +2,18 @@ import { ArrowLongLeftIcon } from "@heroicons/react/24/outline";
 import { useNavigate } from "react-router-dom";
 import { useNavigationHistory } from "../../context/useNavigationHistory";
 
-const BackArrow = ({ backPage }: { backPage?: string }) => {
+const BackArrow = ({ backPage }: { backPage?: string | number }) => {
   const navigate = useNavigate();
   const { getClosestHomePage } = useNavigationHistory();
 
   const handleNavigateBack = () => {
     // If a specific back page is provided, use it
-    if (backPage) {
+    if (typeof backPage === "number") {
       navigate(backPage);
-      return;
+    } else if (backPage) {
+      navigate(backPage);
+    } else {
+      navigate("/hjem");
     }
 
     // Try to find the closest home page from navigation history

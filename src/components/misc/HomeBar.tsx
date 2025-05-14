@@ -272,7 +272,7 @@ const HomeBar = () => {
                 : ""
             }`}
           >
-            <BackArrow backPage={getBackPage() || undefined} />{" "}
+            <BackArrow backPage={location.pathname.includes("/rediger") ? -1 : getBackPage() || undefined} />{" "}
             {/* Handle null case */}
           </div>
           {/* Feedback Icon - Only show when user is logged in */}

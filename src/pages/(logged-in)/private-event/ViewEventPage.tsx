@@ -13,11 +13,11 @@ import {
   BoltIcon,
   CheckCircleIcon,
   CheckIcon,
-  CurrencyDollarIcon,
+  CurrencyDollarIcon, LockClosedIcon,
   MapPinIcon,
   StarIcon,
   UserCircleIcon,
-  UserGroupIcon,
+  UserGroupIcon, ViewColumnsIcon,
   XCircleIcon,
 } from "@heroicons/react/24/outline";
 import mockEvents from "../../../utils/mock/mockEvents.ts";
@@ -529,6 +529,23 @@ export const ViewEventPage = () => {
                 {event.eventFormat}
               </h1>
             </div>
+
+            {event && user && event.doorCode !== "" && event.courtBooked && event.participants.includes(user.username) && (
+                <>
+                  <div
+                      className="border-slate-800/80 bg-slate-800/80 rounded flex justify-center items-center gap-1 py-4">
+                    <LockClosedIcon className="h-6 rounded-lg text-yellow-500"/>
+                    <h1 className="h-5">{event?.doorCode}</h1>
+                  </div>
+                  </>
+                  )}
+          </div>
+
+          <div className="border-slate-800/80 bg-slate-800/80 rounded py-4 px-2 grid grid-cols-[40%_60%] justify-items-center items-center">
+            <ViewColumnsIcon className="size-10 rounded-lg text-blue-600"/>
+            <h1 className="text-gray-300">
+              {event.courtNames?.join(", ")}
+            </h1>
           </div>
 
           <div className="border-slate-800/80 bg-slate-800/80 rounded w-full text-gray-300 p-4 flex justify-center gap-2 text-xl">

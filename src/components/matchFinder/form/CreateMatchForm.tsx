@@ -32,6 +32,8 @@ export const CreateMatchForm = () => {
   const [selectedMatchType, setSelectedMatchType] = useState<string>("Herre");
   const [location, setLocation] = useState<string>("SMASH Padelcenter Horsens");
   const [description, setDescription] = useState<string>("");
+  const [doorCode, setDoorCode] = useState<string>("");
+  const [selectedCourtName, setSelectedCourtName] = useState<string>("");
   const [deadline, setDeadline] = useState<number>(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -74,6 +76,8 @@ export const CreateMatchForm = () => {
         ).toISOString(),
         courtBooked,
         location,
+        doorCode: location === "SMASH Padelcenter Stensballe" ? doorCode : "",
+        courtName: courtBooked ? selectedCourtName : "",
         matchType: selectedMatchType,
         score: {},
         deadline:
@@ -142,6 +146,9 @@ export const CreateMatchForm = () => {
   ];
   const playingTimeArray = [60, 90, 120];
   const matchTypeArray = ["Herre", "Dame", "Mix", "Blandet"];
+  const courtNamesHorsens = ["Bane 1 - Middelfart Sparekasse", "Bane 2 - danbolig", "Bane 3 - FysioDanmark Horsens", "Bane 4 - Rise's Digitalisering",
+    "Bane 7 - Siux", "Bane 8 (CC) - Maxus", "Bane 9 (CC) - Flammen", "Bane 10 - Bøje Maskintransport", "Bane 11 - Grafisk Forum", "Bane 12 - Sydbank", "Bane 13 - Lyngsø VVS", "Bane 15 - VELFAC", "Bane 16"]
+  const courtNamesStensballe = ["Bane 1 - Coachers", "Bane 2 - Borregaard Invest", "Bane 3 - Advokatgruppen", "Bane 4", "Bane 5"];
 
   if (loading) {
     return (
@@ -262,6 +269,55 @@ export const CreateMatchForm = () => {
               </div>
             </div>
           </div>
+
+          {courtBooked && (
+          <div>
+            <label className="font-semibold" htmlFor="courtName">
+              Vælg bane
+            </label>
+            <select
+                className="w-full rounded-lg border-slate-800/80 bg-slate-800/80 h-12 pr-1 text-sm"
+                id="courtName"
+                value={selectedCourtName}
+                onChange={(e) => setSelectedCourtName(e.target.value)}
+            >
+                {location === "SMASH Padelcenter Horsens" &&
+                    courtNamesHorsens.map((court) => (
+                    <option key={court} value={court}>
+                        {court}
+                    </option>
+                    ))}
+                {location === "SMASH Padelcenter Stensballe" &&
+                    courtNamesStensballe.map((court) => (
+                    <option key={court} value={court}>
+                        {court}
+                    </option>
+                    ))}
+            </select>
+          </div>
+          )}
+
+          {location === "SMASH Padelcenter Stensballe" && courtBooked && (
+          <div>
+            <label className="font-semibold" htmlFor="bemærkninger">
+              Kode til døren
+            </label>
+            <div className="pr-1">
+              <input
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  maxLength={6}
+                  className="w-full rounded-lg h-12 border-slate-800/80 bg-slate-800/80 resize-none"
+                  value={doorCode}
+                  onChange={(e) => {
+                    const onlyDigits = e.target.value.replace(/\D/g, "");
+                    setDoorCode(onlyDigits);
+                  }}
+              />
+            </div>
+          </div>
+          )}
 
           <div className="flex flex-col gap-4">
             <label className="font-semibold" htmlFor="niveauinterval">

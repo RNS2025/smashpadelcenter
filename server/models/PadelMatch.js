@@ -75,9 +75,17 @@ const padelMatchSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
+  courtName: {
+    type: String,
+    required: false,
+  },
   location: {
     type: String,
     required: true,
+  },
+  doorCode: {
+    type: String,
+    required: false,
   },
   matchType: {
     type: String,

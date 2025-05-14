@@ -9,7 +9,7 @@ import {
   XCircleIcon,
   CheckIcon,
   StarIcon,
-  XMarkIcon,
+  XMarkIcon, ViewColumnsIcon, LockClosedIcon,
 } from "@heroicons/react/24/outline";
 import { useUser } from "../../../context/UserContext";
 import { useEffect, useState, useMemo, useCallback } from "react";
@@ -708,6 +708,22 @@ export const ViewMatchPage = () => {
               <UserGroupIcon className="h-6 rounded-lg text-white bg-gradient-to-b from-sky-400 to-pink-400" />
               <h1 className="h-5">{match!.matchType}</h1>
             </div>
+
+            {match && user && match?.doorCode !== "" && match.courtBooked && match?.participants.includes(user?.username) && (
+                <>
+                  <div
+                      className="border-slate-800/80 bg-slate-800/80 rounded flex justify-center items-center gap-1 py-4">
+                    <LockClosedIcon className="h-6 rounded-lg text-yellow-500"/>
+                    <h1 className="h-5">{match?.doorCode}</h1>
+                  </div>
+                  <div
+                      className="border-slate-800/80 bg-slate-800/80 rounded flex justify-center items-center gap-1 py-4">
+                    <ViewColumnsIcon className="h-6 rounded-lg text-blue-600"/>
+                    <h1 className="h-5">{match?.courtName?.split("-")[0]}</h1>
+                  </div>
+                </>
+            )}
+
           </div>
 
           <div className="border-slate-800/80 bg-slate-800/80 rounded w-full text-gray-300 p-4 flex flex-col gap-2">

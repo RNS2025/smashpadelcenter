@@ -13,6 +13,8 @@ export interface PadelMatch {
   startTime: string;
   endTime: string;
   courtBooked: boolean;
+  courtName?: string;
+  doorCode?: string;
   location: string;
   matchType: string; // e.g., "Herre", "Dame", "Mix", "Blandet"
   score?: {

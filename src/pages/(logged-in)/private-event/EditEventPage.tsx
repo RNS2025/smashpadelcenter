@@ -25,6 +25,8 @@ export const EditEventPage = () => {
         const [eventFormat, setEventFormat] = useState<string | undefined>("");
         const [totalSpots, setTotalSpots] = useState<number>(8);
         const [courtBooked, setCourtBooked] = useState<boolean>(false);
+        const [doorCode, setDoorCode] = useState<string>("");
+        const [selectedCourtNames, setSelectedCourtNames] = useState<string[]>([]);
         const [price, setPrice] = useState<number | undefined>(140);
         const [levelRangeRequired, setLevelRangeRequired] = useState<boolean>(false);
         const [levelRange, setLevelRange] = useState<[number, number]>([user?.skillLevel || 2.0, (user?.skillLevel || 2.0) + 1]);
@@ -59,6 +61,8 @@ export const EditEventPage = () => {
                     setTotalSpots(event.totalSpots);
                     setPrice(event.price);
                     setCourtBooked(event.courtBooked);
+                    setDoorCode(event.doorCode);
+                    setSelectedCourtNames(event.courtNames || []);
                     setSelectedStartDate(new Date(event.startTime));
                     setSelectedEndDate(new Date(event.endTime));
                     setLocation(event.location);
@@ -129,6 +133,8 @@ export const EditEventPage = () => {
                     startTime: selectedStartDate.toISOString(),
                     endTime: selectedEndDate.toISOString(),
                     location,
+                    doorCode,
+                    courtNames: courtBooked ? selectedCourtNames : [],
                     level: levelRangeRequired
                         ? `${levelRange[0].toFixed(1)} - ${levelRange[1].toFixed(1)}`
                         : undefined,
@@ -203,6 +209,9 @@ export const EditEventPage = () => {
             { label: "Nej", value: false },
             { label: "Ja", value: true },
         ];
+
+    const courtNamesHorsens = ["Bane 1", "Bane 2", "Bane 3", "Bane 4", "Bane 7", "Bane 8 (CC)", "Bane 9 (CC)", "Bane 10", "Bane 11", "Bane 12", "Bane 13", "Bane 15", "Bane 16"]
+    const courtNamesStensballe = ["Bane 1", "Bane 2", "Bane 3", "Bane 4", "Bane 5"];
 
         return (
             <>
@@ -415,6 +424,61 @@ export const EditEventPage = () => {
                                 </div>
                             </div>
                         </div>
+
+                        {courtBooked && (
+                            <div>
+                                <label className="font-semibold" htmlFor="courtNames">
+                                    Vælg baner
+                                </label>
+                                <div className="flex flex-wrap gap-2 mt-2">
+                                    {(location === "SMASH Padelcenter Horsens"
+                                            ? courtNamesHorsens
+                                            : courtNamesStensballe
+                                    ).map((court) => (
+                                        <button
+                                            key={court}
+                                            type="button"
+                                            onClick={() => {
+                                                setSelectedCourtNames((prev) =>
+                                                    prev.includes(court)
+                                                        ? prev.filter((c) => c !== court)
+                                                        : [...prev, court]
+                                                );
+                                            }}
+                                            className={`rounded-lg px-3 py-2 text-xs transition duration-300 ${
+                                                selectedCourtNames.includes(court)
+                                                    ? "bg-cyan-500/80 text-white"
+                                                    : "bg-slate-800/80 text-gray-300"
+                                            }`}
+                                        >
+                                            {court}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {location === "SMASH Padelcenter Stensballe" && courtBooked && (
+                            <div>
+                                <label className="font-semibold" htmlFor="bemærkninger">
+                                    Kode til døren
+                                </label>
+                                <div className="pr-1">
+                                    <input
+                                        type="text"
+                                        inputMode="numeric"
+                                        pattern="[0-9]*"
+                                        maxLength={6}
+                                        className="w-full rounded-lg h-12 border-slate-800/80 bg-slate-800/80 resize-none"
+                                        value={doorCode}
+                                        onChange={(e) => {
+                                            const onlyDigits = e.target.value.replace(/\D/g, "");
+                                            setDoorCode(onlyDigits);
+                                        }}
+                                    />
+                                </div>
+                            </div>
+                        )}
 
                         <div className="flex flex-col">
                             <label className="font-semibold" htmlFor="niveauinterval">
