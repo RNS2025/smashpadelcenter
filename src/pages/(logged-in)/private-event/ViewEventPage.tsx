@@ -541,12 +541,14 @@ export const ViewEventPage = () => {
                   )}
           </div>
 
+          {event && user && event.courtBooked && event.courtNames && event.participants.includes(user.username) && event.courtNames?.length > 0 && (
           <div className="border-slate-800/80 bg-slate-800/80 rounded py-4 px-2 grid grid-cols-[40%_60%] justify-items-center items-center">
             <ViewColumnsIcon className="size-10 rounded-lg text-blue-600"/>
             <h1 className="text-gray-300">
               {event.courtNames?.join(", ")}
             </h1>
           </div>
+              )}
 
           <div className="border-slate-800/80 bg-slate-800/80 rounded w-full text-gray-300 p-4 flex justify-center gap-2 text-xl">
             <h1 className="font-semibold">Antal pladser:</h1>
