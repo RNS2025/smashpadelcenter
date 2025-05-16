@@ -77,6 +77,14 @@ export const TournamentTabs = () => {
               description="Se kommende DPF turneringer"
               link="/turneringer/kommende"
             />
+            <HomeScreenCard
+              icon={
+                <RectangleGroupIcon className="size-10" aria-hidden="true" />
+              }
+              title="Indtast Resultat"
+              description="Indtast resultater for dine kampe"
+              link="/turneringer/enter-resultat"
+            />
           </div>
         </div>
       </Animation>

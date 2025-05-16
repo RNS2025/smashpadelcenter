@@ -1,5 +1,7 @@
 const axios = require("axios");
+const mongoose = require("mongoose");
 const { Tournament, Player } = require("../models/rankedInModels");
+const { MatchResult } = require("../models/resultsModel");
 const logger = require("../config/logger");
 const API_BASE_URL = "https://api.rankedin.com/v1/";
 const OrganisationIdSmashHorsens = "4310";
@@ -7,7 +9,12 @@ const OrganisationIdSmashStensballe = "9492";
 
 // Debug: Verify model import
 logger.debug(
-  "Tournament model: " + typeof Tournament + ", Player model: " + typeof Player
+  "Tournament model: " +
+    typeof Tournament +
+    ", Player model: " +
+    typeof Player +
+    ", MatchResult model: " +
+    typeof MatchResult
 );
 
 const getAvailableTournaments = async (
@@ -17,7 +24,6 @@ const getAvailableTournaments = async (
   skip = 0,
   take = 10
 ) => {
-  // Check MongoDB first
   logger.info(
     `Checking MongoDB for tournaments: org ${organisationId}, isFinished ${isFinished}`
   );
@@ -43,7 +49,6 @@ const getAvailableTournaments = async (
     };
   }
 
-  // Fetch from API
   try {
     const response = await axios.get(
       `${API_BASE_URL}Organization/GetOrganisationEventsAsync`,
@@ -63,13 +68,11 @@ const getAvailableTournaments = async (
       payloadLength: data.payload?.length || 0,
     });
 
-    // Handle empty or invalid response
     if (!data.payload || data.payload.length === 0) {
       logger.warn(`No tournaments returned from API for org ${organisationId}`);
       return { payload: [] };
     }
 
-    // Save to MongoDB
     await Tournament.deleteMany({ organisationId, isFinished });
     const tournamentDocs = data.payload.map((tournament) => ({
       organisationId,
@@ -136,13 +139,11 @@ const getUpcomingTournament = async (
 };
 
 const getAllTournamentPlayers = async (tournamentId, language = "en") => {
-  // Validate tournamentId
   if (!tournamentId) {
     logger.warn("Skipping getAllTournamentPlayers: tournamentId is undefined");
     return [];
   }
 
-  // Check MongoDB first
   const players = await Player.find({ tournamentId }).lean();
   if (players.length > 0) {
     logger.info(`Using DB players for tournament ${tournamentId}`);
@@ -151,11 +152,9 @@ const getAllTournamentPlayers = async (tournamentId, language = "en") => {
       firstName: p.name.split(" ")[0] || "",
       lastName: p.name.split(" ").slice(1).join(" ") || "",
       rankedInId: p.rankedInId,
-      // Add other Player fields as needed
     }));
   }
 
-  // Fetch from API
   try {
     logger.info(`Fetching players for tournamentId ${tournamentId}`);
     const response = await axios.get(
@@ -166,7 +165,6 @@ const getAllTournamentPlayers = async (tournamentId, language = "en") => {
     );
     const playersData = response.data;
 
-    // Save to MongoDB
     await Player.deleteMany({ tournamentId });
     const playerDocs = playersData.map((player) => ({
       tournamentId,
@@ -211,7 +209,7 @@ const getAllRows = async (tournamentId) => {
       }
     );
     const rows = response.data;
-    return rows; // Adjust based on Row interface if needed
+    return rows;
   } catch (error) {
     logger.error(
       `Error fetching rows for tournamentId ${tournamentId}:`,
@@ -251,7 +249,6 @@ const getPlayersInRow = async (
       firstName: player.Name.split(" ")[0] || "",
       lastName: player.Name.split(" ").slice(1).join(" ") || "",
       rankedInId: player.RankedinId,
-      // Add other Player fields as needed
     }));
   } catch (error) {
     logger.error(
@@ -261,6 +258,7 @@ const getPlayersInRow = async (
     return [];
   }
 };
+
 const getPlayersMatches = async (
   playerId,
   tournamentClassId,
@@ -708,17 +706,18 @@ const getAllMatches = async (tournamentId, language = "en") => {
     return [];
   }
 };
+
 const getNextMatchAndUpcommingOnCourt = async (
   tournamentId,
   courtName,
   language = "en"
 ) => {
   try {
-    console.log(
+    logger.info(
       `Fetching next match and upcoming match on court ${courtName} for tournamentId ${tournamentId}`
     );
 
-    /*const response = await axios.get(
+    const response = await axios.get(
       `${API_BASE_URL}tournament/GetMatchesSectionAsync`,
       {
         params: {
@@ -727,13 +726,7 @@ const getNextMatchAndUpcommingOnCourt = async (
           IsReadonly: true,
         },
       }
-    );*/
-
-    const response = await axios.get(
-      "https://api.rankedin.com/v1/tournament/GetMatchesSectionAsync?Id=44703&LanguageCode=en&IsReadonly=true"
     );
-
-    console.log("Response:", response.data);
 
     const matches = response.data.Matches || [];
     if (!matches || matches.length === 0) {
@@ -742,27 +735,22 @@ const getNextMatchAndUpcommingOnCourt = async (
     }
     const now = new Date();
     const courtNameLower = courtName.toLowerCase();
-    // Filter matches for the specified court (case insensitive)
     const courtMatches = matches.filter(
       (match) =>
         match.Court && match.Court.toLowerCase().includes(courtNameLower)
     );
 
-    // Since we don't have EndTime, we'll estimate each match takes 1 hour
-    const MATCH_DURATION_MS = 60 * 60 * 1000; // 1 hour in milliseconds
-    // Find ongoing match
+    const MATCH_DURATION_MS = 60 * 60 * 1000;
     const ongoingMatch = courtMatches.find((match) => {
       if (!match.Date) return false;
       const startTime = new Date(match.Date);
       const endTime = new Date(startTime.getTime() + MATCH_DURATION_MS);
       return startTime <= now && endTime >= now;
     });
-    // Find upcoming match
     const upcomingMatch = courtMatches
       .filter((match) => match.Date && new Date(match.Date) > now)
       .sort((a, b) => new Date(a.Date) - new Date(b.Date))[0];
-    console.log("Ongoing Match:", ongoingMatch);
-    console.log("Upcoming Match:", upcomingMatch);
+
     return { ongoingMatch, upcomingMatch };
   } catch (error) {
     logger.error(
@@ -836,6 +824,219 @@ const searchPlayer = async (
   }
 };
 
+const saveMatchResult = async ({ matchId, sets, tiebreak }) => {
+  try {
+    logger.info(`Attempting to save match result for matchId: ${matchId}`, {
+      input: { matchId, setsCount: sets?.length, hasTiebreak: !!tiebreak },
+    });
+
+    // Check MongoDB connection
+    if (mongoose.connection.readyState !== 1) {
+      throw new Error(
+        `MongoDB not connected (readyState: ${mongoose.connection.readyState})`
+      );
+    }
+
+    // Double-check MatchResult model
+    if (!MatchResult) {
+      logger.error("MatchResult model is undefined in saveMatchResult", {
+        models: {
+          Tournament: !!Tournament,
+          Player: !!Player,
+          MatchResult: !!MatchResult,
+        },
+      });
+      throw new Error("MatchResult model is not available");
+    }
+
+    // Validate inputs
+    if (!matchId || isNaN(parseInt(matchId))) {
+      throw new Error("matchId must be a valid number");
+    }
+    if (!sets || !Array.isArray(sets)) {
+      throw new Error("sets must be a non-empty array");
+    }
+    if (sets.length === 0) {
+      throw new Error("At least one set is required");
+    }
+
+    // Validate sets
+    const validatedSets = sets.map((set, index) => {
+      if (!set || typeof set !== "object") {
+        throw new Error(`Set ${index + 1} is invalid`);
+      }
+      const { player1, player2 } = set;
+      if (!player1 || !player2) {
+        throw new Error(`Set ${index + 1} must have scores for both players`);
+      }
+      const p1Score = parseInt(player1.trim());
+      const p2Score = parseInt(player2.trim());
+      if (isNaN(p1Score) || isNaN(p2Score)) {
+        throw new Error(`Set ${index + 1} scores must be valid numbers`);
+      }
+      if (p1Score < 0 || p2Score < 0 || p1Score > 50 || p2Score > 50) {
+        throw new Error(`Set ${index + 1} scores must be between 0 and 50`);
+      }
+      return { player1: p1Score.toString(), player2: p2Score.toString() };
+    });
+
+    // Validate tiebreak
+    let validatedTiebreak = null;
+    if (tiebreak) {
+      if (!tiebreak.player1 || !tiebreak.player2) {
+        throw new Error("Tiebreak must have scores for both players");
+      }
+      const tb1Score = parseInt(tiebreak.player1.trim());
+      const tb2Score = parseInt(tiebreak.player2.trim());
+      if (isNaN(tb1Score) || isNaN(tb2Score)) {
+        throw new Error("Tiebreak scores must be valid numbers");
+      }
+      if (tb1Score < 0 || tb2Score < 0 || tb1Score > 50 || tb2Score > 50) {
+        throw new Error("Tiebreak scores must be between 0 and 50");
+      }
+      validatedTiebreak = {
+        player1: tb1Score.toString(),
+        player2: tb2Score.toString(),
+      };
+    }
+
+    // Convert matchId to Number to match schema
+    const matchIdNum = parseInt(matchId);
+
+    // Check if result already exists
+    const existingResult = await MatchResult.findOne({ matchId: matchIdNum });
+    if (existingResult) {
+      throw new Error("Match result already exists for this matchId");
+    }
+
+    // Save to MongoDB with retry mechanism
+    let saveAttempts = 0;
+    const maxRetries = 2;
+    while (saveAttempts <= maxRetries) {
+      try {
+        const matchResult = new MatchResult({
+          matchId: matchIdNum,
+          sets: validatedSets,
+          tiebreak: validatedTiebreak,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+        await matchResult.save();
+        logger.info(
+          `Successfully saved match result for matchId: ${matchIdNum}`
+        );
+        return {
+          matchId: matchIdNum,
+          sets: validatedSets,
+          tiebreak: validatedTiebreak,
+        };
+      } catch (saveError) {
+        saveAttempts++;
+        if (saveAttempts > maxRetries) {
+          throw saveError;
+        }
+        logger.warn(`Retry attempt ${saveAttempts} for matchId: ${matchIdNum}`);
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait 1s before retry
+      }
+    }
+  } catch (error) {
+    const errorMessage = error.message || "Unknown error";
+    const errorDetails = {
+      message: errorMessage,
+      stack: error.stack,
+      input: { matchId, setsCount: sets?.length, hasTiebreak: !!tiebreak },
+    };
+    if (error.name === "MongoServerError" && error.code === 11000) {
+      errorDetails.message = "Duplicate matchId detected";
+    }
+    logger.error(
+      `Error saving match result for matchId: ${matchId}:`,
+      errorDetails
+    );
+    throw new Error(errorDetails.message);
+  }
+};
+
+const getAllDPFMatchResults = async () => {
+  try {
+    logger.info("Attempting to retrieve all DPF match results");
+    // Double-check MatchResult model
+    if (!MatchResult) {
+      logger.error("MatchResult model is undefined in getAllMatchResults", {
+        models: {
+          Tournament: !!Tournament,
+          Player: !!Player,
+          MatchResult: !!MatchResult,
+        },
+      });
+      throw new Error("MatchResult model is not available");
+    }
+
+    // Retrieve all match results
+    const results = await MatchResult.find({})
+      .sort({ createdAt: -1 }) // Sort by newest first
+      .lean(); // Use lean for better performance
+
+    logger.info(`Successfully retrieved ${results.length} match results`);
+
+    return results;
+  } catch (error) {
+    const errorMessage = error.message || "Unknown error";
+    const errorDetails = {
+      message: errorMessage,
+      stack: error.stack,
+    };
+
+    logger.error(`Error retrieving all match results:`, errorDetails);
+    throw new Error(errorDetails.message);
+  }
+};
+
+const getSpecificDPFMatchResult = async (matchId) => {
+  try {
+    logger.info(`Attempting to retrieve match result for matchId: ${matchId}`);
+    // Double-check MatchResult model
+    if (!MatchResult) {
+      logger.error("MatchResult model is undefined in getSpecificMatchResult", {
+        models: {
+          Tournament: !!Tournament,
+          Player: !!Player,
+          MatchResult: !!MatchResult,
+        },
+      });
+      throw new Error("MatchResult model is not available");
+    }
+
+    // Validate inputs
+    if (!matchId || isNaN(parseInt(matchId))) {
+      throw new Error("matchId must be a valid number");
+    }
+
+    // Retrieve match result
+    const result = await MatchResult.findOne({ matchId }).lean();
+
+    if (!result) {
+      throw new Error(`No match result found for matchId: ${matchId}`);
+    }
+
+    logger.info(`Successfully retrieved match result for matchId: ${matchId}`);
+
+    return result;
+  } catch (error) {
+    const errorMessage = error.message || "Unknown error";
+    const errorDetails = {
+      message: errorMessage,
+      stack: error.stack,
+      input: { matchId },
+    };
+
+    logger.error(`Error retrieving match result for matchId: ${matchId}:`, {
+      ...errorDetails,
+    });
+    throw new Error(errorDetails.message);
+  }
+};
+
 module.exports = {
   getAvailableTournaments,
   getAllMatches,
@@ -846,6 +1047,9 @@ module.exports = {
   getPlayersMatches,
   getPlayerDetails,
   getNextMatchAndUpcommingOnCourt,
+  saveMatchResult,
+  getAllDPFMatchResults,
+  getSpecificDPFMatchResult,
   API_BASE_URL,
   OrganisationIdSmashHorsens,
   OrganisationIdSmashStensballe,

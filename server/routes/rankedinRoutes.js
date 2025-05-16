@@ -1,6 +1,7 @@
 const express = require("express");
 const rankedInService = require("../Services/rankedInService");
-const logger = require("../config/logger"); // Import logger
+const { verifyJWT, checkRole } = require("../middleware/jwt");
+const logger = require("../config/logger");
 const router = express.Router();
 
 /**
@@ -302,7 +303,25 @@ router.get("/GetPlayerDetails", async (req, res) => {
   }
 });
 
-// Get all matches for a turnmament
+/**
+ * @swagger
+ * /api/v1/GetAllMatches:
+ *   get:
+ *     summary: Get all matches for a tournament
+ *     tags: [RankedIn]
+ *     parameters:
+ *       - in: query
+ *         name: tournamentId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the tournament
+ *     responses:
+ *       200:
+ *         description: All matches for the tournament
+ *       500:
+ *         description: Server error
+ */
 router.get("/GetAllMatches", async (req, res) => {
   try {
     const { tournamentId } = req.query;
@@ -318,7 +337,31 @@ router.get("/GetAllMatches", async (req, res) => {
   }
 });
 
-// Get Current Match and Next Match for a Courtname
+/**
+ * @swagger
+ * /api/v1/GetOnGoingMatchAndUpcommingMatch:
+ *   get:
+ *     summary: Get current and next match for a court
+ *     tags: [RankedIn]
+ *     parameters:
+ *       - in: query
+ *         name: courtName
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The name of the court
+ *       - in: query
+ *         name: tournamentId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The ID of the tournament
+ *     responses:
+ *       200:
+ *         description: Ongoing and upcoming matches
+ *       500:
+ *         description: Server error
+ */
 router.get("/GetOnGoingMatchAndUpcommingMatch", async (req, res) => {
   try {
     const { courtName, tournamentId } = req.query;
@@ -341,16 +384,248 @@ router.get("/GetOnGoingMatchAndUpcommingMatch", async (req, res) => {
   }
 });
 
+/**
+ * @swagger
+ * /api/v1/search-player:
+ *   get:
+ *     summary: Search for players
+ *     tags: [RankedIn]
+ *     parameters:
+ *       - in: query
+ *         name: searchTerm
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The search term for the player
+ *       - in: query
+ *         name: rankingId
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: The ID of the ranking
+ *       - in: query
+ *         name: rankingType
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: The type of ranking
+ *       - in: query
+ *         name: ageGroup
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: The age group
+ *       - in: query
+ *         name: rankingDate
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: The ranking date
+ *     responses:
+ *       200:
+ *         description: List of matching players
+ *       500:
+ *         description: Server error
+ */
 router.get("/search-player", async (req, res) => {
-  const { searchTerm, rankingId, rankingType, ageGroup, rankingDate } = req.query;
+  const { searchTerm, rankingId, rankingType, ageGroup, rankingDate } =
+    req.query;
 
   try {
-    const players = await rankedInService.searchPlayer(searchTerm, rankingId, rankingType, ageGroup, rankingDate);
+    const players = await rankedInService.searchPlayer(
+      searchTerm,
+      rankingId,
+      rankingType,
+      ageGroup,
+      rankingDate
+    );
     res.json(players);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
+/**
+ * @swagger
+ * /api/v1/SaveMatchResult:
+ *   post:
+ *     summary: Save a match result
+ *     tags: [RankedIn]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - matchId
+ *               - sets
+ *             properties:
+ *               matchId:
+ *                 type: number
+ *                 description: The ID of the match
+ *               sets:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     player1:
+ *                       type: string
+ *                       description: Score for player/team 1
+ *                     player2:
+ *                       type: string
+ *                       description: Score for player/team 2
+ *               tiebreak:
+ *                 type: object
+ *                 properties:
+ *                   player1:
+ *                     type: string
+ *                     description: Tiebreak score for player/team 1
+ *                   player2:
+ *                     type: string
+ *                     description: Tiebreak score for player/team 2
+ *     responses:
+ *       200:
+ *         description: Match result saved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Match result saved successfully
+ *                 matchId:
+ *                   type: number
+ *                   example: 12345
+ *       400:
+ *         description: Invalid request data
+ *       500:
+ *         description: Server error
+ */
+router.post("/SaveMatchResult", async (req, res) => {
+  try {
+    // Log the raw request body to debug content
+    logger.info("SaveMatchResult request received", {
+      body: req.body,
+      contentType: req.headers["content-type"],
+    });
+
+    const { matchId, sets, tiebreak } = req.body;
+
+    // Enhanced validation with specific feedback
+    if (!matchId) {
+      return res.status(400).json({ error: "matchId is required" });
+    }
+
+    if (!sets) {
+      return res.status(400).json({ error: "sets are required" });
+    }
+
+    if (!Array.isArray(sets)) {
+      return res.status(400).json({ error: "sets must be an array" });
+    }
+
+    if (sets.length === 0) {
+      return res.status(400).json({ error: "at least one set is required" });
+    }
+
+    // Validate each set has the correct structure
+    for (let i = 0; i < sets.length; i++) {
+      if (!sets[i] || typeof sets[i] !== "object") {
+        return res
+          .status(400)
+          .json({ error: `Set ${i + 1} has invalid format` });
+      }
+
+      if (!sets[i].player1 || !sets[i].player2) {
+        return res
+          .status(400)
+          .json({ error: `Set ${i + 1} must have player1 and player2 scores` });
+      }
+    }
+
+    // Try to save the match result
+    const result = await rankedInService.saveMatchResult({
+      matchId,
+      sets,
+      tiebreak,
+    });
+
+    logger.info("Successfully saved match result", { matchId, result });
+
+    res.status(200).json({
+      message: "Match result saved successfully",
+      matchId,
+      result,
+    });
+  } catch (err) {
+    // Extract more details from the error
+    const errorMessage = err.message || "Unknown error";
+    const statusCode = errorMessage.includes("already exists") ? 409 : 500;
+
+    logger.error("Error saving match result", {
+      matchId: req.body?.matchId,
+      error: errorMessage,
+      stack: err.stack,
+    });
+
+    res.status(statusCode).json({
+      error: errorMessage,
+      success: false,
+    });
+  }
+});
+
+/**
+ * @swagger
+ * /api/v1/GetAllDPFMatchResults:
+ *   get:
+ *     summary: Get all saved DPF match results
+ *     tags: [RankedIn]
+ *     responses:
+ *       200:
+ *         description: List of all match results
+ *       500:
+ *         description: Server error
+ */
+router.get("/GetAllDPFMatchResults", async (req, res) => {
+  try {
+    const results = await rankedInService.getAllDPFMatchResults();
+    res.status(200).json(results);
+  } catch (error) {
+    logger.error("Error fetching all DPF match results:", error);
+    res
+      .status(500)
+      .json({ error: error.message || "Failed to fetch match results" });
+  }
+});
+
+router.get("/GetSpecificDPFMatchResult", verifyJWT, async (req, res) => {
+  try {
+    const matchId = req.query.matchId;
+    const result = await rankedInService.getSpecificDPFMatchResult(matchId);
+    res.status(200).json(result);
+  } catch (error) {
+    logger.error("Error fetching specific DPF match result:", error);
+    res
+      .status(500)
+      .json({ error: error.message || "Failed to fetch match result" });
+  }
+});
+
+router.get("/GetSpecificDPFMatchResult", verifyJWT, async (req, res) => {
+  try {
+    const matchId = req.query.matchId;
+    const result = await rankedInService.getSpecificDPFMatchResult(matchId);
+    console.log("Result:", result);
+    res.status(200).json(result);
+  } catch (error) {
+    logger.error("Error fetching specific DPF match result:", error);
+    res
+      .status(500)
+      .json({ error: error.message || "Failed to fetch match result" });
+  }
+});
 
 module.exports = router;

@@ -1,6 +1,6 @@
 import Player from "./Player";
 
-interface SetScore {
+export interface SetScore {
   FirstParticipantScore: number;
   SecondParticipantScore: number;
   LoserTiebreak: number | null;
@@ -9,7 +9,7 @@ interface SetScore {
   LabelClass: string;
 }
 
-interface MatchScore {
+export interface MatchScore {
   FirstParticipantScore: number;
   SecondParticipantScore: number;
   LoserTiebreak: number | null;

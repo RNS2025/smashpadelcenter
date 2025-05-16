@@ -62,6 +62,7 @@ import ForgotPasswordPage from "./pages/login/ForgotPasswordPage.tsx";
 import UpcommingTournaments from "./pages/tournament/UpcommingTournaments.tsx";
 import LeagueStandingsPage from "./pages/(logged-in)/lunar/GlobalLunarInformation.tsx";
 import HomeBar from "./components/misc/HomeBar.tsx";
+import EnterResultPage from "./pages/tournament/results/indtastDpfResultat.tsx";
 
 function AppContent() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -69,8 +70,6 @@ function AppContent() {
   const [isPromptDismissed, setIsPromptDismissed] = useState(false);
   const { isAuthenticated, loading } = useUser();
   const location = useLocation();
-  const hideHomeBarPaths = ["/", "/login"];
-  const showHomeBar = !hideHomeBarPaths.includes(location.pathname);
 
   useEffect(() => {
     // Check if app is already installed
@@ -168,6 +167,10 @@ function AppContent() {
           <Route path="briefing" element={<TournamentBriefingTab />} />
           <Route path="generelt" element={<TournamentRegulationsTab />} />
         </Route>
+        <Route
+          path="/turneringer/enter-resultat"
+          element={<EnterResultPage />}
+        />
         <Route path="/player/:playerId/:rowId" element={<PlayerPage />} />
         <Route path="/glemt-adgangskode" element={<ForgotPasswordPage />} />
         <Route path="/reset-password/:token" element={<ResetPasswordPage />} />

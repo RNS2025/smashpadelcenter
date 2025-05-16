@@ -10,6 +10,7 @@ import BulkCheckInUpdateRequest from "../types/BulkCheckInUpdateRequest";
 import PlayerData from "../types/PlayerData.ts";
 import DpfMatch from "../types/DpfMatch.ts";
 import { getLastMonday } from "../utils/dateUtils.ts";
+import { MatchScore } from "../types/Match.ts";
 
 const rankedInService = {
   // Fetch all available tournaments
@@ -348,6 +349,96 @@ const rankedInService = {
     } catch (error) {
       console.error("Error searching player:", error);
       throw error;
+    }
+  },
+
+  saveMatchResult: async (matchResult: {
+    matchId: number;
+    sets: { player1: string; player2: string }[];
+    tiebreak?: { player1: string; player2: string };
+  }): Promise<any> => {
+    try {
+      const response = await api.post("/SaveMatchResult", matchResult);
+      return response.data;
+    } catch (error) {
+      console.error("Error saving match result:", error);
+      throw error;
+    }
+  },
+
+  getAllDPFMatchResults: async (): Promise<any[]> => {
+    try {
+      const response = await api.get("/GetAllDPFMatchResults");
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching all DPF match results:", error);
+      throw error;
+    }
+  },
+
+  getSpecificDPFMatchResult: async (
+    matchId: number
+  ): Promise<{
+    matchId: number;
+    score: MatchScore | null;
+    isPlayed: boolean;
+  }> => {
+    try {
+      const response = await api.get("/GetSpecificDPFMatchResult", {
+        params: { matchId },
+      });
+      console.log(
+        `[DEBUG] Raw API response for match ${matchId}:`,
+        response.data
+      );
+      const rawResult = response.data;
+
+      // Check if the response has sets (indicating a result exists)
+      if (!rawResult || !rawResult.sets || rawResult.sets.length === 0) {
+        console.log(`[DEBUG] No valid result for match ${matchId}:`, rawResult);
+        return { matchId, score: null, isPlayed: false };
+      }
+
+      // Transform the database document into MatchScore
+      const score: MatchScore = {
+        FirstParticipantScore: parseInt(
+          rawResult.sets[rawResult.sets.length - 1].player1
+        ),
+        SecondParticipantScore: parseInt(
+          rawResult.sets[rawResult.sets.length - 1].player2
+        ),
+        LoserTiebreak: rawResult.tiebreak
+          ? parseInt(rawResult.tiebreak.player1)
+          : null,
+        DetailedScoring: rawResult.sets.map(
+          (set: { player1: string; player2: string }) => ({
+            FirstParticipantScore: parseInt(set.player1),
+            SecondParticipantScore: parseInt(set.player2),
+            LoserTiebreak: null,
+            DetailedScoring: null,
+            IsFirstParticipantWinner:
+              parseInt(set.player1) > parseInt(set.player2),
+            LabelClass: "",
+          })
+        ),
+        IsFirstParticipantWinner:
+          parseInt(rawResult.sets[rawResult.sets.length - 1].player1) >
+          parseInt(rawResult.sets[rawResult.sets.length - 1].player2),
+        LabelClass: "",
+      };
+
+      return {
+        matchId,
+        score,
+        isPlayed: true, // Result exists, so the match is played
+      };
+    } catch (error: any) {
+      console.error(
+        `[DEBUG] Error fetching match result for ${matchId}:`,
+        error.message,
+        error.response?.data
+      );
+      return { matchId, score: null, isPlayed: false };
     }
   },
 };
