@@ -37,6 +37,11 @@ const NavigationHistoryProvider: React.FC<{
       return "/hjem";
     }
 
+    // Special case: If we're on player-page comming from check-in, go to check-in
+    if (location.pathname.startsWith("/player/")) {
+      return `/turneringer/check-in`;
+    }
+
     //PAGES THAT SHOULD GO DIRECTLY TO HOME
     const primaryPages = [
       "/makkerbørs",
