@@ -208,9 +208,9 @@ const CheckInPage = () => {
     }
   };
 
-  const handlePlayerClick = (playerId: string) => {
+  const handlePlayerClick = (rankedInId: string) => {
     if (selectedRowId) {
-      navigate(`/player/${playerId}/${selectedRowId}`);
+      navigate(`/player/${rankedInId}`);
     }
   };
 

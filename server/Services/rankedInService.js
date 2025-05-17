@@ -638,16 +638,16 @@ const getPlayersMatches = async (
   }
 };
 
-const getPlayerDetails = async (playerId, language = "en") => {
-  if (!playerId) {
-    logger.warn("Skipping getPlayerDetails: playerId is undefined");
+const getPlayerDetails = async (rankedInId, language = "en") => {
+  if (!rankedInId) {
+    logger.warn("Skipping getPlayerDetails: rankedIn Id is undefined");
     return null;
   }
   try {
     const response = await axios.get(
       `${API_BASE_URL}player/playerprofileinfoasync`,
       {
-        params: { rankedInId: playerId, language },
+        params: { rankedInId, language },
       }
     );
     const playerData = response.data;
@@ -677,7 +677,7 @@ const getPlayerDetails = async (playerId, language = "en") => {
     };
   } catch (error) {
     logger.error(
-      `Error fetching player details for playerId ${playerId}:`,
+      `Error fetching player details for rankedInId ${rankedInId}:`,
       error.message
     );
     return null;

@@ -1,4 +1,5 @@
 import api from "../api/api";
+import axios from "axios";
 import Player from "../types/Player";
 import Row from "../types/Row";
 import Tournament from "../types/Tournament";
@@ -224,12 +225,12 @@ const rankedInService = {
     }
   },
   getPlayerDetails: async (
-    playerId: string,
+    rankedInId: string,
     language = "dk"
   ): Promise<PlayerData | null> => {
     try {
       const response = await api.get("/GetPlayerDetails", {
-        params: { playerId, language },
+        params: { rankedInId, language },
       });
       if (!response.data) {
         throw new Error("No player data returned");
@@ -374,6 +375,25 @@ const rankedInService = {
       console.error("Error fetching all DPF match results:", error);
       throw error;
     }
+  },
+  getParticipatedEvents: async (
+    playerId: number,
+    language: string
+  ): Promise<Event[]> => {
+    const response = await axios.get(
+      `https://api.rankedin.com/v1/player/ParticipatedEventsAsync?playerId=${playerId}&language=${language}&skip=0&take=10`
+    );
+    return response.data;
+  },
+
+  getEventMatches: async (
+    eventId: number,
+    language: string
+  ): Promise<Match[]> => {
+    const response = await axios.get(
+      `https://api.rankedin.com/v1/tournament/GetMatchesSectionAsync?Id=${eventId}&LanguageCode=${language}&IsReadonly=true`
+    );
+    return response.data;
   },
 
   getSpecificDPFMatchResult: async (

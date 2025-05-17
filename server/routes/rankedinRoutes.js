@@ -287,12 +287,12 @@ router.get("/GetPlayersMatches", async (req, res) => {
  */
 router.get("/GetPlayerDetails", async (req, res) => {
   try {
-    const { playerId, language } = req.query;
+    const { rankedInId, language } = req.query;
     const playerDetails = await rankedInService.getPlayerDetails(
-      playerId,
+      rankedInId,
       language
     );
-    logger.info("Successfully fetched player details", { playerId });
+    logger.info("Successfully fetched player details", { rankedInId });
     res.status(200).json(playerDetails);
   } catch (err) {
     logger.error("Error fetching player details", {

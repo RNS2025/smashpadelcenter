@@ -171,7 +171,11 @@ function AppContent() {
           path="/turneringer/enter-resultat"
           element={<EnterResultPage />}
         />
-        <Route path="/player/:playerId/:rowId" element={<PlayerPage />} />
+        <Route
+          path="/turneringer/spiller/:rankedInId"
+          element={<PlayerPage />}
+        />
+        <Route path="/player/:rankedInId" element={<PlayerPage />} />
         <Route path="/glemt-adgangskode" element={<ForgotPasswordPage />} />
         <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
         <Route

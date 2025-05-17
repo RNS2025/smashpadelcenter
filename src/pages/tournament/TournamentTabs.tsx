@@ -6,6 +6,7 @@ import {
   MapIcon,
   QueueListIcon,
   RectangleGroupIcon,
+  UserCircleIcon,
 } from "@heroicons/react/24/outline";
 import Animation from "../../components/misc/Animation.tsx";
 import { useUser } from "../../context/UserContext.tsx";
@@ -85,6 +86,14 @@ export const TournamentTabs = () => {
               description="Indtast resultater for dine kampe"
               link="/turneringer/enter-resultat"
             />
+            {user?.rankedInId && (
+              <HomeScreenCard
+                icon={<UserCircleIcon className="size-10" aria-hidden="true" />}
+                title="Spillerprofil"
+                description="Se din spillerstatistik og kamphistorik"
+                link={`/turneringer/spiller/${user.rankedInId}`}
+              />
+            )}
           </div>
         </div>
       </Animation>
