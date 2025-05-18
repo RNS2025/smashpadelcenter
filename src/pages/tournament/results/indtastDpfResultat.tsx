@@ -123,9 +123,33 @@ const EnterResultPage: React.FC = () => {
           firstPlayer: challengedPlayer1,
           secondPlayer: challengedPlayer2,
         },
-        score: null,
-        isPlayed: false,
-        winnerParticipantId: null,
+        score:
+          rawMatch.MatchResult && rawMatch.MatchResult.Score
+            ? {
+                FirstParticipantScore:
+                  rawMatch.MatchResult.Score.FirstParticipantScore,
+                SecondParticipantScore:
+                  rawMatch.MatchResult.Score.SecondParticipantScore,
+                IsFirstParticipantWinner:
+                  rawMatch.MatchResult.Score.IsFirstParticipantWinner,
+                LoserTiebreak: rawMatch.MatchResult.Score.LoserTiebreak,
+                DetailedScoring: rawMatch.MatchResult.Score.DetailedScoring
+                  ? rawMatch.MatchResult.Score.DetailedScoring.map(
+                      (set: any) => ({
+                        FirstParticipantScore: set.FirstParticipantScore,
+                        SecondParticipantScore: set.SecondParticipantScore,
+                        IsFirstParticipantWinner: set.IsFirstParticipantWinner,
+                        LoserTiebreak: set.LoserTiebreak,
+                        DetailedScoring: set.DetailedScoring,
+                        LabelClass: set.LabelClass || "",
+                      })
+                    )
+                  : null,
+                LabelClass: rawMatch.MatchResult.Score.LabelClass || "",
+              }
+            : null,
+        isPlayed: rawMatch.MatchResult?.IsPlayed || false,
+        winnerParticipantId: rawMatch.MatchResult?.WinnerParticipantId || null,
         matchType: rawMatch.TournamentClassName.includes("Herrer")
           ? "Elimination"
           : "RoundRobin",
@@ -229,7 +253,8 @@ const EnterResultPage: React.FC = () => {
           `${RANKEDIN_API_BASE_URL}/tournament/GetMatchesSectionAsync?Id=${tournamentId}&LanguageCode=en&IsReadonly=true`
         );
         addDebugLog(
-          `Matches API response received, match count: ${matchesResponse.data.Matches.length}`
+          `Matches API response received, match count: ${matchesResponse.data.Matches.length}`,
+          { matchIds: matchesResponse.data.Matches.map((m) => m.Id) }
         );
 
         const rawFetchedMatches = matchesResponse.data.Matches;
@@ -281,21 +306,16 @@ const EnterResultPage: React.FC = () => {
         );
         const updatedMatches = transformedMatches.map((match) => {
           const result = matchResults[match.matchId];
-          return {
+          const updatedMatch = {
             ...match,
-            score: result?.score || null,
-            isPlayed: result?.isPlayed || false,
+            score: result?.score || match.score, // Prefer API result, fallback to transformed score
+            isPlayed: result?.isPlayed || match.isPlayed,
           };
-        });
-        addDebugLog(`Updated matches with results`, {
-          totalMatches: updatedMatches.length,
-          matchesWithResults: updatedMatches
-            .filter((m) => m.score && m.isPlayed)
-            .map((m) => ({
-              matchId: m.matchId,
-              score: m.score,
-              isPlayed: m.isPlayed,
-            })),
+          addDebugLog(`Match ${match.matchId} updated`, {
+            score: updatedMatch.score,
+            isPlayed: updatedMatch.isPlayed,
+          });
+          return updatedMatch;
         });
 
         setMatches(updatedMatches);
@@ -483,15 +503,20 @@ const EnterResultPage: React.FC = () => {
       });
       addDebugLog(`Save successful`, response.data);
 
+      const firstParticipantSetsWon = currentMatchResultInput.sets.reduce(
+        (count, set) =>
+          parseInt(set.player1) > parseInt(set.player2) ? count + 1 : count,
+        0
+      );
+      const secondParticipantSetsWon = currentMatchResultInput.sets.reduce(
+        (count, set) =>
+          parseInt(set.player2) > parseInt(set.player1) ? count + 1 : count,
+        0
+      );
+
       const newScore: MatchScore = {
-        FirstParticipantScore: parseInt(
-          currentMatchResultInput.sets[currentMatchResultInput.sets.length - 1]
-            .player1
-        ),
-        SecondParticipantScore: parseInt(
-          currentMatchResultInput.sets[currentMatchResultInput.sets.length - 1]
-            .player2
-        ),
+        FirstParticipantScore: firstParticipantSetsWon,
+        SecondParticipantScore: secondParticipantSetsWon,
         LoserTiebreak: currentMatchResultInput.tiebreak
           ? parseInt(currentMatchResultInput.tiebreak.player1)
           : null,
@@ -505,16 +530,7 @@ const EnterResultPage: React.FC = () => {
           LabelClass: "",
         })),
         IsFirstParticipantWinner:
-          parseInt(
-            currentMatchResultInput.sets[
-              currentMatchResultInput.sets.length - 1
-            ].player1
-          ) >
-          parseInt(
-            currentMatchResultInput.sets[
-              currentMatchResultInput.sets.length - 1
-            ].player2
-          ),
+          firstParticipantSetsWon > secondParticipantSetsWon,
         LabelClass: "",
       };
 
@@ -686,6 +702,13 @@ const EnterResultPage: React.FC = () => {
                     match.isPlayed &&
                     enteringResultForMatchId !== match.matchId ? (
                       <div className="mt-4 backdrop-blur-md bg-slate-800/20 border border-brand-accent/30 rounded-lg p-4 shadow-[0_0_15px_rgba(166,76,235,0.3)]">
+                        {addDebugLog(
+                          `Rendering result for match ${match.matchId}`,
+                          {
+                            score: match.score,
+                            detailedScoring: match.score.DetailedScoring,
+                          }
+                        )}
                         <h4 className="text-lg font-bold text-brand-primary mb-4 flex items-center">
                           <svg
                             className="w-5 h-5 mr-2 text-brand-accent"
@@ -703,25 +726,46 @@ const EnterResultPage: React.FC = () => {
                           Kampresultat
                         </h4>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                          {match.score.DetailedScoring?.map((set, index) => (
-                            <div
-                              key={index}
-                              className="flex items-center justify-between bg-slate-900/50 rounded-lg p-3 hover:bg-slate-900/70 transition-all duration-200"
-                            >
-                              <span className="text-gray-200 font-semibold">
-                                Sæt {index + 1}
+                          <div className="flex items-center justify-between bg-slate-900/50 rounded-lg p-3 hover:bg-slate-900/70 transition-all duration-200">
+                            <span className="text-gray-200 font-semibold">
+                              Samlet score
+                            </span>
+                            <div className="flex items-center space-x-2">
+                              <span className="text-brand-primary font-bold text-lg">
+                                {match.score.FirstParticipantScore}
                               </span>
-                              <div className="flex items-center space-x-2">
-                                <span className="text-brand-primary font-bold text-lg">
-                                  {set.FirstParticipantScore}
-                                </span>
-                                <span className="text-brand-accent">-</span>
-                                <span className="text-brand-primary font-bold text-lg">
-                                  {set.SecondParticipantScore}
-                                </span>
-                              </div>
+                              <span className="text-brand-accent">-</span>
+                              <span className="text-brand-primary font-bold text-lg">
+                                {match.score.SecondParticipantScore}
+                              </span>
                             </div>
-                          ))}
+                          </div>
+                          {match.score.DetailedScoring &&
+                          match.score.DetailedScoring.length > 0 ? (
+                            match.score.DetailedScoring.map((set, index) => (
+                              <div
+                                key={index}
+                                className="flex items-center justify-between bg-slate-900/50 rounded-lg p-3 hover:bg-slate-900/70 transition-all duration-200"
+                              >
+                                <span className="text-gray-200 font-semibold">
+                                  Sæt {index + 1}
+                                </span>
+                                <div className="flex items-center space-x-2">
+                                  <span className="text-brand-primary font-bold text-lg">
+                                    {set.FirstParticipantScore}
+                                  </span>
+                                  <span className="text-brand-accent">-</span>
+                                  <span className="text-brand-primary font-bold text-lg">
+                                    {set.SecondParticipantScore}
+                                  </span>
+                                </div>
+                              </div>
+                            ))
+                          ) : (
+                            <div className="text-gray-400">
+                              Ingen sætdetaljer tilgængelig
+                            </div>
+                          )}
                           {match.score.LoserTiebreak !== null && (
                             <div className="flex items-center justify-between bg-slate-900/50 rounded-lg p-3 hover:bg-slate-900/70 transition-all duration-200">
                               <span className="text-gray-200 font-semibold">
