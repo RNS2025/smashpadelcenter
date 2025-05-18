@@ -28,7 +28,6 @@ const PlayerPage = () => {
       }
 
       try {
-        // Fetch player profile
         const playerDetails = await rankedInService.getPlayerDetails(
           rankedInId,
           "da"
@@ -39,125 +38,162 @@ const PlayerPage = () => {
           return;
         }
         setPlayerData(playerDetails);
+        console.log(
+          "Player ID:",
+          playerDetails.Header?.PlayerId,
+          "RankedInId:",
+          rankedInId
+        );
 
-        // Fetch participated events
         const eventsResponse = await rankedInService.getParticipatedEvents(
           playerDetails.Header?.PlayerId || 0,
           "da"
         );
-        console.log("Fetched events:", eventsResponse);
+        console.log("Participated events:", eventsResponse);
 
-        // Check if eventsResponse contains a Payload property with the events array
         const eventsArray = eventsResponse.Payload || [];
-
         if (Array.isArray(eventsArray) && eventsArray.length > 0) {
-          // Filter upcoming events
-          const futureEvents = eventsArray.filter(
-            (event) => new Date(event.StartDate).getTime() > Date.now()
-          ) as TournamentEvent[];
+          const futureEvents = eventsArray.filter((event) => {
+            const eventDate = new Date(event.StartDate);
+            const now = new Date();
+            return eventDate >= new Date(now.setHours(0, 0, 0, 0));
+          }) as TournamentEvent[];
 
-          // Sort by closest date first
-          futureEvents.sort(
-            (a, b) =>
-              new Date(a.StartDate).getTime() - new Date(b.StartDate).getTime()
-          );
+          const today = new Date();
+          today.setHours(0, 0, 0, 0);
+          const tomorrow = new Date(today);
+          tomorrow.setDate(tomorrow.getDate() + 1);
 
-          // Get the closest upcoming event (first in sorted array)
+          const todayEvents = futureEvents.filter((event) => {
+            const eventStartDate = new Date(event.StartDate);
+            return eventStartDate >= today && eventStartDate < tomorrow;
+          });
+
           const upcomingEvent =
-            futureEvents.length > 0 ? futureEvents[0] : undefined;
+            todayEvents[0] ||
+            futureEvents.sort(
+              (a, b) =>
+                new Date(a.StartDate).getTime() -
+                new Date(b.StartDate).getTime()
+            )[0];
 
           if (upcomingEvent) {
             setNextEvent(upcomingEvent);
-            // Fetch matches for the upcoming event
-            try {
-              const eventMatches = await rankedInService.getEventMatches(
-                upcomingEvent.Id,
-                "da"
+            const eventMatches = await rankedInService.getEventMatches(
+              upcomingEvent.Id,
+              "da"
+            );
+            console.log("Raw event matches:", eventMatches);
+
+            if (eventMatches && Array.isArray(eventMatches.Matches)) {
+              const formattedMatches = eventMatches.Matches.map(
+                (match: any) => {
+                  const formattedMatch = {
+                    matchId: match.Id,
+                    round: match.Round || 0,
+                    date: match.Date,
+                    courtName: match.Court,
+                    matchType: match.Draw,
+                    isPlayed: match.MatchResult?.IsPlayed || false,
+                    durationMinutes: match.MatchResult?.TotalDurationInMinutes,
+                    score:
+                      match.MatchResult && match.MatchResult.Score
+                        ? {
+                            FirstParticipantScore:
+                              match.MatchResult.Score.FirstParticipantScore,
+                            SecondParticipantScore:
+                              match.MatchResult.Score.SecondParticipantScore,
+                            IsFirstParticipantWinner:
+                              match.MatchResult.Score.IsFirstParticipantWinner,
+                            DetailedScoring: match.MatchResult.Score
+                              .DetailedScoring
+                              ? match.MatchResult.Score.DetailedScoring.map(
+                                  (set: any) => ({
+                                    FirstParticipantScore:
+                                      set.FirstParticipantScore,
+                                    SecondParticipantScore:
+                                      set.SecondParticipantScore,
+                                    IsFirstParticipantWinner:
+                                      set.IsFirstParticipantWinner,
+                                    LoserTiebreak: set.LoserTiebreak,
+                                    DetailedScoring: set.DetailedScoring,
+                                    LabelClass: set.LabelClass || "", // Default to empty string if missing
+                                  })
+                                )
+                              : null,
+                            LoserTiebreak:
+                              match.MatchResult.Score.LoserTiebreak,
+                            LabelClass:
+                              match.MatchResult.Score.LabelClass || "",
+                          }
+                        : null,
+                    challenger: {
+                      firstPlayer: {
+                        Name: match.Challenger.Name,
+                        Id: match.Challenger.Player1Id,
+                        CountryCode:
+                          match.Challenger.CountryShort?.toUpperCase() || "DK",
+                        Url: match.Challenger.Player1Url,
+                      },
+                      secondPlayer: match.Challenger.Player2Name
+                        ? {
+                            Name: match.Challenger.Player2Name,
+                            Id: match.Challenger.Player2Id,
+                            CountryCode:
+                              match.Challenger.Player2CountryShort?.toUpperCase() ||
+                              "DK",
+                            Url: match.Challenger.Player2Url,
+                          }
+                        : null,
+                    },
+                    challenged: {
+                      firstPlayer: {
+                        Name: match.Challenged.Name,
+                        Id: match.Challenged.Player1Id,
+                        CountryCode:
+                          match.Challenged.CountryShort?.toUpperCase() || "DK",
+                        Url: match.Challenged.Player1Url,
+                      },
+                      secondPlayer: match.Challenged.Player2Name
+                        ? {
+                            Name: match.Challenged.Player2Name,
+                            Id: match.Challenged.Player2Id,
+                            CountryCode:
+                              match.Challenged.Player2CountryShort?.toUpperCase() ||
+                              "DK",
+                            Url: match.Challenged.Player2Url,
+                          }
+                        : null,
+                    },
+                    winnerParticipantId:
+                      match.MatchResult?.WinnerParticipantId || null,
+                  };
+                  console.log(`Match ${match.Id} score:`, formattedMatch.score);
+                  return formattedMatch;
+                }
               );
 
-              console.log("Fetched event matches:", eventMatches);
+              const playerId = playerDetails.Header?.PlayerId;
+              const playerMatches = formattedMatches.filter(
+                (match) =>
+                  match.challenger?.firstPlayer?.Id === playerId ||
+                  match.challenger?.secondPlayer?.Id === playerId ||
+                  match.challenged?.firstPlayer?.Id === playerId ||
+                  match.challenged?.secondPlayer?.Id === playerId
+              );
 
-              // Check for the Matches array in the response
-              if (
-                eventMatches &&
-                eventMatches.Matches &&
-                Array.isArray(eventMatches.Matches)
-              ) {
-                // Transform the matches data to match our expected format
-                const formattedMatches = eventMatches.Matches.map((match) => ({
-                  matchId: match.Id,
-                  date: match.Date,
-                  courtName: match.Court,
-                  matchType: match.Draw,
-                  isPlayed: match.MatchResult?.IsPlayed || false,
-                  durationMinutes: match.MatchResult?.TotalDurationInMinutes,
-                  score: match.MatchResult,
-                  challenger: {
-                    firstPlayer: {
-                      Name: match.Challenger.Name,
-                      Id: match.Challenger.Player1Id,
-                      CountryCode:
-                        match.Challenger.CountryShort?.toUpperCase() || "DK",
-                      Url: match.Challenger.Player1Url,
-                    },
-                    secondPlayer: match.Challenger.Player2Name
-                      ? {
-                          Name: match.Challenger.Player2Name,
-                          Id: match.Challenger.Player2Id,
-                          CountryCode:
-                            match.Challenger.Player2CountryShort?.toUpperCase() ||
-                            "DK",
-                          Url: match.Challenger.Player2Url,
-                        }
-                      : undefined,
-                  },
-                  challenged: {
-                    firstPlayer: {
-                      Name: match.Challenged.Name,
-                      Id: match.Challenged.Player1Id,
-                      CountryCode:
-                        match.Challenged.CountryShort?.toUpperCase() || "DK",
-                      Url: match.Challenged.Player1Url,
-                    },
-                    secondPlayer: match.Challenged.Player2Name
-                      ? {
-                          Name: match.Challenged.Player2Name,
-                          Id: match.Challenged.Player2Id,
-                          CountryCode:
-                            match.Challenged.Player2CountryShort?.toUpperCase() ||
-                            "DK",
-                          Url: match.Challenged.Player2Url,
-                        }
-                      : undefined,
-                  },
-                })); // Find matches for this player using the player's ID
-                const playerId = playerDetails.Header?.PlayerId;
-                const playerMatches = formattedMatches.filter(
-                  (match: any) =>
-                    match.challenger?.firstPlayer?.Id === playerId ||
-                    match.challenger?.secondPlayer?.Id === playerId ||
-                    match.challenged?.firstPlayer?.Id === playerId ||
-                    match.challenged?.secondPlayer?.Id === playerId
-                );
-
-                // We're only showing the player's matches
-                setMatches(playerMatches);
-              } else {
-                console.error(
-                  "Event matches is not in expected format:",
-                  eventMatches
-                );
-                setMatches([]);
-              }
-            } catch (err) {
-              console.error("Error fetching event matches:", err);
+              console.log("Player matches:", playerMatches);
+              setMatches(playerMatches);
+            } else {
+              console.error("No matches found for event:", eventMatches);
               setMatches([]);
             }
           } else {
+            console.log("No upcoming events found");
             setMatches([]);
           }
         } else {
-          console.log("No events found or invalid events data format");
+          console.log("No events found");
           setMatches([]);
         }
       } catch (err) {
@@ -317,7 +353,7 @@ const PlayerPage = () => {
               </p>
             </div>
           </div>
-        )}{" "}
+        )}
         {/* Matches Section */}
         <h2 className="text-4xl font-bold text-brand-primary mb-10 animate-fadeInDown">
           Kommende kampe for {playerData.Header?.FullName || "spiller"}
@@ -354,10 +390,11 @@ const PlayerPage = () => {
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
+                    {" "}
                     <p
                       className={`text-slate-300 text-lg font-medium ${
                         match.isPlayed && match.score?.IsFirstParticipantWinner
-                          ? "font-bold text-brand-primary"
+                          ? "font-bold text-brand-primary bg-opacity-20 bg-green-500 px-2 py-1 rounded"
                           : ""
                       }`}
                     >
@@ -374,7 +411,7 @@ const PlayerPage = () => {
                     <p
                       className={`text-slate-300 text-lg font-medium ${
                         match.isPlayed && !match.score?.IsFirstParticipantWinner
-                          ? "font-bold text-brand-primary"
+                          ? "font-bold text-brand-primary bg-opacity-20 bg-green-500 px-2 py-1 rounded"
                           : ""
                       }`}
                     >
@@ -424,29 +461,52 @@ const PlayerPage = () => {
                       <div>
                         <p className="font-medium text-lg">
                           Score:
-                          <span className="ml-2 text-xl text-brand-primary">
+                          <span className="ml-2 text-xl text-brand-primary font-bold">
                             {match.score.FirstParticipantScore} -{" "}
                             {match.score.SecondParticipantScore}
                           </span>
+                          <span className="ml-2 text-sm font-normal text-slate-400">
+                            (
+                            {match.score.IsFirstParticipantWinner
+                              ? "Hold 1 vandt"
+                              : "Hold 2 vandt"}
+                            )
+                          </span>
                         </p>
                       </div>
+                      {console.log(
+                        `Match ${match.matchId} DetailedScoring:`,
+                        match.score.DetailedScoring
+                      )}
                       {match.score.DetailedScoring &&
-                        Array.isArray(match.score.DetailedScoring) && (
-                          <div>
-                            <p className="font-medium text-lg">Sæt:</p>
-                            <div className="flex gap-3 flex-wrap">
-                              {match.score.DetailedScoring.map((set, index) => (
-                                <span
-                                  key={index}
-                                  className="bg-slate-900 px-4 py-2 rounded-full text-sm text-slate-300 font-medium shadow-[0_0_8px_rgba(6,182,212,0.3)]"
-                                >
-                                  {set.FirstParticipantScore}-
-                                  {set.SecondParticipantScore}
-                                </span>
-                              ))}
-                            </div>
+                      Array.isArray(match.score.DetailedScoring) &&
+                      match.score.DetailedScoring.length > 0 ? (
+                        <div>
+                          <p className="font-medium text-lg">Sæt:</p>
+                          <div className="flex gap-3 flex-wrap">
+                            {match.score.DetailedScoring.map((set, index) => (
+                              <span
+                                key={index}
+                                className={`bg-slate-900 px-4 py-2 rounded-full text-sm text-slate-300 font-medium shadow-[0_0_8px_rgba(6,182,212,0.3)] ${
+                                  set.IsFirstParticipantWinner
+                                    ? "border-l-4 border-green-500"
+                                    : "border-r-4 border-green-500"
+                                }`}
+                                aria-label={`Sæt ${index + 1}: Hold 1 ${
+                                  set.FirstParticipantScore
+                                }, Hold 2 ${set.SecondParticipantScore}`}
+                              >
+                                {set.FirstParticipantScore}-
+                                {set.SecondParticipantScore}
+                              </span>
+                            ))}
                           </div>
-                        )}
+                        </div>
+                      ) : (
+                        <p className="font-medium text-lg text-slate-400">
+                          Ingen sætdetaljer tilgængelig
+                        </p>
+                      )}
                     </div>
                   </div>
                 )}

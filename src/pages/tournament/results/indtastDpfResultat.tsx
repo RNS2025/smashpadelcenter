@@ -42,7 +42,7 @@ class ErrorBoundary extends Component<
 }
 
 const RANKEDIN_API_BASE_URL = "https://api.rankedin.com/v1";
-const RANKEDIN_ORGANIZATION_ID = 5070;
+const RANKEDIN_ORGANIZATION_ID = 4310;
 
 const EnterResultPage: React.FC = () => {
   const { user, isAuthenticated, loading: userLoading } = useUser();
