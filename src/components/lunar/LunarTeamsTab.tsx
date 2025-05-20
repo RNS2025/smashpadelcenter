@@ -1,20 +1,20 @@
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
-import { TeamInfo } from "../../types/LunarTypes.ts";
+import { TeamInfo, League } from "../../types/LunarTypes.ts";
 import TeamListTable from "./misc/TeamListTable.tsx";
 import useLeagueTeams from "../../hooks/useLeagueTeams";
+import { useCallback } from "react";
 
 export const LunarTeamsTab = () => {
   const navigate = useNavigate();
 
-  // Use custom hook with filter for "Lunar Ligaen - " leagues
-  const {
-    teams: lunarTeams,
-    loading,
-    error,
-  } = useLeagueTeams((league) => league.name.includes("Lunar Ligaen - "));
-    const isLoading = loading || lunarTeams.length === 0;
+  // Memoize the filter function to prevent recreation on each render
+  const leagueFilter = useCallback((league: League) => {
+    return league.name.includes("Lunar Ligaen - ");
+  }, []);
 
+  // Use custom hook with memoized filter
+  const { teams: lunarTeams, loading, error } = useLeagueTeams(leagueFilter);
 
   const handleRowClick = (team: TeamInfo) => {
     sessionStorage.setItem(`teamName_${team.id}`, team.name);
@@ -32,8 +32,14 @@ export const LunarTeamsTab = () => {
           <div className="text-center py-8">Indlæser hold...</div>
         ) : error ? (
           <div className="text-center text-red-500 py-8">{error}</div>
+        ) : lunarTeams.length === 0 ? (
+          <div className="text-center py-8">Ingen hold fundet</div>
         ) : (
-          <TeamListTable teams={lunarTeams} onRowClick={handleRowClick} loading={isLoading} />
+          <TeamListTable
+            teams={lunarTeams}
+            onRowClick={handleRowClick}
+            loading={false}
+          />
         )}
       </div>
     </>

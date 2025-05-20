@@ -23,12 +23,10 @@ interface UserContextType {
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
-// Cache control constants
-const AUTH_CACHE_DURATION = 30000; // 30 seconds between auth checks
+const AUTH_CACHE_DURATION = 24 * 60 * 60 * 1000; // 24 hours
 const USER_CACHE_KEY = "userData";
 const AUTH_TIMESTAMP_KEY = "lastAuthCheck";
 
-// Improved route matching with memoization
 const isRouteWhitelisted = (pathname: string, whitelist: string[]): boolean => {
   return whitelist.some((route) => {
     if (!route.includes(":")) return route === pathname;
@@ -47,40 +45,27 @@ const isPublicRoute = (pathname: string): boolean => {
 };
 
 export const UserProvider = ({ children }: { children: React.ReactNode }) => {
-  // State management
   const [user, setUser] = useState<User | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false); // Default to false
 
-  // Navigation state
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Refs to prevent race conditions
   const authCheckCompleted = useRef(false);
   const navigationInProgress = useRef(false);
   const fetchInProgress = useRef(false);
   const lastAuthCheck = useRef<number>(0);
 
-  // Add new validation state
   const validationTimeout = useRef<NodeJS.Timeout>();
-  const maxValidationTime = 5000; // 5 seconds maximum wait time
+  const maxValidationTime = 5000;
 
-  // Track route changes
-  const routeKey = useRef(location.pathname);
-  const refreshOnRouteChange = useRef(true);
-
-  // Core function to fetch user data - doesn't handle navigation
   const fetchUserData = useCallback(
-    async (
-      skipLoadingState = false,
-      forceRefresh = false
-    ): Promise<boolean> => {
-      // Skip if fetch is already in progress
-      if (fetchInProgress.current) return false;
+    async (setLoadingState = false, forceRefresh = false): Promise<boolean> => {
+      if (fetchInProgress.current) return isAuthenticated;
+      fetchInProgress.current = true;
 
-      // Check if we can use cached auth data
       const now = Date.now();
       const timeSinceLastCheck = now - lastAuthCheck.current;
 
@@ -88,30 +73,26 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         console.debug(
           `Using cached auth data (${timeSinceLastCheck}ms since last check)`
         );
+        fetchInProgress.current = false;
         return isAuthenticated;
       }
 
       try {
-        fetchInProgress.current = true;
-        if (!skipLoadingState) setLoading(true);
+        if (setLoadingState) setLoading(true);
 
-        // Update last check timestamp before making the request
         lastAuthCheck.current = now;
         localStorage.setItem(AUTH_TIMESTAMP_KEY, now.toString());
 
-        // Start validation timeout
         const validationPromise = new Promise<boolean>((resolve) => {
-          validationTimeout.current = setTimeout(() => {
-            resolve(false);
-          }, maxValidationTime);
+          validationTimeout.current = setTimeout(
+            () => resolve(false),
+            maxValidationTime
+          );
         });
 
-        // Race between actual fetch and timeout - use URL parameter to bust cache
         const cacheBuster = `?_=${now}`;
         const response = await Promise.race([
-          api.get(`/auth/check${cacheBuster}`, {
-            withCredentials: true,
-          }),
+          api.get(`/auth/check${cacheBuster}`, { withCredentials: true }),
           validationPromise,
         ]);
 
@@ -119,12 +100,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
           clearTimeout(validationTimeout.current);
           const userData = response.data.user;
 
-          // Store with timestamp for cache validation
-          const cacheData = {
-            user: userData,
-            timestamp: now,
-          };
-
+          const cacheData = { user: userData, timestamp: now };
           await Promise.all([
             localStorage.setItem(USER_CACHE_KEY, JSON.stringify(cacheData)),
             setUser(userData),
@@ -138,7 +114,6 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         }
       } catch (err: any) {
         clearTimeout(validationTimeout.current);
-
         await Promise.all([
           localStorage.removeItem(USER_CACHE_KEY),
           localStorage.removeItem("token"),
@@ -146,87 +121,59 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
           setIsAuthenticated(false),
           setError("Kunne ikke validere login."),
         ]);
-
         return false;
       } finally {
-        if (!skipLoadingState) setLoading(false);
+        if (setLoadingState) setLoading(false);
         fetchInProgress.current = false;
       }
     },
     [isAuthenticated]
   );
 
-  // Initial authentication check - runs on mount and key route changes
+  // Initial authentication check on mount
   useEffect(() => {
     let isMounted = true;
 
     const initAuth = async () => {
-      // Skip if we're already authenticating
-      if (fetchInProgress.current) return;
+      const storedCacheData = localStorage.getItem(USER_CACHE_KEY);
+      const storedTimestamp = localStorage.getItem(AUTH_TIMESTAMP_KEY);
 
-      setLoading(true);
+      if (storedCacheData && storedTimestamp) {
+        const parsedCache = JSON.parse(storedCacheData);
+        const timestamp = parseInt(storedTimestamp, 10);
+        const now = Date.now();
 
-      try {
-        // First try to use cached user data for instant authentication
-        const storedCacheData = localStorage.getItem(USER_CACHE_KEY);
-        const storedTimestamp = localStorage.getItem(AUTH_TIMESTAMP_KEY);
-
-        // Parse cached data if available
-        if (storedCacheData && storedTimestamp) {
-          const parsedCache = JSON.parse(storedCacheData);
-          const timestamp = parseInt(storedTimestamp, 10);
-          const now = Date.now();
-
-          if (now - timestamp < AUTH_CACHE_DURATION) {
-            // Cache is still valid
+        if (now - timestamp < AUTH_CACHE_DURATION) {
+          if (isMounted) {
+            setUser(parsedCache.user);
+            setIsAuthenticated(true);
             lastAuthCheck.current = timestamp;
-            if (isMounted) {
-              setUser(parsedCache.user);
-              setIsAuthenticated(true);
-            }
-
-            // Perform background refresh after a short delay
-            setTimeout(() => {
-              if (isMounted && refreshOnRouteChange.current) {
-                fetchUserData(true, false).catch(console.error);
-              }
-            }, 500);
-
-            if (isMounted) {
-              setLoading(false);
-              authCheckCompleted.current = true;
-            }
-            return;
+            authCheckCompleted.current = true;
           }
-        }
 
-        // No valid cache, do a fresh fetch
-        await fetchUserData(false, true);
-      } finally {
-        if (isMounted) {
-          setLoading(false);
-          authCheckCompleted.current = true;
+          // Background refresh after a delay
+          setTimeout(() => {
+            if (isMounted) fetchUserData(false, false).catch(console.error);
+          }, 500);
+
+          return;
         }
       }
+
+      // No valid cache, fetch user data without loading state
+      await fetchUserData(false, true);
     };
 
-    // If route changed significantly, run auth check again
-    if (routeKey.current !== location.pathname) {
-      routeKey.current = location.pathname;
-      refreshOnRouteChange.current = true;
-      authCheckCompleted.current = false;
-      initAuth();
-    } else if (!authCheckCompleted.current) {
-      // On initial mount or after manual reset
+    if (!authCheckCompleted.current) {
       initAuth();
     }
 
     return () => {
       isMounted = false;
     };
-  }, [fetchUserData, location.pathname]);
+  }, [fetchUserData]);
 
-  // Handle navigation based on auth state and current route
+  // Handle navigation based on auth state
   useEffect(() => {
     if (
       !authCheckCompleted.current ||
@@ -238,7 +185,6 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
     const currentPath = location.pathname;
 
-    // Handle authenticated users on login page
     if (isAuthenticated && currentPath === "/") {
       navigationInProgress.current = true;
       navigate("/hjem", { replace: true });
@@ -246,12 +192,11 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       return;
     }
 
-    // Protected route access check - no delay, direct navigation
     if (
       !isAuthenticated &&
       !isPublicRoute(currentPath) &&
       !isRouteWhitelisted(currentPath, WHITELIST_ROUTES) &&
-      !fetchInProgress.current // Important: don't redirect if still fetching
+      !fetchInProgress.current
     ) {
       navigationInProgress.current = true;
       setError("Adgang nægtet - Log ind for at se denne side");
@@ -265,21 +210,17 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       navigationInProgress.current = false;
     }
 
-    // Clear errors when on login page
     if (currentPath === "/") {
       setError(null);
     }
   }, [isAuthenticated, location.pathname, loading, navigate]);
 
-  // Public methods
   const fetchUser = async () => {
-    refreshOnRouteChange.current = true;
-    await fetchUserData(false, true);
+    await fetchUserData(true, true); // Force loading state on explicit fetch
   };
-  // Lightweight refresh that doesn't trigger loading state and respects cache
+
   const refreshUser = async (forceRefresh = false) => {
     try {
-      // Check cache timing first, unless force refresh is requested
       const now = Date.now();
       const timeSinceLastCheck = now - lastAuthCheck.current;
 
@@ -290,7 +231,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         return;
       }
 
-      await fetchUserData(true, forceRefresh);
+      await fetchUserData(false, forceRefresh);
     } catch (error) {
       console.error("Error refreshing user", error);
     }
@@ -298,50 +239,31 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = async () => {
     try {
-      // Set flags to prevent navigation during logout
       navigationInProgress.current = true;
 
-      // Call API logout first - include credentials to send the cookie
       try {
         await api.post("/logout", {}, { withCredentials: true });
       } catch (err) {
         console.error("API logout error:", err);
-        // Continue with local logout even if API call fails
       }
 
-      // Then clear all local storage
       localStorage.clear();
       localStorage.removeItem(USER_CACHE_KEY);
       localStorage.removeItem(AUTH_TIMESTAMP_KEY);
       localStorage.removeItem("token");
 
-      // Clear SessionStorage
       sessionStorage.clear();
 
-      // Clear user data and authentication state
       setUser(null);
       setIsAuthenticated(false);
       setError(null);
       setLoading(false);
 
-      // Reset refs
       lastAuthCheck.current = 0;
       authCheckCompleted.current = false;
-      refreshOnRouteChange.current = false;
       clearTimeout(validationTimeout.current);
 
-      // Update state
-      setUser(null);
-      setIsAuthenticated(false);
-      setError(null);
-
-      // Mark auth check completed to prevent auto-authentication
-      authCheckCompleted.current = true;
-
-      // Navigate to login page
       navigate("/", { replace: true });
-
-      // Reset navigation flag
       navigationInProgress.current = false;
     } catch (error) {
       console.error("Error during logout:", error);
