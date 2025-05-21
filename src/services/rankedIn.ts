@@ -357,6 +357,14 @@ const rankedInService = {
     matchId: number;
     sets: { player1: string; player2: string }[];
     tiebreak?: { player1: string; player2: string };
+    tournamentName?: string;
+    row: string;
+    players: {
+      firstPlayerName: string;
+      secondPlayerName: string;
+      thirdPlayerName: string;
+      fourthPlayerName: string;
+    };
   }): Promise<any> => {
     try {
       const response = await api.post("/SaveMatchResult", matchResult);

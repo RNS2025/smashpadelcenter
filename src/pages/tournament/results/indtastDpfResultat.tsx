@@ -42,10 +42,15 @@ class ErrorBoundary extends Component<
 }
 
 const RANKEDIN_API_BASE_URL = "https://api.rankedin.com/v1";
-const RANKEDIN_ORGANIZATION_ID = 4310;
+const RANKEDIN_ORGANIZATION_ID = 3752;
 
 const EnterResultPage: React.FC = () => {
-  const { user, isAuthenticated, loading: userLoading } = useUser();
+  const {
+    user,
+    isAuthenticated,
+    loading: userLoading,
+    refreshUser,
+  } = useUser();
   const [matches, setMatches] = useState<Match[]>([]);
   const [loadingMatches, setLoadingMatches] = useState<boolean>(true);
   const [errorMatches, setErrorMatches] = useState<string | null>(null);
@@ -58,6 +63,14 @@ const EnterResultPage: React.FC = () => {
   } | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [expandedMatchId, setExpandedMatchId] = useState<number | null>(null);
+  const [tournamentName, setTournamentName] = useState<string | null>(null);
+  const [matchRow, setMatchRow] = useState<string | null>(null);
+  const [selectedPlayers, setSelectedPlayers] = useState<{
+    player1: string;
+    player2: string;
+    player3: string;
+    player4: string;
+  } | null>(null);
 
   const addDebugLog = (message: string, data?: any) => {
     const formattedData = data ? JSON.stringify(data, null, 2) : "";
@@ -71,10 +84,15 @@ const EnterResultPage: React.FC = () => {
     const match = url.match(/R\d+/);
     return match ? match[0] : null;
   };
-
   const transformRawMatchToMatch = (rawMatch: RawMatch): Match => {
     addDebugLog(`Transforming raw match ID: ${rawMatch.Id}`);
     try {
+      // Add debug information to help diagnose missing properties
+      addDebugLog(`Raw match data for ID: ${rawMatch.Id}`, {
+        hasTournamentClassName: !!rawMatch.TournamentClassName,
+        tournamentClassName: rawMatch.TournamentClassName || "N/A",
+      });
+
       const challengerPlayer1: Player = {
         id: rawMatch.Challenger.Player1Id,
         Name: rawMatch.Challenger.Name.split(" ")[0],
@@ -111,7 +129,7 @@ const EnterResultPage: React.FC = () => {
 
       const transformedMatch: Match = {
         matchId: rawMatch.Id,
-        round: 0,
+        round: rawMatch.Round || 0,
         date: rawMatch.Date,
         courtName: rawMatch.Court,
         durationMinutes: null,
@@ -150,9 +168,8 @@ const EnterResultPage: React.FC = () => {
             : null,
         isPlayed: rawMatch.MatchResult?.IsPlayed || false,
         winnerParticipantId: rawMatch.MatchResult?.WinnerParticipantId || null,
-        matchType: rawMatch.TournamentClassName.includes("Herrer")
-          ? "Elimination"
-          : "RoundRobin",
+        matchType: rawMatch.TournamentClassName ? "Elimination" : "RoundRobin",
+        TournamentClassName: rawMatch.TournamentClassName || "",
       };
       return transformedMatch;
     } catch (error: any) {
@@ -191,6 +208,7 @@ const EnterResultPage: React.FC = () => {
     );
 
     const fetchTournamentAndMatches = async () => {
+      refreshUser();
       if (
         userLoading ||
         !isAuthenticated ||
@@ -226,17 +244,21 @@ const EnterResultPage: React.FC = () => {
         setLoadingMatches(true);
         setErrorMatches(null);
         addDebugLog("Fetching tournament data");
-
         const tournamentResponse =
           await axios.get<OrganizationEventsApiResponse>(
-            `${RANKEDIN_API_BASE_URL}/Organization/GetOrganisationEventsAsync?organisationId=${RANKEDIN_ORGANIZATION_ID}&IsFinished=false&Language=en&EventType=4&skip=0&take=1`
+            `${RANKEDIN_API_BASE_URL}/Organization/GetOrganisationEventsAsync?organisationId=${RANKEDIN_ORGANIZATION_ID}&IsFinished=false&Language=en&EventType=4&skip=0&take=5`
           );
+
         addDebugLog(`Tournament API response`, {
           tournamentCount: tournamentResponse.data.payload?.length,
+          tournamentResponse: tournamentResponse.data,
         });
 
-        const upcomingTournament = tournamentResponse.data.payload?.[0];
-        if (!upcomingTournament) {
+        // Filter tournaments that are on the same date as the first upcoming one
+        if (
+          !tournamentResponse.data.payload ||
+          tournamentResponse.data.payload.length === 0
+        ) {
           setErrorMatches(
             "Ingen kommende turnering fundet for denne organisation."
           );
@@ -246,21 +268,84 @@ const EnterResultPage: React.FC = () => {
           return;
         }
 
-        const tournamentId = upcomingTournament.eventId;
-        addDebugLog(`Fetching matches for tournament ID: ${tournamentId}`);
-
-        const matchesResponse = await axios.get<{ Matches: RawMatch[] }>(
-          `${RANKEDIN_API_BASE_URL}/tournament/GetMatchesSectionAsync?Id=${tournamentId}&LanguageCode=en&IsReadonly=true`
+        // Sort tournaments by start date
+        const sortedTournaments = [...tournamentResponse.data.payload].sort(
+          (a, b) =>
+            new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
         );
+
+        // Get the date of the first upcoming tournament
+        const firstTournamentDate = new Date(sortedTournaments[0].startDate);
+
+        // Filter tournaments that are on the same date
+        const tournamentsOnSameDate = sortedTournaments.filter((tournament) => {
+          const tournamentDate = new Date(tournament.startDate);
+          return (
+            tournamentDate.toDateString() === firstTournamentDate.toDateString()
+          );
+        });
+
         addDebugLog(
-          `Matches API response received, match count: ${matchesResponse.data.Matches.length}`,
-          { matchIds: matchesResponse.data.Matches.map((m) => m.Id) }
+          `Upcoming tournaments on ${firstTournamentDate.toDateString()}`,
+          {
+            count: tournamentsOnSameDate.length,
+            tournaments: tournamentsOnSameDate,
+          }
         );
 
-        const rawFetchedMatches = matchesResponse.data.Matches;
-        const userRankedInIdString = user.rankedInId;
+        // Combine the tournament names for display
+        const tournamentNames = tournamentsOnSameDate
+          .map((t) => t.eventName)
+          .join(" & ");
+        setTournamentName(tournamentNames);
 
-        const rawUserMatches = rawFetchedMatches.filter((rawMatch) => {
+        // Fetch matches for all upcoming tournaments on the same date
+        let allMatches: RawMatch[] = [];
+
+        for (const tournament of tournamentsOnSameDate) {
+          const tournamentId = tournament.eventId;
+          addDebugLog(
+            `Fetching matches for tournament ID: ${tournamentId} (${tournament.eventName})`
+          );
+
+          try {
+            const matchesResponse = await axios.get<{ Matches: RawMatch[] }>(
+              `${RANKEDIN_API_BASE_URL}/tournament/GetMatchesSectionAsync?Id=${tournamentId}&LanguageCode=en&IsReadonly=true`
+            ); // Log matches data for debugging purposes
+            addDebugLog(
+              `Matches API response received for tournament ${tournament.eventName}, match count: ${matchesResponse.data.Matches.length}`,
+              {
+                firstFewMatches: matchesResponse.data.Matches.slice(0, 3), // Log first 3 matches to avoid overwhelming the console
+                allMatchIds: matchesResponse.data.Matches.map((m) => m.Id),
+                responseData: matchesResponse.data,
+              }
+            );
+            // Add these matches to our collection of all matches
+            allMatches = allMatches.concat(matchesResponse.data.Matches);
+          } catch (err: any) {
+            addDebugLog(
+              `Error fetching matches for tournament ${tournamentId}`,
+              { error: err.message }
+            );
+          }
+        }
+
+        if (allMatches.length === 0) {
+          setErrorMatches("Ingen kampe fundet i de kommende turneringer.");
+          setMatches([]);
+          setLoadingMatches(false);
+          addDebugLog("No matches found in any tournament");
+          return;
+        }
+
+        addDebugLog(
+          `Total matches found across all tournaments: ${allMatches.length}`
+        );
+
+        const userRankedInIdString = user.rankedInId;
+        console.log("User RankedIn ID:", userRankedInIdString);
+
+        const rawUserMatches = allMatches.filter((rawMatch) => {
           const challengerPlayer1Id = extractRankedInIdFromUrl(
             rawMatch.Challenger.Player1Url
           );
@@ -273,16 +358,26 @@ const EnterResultPage: React.FC = () => {
           const challengedPlayer2Id = extractRankedInIdFromUrl(
             rawMatch.Challenged.Player2Url
           );
+          console.log("RankedinId: ", userRankedInIdString);
+          console.log("Comparing player IDs with user rankedInId:", {
+            challengerPlayer1Id,
+            challengerPlayer2Id,
+            challengedPlayer1Id,
+            challengedPlayer2Id,
+            userRankedInIdString,
+          });
 
           const isUserMatch =
             (challengerPlayer1Id &&
-              challengerPlayer1Id === userRankedInIdString) ||
+              challengerPlayer1Id == userRankedInIdString) ||
             (challengerPlayer2Id &&
-              challengerPlayer2Id === userRankedInIdString) ||
+              challengerPlayer2Id == userRankedInIdString) ||
             (challengedPlayer1Id &&
-              challengedPlayer1Id === userRankedInIdString) ||
+              challengedPlayer1Id == userRankedInIdString) ||
             (challengedPlayer2Id &&
-              challengedPlayer2Id === userRankedInIdString);
+              challengedPlayer2Id == userRankedInIdString);
+
+          console.log("Is user match:", isUserMatch);
 
           addDebugLog(`Match ID: ${rawMatch.Id}, isUserMatch: ${isUserMatch}`, {
             playerIds: {
@@ -308,7 +403,7 @@ const EnterResultPage: React.FC = () => {
           const result = matchResults[match.matchId];
           const updatedMatch = {
             ...match,
-            score: result?.score || match.score, // Prefer API result, fallback to transformed score
+            score: result?.score || match.score,
             isPlayed: result?.isPlayed || match.isPlayed,
           };
           addDebugLog(`Match ${match.matchId} updated`, {
@@ -316,8 +411,21 @@ const EnterResultPage: React.FC = () => {
             isPlayed: updatedMatch.isPlayed,
           });
           return updatedMatch;
-        });
-
+        }); // Add null check to prevent "Cannot read properties of undefined (reading 'TournamentClassName')" error
+        if (
+          updatedMatches.length > 0 &&
+          updatedMatches[0]?.TournamentClassName
+        ) {
+          setMatchRow(updatedMatches[0].TournamentClassName);
+        } else {
+          // Set a default value if TournamentClassName is not available
+          setMatchRow("Unknown");
+          addDebugLog("TournamentClassName not available in matches", {
+            matchCount: updatedMatches.length,
+            firstMatch: updatedMatches[0] || null,
+          });
+        }
+        console.log("Updated matches:", updatedMatches);
         setMatches(updatedMatches);
       } catch (err: any) {
         const errorMessage =
@@ -403,6 +511,17 @@ const EnterResultPage: React.FC = () => {
     });
     setEnteringResultForMatchId(match.matchId);
     setExpandedMatchId(match.matchId);
+    // Set the players for the match
+    setSelectedPlayers({
+      player1: match.challenger.firstPlayer.Name,
+      player2: match.challenger.secondPlayer
+        ? match.challenger.secondPlayer.Name
+        : "",
+      player3: match.challenged.firstPlayer.Name,
+      player4: match.challenged.secondPlayer
+        ? match.challenged.secondPlayer.Name
+        : "",
+    });
     if (match.score && match.isPlayed) {
       const sets = match.score.DetailedScoring
         ? match.score.DetailedScoring.map((set) => ({
@@ -431,6 +550,8 @@ const EnterResultPage: React.FC = () => {
     setEnteringResultForMatchId(null);
     setCurrentMatchResultInput(null);
     setSaveError(null);
+    setMatchRow(null);
+    setSelectedPlayers(null);
   };
 
   const isValidSetScore = (scoreA: string, scoreB: string): boolean => {
@@ -456,9 +577,16 @@ const EnterResultPage: React.FC = () => {
   };
 
   const handleSaveResult = async () => {
-    if (enteringResultForMatchId === null || !currentMatchResultInput) {
-      addDebugLog("No match selected or result data empty");
-      setSaveError("Ingen kamp valgt eller resultatet er tomt");
+    if (
+      enteringResultForMatchId === null ||
+      !currentMatchResultInput ||
+      !selectedPlayers ||
+      matchRow === null
+    ) {
+      addDebugLog("No match selected, result data, players, or row empty");
+      setSaveError(
+        "Ingen kamp valgt, resultatet, spillere eller række mangler"
+      );
       return;
     }
 
@@ -490,16 +618,25 @@ const EnterResultPage: React.FC = () => {
       return;
     }
 
-    addDebugLog(
-      `Saving result for match ${enteringResultForMatchId}`,
-      currentMatchResultInput
-    );
+    addDebugLog(`Saving result for match ${enteringResultForMatchId}`, {
+      matchResult: currentMatchResultInput,
+      players: selectedPlayers,
+      row: matchRow,
+    });
 
     try {
       const response = await api.post("SaveMatchResult", {
         matchId: enteringResultForMatchId,
         sets: currentMatchResultInput.sets,
         tiebreak: currentMatchResultInput.tiebreak,
+        tournamentName: tournamentName,
+        row: matchRow,
+        players: {
+          player1: selectedPlayers.player1,
+          player2: selectedPlayers.player2 || "",
+          player3: selectedPlayers.player3,
+          player4: selectedPlayers.player4 || "",
+        }, // Use object structure that matches the server schema
       });
       addDebugLog(`Save successful`, response.data);
 
@@ -548,6 +685,8 @@ const EnterResultPage: React.FC = () => {
       setEnteringResultForMatchId(null);
       setCurrentMatchResultInput(null);
       setSaveError(null);
+      setMatchRow(null);
+      setSelectedPlayers(null);
     } catch (err: any) {
       const errorMessage =
         err.response?.data?.error ||
@@ -564,6 +703,8 @@ const EnterResultPage: React.FC = () => {
       setEnteringResultForMatchId(null);
       setCurrentMatchResultInput(null);
       setSaveError(null);
+      setMatchRow(null);
+      setSelectedPlayers(null);
     }
   };
 
@@ -572,7 +713,7 @@ const EnterResultPage: React.FC = () => {
       <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-800 text-white font-sans p-4 sm:p-6">
         <div className="max-w-4xl mx-auto">
           <h2 className="text-3xl sm:text-4xl font-bold text-brand-primary mb-8 text-center animate-neon-glow">
-            Indtast Kampresultater
+            Indtast Kampresultater{tournamentName ? ` - ${tournamentName}` : ""}
           </h2>
           {userLoading ? (
             <div className="backdrop-blur-md bg-slate-900/30 border border-brand-secondary/50 rounded-xl p-6 text-center text-brand-secondary animate-pulse">
@@ -646,8 +787,16 @@ const EnterResultPage: React.FC = () => {
                   onClick={() => toggleMatchExpand(match.matchId)}
                 >
                   <h3 className="text-lg sm:text-xl font-bold text-brand-primary">
-                    Kamp ID: {match.matchId} - {match.matchType} (Runde{" "}
-                    {match.round})
+                    {match.date
+                      ? new Date(match.date).toLocaleString("da-DK", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "Ikke angivet"}{" "}
+                    - {match.TournamentClassName}
                   </h3>
                   <svg
                     className={`w-6 h-6 transform transition-transform duration-300 ${

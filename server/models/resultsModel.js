@@ -34,6 +34,14 @@ const matchResultSchema = new mongoose.Schema({
     player1: { type: String },
     player2: { type: String },
   },
+  tournamentName: { type: String, required: true },
+  row: { type: String, required: true },
+  players: {
+    player1: { type: String, required: true },
+    player2: { type: String, required: true },
+    player3: { type: String, required: true },
+    player4: { type: String, required: true },
+  },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });

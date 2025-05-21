@@ -14,6 +14,7 @@ import { User } from "../types/user";
 import userProfileService from "../services/userProfileService";
 import communityApi from "../services/makkerborsService";
 import { PadelMatch } from "../types/PadelMatch";
+import { useUser } from "./UserContext";
 
 interface MatchesData {
   upcoming: PadelMatch[];
@@ -47,6 +48,7 @@ export function ProfileProvider({
   children: ReactNode;
   username: string;
 }) {
+  const { refreshUser } = useUser();
   const [profile, setProfile] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -141,14 +143,17 @@ export function ProfileProvider({
     e: ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
+    // Clear any previous errors when the user makes changes
+    if (error) setError("");
+
     setFormData((prev) => ({
       ...prev,
-      [ name ]:
-          name === "skillLevel"
-              ? parseFloat(value)
-              : name === "phoneNumber"
-                  ? value.toString()
-                  : value,
+      [name]:
+        name === "skillLevel"
+          ? parseFloat(value)
+          : name === "phoneNumber"
+          ? value.toString()
+          : value,
     }));
   };
 
@@ -173,12 +178,25 @@ export function ProfileProvider({
         setProfile(updated);
         setFormData(updated);
         localStorage.setItem("userProfile", JSON.stringify(updated));
+        // Hard refresh userData
+        await refreshUser(true);
       } else {
         console.error("No username available for update");
       }
     } catch (err: any) {
       console.error("Error updating profile:", err);
-      setError("Fejl ved opdatering af profil");
+      // Check if the error has a message property from the server response
+      const errorMessage =
+        err.response?.data?.message ||
+        err.message ||
+        "Fejl ved opdatering af profil";
+
+      // More specific error message for common issues
+      if (errorMessage.includes("RankedIn ID is already in use")) {
+        setError("Dette RankedIn ID er allerede i brug af en anden spiller");
+      } else {
+        setError(errorMessage);
+      }
     } finally {
       setIsSubmitting(false);
     }

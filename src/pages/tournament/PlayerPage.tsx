@@ -474,10 +474,6 @@ const PlayerPage = () => {
                           </span>
                         </p>
                       </div>
-                      {console.log(
-                        `Match ${match.matchId} DetailedScoring:`,
-                        match.score.DetailedScoring
-                      )}
                       {match.score.DetailedScoring &&
                       Array.isArray(match.score.DetailedScoring) &&
                       match.score.DetailedScoring.length > 0 ? (

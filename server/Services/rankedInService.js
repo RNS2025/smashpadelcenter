@@ -824,7 +824,14 @@ const searchPlayer = async (
   }
 };
 
-const saveMatchResult = async ({ matchId, sets, tiebreak }) => {
+const saveMatchResult = async ({
+  matchId,
+  sets,
+  tiebreak,
+  tournamentName,
+  row,
+  players,
+}) => {
   try {
     logger.info(`Attempting to save match result for matchId: ${matchId}`, {
       input: { matchId, setsCount: sets?.length, hasTiebreak: !!tiebreak },
@@ -914,10 +921,17 @@ const saveMatchResult = async ({ matchId, sets, tiebreak }) => {
     const maxRetries = 2;
     while (saveAttempts <= maxRetries) {
       try {
+        const validatedPlayers = {
+          ...players,
+        };
+
         const matchResult = new MatchResult({
           matchId: matchIdNum,
           sets: validatedSets,
           tiebreak: validatedTiebreak,
+          tournamentName,
+          row,
+          players: validatedPlayers,
           createdAt: new Date(),
           updatedAt: new Date(),
         });
@@ -929,6 +943,9 @@ const saveMatchResult = async ({ matchId, sets, tiebreak }) => {
           matchId: matchIdNum,
           sets: validatedSets,
           tiebreak: validatedTiebreak,
+          tournamentName,
+          row,
+          players: validatedPlayers,
         };
       } catch (saveError) {
         saveAttempts++;

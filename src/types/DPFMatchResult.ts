@@ -13,6 +13,14 @@ export interface DPFMatchResult {
   matchId: number;
   sets: MatchResultSet[];
   tiebreak?: MatchResultTiebreak;
+  tournamentName: string;
+  row: string;
+  players: {
+    firstPlayerName: string;
+    secondPlayerName: string;
+    thirdPlayerName: string;
+    fourthPlayerName: string;
+  };
   createdAt: string;
   updatedAt: string;
 }

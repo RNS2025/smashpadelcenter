@@ -32,8 +32,14 @@ const updateUserProfile = async (
       updates
     );
     return response.data;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error updating user profile:", error);
+    // Ensure we're propagating server error message if available
+    if (error.response?.data?.message) {
+      const serverError = new Error(error.response.data.message);
+      serverError.name = "ServerError";
+      throw serverError;
+    }
     throw error;
   }
 };

@@ -149,6 +149,21 @@ module.exports = {
       updateData
     );
     try {
+      // Check if rankedInId is being updated and is not empty
+      if (updateData.rankedInId && updateData.rankedInId.trim() !== "") {
+        // Check if another user is already using this rankedInId
+        const existingUser = await User.findOne({
+          username: { $ne: username },
+          rankedInId: updateData.rankedInId,
+        });
+
+        if (existingUser) {
+          throw new Error(
+            "This RankedIn ID is already in use by another player"
+          );
+        }
+      }
+
       console.log(`[DEBUG] Finding and updating user in database`);
       const user = await User.findOneAndUpdate(
         { username },

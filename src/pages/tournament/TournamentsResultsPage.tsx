@@ -59,6 +59,7 @@ const TournamentsResultsPage: React.FC = () => {
         try {
           const savedMatchResults =
             await rankedInService.getAllDPFMatchResults();
+          console.log("Gemte resultater:", savedMatchResults);
           setSavedResults(savedMatchResults);
         } catch (resultErr) {
           console.error("Kunne ikke hente gemte resultater:", resultErr);
@@ -111,15 +112,55 @@ const TournamentsResultsPage: React.FC = () => {
 
     setHandledMatches(newHandledMatches);
     localStorage.setItem("handledMatches", JSON.stringify(newHandledMatches));
+  }; // Funktion til at udlede spillere fra en kamp
+  const getPlayersFromMatch = (match: RawMatch): string[] => {
+    console.log("Match:", match);
+    const players = [
+      match.Challenger.Name,
+      match.Challenger.Player2Name,
+      match.Challenged.Name,
+      match.Challenged.Player2Name,
+    ].filter((name): name is string => Boolean(name));
+    return players;
+  }; // Funktion til at udlede spillere fra et resultat
+  const getPlayersFromResult = (result: DPFMatchResult): string[] => {
+    const { players } = result;
+    if (!players) return [];
+
+    const playersList = [
+      players.player1,
+      players.player2,
+      players.player3,
+      players.player4,
+    ].filter((name): name is string => Boolean(name));
+
+    return playersList;
+  };
+
+  // Helper function to check if a date is today
+  const isToday = (dateString: string): boolean => {
+    const today = new Date();
+    const date = new Date(dateString);
+    return (
+      date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear()
+    );
   };
 
   // Hent kampe med resultater
   const matchesWithResults = matches.filter(
     (match) => match.MatchResult?.IsPlayed
   );
+  // Filter savedResults to only show those created today
+  const todayResults = savedResults.filter((result) =>
+    isToday(result.createdAt)
+  );
+  console.log("Today's results:", todayResults.length);
+
   // Kombiner med gemte resultater, der ikke er i RankedIn
   const savedResultsMatchIds = new Set(
-    savedResults.map((result) => result.matchId)
+    todayResults.map((result) => result.matchId)
   );
   const allResultsMatchIds = new Set([
     ...matchesWithResults.map((match) => match.Id),
@@ -220,11 +261,24 @@ const TournamentsResultsPage: React.FC = () => {
                           </p>
                           <p className="text-gray-300 text-sm">
                             <span className="font-bold text-brand-secondary">
+                              Række:
+                            </span>{" "}
+                            {match.Row || "Ikke angivet"}
+                          </p>
+                          <p className="text-gray-300 text-sm">
+                            <span className="font-bold text-brand-secondary">
                               Dato:
                             </span>{" "}
                             {match.Date
                               ? new Date(match.Date).toLocaleString()
                               : "Ikke angivet"}
+                          </p>
+                          <p className="text-gray-300 text-sm mt-2">
+                            <span className="font-bold text-brand-secondary">
+                              Spillere:
+                            </span>{" "}
+                            {getPlayersFromMatch(match).join(", ") ||
+                              "Ikke angivet"}
                           </p>
                           <p className="text-gray-300 text-sm mt-2">
                             <span className="font-bold text-brand-secondary">
@@ -274,8 +328,8 @@ const TournamentsResultsPage: React.FC = () => {
                                   key={index}
                                   className="text-gray-300 text-sm"
                                 >
-                                  Sæt {index + 1}: {set.FirstParticipant} -{" "}
-                                  {set.SecondParticipant}
+                                  Sæt {index + 1}: {set.FirstParticipantScore} -{" "}
+                                  {set.SecondParticipantScore}
                                 </p>
                               )
                             )}
@@ -283,20 +337,16 @@ const TournamentsResultsPage: React.FC = () => {
                               null && (
                               <p className="text-gray-300 text-sm">
                                 Tiebreak:{" "}
-                                {match.MatchResult?.Score.FirstParticipantScore}{" "}
-                                -{" "}
-                                {
-                                  match.MatchResult?.Score
-                                    .SecondParticipantScore
-                                }
+                                {match.MatchResult?.Score.LoserTiebreak} -{" "}
+                                {(match.MatchResult?.Score.LoserTiebreak || 0) +
+                                  2}
                               </p>
                             )}
                           </div>
                         </div>
-                      ))}
-
+                      ))}{" "}
                     {/* Gemte resultater, der ikke er i RankedIn */}
-                    {savedResults
+                    {todayResults
                       .filter(
                         (result) =>
                           notHandledMatchIds.includes(result.matchId) &&
@@ -306,6 +356,10 @@ const TournamentsResultsPage: React.FC = () => {
                       )
                       .map((result) => {
                         const match = getMatchById(result.matchId);
+                        // Extract players correctly from DPFMatchResult object
+                        const players = result.players
+                          ? getPlayersFromResult(result)
+                          : [];
                         return (
                           <div
                             key={result._id}
@@ -313,7 +367,8 @@ const TournamentsResultsPage: React.FC = () => {
                           >
                             <div className="flex justify-between items-start">
                               <h3 className="text-lg font-bold text-green-500">
-                                Kamp ID: {result.matchId}
+                                {result.tournamentName ||
+                                  `Kamp ID: ${result.matchId}`}
                               </h3>
                               <div className="flex items-center gap-2">
                                 <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded">
@@ -334,7 +389,20 @@ const TournamentsResultsPage: React.FC = () => {
                                 </label>
                               </div>
                             </div>
-
+                            <p className="text-gray-300 text-sm">
+                              <span className="font-bold text-brand-secondary">
+                                Række:
+                              </span>{" "}
+                              {result.row || "Ikke angivet"}
+                            </p>
+                            <p className="text-gray-300 text-sm mt-2">
+                              <span className="font-bold text-brand-secondary">
+                                Spillere:
+                              </span>{" "}
+                              {players.length > 0
+                                ? players.join(", ")
+                                : "Ikke angivet"}
+                            </p>
                             {match && (
                               <>
                                 <p className="text-gray-300 text-sm mt-2">
@@ -377,14 +445,12 @@ const TournamentsResultsPage: React.FC = () => {
                                 </p>
                               </>
                             )}
-
                             <div className="mt-2">
                               <p className="text-brand-accent font-bold">
                                 Spillerindtastet resultat:
                               </p>
                               <div className="ml-2">
                                 {formatSets(result.sets)}
-
                                 {result.tiebreak && (
                                   <div className="text-gray-300 text-sm">
                                     Tiebreak:{" "}
@@ -460,11 +526,24 @@ const TournamentsResultsPage: React.FC = () => {
                           </p>
                           <p className="text-gray-300 text-sm">
                             <span className="font-bold text-brand-secondary">
+                              Række:
+                            </span>{" "}
+                            {match.Row || "Ikke angivet"}
+                          </p>
+                          <p className="text-gray-300 text-sm">
+                            <span className="font-bold text-brand-secondary">
                               Dato:
                             </span>{" "}
                             {match.Date
                               ? new Date(match.Date).toLocaleString()
                               : "Ikke angivet"}
+                          </p>
+                          <p className="text-gray-300 text-sm mt-2">
+                            <span className="font-bold text-brand-secondary">
+                              Spillere:
+                            </span>{" "}
+                            {getPlayersFromMatch(match).join(", ") ||
+                              "Ikke angivet"}
                           </p>
                           <p className="text-gray-300 text-sm mt-2">
                             <span className="font-bold text-brand-secondary">
@@ -514,8 +593,8 @@ const TournamentsResultsPage: React.FC = () => {
                                   key={index}
                                   className="text-gray-300 text-sm"
                                 >
-                                  Sæt {index + 1}: {set.FirstParticipant} -{" "}
-                                  {set.SecondParticipant}
+                                  Sæt {index + 1}: {set.FirstParticipantScore} -{" "}
+                                  {set.SecondParticipantScore}
                                 </p>
                               )
                             )}
@@ -523,18 +602,14 @@ const TournamentsResultsPage: React.FC = () => {
                               null && (
                               <p className="text-gray-300 text-sm">
                                 Tiebreak:{" "}
-                                {match.MatchResult?.Score.FirstParticipantScore}{" "}
-                                -{" "}
-                                {
-                                  match.MatchResult?.Score
-                                    .SecondParticipantScore
-                                }
+                                {match.MatchResult?.Score.LoserTiebreak} -{" "}
+                                {(match.MatchResult?.Score.LoserTiebreak || 0) +
+                                  2}
                               </p>
                             )}
                           </div>
                         </div>
-                      ))}
-
+                      ))}{" "}
                     {/* Gemte resultater, der ikke er i RankedIn */}
                     {savedResults
                       .filter(
@@ -546,6 +621,17 @@ const TournamentsResultsPage: React.FC = () => {
                       )
                       .map((result) => {
                         const match = getMatchById(result.matchId);
+                        // Extract players correctly from DPFMatchResult object
+                        const players = result.players
+                          ? [
+                              result.players.firstPlayerName,
+                              result.players.secondPlayerName,
+                              result.players.thirdPlayerName,
+                              result.players.fourthPlayerName,
+                            ].filter((name) => name && name !== "")
+                          : match
+                          ? getPlayersFromMatch(match)
+                          : [];
                         return (
                           <div
                             key={result._id}
@@ -553,7 +639,8 @@ const TournamentsResultsPage: React.FC = () => {
                           >
                             <div className="flex justify-between items-start">
                               <h3 className="text-lg font-bold text-green-500">
-                                Kamp ID: {result.matchId}
+                                {result.tournamentName ||
+                                  `Kamp ID: ${result.matchId}`}
                               </h3>
                               <div className="flex items-center gap-2">
                                 <span className="text-xs bg-green-500/20 text-green-400 px-2 py-1 rounded">
@@ -574,7 +661,20 @@ const TournamentsResultsPage: React.FC = () => {
                                 </label>
                               </div>
                             </div>
-
+                            <p className="text-gray-300 text-sm">
+                              <span className="font-bold text-brand-secondary">
+                                Række:
+                              </span>{" "}
+                              {result.row || "Ikke angivet"}
+                            </p>
+                            <p className="text-gray-300 text-sm mt-2">
+                              <span className="font-bold text-brand-secondary">
+                                Spillere:
+                              </span>{" "}
+                              {players.length > 0
+                                ? players.join(", ")
+                                : "Ikke angivet"}
+                            </p>
                             {match && (
                               <>
                                 <p className="text-gray-300 text-sm mt-2">
@@ -617,14 +717,12 @@ const TournamentsResultsPage: React.FC = () => {
                                 </p>
                               </>
                             )}
-
                             <div className="mt-2">
                               <p className="text-brand-accent font-bold">
                                 Spillerindtastet resultat:
                               </p>
                               <div className="ml-2">
                                 {formatSets(result.sets)}
-
                                 {result.tiebreak && (
                                   <div className="text-gray-300 text-sm">
                                     Tiebreak:{" "}

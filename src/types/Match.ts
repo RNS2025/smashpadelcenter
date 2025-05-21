@@ -38,6 +38,7 @@ interface Match {
   isPlayed: boolean;
   winnerParticipantId: number | null;
   matchType: "Elimination" | "RoundRobin";
+  TournamentClassName: string;
 }
 
 export default Match;

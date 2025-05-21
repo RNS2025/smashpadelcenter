@@ -511,11 +511,14 @@ router.post("/SaveMatchResult", async (req, res) => {
       contentType: req.headers["content-type"],
     });
 
-    const { matchId, sets, tiebreak } = req.body;
+    const { matchId, sets, tiebreak, tournamentName, row, players } = req.body;
 
     // Enhanced validation with specific feedback
     if (!matchId) {
       return res.status(400).json({ error: "matchId is required" });
+    }
+    if (!tournamentName) {
+      return res.status(400).json({ error: "tournamentName is required" });
     }
 
     if (!sets) {
@@ -550,6 +553,9 @@ router.post("/SaveMatchResult", async (req, res) => {
       matchId,
       sets,
       tiebreak,
+      tournamentName,
+      row,
+      players,
     });
 
     logger.info("Successfully saved match result", { matchId, result });
