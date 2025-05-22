@@ -95,9 +95,7 @@ async function checkAndNotify(user, mockOptions = {}) {
     const referenceDate = testDate ? moment(testDate) : moment();
 
     // Track notifications sent
-    const notifications = [];
-
-    // Check for upcoming tournaments
+    const notifications = []; // Check for upcoming tournaments
     const eventsData = await getParticipatedEvents(
       playerId,
       mockEventsResponse
@@ -181,9 +179,11 @@ async function checkAndNotify(user, mockOptions = {}) {
 
 // Main scheduler function for tournaments
 function startTournamentScheduler() {
-  // Schedule to run every day at 8 AM
-  cron.schedule("0 8 * * *", async () => {
-    logger.info("Starting tournament notification scheduler");
+  // Schedule to run every day at 8 PM (20:00) to send notifications for tournaments happening the next day
+  cron.schedule("0 20 * * *", async () => {
+    logger.info(
+      "Starting tournament notification scheduler - evening notifications for tomorrow's tournaments"
+    );
     try {
       const User = require("../models/user"); // Adjust path as needed
       const users = await User.find({ rankedInId: { $exists: true } });
