@@ -25,7 +25,7 @@ const createTenUsers = require("./scripts/createTenUsers");
 const { updateAllData } = require("./scripts/dataScheduler");
 const {
   startNotificationScheduler,
-} = require("./services/tournamentNotificationScheduler");
+} = require("./Schedules/TournamentNotificationSchedule");
 const { verifyJWT } = require("./middleware/jwt");
 const path = require("path");
 const http = require("http");
