@@ -19,10 +19,13 @@ const privateEventRoutes = require("./routes/privateEventRoutes");
 const briefingRoutes = require("./routes/briefingRoutes");
 const feedbackRoutes = require("./routes/feedbackRoutes");
 const { swaggerUi, specs } = require("./config/swagger");
-const { connectDB, mongoose } = require("./config/database");
+const { connectDB } = require("./config/database");
 const createAdmin = require("./scripts/createAdmin");
 const createTenUsers = require("./scripts/createTenUsers");
 const { updateAllData } = require("./scripts/dataScheduler");
+const {
+  startNotificationScheduler,
+} = require("./services/tournamentNotificationScheduler");
 const { verifyJWT } = require("./middleware/jwt");
 const path = require("path");
 const http = require("http");
@@ -82,7 +85,6 @@ app.use("/api/v1/user-profiles", userProfileRoutes);
 app.use("/api/v1/friends", friendRoutes);
 app.use("/api/v1/messages", messageRoutes);
 app.use("/api/v1/private-event", privateEventRoutes);
-
 app.use("/api/v1/briefing", briefingRoutes);
 app.use("/api/v1/feedback", feedbackRoutes);
 
@@ -114,13 +116,13 @@ async function startServer() {
       logger.warn(
         "Email service not available, continuing without email functionality"
       );
-      // Don't fail server startup if email isn't configured
     }
 
     // Start HTTP server
     httpServer.listen(PORT, () => {
       logger.info(`HTTP Server is running on http://localhost:${PORT}`);
       updateAllData();
+      startNotificationScheduler(); // Start both tournament and match schedulers
     });
   } catch (err) {
     logger.error("Failed to start server:", {
