@@ -5,7 +5,8 @@ import { useEffect, useState } from "react";
 import briefingService from "../../../services/briefingService.ts";
 import { Briefing } from "../../../types/Briefing.ts";
 import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
+import "quill/dist/quill.snow.css";
+
 
 export const TournamentEditBriefingPage = () => {
     const { briefingId } = useParams<{ briefingId: string }>();

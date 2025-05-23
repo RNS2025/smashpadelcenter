@@ -64,6 +64,7 @@ import UpcommingTournaments from "./pages/tournament/UpcommingTournaments.tsx";
 import LeagueStandingsPage from "./pages/(logged-in)/lunar/GlobalLunarInformation.tsx";
 import HomeBar from "./components/misc/HomeBar.tsx";
 import EnterResultPage from "./pages/tournament/results/indtastDpfResultat.tsx";
+import TournamentDrawsPage from "./pages/tournament/TournamentDrawsPage.tsx";
 
 function AppContent() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -163,6 +164,7 @@ function AppContent() {
         <Route path="/turneringer" element={<TournamentTabs />} />
         <Route path="/turneringer/check-in" element={<CheckInPage />} />
         <Route path="/turneringer/baneoversigt" element={<CourtMapPage />} />
+        <Route path="/turneringer/lodtrækninger" element={<TournamentDrawsPage />} />
         <Route path="/turneringer/info" element={<TournamentInfoPage />}>
           <Route index element={<Navigate to="briefing" replace />} />
           <Route path="briefing" element={<TournamentBriefingTab />} />
