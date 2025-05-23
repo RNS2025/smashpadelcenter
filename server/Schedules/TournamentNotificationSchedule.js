@@ -1,242 +1,328 @@
-const axios = require("axios");
-const cron = require("node-cron");
-const { sendNotification } = require("../Services/subscriptionService");
+// Schedules/TournamentNotificationSchedule.js
 const logger = require("../config/logger");
+const databaseService = require("../Services/databaseService");
+const rankedInService = require("../Services/rankedInService");
+const pushNotificationService = require("../Services/pushNotificationService");
 const moment = require("moment");
 
-// Function to fetch player ID from RankedIn ID
-async function getPlayerId(rankedInId, mockResponse = null) {
-  if (mockResponse) {
-    return mockResponse.PlayerId;
-  }
+/**
+ * Check for upcoming tournaments and notify users
+ * This runs on a schedule to notify users about their tournaments
+ */
+const checkAndNotifyAboutTournaments = async () => {
   try {
-    const response = await axios.get(
-      `https://api.rankedin.com/v1/player/playerprofileinfoasync?rankedinId=${rankedInId}&language=en`
-    );
-    return response.data.Header.PlayerId;
-  } catch (error) {
-    logger.error("Error fetching player ID:", {
-      rankedInId,
-      error: error.message,
-    });
-    throw error;
-  }
-}
+    logger.info("Starting tournament notification check");
 
-// Function to fetch participated events for a player
-async function getParticipatedEvents(playerId, mockResponse = null) {
-  if (mockResponse) {
-    return mockResponse;
-  }
-  try {
-    const response = await axios.get(
-      `https://api.rankedin.com/v1/player/ParticipatedEventsAsync?playerId=${playerId}&language=en&skip=0&take=10`
-    );
-    return response.data;
-  } catch (error) {
-    logger.error("Error fetching participated events:", {
-      playerId,
-      error: error.message,
-    });
-    throw error;
-  }
-}
+    // Get all users with rankedInId
+    const users = await databaseService.getAllUsersWithRankedInId();
 
-// Function to fetch upcoming matches for a player
-async function getPlayerMatches(playerId, mockResponse = null) {
-  if (mockResponse) {
-    return mockResponse;
-  }
-  try {
-    const response = await axios.get(
-      `https://api.rankedin.com/v1/player/GetPlayerMatchesAsync?playerid=${playerId}&takehistory=false&skip=0&take=10&language=en`
-    );
-    return response.data;
-  } catch (error) {
-    logger.error("Error fetching player matches:", {
-      playerId,
-      error: error.message,
-    });
-    throw error;
-  }
-}
-
-// Function to check for upcoming tournaments and matches and send notifications
-async function checkAndNotify(user, mockOptions = {}) {
-  const {
-    mockPlayerResponse,
-    mockEventsResponse,
-    mockMatchesResponse,
-    testDate,
-  } = mockOptions;
-  try {
-    const { rankedInId, userId } = user;
-    if (!rankedInId || !userId) {
-      logger.warn("Missing rankedInId or userId for user", { user });
-      return {
-        success: false,
-        message: "Missing rankedInId or userId",
-        notifications: [],
-      };
+    if (!users || users.length === 0) {
+      logger.info("No users with rankedInId found");
+      return;
     }
 
-    // Fetch player ID
-    const playerId = await getPlayerId(rankedInId, mockPlayerResponse);
-    if (!playerId) {
-      logger.warn("No player ID found for rankedInId", { rankedInId });
-      return {
-        success: false,
-        message: "No player ID found",
-        notifications: [],
-      };
-    }
+    logger.info(`Found ${users.length} users with rankedInId`);
 
-    // Use testDate if provided, else use current date
-    const referenceDate = testDate ? moment(testDate) : moment();
-
-    // Track notifications sent
-    const notifications = []; // Check for upcoming tournaments
-    const eventsData = await getParticipatedEvents(
-      playerId,
-      mockEventsResponse
-    );
-    const events = eventsData?.Events || [];
-    const tomorrow = referenceDate.clone().add(1, "day").startOf("day");
-    const tomorrowEnd = referenceDate.clone().add(1, "day").endOf("day");
-
-    for (const event of events) {
-      const eventDate = moment(event.StartDate);
-      if (
-        event.Type === "Tournament" &&
-        eventDate.isBetween(tomorrow, tomorrowEnd, null, "[]")
-      ) {
-        const title = `Tournament Reminder: ${event.Title}`;
-        const body = `Your tournament "${
-          event.Title
-        }" is tomorrow at ${eventDate.format(
-          "MMMM Do YYYY, h:mm a"
-        )}. Get ready!`;
-        const category = "turneringer";
-
-        await sendNotification(userId, title, body, category);
-        notifications.push({
-          userId,
-          tournamentId: event.Id,
-          title,
-          body,
-          category,
-        });
-
-        logger.info("Tournament notification sent", {
-          userId,
-          tournamentId: event.Id,
-          title: event.Title,
-        });
+    // Process each user
+    for (const user of users) {
+      try {
+        await processUserTournaments(user);
+      } catch (error) {
+        logger.error(
+          `Error processing tournaments for user ${user.username}:`,
+          error
+        );
       }
     }
 
-    // Check for upcoming matches
-    const matchesData = await getPlayerMatches(playerId, mockMatchesResponse);
-    const matches = matchesData?.Payload || [];
-    const in30Minutes = referenceDate.clone().add(30, "minutes");
-    const in60Minutes = referenceDate.clone().add(60, "minutes");
+    logger.info("Tournament notification check completed");
+  } catch (error) {
+    logger.error("Error in tournament notification scheduler:", error);
+  }
+};
 
-    for (const match of matches) {
-      const matchDate = moment(match.Info.Date, "MM/DD/YYYY HH:mm:ss");
-      if (matchDate.isBetween(in30Minutes, in60Minutes, null, "[]")) {
-        const title = `Match Reminder: ${match.Info.EventName}`;
-        const body = `Your match at ${
-          match.Info.Location
-        } is in 30 minutes at ${matchDate.format("h:mm a")}!`;
-        const category = "matches";
+/**
+ * Process tournaments for a single user and send notifications if needed
+ * @param {Object} user - User object with username and rankedInId
+ */
+const processUserTournaments = async (user) => {
+  if (!user.username || !user.rankedInId) {
+    logger.warn("Invalid user data for tournament processing", { user });
+    return;
+  }
 
-        await sendNotification(userId, title, body, category);
-        notifications.push({
-          userId,
-          matchId: match.MatchId,
-          title,
-          body,
-          category,
-        });
+  logger.info(
+    `Processing tournaments for user: ${user.username}, rankedInId: ${user.rankedInId}`
+  );
 
-        logger.info("Match notification sent", {
-          userId,
-          matchId: match.MatchId,
-          eventName: match.Info.EventName,
-        });
-      }
+  try {
+    // Get player details from RankedIn API
+    const playerDetails = await rankedInService.getPlayerDetails(
+      user.rankedInId,
+      "da"
+    );
+
+    if (!playerDetails || !playerDetails.Header?.PlayerId) {
+      logger.warn(`No player details found for rankedInId: ${user.rankedInId}`);
+      return;
     }
 
-    return { success: true, notifications };
-  } catch (error) {
-    logger.error("Error in checkAndNotify:", {
-      userId: user.userId,
-      error: error.message,
-    });
-    return { success: false, message: error.message, notifications: [] };
-  }
-}
+    const playerId = playerDetails.Header.PlayerId;
 
-// Main scheduler function for tournaments
-function startTournamentScheduler() {
-  // Schedule to run every day at 8 PM (20:00) to send notifications for tournaments happening the next day
-  cron.schedule("0 20 * * *", async () => {
+    // Get participated events
+    const eventsResponse = await rankedInService.getParticipatedEvents(
+      playerId,
+      "da"
+    );
+
+    if (
+      !eventsResponse ||
+      !eventsResponse.Payload ||
+      !Array.isArray(eventsResponse.Payload) ||
+      eventsResponse.Payload.length === 0
+    ) {
+      logger.info(`No events found for user ${user.username}`);
+      return;
+    }
+
+    const now = new Date();
+    const futureEvents = eventsResponse.Payload.filter((event) => {
+      const eventDate = new Date(event.StartDate);
+      return eventDate >= new Date(now.setHours(0, 0, 0, 0));
+    });
+
+    if (futureEvents.length === 0) {
+      logger.info(`No upcoming events for user ${user.username}`);
+      return;
+    }
+
+    // Sort events by start date and get the next event
+    const upcomingEvent = futureEvents.sort(
+      (a, b) =>
+        new Date(a.StartDate).getTime() - new Date(b.StartDate).getTime()
+    )[0];
+
+    // Calculate days until event
+    const eventDate = moment(upcomingEvent.StartDate).format("DD. MMMM YYYY");
+    const eventStart = new Date(upcomingEvent.StartDate);
+    const timeUntil = Math.ceil(
+      (eventStart.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
+    // Get event matches
+    const eventMatches = await rankedInService.getEventMatches(
+      upcomingEvent.Id,
+      "da"
+    );
+    let matches = [];
+    let upcomingMatches = [];
+
+    if (eventMatches && Array.isArray(eventMatches.Matches)) {
+      matches = eventMatches.Matches;
+      upcomingMatches = matches.filter((match) => {
+        const matchDate = match.date ? new Date(match.date) : null;
+        return matchDate && matchDate > now;
+      });
+    }
+
+    // Create notification message
+    let message = `Din turnering "${upcomingEvent.Name}" starter ${eventDate}`;
+
+    if (timeUntil === 0) {
+      message += " i dag!";
+    } else if (timeUntil === 1) {
+      message += " i morgen!";
+    } else if (timeUntil > 1) {
+      message += ` om ${timeUntil} dage`;
+    } else {
+      message += " og er i gang!";
+    }
+
+    if (upcomingMatches.length > 0) {
+      message += ` Du har ${upcomingMatches.length} kommende kamp${
+        upcomingMatches.length > 1 ? "e" : ""
+      }`;
+    }
+
+    // Send notification
+    await pushNotificationService.sendToUser(user.username, {
+      title: "🎾 Turnering påmindelse",
+      message,
+      type: "info",
+      route: `/tournament/player/${user.rankedInId}`,
+      data: {
+        tournamentId: upcomingEvent.Id,
+        tournamentName: upcomingEvent.Name,
+        eventDate: upcomingEvent.StartDate,
+        matchCount: matches.length,
+      },
+    });
+
     logger.info(
-      "Starting tournament notification scheduler - evening notifications for tomorrow's tournaments"
+      `Tournament notification sent to user ${user.username} for tournament ${upcomingEvent.Name}`
     );
-    try {
-      const User = require("../models/user"); // Adjust path as needed
-      const users = await User.find({ rankedInId: { $exists: true } });
+  } catch (error) {
+    logger.error(
+      `Error processing tournaments for user ${user.username}:`,
+      error
+    );
+  }
+};
 
-      const notificationPromises = users.map((user) => checkAndNotify(user));
-      await Promise.all(notificationPromises);
+/**
+ * Check for upcoming matches and notify users 30 minutes before their match
+ * This runs on a frequent schedule (e.g., every 5 minutes)
+ */
+const checkAndNotifyAboutUpcomingMatches = async () => {
+  try {
+    logger.info("Starting upcoming match notification check");
 
-      logger.info("Tournament notification scheduler completed");
-    } catch (error) {
-      logger.error("Error in tournament notification scheduler:", {
-        error: error.message,
-      });
+    // Get all users with rankedInId
+    const users = await databaseService.getAllUsersWithRankedInId();
+
+    if (!users || users.length === 0) {
+      logger.info("No users with rankedInId found for match notifications");
+      return;
     }
-  });
-}
 
-// Main scheduler function for matches
-function startMatchScheduler() {
-  // Schedule to run every 5 minutes
-  cron.schedule("*/5 * * * *", async () => {
-    logger.info("Starting match notification scheduler");
-    try {
-      const User = require("../models/user"); // Adjust path as needed
-      const users = await User.find({ rankedInId: { $exists: true } });
+    logger.info(`Found ${users.length} users to check for upcoming matches`);
 
-      const notificationPromises = users.map((user) => checkAndNotify(user));
-      await Promise.all(notificationPromises);
-
-      logger.info("Match notification scheduler completed");
-    } catch (error) {
-      logger.error("Error in match notification scheduler:", {
-        error: error.message,
-      });
+    // Process each user
+    for (const user of users) {
+      try {
+        await processUserUpcomingMatches(user);
+      } catch (error) {
+        logger.error(
+          `Error processing upcoming matches for user ${user.username}:`,
+          error
+        );
+      }
     }
-  });
-}
 
-// Combined scheduler startup
-function startNotificationScheduler() {
-  startTournamentScheduler();
-  startMatchScheduler();
-}
+    logger.info("Upcoming match notification check completed");
+  } catch (error) {
+    logger.error("Error in upcoming match notification scheduler:", error);
+  }
+};
 
-// Test function to manually trigger notification check
-async function testCheckAndNotify(user, mockOptions = {}) {
-  return await checkAndNotify(user, mockOptions);
-}
+/**
+ * Process upcoming matches for a single user and send notifications if needed
+ * @param {Object} user - User object with username and rankedInId
+ */
+const processUserUpcomingMatches = async (user) => {
+  if (!user.username || !user.rankedInId) {
+    logger.warn("Invalid user data for match notification processing", {
+      user,
+    });
+    return;
+  }
+
+  logger.info(
+    `Processing upcoming matches for user: ${user.username}, rankedInId: ${user.rankedInId}`
+  );
+
+  try {
+    // Get player details from RankedIn API
+    const playerDetails = await rankedInService.getPlayerDetails(
+      user.rankedInId,
+      "da"
+    );
+
+    if (!playerDetails || !playerDetails.Header?.PlayerId) {
+      logger.warn(`No player details found for rankedInId: ${user.rankedInId}`);
+      return;
+    }
+
+    const playerId = playerDetails.Header.PlayerId;
+
+    // Get upcoming player matches
+    const matchesResponse = await rankedInService.getPlayerMatches(
+      playerId,
+      false, // don't include history
+      0, // skip
+      10, // take
+      "da" // language
+    );
+
+    if (
+      !matchesResponse ||
+      !matchesResponse.Matches ||
+      !Array.isArray(matchesResponse.Matches) ||
+      matchesResponse.Matches.length === 0
+    ) {
+      logger.info(`No upcoming matches found for user ${user.username}`);
+      return;
+    }
+
+    const now = new Date();
+    const THIRTY_MINUTES_MS = 30 * 60 * 1000;
+
+    // Find matches that are starting within the next 30 minutes
+    const upcomingMatches = matchesResponse.Matches.filter((match) => {
+      if (!match.Date) return false;
+
+      const matchDate = new Date(match.Date);
+      const timeDiffMs = matchDate.getTime() - now.getTime();
+
+      // Match starting between now and 30 minutes from now
+      return timeDiffMs > 0 && timeDiffMs <= THIRTY_MINUTES_MS;
+    });
+
+    if (upcomingMatches.length === 0) {
+      logger.debug(
+        `No matches starting within 30 minutes for user ${user.username}`
+      );
+      return;
+    }
+
+    // Send notification for each upcoming match
+    for (const match of upcomingMatches) {
+      const matchTime = moment(match.Date).format("HH:mm");
+      const court = match.Court || "TBD";
+
+      // Create opponent string
+      let opponents = "Modstander";
+      if (match.Opponents && match.Opponents.length > 0) {
+        opponents = match.Opponents.map((o) => o.Name).join(" & ");
+      }
+
+      const message = `Din kamp starter om 30 minutter! Kl. ${matchTime} på bane ${court} mod ${opponents}`;
+
+      await pushNotificationService.sendToUser(user.username, {
+        title: "⏰ Kamp påmindelse",
+        message,
+        type: "warning", // Higher priority for imminent matches
+        route: `/tournament/player/${user.rankedInId}`,
+        data: {
+          matchId: match.Id,
+          matchTime: match.Date,
+          court: court,
+          opponents: match.Opponents,
+        },
+      });
+
+      logger.info(
+        `Match notification sent to user ${user.username} for match at ${matchTime}`
+      );
+    }
+  } catch (error) {
+    logger.error(
+      `Error processing upcoming matches for user ${user.username}:`,
+      error
+    );
+  }
+};
+
+// Exposed for testing
+const testFunctions = {
+  checkAndNotify: checkAndNotifyAboutTournaments,
+  processUserTournaments,
+  checkAndNotifyAboutUpcomingMatches,
+  processUserUpcomingMatches,
+};
 
 module.exports = {
-  startNotificationScheduler,
-  testCheckAndNotify,
-  getPlayerId,
-  getParticipatedEvents,
-  getPlayerMatches,
-  checkAndNotify,
+  checkAndNotifyAboutTournaments,
+  checkAndNotifyAboutUpcomingMatches,
+  ...testFunctions,
 };

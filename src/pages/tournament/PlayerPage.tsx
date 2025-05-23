@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import rankedInService from "../../services/rankedIn.ts";
 import Match from "../../types/Match.ts";
@@ -7,17 +7,21 @@ import TournamentEvent from "../../types/Event.ts";
 import { format } from "date-fns";
 import { da } from "date-fns/locale";
 import Animation from "../../components/misc/Animation.tsx";
+import { useUser } from "../../context/UserContext.tsx";
+import { notificationService } from "../../services/notificationsService.ts";
 
 const PlayerPage = () => {
   const { rankedInId } = useParams<{
     rankedInId?: string;
   }>();
   const navigate = useNavigate();
+  const { user } = useUser();
   const [matches, setMatches] = useState<Match[]>([]);
   const [playerData, setPlayerData] = useState<PlayerData | null>(null);
   const [nextEvent, setNextEvent] = useState<TournamentEvent | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const notificationIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -204,9 +208,101 @@ const PlayerPage = () => {
         setLoading(false);
       }
     };
-
     fetchData();
   }, [rankedInId, navigate]);
+
+  // Tournament notification system - sends notifications every 60 seconds when user has upcoming tournament
+  useEffect(() => {
+    if (nextEvent && user?.username && !loading) {
+      console.log("Setting up tournament notifications for:", nextEvent.Name);
+
+      const sendTournamentNotification = async () => {
+        try {
+          const eventDate = format(
+            new Date(nextEvent.StartDate),
+            "dd. MMMM yyyy",
+            { locale: da }
+          );
+          const now = new Date();
+          const eventStart = new Date(nextEvent.StartDate);
+          const timeUntil = Math.ceil(
+            (eventStart.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+          );
+
+          let message = `Din turnering "${nextEvent.Name}" starter ${eventDate}`;
+          if (timeUntil === 0) {
+            message += " i dag!";
+          } else if (timeUntil === 1) {
+            message += " i morgen!";
+          } else if (timeUntil > 1) {
+            message += ` om ${timeUntil} dage`;
+          } else {
+            message += " og er i gang!";
+          }
+
+          // Add match information if available
+          if (matches.length > 0) {
+            const upcomingMatches = matches.filter((match) => {
+              if (!match.date) return false;
+              return new Date(match.date) > now;
+            });
+
+            if (upcomingMatches.length > 0) {
+              message += ` Du har ${upcomingMatches.length} kommende kamp${
+                upcomingMatches.length > 1 ? "e" : ""
+              }`;
+            }
+          }
+
+          await notificationService.sendNotification({
+            username: user.username,
+            title: "🎾 Turnering påmindelse",
+            message: message,
+            type: "info",
+            route: `/tournament/player/${rankedInId}`,
+            data: {
+              tournamentId: nextEvent.Id,
+              tournamentName: nextEvent.Name,
+              eventDate: nextEvent.StartDate,
+              matchCount: matches.length,
+            },
+          });
+
+          console.log("Tournament notification sent successfully");
+        } catch (error) {
+          console.error("Failed to send tournament notification:", error);
+        }
+      };
+
+      // Send initial notification
+      sendTournamentNotification();
+
+      // Set up interval to send notifications every 60 seconds
+      notificationIntervalRef.current = setInterval(
+        sendTournamentNotification,
+        60000
+      );
+
+      // Cleanup function
+      return () => {
+        if (notificationIntervalRef.current) {
+          clearInterval(notificationIntervalRef.current);
+          notificationIntervalRef.current = null;
+          console.log("Tournament notification interval cleared");
+        }
+      };
+    }
+  }, [nextEvent, user, matches, rankedInId, loading]);
+
+  // Cleanup on component unmount
+  useEffect(() => {
+    return () => {
+      if (notificationIntervalRef.current) {
+        clearInterval(notificationIntervalRef.current);
+        notificationIntervalRef.current = null;
+      }
+    };
+  }, []);
 
   if (loading) {
     return (

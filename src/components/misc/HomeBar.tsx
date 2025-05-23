@@ -2,11 +2,9 @@ import { useEffect, useState, useRef, useMemo } from "react"; // Added useRef fo
 import { useLocation, useNavigate } from "react-router-dom";
 import { useUser } from "../../context/UserContext";
 import { useNavigationHistory } from "../../context/useNavigationHistory";
-import NotificationSelector from "../NotificationSelector"; // Assuming this component exists and is styled internally or will be styled separately
 import BackArrow from "./BackArrow"; // Assuming this component exists and handles navigation back
 import {
   Bars3Icon,
-  BellIcon,
   ExclamationCircleIcon,
   HomeIcon,
   MagnifyingGlassIcon,
@@ -15,7 +13,7 @@ import { DaoGroupUser } from "../../types/daoGroupAllUsers.ts"; // Assuming this
 import userProfileService from "../../services/userProfileService.ts"; // Assuming this service exists
 import feedbackService from "../../services/feedbackService.ts"; // Assuming this service exists
 
-type Panel = "search" | "notifications" | "dropdown" | null;
+type Panel = "search" | "dropdown" | null;
 
 const HomeBar = () => {
   const { user, logout } = useUser();
@@ -116,10 +114,8 @@ const HomeBar = () => {
 
   // Refs for closing panels on clicks outside
   const searchPanelRef = useRef<HTMLDivElement>(null);
-  const notificationsPanelRef = useRef<HTMLDivElement>(null);
   const dropdownPanelRef = useRef<HTMLDivElement>(null);
   const searchIconRef = useRef<HTMLButtonElement>(null); // Ref for the search icon
-  const bellIconRef = useRef<HTMLButtonElement>(null); // Ref for the bell icon
   const menuIconRef = useRef<HTMLButtonElement>(null); // Ref for the menu icon
 
   // Fetch users for search
@@ -158,14 +154,6 @@ const HomeBar = () => {
         searchPanelRef.current &&
         !searchPanelRef.current.contains(event.target as Node) &&
         !searchIconRef.current?.contains(event.target as Node)
-      ) {
-        setActivePanel(null);
-      }
-      if (
-        activePanel === "notifications" &&
-        notificationsPanelRef.current &&
-        !notificationsPanelRef.current.contains(event.target as Node) &&
-        !bellIconRef.current?.contains(event.target as Node)
       ) {
         setActivePanel(null);
       }
@@ -272,7 +260,13 @@ const HomeBar = () => {
                 : ""
             }`}
           >
-            <BackArrow backPage={location.pathname.includes("/rediger") ? -1 : getBackPage() || undefined} />{" "}
+            <BackArrow
+              backPage={
+                location.pathname.includes("/rediger")
+                  ? -1
+                  : getBackPage() || undefined
+              }
+            />{" "}
             {/* Handle null case */}
           </div>
           {/* Feedback Icon - Only show when user is logged in */}
@@ -358,26 +352,6 @@ const HomeBar = () => {
                     title="Søg Bruger" // Added title
                   />
                 </button>
-                {/* Notifications Icon */}
-                <button
-                  ref={bellIconRef}
-                  onClick={() => togglePanel("notifications")}
-                  className="rounded"
-                >
-                  {" "}
-                  {/* Wrap in button for focus state */}
-                  <BellIcon
-                    className={
-                      `size-7 sm:size-8 cursor-pointer transition-colors
-                                        ${
-                                          activePanel === "notifications"
-                                            ? "text-brand-primary"
-                                            : "text-slate-400"
-                                        }` // Active/inactive color
-                    }
-                    title="Notifikationer" // Added title
-                  />
-                </button>
                 {/* Mobile Menu Icon (hidden on large screens) */}
                 <button
                   ref={menuIconRef}
@@ -406,19 +380,6 @@ const HomeBar = () => {
       {/* Only show panels when a user is logged in */}
       {user && (
         <>
-          {/* Notifications Panel (Positioned below the header) */}
-          {activePanel === "notifications" && (
-            <div
-              ref={notificationsPanelRef}
-              className="absolute right-0 mt-0 w-full sm:w-96 z-50 bg-slate-800 shadow-xl rounded-md border border-slate-700 overflow-hidden"
-            >
-              {" "}
-              {/* Dark style, width, border, overflow */}
-              {/* Assuming NotificationSelector is styled internally */}
-              <NotificationSelector userId={user.username} />
-            </div>
-          )}
-
           {/* Search Panel (Positioned below the header, full width on small screens) */}
           {activePanel === "search" && (
             <div

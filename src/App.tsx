@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { UserProvider } from "./context/UserContext";
+import { NotificationProvider } from "./context/NotificationProvider";
 import NavigationHistoryProvider from "./context/NavigationHistoryProvider";
 import LoadingSpinner from "./components/misc/LoadingSpinner.tsx";
 import InstallPrompt from "./components/misc/InstallPrompt.tsx";
@@ -302,9 +303,11 @@ function App() {
   return (
     <HelmetProvider>
       <UserProvider>
-        <NavigationHistoryProvider>
-          <AppContent />
-        </NavigationHistoryProvider>
+        <NotificationProvider>
+          <NavigationHistoryProvider>
+            <AppContent />
+          </NavigationHistoryProvider>
+        </NotificationProvider>
       </UserProvider>
     </HelmetProvider>
   );

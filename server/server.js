@@ -5,7 +5,6 @@ const passport = require("./config/passport").passport;
 const authRoutes = require("./routes/authRoutes");
 const rankedInRoutes = require("./routes/rankedinRoutes");
 const checkInRoutes = require("./routes/check-inRoutes");
-const subscriptionRoutes = require("./routes/subscriptionRoutes");
 const bookingSystemRoutes = require("./routes/bookingSystemRoutes");
 const trainerRoutes = require("./routes/bookTrainersRoutes");
 const smashEventRoutes = require("./routes/smashEventRoutes");
@@ -22,11 +21,12 @@ const { swaggerUi, specs } = require("./config/swagger");
 const { connectDB } = require("./config/database");
 const createAdmin = require("./scripts/createAdmin");
 const createTenUsers = require("./scripts/createTenUsers");
-const { updateAllData } = require("./scripts/dataScheduler");
 const {
-  startNotificationScheduler,
-} = require("./Schedules/TournamentNotificationSchedule");
+  updateAllData,
+  checkAndNotifyAboutTournaments,
+} = require("./scripts/dataScheduler");
 const { verifyJWT } = require("./middleware/jwt");
+const notificationRoutes = require("./routes/notificationRoutes");
 const path = require("path");
 const http = require("http");
 const dotenv = require("dotenv");
@@ -50,7 +50,12 @@ app.use(
       callback(null, true); // Allow any origin
     },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
-    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "X-Requested-With",
+      "Cache-Control",
+    ],
     credentials: true,
   })
 );
@@ -74,7 +79,6 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
 app.use("/api/v1", authRoutes);
 app.use("/api/v1", rankedInRoutes);
 app.use("/api/v1", checkInRoutes);
-app.use("/api/v1", subscriptionRoutes);
 app.use("/api/v1", bookingSystemRoutes);
 app.use("/api/v1", trainerRoutes);
 app.use("/api/v1", smashEventRoutes);
@@ -87,6 +91,7 @@ app.use("/api/v1/messages", messageRoutes);
 app.use("/api/v1/private-event", privateEventRoutes);
 app.use("/api/v1/briefing", briefingRoutes);
 app.use("/api/v1/feedback", feedbackRoutes);
+app.use("/api/v1/notifications", notificationRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -116,13 +121,15 @@ async function startServer() {
       logger.warn(
         "Email service not available, continuing without email functionality"
       );
-    }
-
-    // Start HTTP server
+    } // Start HTTP server
     httpServer.listen(PORT, () => {
       logger.info(`HTTP Server is running on http://localhost:${PORT}`);
       updateAllData();
-      startNotificationScheduler(); // Start both tournament and match schedulers
+
+      // Run the tournament notification check once at startup
+      // This helps ensure users get notifications even after server restarts
+      logger.info("Running initial tournament notification check");
+      checkAndNotifyAboutTournaments();
     });
   } catch (err) {
     logger.error("Failed to start server:", {
@@ -132,7 +139,6 @@ async function startServer() {
     process.exit(1);
   }
 }
-
 startServer();
 
 module.exports = app;

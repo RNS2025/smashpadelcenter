@@ -8,8 +8,6 @@ const CheckIn = require("./CheckIn");
 const News = require("./newsModel");
 const PadelMatch = require("./PadelMatch");
 const RankedInModels = require("./rankedInModels");
-const Subscription = require("./Subscription");
-const SubscriptionPreferenceSchema = require("./subscriptionPreferenceSchema");
 const user = require("./user");
 const UserProfile = require("./UserProfile");
 
@@ -24,8 +22,6 @@ module.exports = {
   News,
   PadelMatch,
   RankedInModels,
-  Subscription,
-  SubscriptionPreferenceSchema,
   user,
   UserProfile,
 };

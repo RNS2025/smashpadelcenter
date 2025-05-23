@@ -4,9 +4,6 @@ const privateEventService = require("../Services/privateEventService");
 const PrivateEvent = require("../models/PrivateEvent");
 const logger = require("../config/logger");
 const { verifyJWT } = require("../middleware/jwt");
-const {
-  sendPrivateEventNotification,
-} = require("../Services/subscriptionService");
 
 router.use(verifyJWT);
 

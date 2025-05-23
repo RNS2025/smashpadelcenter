@@ -21,86 +21,92 @@ console.log(
 console.log(`Using cache strategy: ${CACHE_STRATEGY}`);
 precacheAndRoute(self.__WB_MANIFEST);
 
-// Optional: Install/Activate events
-self.addEventListener("install", (event) => self.skipWaiting());
-self.addEventListener("activate", (event) => self.clients.claim());
+// Push notification event listener
+self.addEventListener("push", function (event) {
+  console.log("Push notification received:", event);
 
-// Logger
-const logger = {
-  info: (message, data) => console.log(message, data),
-  error: (message, data) => console.error(message, data),
-};
+  if (event.data) {
+    const data = event.data.json();
+    console.log("Push notification data:", data);
 
-// Dynamic URL mapping
-const preferenceUrlMap = {
-  events: "/privat-arrangementer",
-  makkerbors: "/makkerbørs",
-  turneringer: "/turneringer",
-  general: "/hjem",
-};
+    const options = {
+      body: data.message,
+      icon: "/icons/android-chrome-192x192.png",
+      badge: "/icons/android-chrome-192x192.png",
+      tag: data.id || "default-tag",
+      data: {
+        url: data.route || "/",
+        link: data.link,
+        notificationData: data.data,
+      },
+      actions: [
+        {
+          action: "open",
+          title: "Åbn app",
+          icon: "/icons/android-chrome-192x192.png",
+        },
+        {
+          action: "close",
+          title: "Luk",
+          icon: "/icons/android-chrome-192x192.png",
+        },
+      ],
+      requireInteraction: true, // Keep notification until user interacts
+      vibrate: [200, 100, 200], // Vibration pattern
+      timestamp: Date.now(),
+    };
 
-// Push event
-self.addEventListener("push", (event) => {
-  const data = event.data ? event.data.json() : {};
-  const notification = data.notification || {};
-  const title = notification.title || "Notification";
-  const body = notification.body || "You have a new notification.";
-  const image = notification.image || "/default-icon.png";
-  const category = notification.category || "general";
-  const notificationId = notification.notificationId || null;
-
-  const options = {
-    body,
-    icon: image,
-    data: {
-      category,
-      notificationId,
-    },
-    badge: "/badge.png",
-    vibrate: [200, 100, 200],
-    timestamp: Date.now(),
-  };
-
-  event.waitUntil(
-    self.registration
-      .showNotification(title, options)
-      .then(() =>
-        logger.info(`Notification displayed: ${title}`, {
-          category,
-          notificationId,
-        })
-      )
-      .catch((error) =>
-        logger.error(`Error displaying notification: ${title}`, {
-          error: error.message,
-          category,
-          notificationId,
-        })
-      )
-  );
+    event.waitUntil(self.registration.showNotification(data.title, options));
+  }
 });
 
-// Notification click event
-self.addEventListener("notificationclick", (event) => {
+// Notification click event listener
+self.addEventListener("notificationclick", function (event) {
+  console.log("Notification clicked:", event);
+
   event.notification.close();
-  const category = event.notification.data?.category || "general";
-  const urlToOpen = preferenceUrlMap[category] || preferenceUrlMap["general"];
+
+  if (event.action === "close") {
+    return;
+  }
+
+  // Default action or 'open' action
+  const urlToOpen = event.notification.data?.url || "/";
+  const link = event.notification.data?.link;
 
   event.waitUntil(
     clients
-      .matchAll({ type: "window", includeUncontrolled: true })
-      .then((clientList) => {
-        for (const client of clientList) {
-          if (client.url.includes(urlToOpen) && "focus" in client) {
+      .matchAll({
+        type: "window",
+        includeUncontrolled: true,
+      })
+      .then(function (clientList) {
+        // Check if app is already open
+        for (let i = 0; i < clientList.length; i++) {
+          const client = clientList[i];
+          if (client.url.includes(self.location.origin)) {
+            // Navigate to the notification URL
+            client.navigate(urlToOpen);
             return client.focus();
           }
         }
-        if (clients.openWindow) {
-          return clients.openWindow(urlToOpen);
+
+        // Open new window if app is not open
+        if (link) {
+          return clients.openWindow(link);
+        } else {
+          return clients.openWindow(self.location.origin + urlToOpen);
         }
       })
-      .catch((error) =>
-        console.error("Error handling notification click:", error)
-      )
   );
 });
+
+// Notification close event listener
+self.addEventListener("notificationclose", function (event) {
+  console.log("Notification closed:", event);
+  // Optional: Track notification dismissals
+});
+
+// Optional: Install/Activate events
+self.addEventListener("install", (event) => self.skipWaiting());
+self.addEventListener("activate", (event) => self.clients.claim());

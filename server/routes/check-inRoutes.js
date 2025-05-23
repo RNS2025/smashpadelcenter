@@ -1,8 +1,6 @@
 const express = require("express");
 const checkInService = require("../Services/checkInService");
-const {
-  sendTournamentCheckInNotification,
-} = require("../Services/subscriptionService");
+const databaseService = require("../Services/databaseService");
 const logger = require("../config/logger");
 
 const router = express.Router();
@@ -109,8 +107,10 @@ router.post("/check-in/update", async (req, res) => {
       checkedIn,
       userId,
       partnerIds = [],
-      adminIds = [],
     } = req.body;
+
+    // Get admin usernames for notifications
+    const adminUsernames = await databaseService.getAdminUsernames();
 
     // Update the check-in status
     await checkInService.updateCheckInStatus(
@@ -130,7 +130,7 @@ router.post("/check-in/update", async (req, res) => {
         playerId,
         playerName,
         partnerIds,
-        adminIds,
+        adminIds: adminUsernames,
       },
       partnerIds
     );
@@ -144,9 +144,9 @@ router.post("/check-in/update", async (req, res) => {
         playerId,
         playerName,
         partnerIds,
-        adminIds,
+        adminIds: adminUsernames,
       },
-      adminIds
+      adminUsernames
     );
 
     logger.info("Check-in status updated successfully", {
@@ -214,6 +214,10 @@ router.post("/check-in/bulk-update", async (req, res) => {
   });
   try {
     const { tournamentId, rowId, checkedIn, players } = req.body;
+
+    // Get admin usernames for notifications
+    const adminUsernames = await databaseService.getAdminUsernames();
+
     await checkInService.bulkUpdateCheckInStatus(
       tournamentId,
       rowId,
@@ -223,7 +227,7 @@ router.post("/check-in/bulk-update", async (req, res) => {
 
     // Notify each player's partner pair and admins
     for (const player of players) {
-      const { playerId, playerName, partnerIds = [], adminIds = [] } = player;
+      const { playerId, playerName, partnerIds = [] } = player;
 
       // Notify the partner pair (PLAYER_CHECKED_IN)
       await sendTournamentCheckInNotification(
@@ -234,7 +238,7 @@ router.post("/check-in/bulk-update", async (req, res) => {
           playerId,
           playerName,
           partnerIds,
-          adminIds,
+          adminIds: adminUsernames,
         },
         partnerIds
       );
@@ -248,9 +252,9 @@ router.post("/check-in/bulk-update", async (req, res) => {
           playerId,
           playerName,
           partnerIds,
-          adminIds,
+          adminIds: adminUsernames,
         },
-        adminIds
+        adminUsernames
       );
     }
 

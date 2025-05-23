@@ -1054,6 +1054,170 @@ const getSpecificDPFMatchResult = async (matchId) => {
   }
 };
 
+/**
+ * Get participated events for a player
+ * @param {string} playerId - The RankedIn player ID
+ * @param {string} language - The language code (en/da)
+ * @returns {Promise<Object>} - Events the player participates in
+ */
+const getParticipatedEvents = async (playerId, language = "en") => {
+  if (!playerId) {
+    logger.warn("Skipping getParticipatedEvents: playerId is undefined");
+    return null;
+  }
+
+  try {
+    logger.info(`Getting participated events for player: ${playerId}`);
+    const response = await axios.get(
+      `${API_BASE_URL}player/GetPlayerTournamentsAsync`,
+      {
+        params: {
+          playerid: playerId, // Changed from playerId to playerid
+          language,
+          _: Date.now(),
+        },
+      }
+    );
+
+    if (response.data && response.data.Payload) {
+      logger.info(
+        `Found ${response.data.Payload.length} events for player ${playerId}`
+      );
+      return response.data;
+    } else {
+      logger.warn(`No events found for player ${playerId}`);
+      return { Payload: [] };
+    }
+  } catch (error) {
+    const errorDetails = {
+      message: `Error fetching participated events for player ${playerId}`,
+      error: error.message,
+      stack: error.stack,
+      responseStatus: error.response?.status,
+      responseData: error.response?.data,
+      requestURL: `${API_BASE_URL}player/GetPlayerTournamentsAsync?playerid=${playerId}&language=${language}`,
+    };
+    logger.error(errorDetails.message, {
+      ...errorDetails,
+    });
+    return { Payload: [] };
+  }
+};
+
+/**
+ * Get all matches for a specific event
+ * @param {string} eventId - The event ID
+ * @param {string} language - The language code (en/da)
+ * @returns {Promise<Object>} - Matches for the event
+ */
+const getEventMatches = async (eventId, language = "en") => {
+  if (!eventId) {
+    logger.warn("Skipping getEventMatches: eventId is undefined");
+    return null;
+  }
+
+  try {
+    logger.info(`Getting matches for event: ${eventId}`);
+    const response = await axios.get(
+      `${API_BASE_URL}tournament/GetMatchesForEventAsync`,
+      {
+        params: {
+          eventid: eventId, // Changed from eventId to eventid
+          language,
+          _: Date.now(),
+        },
+      }
+    );
+
+    if (response.data && response.data.Matches) {
+      logger.info(
+        `Found ${response.data.Matches.length} matches for event ${eventId}`
+      );
+      return response.data;
+    } else {
+      logger.warn(`No matches found for event ${eventId}`);
+      return { Matches: [] };
+    }
+  } catch (error) {
+    const errorDetails = {
+      message: `Error fetching matches for event ${eventId}`,
+      error: error.message,
+      stack: error.stack,
+      responseStatus: error.response?.status,
+      responseData: error.response?.data,
+      requestURL: `${API_BASE_URL}tournament/GetMatchesForEventAsync?eventid=${eventId}&language=${language}`,
+    };
+    logger.error(errorDetails.message, {
+      ...errorDetails,
+    });
+    return { Matches: [] };
+  }
+};
+
+/**
+ * Get upcoming and recent matches for a player
+ * @param {string} playerId - The RankedIn player ID
+ * @param {boolean} takeHistory - Whether to include historical matches
+ * @param {number} skip - Number of matches to skip
+ * @param {number} take - Number of matches to take
+ * @param {string} language - The language code (en/da)
+ * @returns {Promise<Object>} - Player's matches
+ */
+const getPlayerMatches = async (
+  playerId,
+  takeHistory = false,
+  skip = 0,
+  take = 10,
+  language = "en"
+) => {
+  if (!playerId) {
+    logger.warn("Skipping getPlayerMatches: playerId is undefined");
+    return null;
+  }
+
+  try {
+    logger.info(
+      `Getting matches for player: ${playerId}, includeHistory: ${takeHistory}`
+    );
+    const response = await axios.get(
+      `${API_BASE_URL}player/GetPlayerMatchesAsync`,
+      {
+        params: {
+          playerid: playerId,
+          takehistory: takeHistory,
+          skip,
+          take,
+          language,
+          _: Date.now(),
+        },
+      }
+    );
+
+    if (response.data && response.data.Matches) {
+      logger.info(
+        `Found ${response.data.Matches.length} matches for player ${playerId}`
+      );
+      return response.data;
+    } else {
+      logger.warn(`No matches found for player ${playerId}`);
+      return { Matches: [] };
+    }
+  } catch (error) {
+    const errorDetails = {
+      message: `Error fetching matches for player ${playerId}`,
+      error: error.message,
+      stack: error.stack,
+      responseStatus: error.response?.status,
+      responseData: error.response?.data,
+      requestURL: `${API_BASE_URL}player/GetPlayerMatchesAsync?playerid=${playerId}&takehistory=${takeHistory}&skip=${skip}&take=${take}&language=${language}`,
+    };
+    logger.error(errorDetails.message, {
+      ...errorDetails,
+    });
+    return { Matches: [] };
+  }
+};
+
 module.exports = {
   getAvailableTournaments,
   getAllMatches,
@@ -1071,4 +1235,7 @@ module.exports = {
   OrganisationIdSmashHorsens,
   OrganisationIdSmashStensballe,
   searchPlayer,
+  getParticipatedEvents, // Added new method
+  getEventMatches, // Added new method
+  getPlayerMatches, // Added new method for upcoming player matches
 };

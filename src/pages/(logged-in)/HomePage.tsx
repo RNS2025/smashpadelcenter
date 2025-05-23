@@ -1,10 +1,10 @@
 import { Helmet } from "react-helmet-async";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useUser } from "../../context/UserContext.tsx";
 import Animation from "../../components/misc/Animation.tsx";
 import HomeScreenCard from "../../components/HomeScreen/HomeScreenCard.tsx";
 import LoadingSpinner from "../../components/misc/LoadingSpinner.tsx";
-import { setupNotifications } from "../../utils/notifications";
+import NotificationTest from "../../components/NotificationTest.tsx";
 import {
   AcademicCapIcon,
   ChartBarIcon,
@@ -135,28 +135,9 @@ const homeScreenItems = [
 
 export const HomePage = () => {
   const { user, loading } = useUser();
-  const [isNotificationsInitialized, setNotificationsInitialized] =
-    useState(false);
-
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-
-  useEffect(() => {
-    if (isNotificationsInitialized || !user?.username) return;
-
-    const initializeNotifications = async () => {
-      try {
-        await setupNotifications(user.username);
-        setNotificationsInitialized(true);
-      } catch (error) {
-        console.error("Failed to initialize notifications:", error);
-        // Optional: Provide user feedback about notification failure
-      }
-    };
-
-    initializeNotifications();
-  }, [user?.username, isNotificationsInitialized]);
 
   // --- Loading State ---
   if (loading) {
@@ -218,12 +199,21 @@ export const HomePage = () => {
                   />
                 ))}
               </div>
-            </div>
-
+            </div>{" "}
             {user && user.username === "charlotte_hoegel@hotmail.com" && (
-            <div className="border rounded p-2 mx-6 mt-4 text-sm">
-              Hej Charlotte - dit HH-hold er ikke i oversigten fordi I ikke har sat et SMASH-center som hjemmebane - I har faktisk ikke sat nogen hjemmebane overhovedet. Vi arbejder på at få alle HH-holdene ind i oversigten :) <br/> <br/>Mvh Luu
-            </div>
+              <div className="border rounded p-2 mx-6 mt-4 text-sm">
+                Hej Charlotte - dit HH-hold er ikke i oversigten fordi I ikke
+                har sat et SMASH-center som hjemmebane - I har faktisk ikke sat
+                nogen hjemmebane overhovedet. Vi arbejder på at få alle
+                HH-holdene ind i oversigten :) <br /> <br />
+                Mvh Luu
+              </div>
+            )}
+            {/* Notification Test Panel - Only for admin users */}
+            {user?.role === "admin" && (
+              <div className="flex justify-center mt-8">
+                <NotificationTest />
+              </div>
             )}
           </Animation>
         </main>

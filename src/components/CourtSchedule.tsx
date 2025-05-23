@@ -18,7 +18,6 @@ import {
 } from "@mui/material";
 import { Calendar, CheckCircle, Circle } from "lucide-react";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { sendNotification } from "../utils/notifications";
 import { useUser } from "../context/UserContext";
 
 const CourtSchedule: React.FC = () => {
@@ -91,43 +90,6 @@ const CourtSchedule: React.FC = () => {
       });
     });
     setSelectedTimes(newSelectedTimes); // Update the selected times
-  };
-
-  // Handle send notification
-  const handleSendNotification = () => {
-    if (selectedTimes.size > 0) {
-      try {
-        let notificationMessage = "Selected Court Times Available:\n";
-        courtTimes?.forEach((court) => {
-          const availableTimes = court.tider.filter(
-            (time) =>
-              time.tid >= startTime &&
-              time.tid <= endTime &&
-              selectedTimes.has(time.tid) &&
-              !isLabel(time.tid)
-          );
-
-          if (availableTimes.length > 0) {
-            notificationMessage += `\nCourt: ${court.bane}\n`;
-            availableTimes.forEach((time) => {
-              notificationMessage += `  - ${time.tid}\n`;
-            });
-          }
-        });
-
-        sendNotification(
-          user?.username || "Unknown",
-          "Available Court Times",
-          notificationMessage,
-          "general"
-        );
-      } catch (err) {
-        console.error("Error in handleSendNotification:", err);
-        alert("An error occurred while sending notification.");
-      }
-    } else {
-      alert("Please select at least one time slot.");
-    }
   };
 
   // Function to check if a time is a label
@@ -329,15 +291,6 @@ const CourtSchedule: React.FC = () => {
       {/* Only show for admins */}
       {user?.role === "admin" && (
         <Box mt={2} display="flex" justifyContent="center" gap={2}>
-          {/* Buttons for sending notifications and selecting all times */}
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSendNotification}
-            disabled={selectedTimes.size === 0}
-          >
-            Send Notification
-          </Button>
           <Button
             variant="outlined"
             color="secondary"

@@ -105,6 +105,21 @@ module.exports = {
     }
   },
 
+  // Get all users with rankedInId
+  getAllUsersWithRankedInId: async () => {
+    try {
+      const users = await User.find({
+        rankedInId: { $exists: true, $ne: "" },
+        status: { $ne: "inactive" },
+      }).select("username rankedInId");
+
+      return users;
+    } catch (error) {
+      logger.error("Error fetching users with rankedInId:", error);
+      throw error;
+    }
+  },
+
   findUserByUsername: async (username) => {
     try {
       return await User.findOne({ username });
@@ -349,5 +364,17 @@ module.exports = {
     // Now, call getProfileWithMatches to potentially populate other details like matchHistory
     // and ensure a consistent profile object structure.
     return await module.exports.getProfileWithMatches(user._id);
+  },
+
+  getAdminUsernames: async () => {
+    try {
+      const adminUsers = await User.find({ role: "admin" }, "username");
+      return adminUsers.map((user) => user.username);
+    } catch (err) {
+      logger.error("DatabaseService: Error fetching admin usernames", {
+        error: err.message,
+      });
+      throw new Error("Error fetching admin usernames: " + err.message);
+    }
   },
 };

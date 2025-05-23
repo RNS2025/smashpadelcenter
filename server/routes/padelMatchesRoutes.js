@@ -4,9 +4,6 @@ const padelMatchService = require("../Services/padelMatchService");
 const PadelMatch = require("../models/PadelMatch");
 const logger = require("../config/logger");
 const { verifyJWT } = require("../middleware/jwt");
-const {
-  sendPadelMatchNotification,
-} = require("../Services/subscriptionService");
 
 router.use(verifyJWT);
 

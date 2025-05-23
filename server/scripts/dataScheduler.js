@@ -1,5 +1,9 @@
 const cron = require("node-cron");
-const { DATA_UPDATE_SCHEDULE } = require("../config/schedulerConfig");
+const {
+  DATA_UPDATE_SCHEDULE,
+  TOURNAMENT_NOTIFICATION_SCHEDULE,
+  MATCH_NOTIFICATION_SCHEDULE,
+} = require("../config/schedulerConfig");
 const {
   getAvailableTournaments,
   getAllTournamentPlayers,
@@ -14,6 +18,10 @@ const {
   OrganisationIdSmashStensballe,
 } = require("../Services/rankedInService");
 const logger = require("../config/logger");
+const {
+  checkAndNotifyAboutTournaments,
+  checkAndNotifyAboutUpcomingMatches,
+} = require("../Schedules/TournamentNotificationSchedule");
 
 const updateAllData = async () => {
   logger.info("Starting data update...");
@@ -100,4 +108,24 @@ cron.schedule(DATA_UPDATE_SCHEDULE, () => {
   updateAllData();
 });
 
-module.exports = { updateAllData };
+// Schedule tournament notifications
+cron.schedule(TOURNAMENT_NOTIFICATION_SCHEDULE, () => {
+  logger.info(
+    `Running scheduled tournament notifications at ${new Date().toISOString()}`
+  );
+  checkAndNotifyAboutTournaments();
+});
+
+// Schedule match notifications (every 5 minutes)
+cron.schedule(MATCH_NOTIFICATION_SCHEDULE, () => {
+  logger.info(
+    `Running upcoming match notifications at ${new Date().toISOString()}`
+  );
+  checkAndNotifyAboutUpcomingMatches();
+});
+
+module.exports = {
+  updateAllData,
+  checkAndNotifyAboutTournaments, // Export for testing purposes
+  checkAndNotifyAboutUpcomingMatches, // Export for testing purposes
+};
