@@ -41,6 +41,9 @@ const checkAndNotifyAboutTournaments = async () => {
   }
 };
 
+// In-memory set to track sent notifications: key = `${username}_${eventId}_${type}`
+const sentTournamentNotifications = new Set();
+
 /**
  * Process tournaments for a single user and send notifications if needed
  * @param {Object} user - User object with username and rankedInId
@@ -86,9 +89,11 @@ const processUserTournaments = async (user) => {
     }
 
     const now = new Date();
+    const todayMidnight = new Date(now);
+    todayMidnight.setHours(0, 0, 0, 0);
     const futureEvents = eventsResponse.Payload.filter((event) => {
       const eventDate = new Date(event.StartDate);
-      return eventDate >= new Date(now.setHours(0, 0, 0, 0));
+      return eventDate >= todayMidnight;
     });
 
     if (futureEvents.length === 0) {
@@ -105,17 +110,38 @@ const processUserTournaments = async (user) => {
     // Calculate days until event
     const eventDate = moment(upcomingEvent.StartDate).format("DD. MMMM YYYY");
     const eventStart = new Date(upcomingEvent.StartDate);
+    const msPerDay = 1000 * 60 * 60 * 24;
     const timeUntil = Math.ceil(
-      (eventStart.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+      (eventStart.getTime() - todayMidnight.getTime()) / msPerDay
     );
 
-    // Only send notifications if exactly 6 days or 1 day before the tournament
-    if (timeUntil !== 6 && timeUntil !== 1) {
+    // Determine notification type
+    let notificationType = null;
+    if (timeUntil === 6) {
+      notificationType = "6days";
+    } else if (timeUntil === 1) {
+      notificationType = "1day";
+    } else if (timeUntil === 0) {
+      // Only send on the day at 07:00 (±2 min)
+      const nowHour = now.getHours();
+      const nowMin = now.getMinutes();
+      if (nowHour === 7 && nowMin <= 2) {
+        notificationType = "dayof";
+      }
+    }
+    if (!notificationType) {
       logger.debug(
         `Skipping notification for ${user.username}, tournament in ${timeUntil} days`
       );
       return;
     }
+    // Prevent duplicate notifications
+    const notificationKey = `${user.username}_${upcomingEvent.Id}_${notificationType}`;
+    if (sentTournamentNotifications.has(notificationKey)) {
+      logger.debug(`Notification already sent for key: ${notificationKey}`);
+      return;
+    }
+    sentTournamentNotifications.add(notificationKey);
 
     // Get event matches
     const eventMatches = await rankedInService.getEventMatches(
@@ -135,13 +161,13 @@ const processUserTournaments = async (user) => {
 
     // Create notification message
     let message = `Din turnering "${upcomingEvent.Name}" starter ${eventDate}`;
-
-    if (timeUntil === 1) {
+    if (notificationType === "1day") {
       message += " i morgen!";
-    } else if (timeUntil === 6) {
+    } else if (notificationType === "6days") {
       message += " om en lille uge!";
+    } else if (notificationType === "dayof") {
+      message += " i dag!";
     }
-
     if (upcomingMatches.length > 0) {
       message += ` Du har ${upcomingMatches.length} kommende kamp${
         upcomingMatches.length > 1 ? "e" : ""
@@ -163,7 +189,7 @@ const processUserTournaments = async (user) => {
     });
 
     logger.info(
-      `Tournament notification sent to user ${user.username} for tournament ${upcomingEvent.Name} (${timeUntil} days remaining)`
+      `Tournament notification sent to user ${user.username} for tournament ${upcomingEvent.Name} (${notificationType})`
     );
   } catch (error) {
     logger.error(
