@@ -133,7 +133,7 @@ router.post("/:eventId/confirm", async (req, res) => {
       `/privat-arrangementer/${req.params.eventId}`
     );
 
-    if (updatedEvent.players.length >= updatedEvent.maxPlayers) {
+    if (updatedEvent.participants.length >= updatedEvent.totalSpots) {
       NotificationHelper.notifyMultiple(
         updatedEvent.players,
         "Eventet er nu fuldt!",
