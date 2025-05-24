@@ -2,15 +2,31 @@
 const logger = require("../config/logger");
 const webPush = require("web-push");
 
+// Debug environment variable loading
+logger.info(`[VAPID] Environment: ${process.env.NODE_ENV}`);
+logger.info(
+  `[VAPID] VAPID_PUBLIC_KEY exists: ${!!process.env.VAPID_PUBLIC_KEY}`
+);
+logger.info(
+  `[VAPID] VAPID_PRIVATE_KEY exists: ${!!process.env.VAPID_PRIVATE_KEY}`
+);
+
 // Configure VAPID keys - these should be environment variables in production
 const vapidKeys = {
   publicKey:
     process.env.VAPID_PUBLIC_KEY ||
-    "BPlJdgWH7vWk8nUqKu8PIhKD-6lGIgcS9CZnEIWiHYQMz5DpKuKJWmThfAcjKftRYhCqGKyuIZOYDXz7uRYPEaU",
+    "BDWRaZ84j6b5beFz-M_2B4MQM22bZZ1zk2YQtb2NaXt5unyJLzNYxexw_CyETRd_g9FHHn0zKWEdkvOeJg1hyAU",
   privateKey:
     process.env.VAPID_PRIVATE_KEY ||
-    "PBjmHGUZkJJN5ypKhE7H8tRz5CmUX2F3QjHFx4uY8Vw",
+    "yw1RlFD21TP3Y7NvLt1LfXNgPSAmEolyftGSQlaigFI",
 };
+
+logger.info(
+  `[VAPID] Using public key: ${vapidKeys.publicKey.substring(0, 20)}...`
+);
+logger.info(
+  `[VAPID] Using private key: ${vapidKeys.privateKey.substring(0, 20)}...`
+);
 
 webPush.setVapidDetails(
   "mailto:admin@smashpadelcenter.dk",
@@ -136,7 +152,12 @@ class PushNotificationService {
       } catch (error) {
         logger.error(
           `Failed to send web push to user ${username} (endpoint: ${sub.subscription.endpoint}):`,
-          error
+          {
+            statusCode: error.statusCode,
+            body: error.body,
+            message: error.message,
+            stack: error.stack,
+          }
         );
         // Remove invalid subscription
         if (error.statusCode === 410 || error.statusCode === 404) {
