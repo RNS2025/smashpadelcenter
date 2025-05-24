@@ -196,7 +196,7 @@ class NotificationService {
       throw new Error("No auth token found");
     }
 
-    const response = await fetch(`${this.apiBaseUrl}/notifications/send`, {
+    const response = await fetch(`${this.apiBaseUrl}notifications/send`, {
       method: "POST",
       headers: {
         ...this.getAuthHeaders(),
