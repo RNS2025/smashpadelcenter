@@ -1060,7 +1060,12 @@ const getSpecificDPFMatchResult = async (matchId) => {
  * @param {string} language - The language code (en/da)
  * @returns {Promise<Object>} - Events the player participates in
  */
-const getParticipatedEvents = async (playerId, language = "en") => {
+const getParticipatedEvents = async (
+  playerId,
+  language = "en",
+  skip = 0,
+  take = 10
+) => {
   if (!playerId) {
     logger.warn("Skipping getParticipatedEvents: playerId is undefined");
     return null;
@@ -1069,11 +1074,13 @@ const getParticipatedEvents = async (playerId, language = "en") => {
   try {
     logger.info(`Getting participated events for player: ${playerId}`);
     const response = await axios.get(
-      `${API_BASE_URL}player/GetPlayerTournamentsAsync`,
+      `${API_BASE_URL}player/ParticipatedEventsAsync`,
       {
         params: {
-          playerid: playerId, // Changed from playerId to playerid
+          playerId, // Using playerId as parameter name (not playerid)
           language,
+          skip,
+          take,
           _: Date.now(),
         },
       }
@@ -1095,7 +1102,7 @@ const getParticipatedEvents = async (playerId, language = "en") => {
       stack: error.stack,
       responseStatus: error.response?.status,
       responseData: error.response?.data,
-      requestURL: `${API_BASE_URL}player/GetPlayerTournamentsAsync?playerid=${playerId}&language=${language}`,
+      requestURL: `${API_BASE_URL}player/ParticipatedEventsAsync?playerId=${playerId}&language=${language}&skip=${skip}&take=${take}`,
     };
     logger.error(errorDetails.message, {
       ...errorDetails,
