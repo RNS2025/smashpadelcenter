@@ -158,7 +158,7 @@ router.post("/register", async (req, res) => {
   const { username, email } = req.body;
   logger.info("Registration attempt", { username, email });
   try {
-    const { username, password, email, fullName } = req.body;
+    const { username, password, email, fullName, rankedInId } = req.body;
     if (!username || !password) {
       logger.warn("Registration failed - missing fields", { username });
       return res.status(400).json({ error: "All fields are required" });
@@ -177,6 +177,7 @@ router.post("/register", async (req, res) => {
       fullName,
       role: "user",
       provider: "local",
+      rankedInId, // Allow rankedInId to be set at registration
     });
     logger.info("User registered successfully", {
       username,

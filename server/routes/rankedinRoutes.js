@@ -3,6 +3,7 @@ const rankedInService = require("../Services/rankedInService");
 const { verifyJWT, checkRole } = require("../middleware/jwt");
 const logger = require("../config/logger");
 const router = express.Router();
+const axios = require("axios");
 
 /**
  * @swagger
@@ -631,6 +632,88 @@ router.get("/GetSpecificDPFMatchResult", verifyJWT, async (req, res) => {
     res
       .status(500)
       .json({ error: error.message || "Failed to fetch match result" });
+  }
+});
+
+/**
+ * @swagger
+ * /api/v1/SearchParticipants:
+ *   get:
+ *     summary: Search for participants by name (RankedIn)
+ *     tags: [RankedIn]
+ *     parameters:
+ *       - in: query
+ *         name: term
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The search term (player name)
+ *       - in: query
+ *         name: language
+ *         required: false
+ *         schema:
+ *           type: string
+ *         description: The language for the response (default is "en")
+ *       - in: query
+ *         name: take
+ *         required: false
+ *         schema:
+ *           type: integer
+ *         description: Number of results to return (default 5)
+ *       - in: query
+ *         name: skip
+ *         required: false
+ *         schema:
+ *           type: integer
+ *         description: Number of results to skip (default 0)
+ *     responses:
+ *       200:
+ *         description: List of matching participants
+ */
+router.get("/SearchParticipants", async (req, res) => {
+  // Log the incoming request for debugging
+  logger.info("SearchParticipants request received", {
+    query: req.query,
+    contentType: req.headers["content-type"],
+  });
+
+  console.log("SearchParticipants params:", {
+    term: req.query.term,
+    language: req.query.language,
+    take: req.query.take,
+    skip: req.query.skip,
+  });
+  try {
+    const { term, language = "en", take = 5, skip = 0 } = req.query;
+    if (!term) {
+      return res.status(400).json({ error: "Search term is required" });
+    }
+    console.log("Searching participants with term:", term);
+    const response = await axios.get(
+      "https://api.rankedin.com/v1/search/GetParticipantsAsync",
+      {
+        params: { term, language, take, skip },
+      }
+    );
+    // Always treat response.data as the result, since the API returns an array directly
+    let participants = [];
+    if (Array.isArray(response.data)) {
+      participants = response.data;
+    } else if (response.data && Array.isArray(response.data.Payload)) {
+      participants = response.data.Payload;
+    } else if (response.data && typeof response.data === "object") {
+      // If the API ever wraps the array in a property, try to find the first array property
+      const arrProp = Object.values(response.data).find((v) =>
+        Array.isArray(v)
+      );
+      if (arrProp) participants = arrProp;
+    }
+    res.status(200).json(participants);
+  } catch (err) {
+    logger.error("Error searching RankedIn participants", {
+      error: err.message,
+    });
+    return res.status(500).json({ error: err.message });
   }
 });
 

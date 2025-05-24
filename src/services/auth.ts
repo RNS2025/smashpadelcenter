@@ -76,9 +76,15 @@ export const changeUserRole = async (username: string, role: string) => {
   }
 };
 
-export const register = async (username: string, password: string) => {
+export const register = async (
+  username: string,
+  password: string,
+  rankedInId?: string
+) => {
   try {
-    const response = await api.post("/register", { username, password });
+    const payload: any = { username, password };
+    if (rankedInId) payload.rankedInId = rankedInId;
+    const response = await api.post("/register", payload);
     clearCache("users"); // Invalidate users cache
     return response.data;
   } catch (error: any) {

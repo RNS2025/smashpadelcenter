@@ -31,6 +31,13 @@ module.exports = {
           throw new Error("User already exists with this provider account");
         }
       }
+      // Check if rankedInId is already in use
+      if (rankedInId) {
+        const rankedInUser = await User.findOne({ rankedInId });
+        if (rankedInUser) {
+          throw new Error("RankedInId is already in use");
+        }
+      }
       const newUser = new User({
         username,
         email: email || null,
