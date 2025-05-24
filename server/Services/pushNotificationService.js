@@ -94,17 +94,23 @@ class PushNotificationService {
   getVapidPublicKey() {
     return vapidKeys.publicKey;
   }
-
   /**
    * Send web push notification to all devices for a user
    * @param {string} username - Target username
    * @param {Object} notification - Notification data
    */
   async sendWebPush(username, notification) {
+    logger.info(
+      `Attempting to send web push to user: ${username}, notification: ${notification.title}`
+    );
+
     // Get all subscriptions for the user
     let subscriptions = [];
     try {
       subscriptions = await PushSubscription.getAllForUser(username);
+      logger.info(
+        `Found ${subscriptions.length} subscriptions for user ${username}`
+      );
     } catch (err) {
       logger.error(
         `Failed to fetch subscriptions for ${username} from DB:`,
@@ -112,7 +118,9 @@ class PushNotificationService {
       );
     }
     if (!subscriptions.length) {
-      logger.warn(`No push subscriptions found for user ${username}`);
+      logger.warn(
+        `No push subscriptions found for user ${username} - cannot send web push notification`
+      );
       return false;
     }
     const pushPayload = JSON.stringify(this.formatNotification(notification));
@@ -139,6 +147,11 @@ class PushNotificationService {
         }
       }
     }
+    logger.info(
+      `Web push sending result for user ${username}: ${
+        success ? "SUCCESS" : "FAILED"
+      }`
+    );
     return success;
   }
 
@@ -169,6 +182,10 @@ class PushNotificationService {
    * @param {Object} notification - Notification data
    */
   async sendToUser(username, notification) {
+    logger.info(
+      `[sendToUser] Sending notification to user: ${username}, title: ${notification.title}`
+    );
+
     const formattedNotification = this.formatNotification(notification);
 
     if (this.subscribers.has(username)) {
@@ -189,11 +206,19 @@ class PushNotificationService {
       }
     } else {
       // User is offline, queue the notification
+      logger.info(
+        `User ${username} is offline, queueing notification and attempting web push`
+      );
       this.queueNotification(username, formattedNotification);
     }
 
     // Always try to send web push notification for background notifications
-    await this.sendWebPush(username, notification);
+    const webPushResult = await this.sendWebPush(username, notification);
+    logger.info(
+      `[sendToUser] Final result for user ${username}: SSE=${this.subscribers.has(
+        username
+      )}, WebPush=${webPushResult}`
+    );
   }
   /**
    * Send a push notification to multiple users

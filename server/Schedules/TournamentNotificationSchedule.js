@@ -172,9 +172,7 @@ const processUserTournaments = async (user) => {
       message += ` Du har ${upcomingMatches.length} kommende kamp${
         upcomingMatches.length > 1 ? "e" : ""
       }`;
-    }
-
-    // Send notification
+    } // Send notification
     await pushNotificationService.sendToUser(user.username, {
       title: "🎾 Turnering påmindelse",
       message,
@@ -189,7 +187,7 @@ const processUserTournaments = async (user) => {
     });
 
     logger.info(
-      `Tournament notification sent to user ${user.username} for tournament ${upcomingEvent.Name} (${notificationType})`
+      `Tournament notification sent to user ${user.username} for tournament ${upcomingEvent.Name} (${notificationType}) - username: ${user.username}`
     );
   } catch (error) {
     logger.error(
@@ -353,7 +351,6 @@ const processUserUpcomingMatches = async (user) => {
         )} på bane ${court} mod ${opponents}`;
         title = "🎾 Kamp fundet";
       }
-
       await pushNotificationService.sendToUser(user.username, {
         title,
         message,
@@ -370,7 +367,9 @@ const processUserUpcomingMatches = async (user) => {
       logger.info(
         `Match notification (${type}) sent to user ${
           user.username
-        } for match at ${matchDate.format("HH:mm")}`
+        } for match at ${matchDate.format("HH:mm")} - username: ${
+          user.username
+        }`
       );
     }
   } catch (error) {

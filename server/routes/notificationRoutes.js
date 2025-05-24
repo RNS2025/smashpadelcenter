@@ -379,4 +379,47 @@ router.post("/test-match", verifyJWT, (req, res) => {
   });
 });
 
+// Debug endpoint to check push subscriptions
+router.get("/debug-subscriptions", verifyJWT, async (req, res) => {
+  // Set CORS headers
+  const origin = req.headers.origin;
+  if (origin) {
+    res.header("Access-Control-Allow-Origin", origin);
+    res.header("Access-Control-Allow-Credentials", "true");
+  }
+
+  try {
+    const PushSubscription = require("../models/PushSubscription");
+    const databaseService = require("../Services/databaseService");
+
+    // Get all users with rankedInId
+    const usersWithRankedIn = await databaseService.getAllUsersWithRankedInId();
+
+    // Get all push subscriptions
+    const allSubscriptions = await PushSubscription.find({});
+
+    // Create a summary
+    const subscriptionSummary = {};
+    allSubscriptions.forEach((sub) => {
+      subscriptionSummary[sub.username] =
+        (subscriptionSummary[sub.username] || 0) + 1;
+    });
+
+    res.json({
+      usersWithRankedInId: usersWithRankedIn.map((u) => ({
+        username: u.username,
+        rankedInId: u.rankedInId,
+        hasSubscriptions: !!subscriptionSummary[u.username],
+        subscriptionCount: subscriptionSummary[u.username] || 0,
+      })),
+      totalUsers: usersWithRankedIn.length,
+      totalSubscriptions: allSubscriptions.length,
+      usersWithSubscriptions: Object.keys(subscriptionSummary).length,
+    });
+  } catch (error) {
+    logger.error("Error fetching debug subscriptions:", error);
+    res.status(500).json({ error: "Failed to fetch subscription data" });
+  }
+});
+
 module.exports = router;
