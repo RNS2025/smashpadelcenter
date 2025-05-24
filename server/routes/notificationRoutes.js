@@ -5,6 +5,18 @@ const pushNotificationService = require("../Services/pushNotificationService");
 const { verifyJWT, verifyJWTForSSE } = require("../middleware/jwt");
 const logger = require("../config/logger");
 
+// Special OPTIONS handler for subscribe endpoint to prevent redirect issues
+router.options("/subscribe", (req, res) => {
+  const origin = req.headers.origin;
+  if (origin) {
+    res.header("Access-Control-Allow-Origin", origin);
+    res.header("Access-Control-Allow-Methods", "GET,OPTIONS");
+    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Cache-Control");
+    res.header("Access-Control-Allow-Credentials", "true");
+  }
+  return res.status(200).end();
+});
+
 router.get("/subscribe", async (req, res) => {
   try {
     // Set specific headers for SSE connection to handle CORS

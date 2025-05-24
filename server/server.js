@@ -44,6 +44,29 @@ const isDev = ENV === "development";
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
+
+// Handle OPTIONS requests directly to prevent redirects on preflight requests
+app.options('*', (req, res) => {
+  const origin = req.headers.origin;
+  const allowedOrigins = [
+    "http://localhost:3001",
+    "http://localhost:5173", 
+    "https://rns-apps.dk",
+    "https://www.rns-apps.dk",
+    "http://rns-apps.dk", 
+    "http://www.rns-apps.dk"
+  ];
+
+  if (origin && (allowedOrigins.includes(origin) || origin.match(/^https?:\/\/.*\.rns-apps\.dk$/))) {
+    res.header('Access-Control-Allow-Origin', origin);
+    res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,PATCH,OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Cache-Control');
+    res.header('Access-Control-Allow-Credentials', 'true');
+  }
+  
+  res.status(200).end();
+});
+
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -66,7 +89,7 @@ app.use(
         allowedOrigins.includes(origin) ||
         origin.match(/^https?:\/\/.*\.rns-apps\.dk$/)
       ) {
-        return callback(null, true);
+        return callback(null, origin);  // Return the origin instead of true
       }
 
       // Log unexpected origins for debugging

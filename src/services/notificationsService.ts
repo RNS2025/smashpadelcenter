@@ -31,7 +31,6 @@ class NotificationService {
       "Cache-Control": "no-cache",
     };
   }
-
   connect(
     onNotification: (notification: Notification) => void,
     onConnectionStatus: (isConnected: boolean) => void
@@ -56,13 +55,21 @@ class NotificationService {
     this.isConnecting = true;
 
     try {
-      // For EventSource with custom headers, we need to use a different approach
-      // since EventSource doesn't support custom headers directly
-      const url = new URL(`${this.apiBaseUrl}notifications/subscribe`);
+      // Make sure we're using the same domain as the current page to avoid CORS issues
+      let subscribeUrl = `${this.apiBaseUrl}notifications/subscribe`;
+      
+      // If we're on a production domain, ensure we use the same domain for API calls
+      if (window.location.hostname.includes('rns-apps.dk')) {
+        const protocol = window.location.protocol;
+        const hostname = window.location.hostname;
+        subscribeUrl = `${protocol}//${hostname}/api/v1/notifications/subscribe`;
+      }
+      
+      const url = new URL(subscribeUrl);
       url.searchParams.append("token", token);
 
       console.log(`Connecting to notification stream at: ${url.toString()}`);
-      this.eventSource = new EventSource(url.toString());
+      this.eventSource = new EventSource(url.toString(), { withCredentials: true });
 
       this.eventSource.onopen = () => {
         console.log("Connected to notification stream");
@@ -143,12 +150,24 @@ class NotificationService {
     if (!token) {
       throw new Error("No auth token found");
     }
-    const response = await fetch(`${this.apiBaseUrl}notifications/test`, {
+    
+    // Get appropriate URL based on environment
+    let testUrl = `${this.apiBaseUrl}notifications/test`;
+    
+    // If we're on a production domain, ensure we use the same domain for API calls
+    if (window.location.hostname.includes('rns-apps.dk')) {
+      const protocol = window.location.protocol;
+      const hostname = window.location.hostname;
+      testUrl = `${protocol}//${hostname}/api/v1/notifications/test`;
+    }
+    
+    const response = await fetch(testUrl, {
       method: "POST",
       headers: {
         ...this.getAuthHeaders(),
         "Content-Type": "application/json",
       },
+      credentials: 'include'
     });
 
     if (!response.ok) {
@@ -165,12 +184,24 @@ class NotificationService {
     if (!token) {
       throw new Error("No auth token found");
     }
-    const response = await fetch(`${this.apiBaseUrl}notifications/test-match`, {
+    
+    // Get appropriate URL based on environment
+    let testUrl = `${this.apiBaseUrl}notifications/test-match`;
+    
+    // If we're on a production domain, ensure we use the same domain for API calls
+    if (window.location.hostname.includes('rns-apps.dk')) {
+      const protocol = window.location.protocol;
+      const hostname = window.location.hostname;
+      testUrl = `${protocol}//${hostname}/api/v1/notifications/test-match`;
+    }
+    
+    const response = await fetch(testUrl, {
       method: "POST",
       headers: {
         ...this.getAuthHeaders(),
         "Content-Type": "application/json",
       },
+      credentials: 'include'
     });
 
     if (!response.ok) {
