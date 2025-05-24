@@ -4,6 +4,7 @@ const padelMatchService = require("../Services/padelMatchService");
 const PadelMatch = require("../models/PadelMatch");
 const logger = require("../config/logger");
 const { verifyJWT } = require("../middleware/jwt");
+const NotificationHelper = require("../utils/notificationHelper");
 
 router.use(verifyJWT);
 
@@ -36,14 +37,11 @@ router.post("/:id/reject", async (req, res) => {
       username
     );
 
-    // Notify the player who requested that their request was processed
-    await sendPadelMatchNotification(
-      "INVITATION_PROCESSED",
-      {
-        matchId: req.params.id,
-        requesterId: match.username,
-      },
-      [username]
+    NotificationHelper.warning(
+      username,
+      "Din anmodning blev afvist",
+      `Din anmodning om at deltage i matchen blev afvist af ${match.username}.`,
+      `/makkerbørs/match/${req.params.id}`
     );
 
     logger.info("Successfully rejected user join", {
@@ -60,7 +58,7 @@ router.post("/:id/reject", async (req, res) => {
   }
 });
 
-//PATCH /api/v1/matches/:id - Update match details
+// PATCH /api/v1/matches/:id - Update match details
 router.patch("/:id", async (req, res) => {
   try {
     const match = await padelMatchService.getMatchById(req.params.id);
@@ -107,7 +105,6 @@ router.post("/:id/accept", async (req, res) => {
       });
       return res.status(404).json({ message: "Match not found" });
     }
-    // Check if user is invited to the match
     if (!match.invitedPlayers.includes(username)) {
       logger.warn("User not invited to match", {
         matchId: req.params.id,
@@ -121,11 +118,12 @@ router.post("/:id/accept", async (req, res) => {
       username
     );
 
-    // Notify the player who requested that their request was processed
-    await sendPadelMatchNotification("INVITATION_PROCESSED", {
-      matchId: req.params.id,
-      requesterId: match.username,
-    });
+    NotificationHelper.success(
+      username,
+      "Din anmodning blev accepteret",
+      `Du er nu accepteret til matchen af ${match.username}.`,
+      `/makkerbørs/match/${req.params.id}`
+    );
 
     logger.info("Successfully accepted user join", {
       matchId: req.params.id,
@@ -167,11 +165,13 @@ router.post("/:id/invite", async (req, res) => {
       usernames
     );
 
-    // Notify the invited players
-    await sendPadelMatchNotification("INVITATION_SENT", {
-      matchId: req.params.id,
-      userIds: usernames,
-    });
+    NotificationHelper.notifyMultiple(
+      usernames,
+      "Du er inviteret til en padelmatch!",
+      `${match.username} har inviteret dig til en match.`,
+      "info",
+      `/makkerbørs/match/${req.params.id}`
+    );
 
     logger.info("Players invited to padel match", {
       matchId: req.params.id,
@@ -222,14 +222,11 @@ router.post("/:id/join", async (req, res) => {
     }
     const match = await padelMatchService.joinMatch(req.params.id, username);
 
-    // Notify Match Owner about the join request
-    await sendPadelMatchNotification(
-      "REQUEST_TO_JOIN_LEVEL",
-      {
-        matchId: req.params.id,
-        participantIds: match.username,
-      },
-      match.participants
+    NotificationHelper.notify(
+      match.username,
+      "Ny anmodning om at deltage i din match",
+      `${username} har anmodet om at deltage i din match.`,
+      `/makkerbørs/match/${req.params.id}`
     );
 
     logger.info("User successfully joined match", {
@@ -239,45 +236,6 @@ router.post("/:id/join", async (req, res) => {
     res.json(match);
   } catch (error) {
     logger.error("Error joining match", {
-      matchId: req.params.id,
-      error: error.message,
-    });
-    res.status(400).json({ message: error.message });
-  }
-});
-
-// POST /api/v1/matches/:id/player-cancel - Cancel a join request
-router.post("/:id/player-cancel", async (req, res) => {
-  try {
-    const { username } = req.body;
-    const match = await padelMatchService.getMatchById(req.params.id);
-    if (!match) {
-      logger.warn("Attempted to cancel join for non-existent match", {
-        matchId: req.params.id,
-      });
-      return res.status(404).json({ message: "Match not found" });
-    }
-    if (match.username === req.user.username) {
-      logger.warn("Match creator attempted to cancel their own join request", {
-        matchId: req.params.id,
-        username,
-      });
-      return res
-        .status(403)
-        .json({ message: "Match creator cannot cancel their own join" });
-    }
-    const updatedMatch = await padelMatchService.playerCancelJoinMatch(
-      req.params.id,
-      username
-    );
-
-    logger.info("Successfully cancelled user join", {
-      matchId: req.params.id,
-      username,
-    });
-    res.json(updatedMatch);
-  } catch (error) {
-    logger.error("Error cancelling join", {
       matchId: req.params.id,
       error: error.message,
     });
@@ -311,24 +269,24 @@ router.post("/:id/confirm", async (req, res) => {
       username
     );
 
-    // Notify participant that the invitation was processed
-    await sendPadelMatchNotification("REQUEST_PROCESSED", {
-      matchId: req.params.id,
-      requesterId: username,
-    });
+    NotificationHelper.success(
+      username,
+      "Din deltagelse er bekræftet!",
+      `Du er nu bekræftet som deltager i matchen.`,
+      `/makkerbørs/match/${req.params.id}`
+    );
 
     // Check if the match is now full
     const participantsCount = updatedMatch.participants?.length || 0;
     const reservedSpotsCount = updatedMatch.reservedSpots?.length || 0;
 
     if (participantsCount + reservedSpotsCount >= updatedMatch.totalSpots) {
-      await sendPadelMatchNotification(
-        "MATCH_FULL",
-        {
-          matchId: req.params.id,
-          participantIds: updatedMatch.participants,
-        },
-        updatedMatch.participants
+      NotificationHelper.notifyMultiple(
+        updatedMatch.participants,
+        "Matchen er nu fuld!",
+        `Alle pladser i matchen er nu besat.`,
+        "info",
+        `/makkerbørs/match/${req.params.id}`
       );
     }
 
@@ -339,47 +297,6 @@ router.post("/:id/confirm", async (req, res) => {
     res.json(updatedMatch);
   } catch (error) {
     logger.error("PadelMatchRoutes: Error confirming join", {
-      matchId: req.params.id,
-      error: error.message,
-    });
-    res.status(400).json({ message: error.message });
-  }
-});
-
-// PATCH /api/v1/matches/:id/reserve - Reserve or unreserve a spot
-router.patch("/:id/reserve", async (req, res) => {
-  try {
-    const { spotIndex, reserve } = req.body;
-    const match = await PadelMatch.findById(req.params.id);
-    if (!match) {
-      logger.warn("Attempted to reserve spot for non-existent match", {
-        matchId: req.params.id,
-      });
-      return res.status(404).json({ message: "Match not found" });
-    }
-    if (match.username !== req.user.username) {
-      logger.warn("Non-creator attempted to reserve spot", {
-        matchId: req.params.id,
-        requestUser: req.user.username,
-        matchCreator: match.username,
-      });
-      return res
-        .status(403)
-        .json({ message: "Only the match creator can reserve spots" });
-    }
-    const matches = await padelMatchService.reserveSpots(
-      req.params.id,
-      spotIndex,
-      reserve
-    );
-
-    logger.info(`Successfully ${reserve ? "reserved" : "unreserved"} spot`, {
-      matchId: req.params.id,
-      spotIndex,
-    });
-    res.json(matches);
-  } catch (error) {
-    logger.error("Error reserving spots", {
       matchId: req.params.id,
       error: error.message,
     });
@@ -413,14 +330,11 @@ router.post("/:id/remove-player", async (req, res) => {
       username
     );
 
-    // Notify the removed player about their removal
-    await sendPadelMatchNotification(
-      "USER_REMOVED_FROM_MATCH",
-      {
-        matchId: req.params.id,
-        requesterId: username,
-      },
-      [username]
+    NotificationHelper.warning(
+      username,
+      "Du er blevet fjernet fra matchen",
+      `Du er blevet fjernet fra matchen af ${match.username}.`,
+      `/makkerbørs/match/${req.params.id}`
     );
 
     logger.info("Successfully removed player from match", {
@@ -437,23 +351,6 @@ router.post("/:id/remove-player", async (req, res) => {
   }
 });
 
-// POST /api/v1/matches/:id/remove-reserved-player
-router.post("/:id/remove-reserved-player", async (req, res) => {
-  try {
-    const { username } = req.body;
-
-    const match = await padelMatchService.removeReservedPlayer(
-      req.params.id,
-      username
-    );
-
-    res.json(match);
-  } catch (error) {
-    console.error("Error removing reserved player:", error.message);
-    res.status(400).json({ message: error.message });
-  }
-});
-
 // DELETE /api/v1/matches/:id - Delete a match
 router.delete("/:id/", async (req, res) => {
   try {
@@ -465,14 +362,12 @@ router.delete("/:id/", async (req, res) => {
       return res.status(404).json({ message: "Match not found" });
     }
 
-    // Notify all participants (except the match itself) about the cancellation
-    await sendPadelMatchNotification(
-      "MATCH_CANCELED_BY_MATCH",
-      {
-        matchId: req.params.id,
-        participantIds: match.participants,
-      },
-      match.participants
+    NotificationHelper.notifyMultiple(
+      match.participants,
+      "Matchen er blevet aflyst",
+      `Matchen er blevet aflyst af ${match.username}.`,
+      "warning",
+      `/makkerbørs`
     );
 
     const matches = await padelMatchService.deleteMatch(req.params.id);

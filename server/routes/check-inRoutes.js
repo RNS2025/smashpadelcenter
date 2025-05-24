@@ -2,6 +2,7 @@ const express = require("express");
 const checkInService = require("../Services/checkInService");
 const databaseService = require("../Services/databaseService");
 const logger = require("../config/logger");
+const NotificationHelper = require("../utils/notificationHelper");
 
 const router = express.Router();
 
@@ -122,31 +123,21 @@ router.post("/check-in/update", async (req, res) => {
     );
 
     // Notify the partner pair (PLAYER_CHECKED_IN)
-    await sendTournamentCheckInNotification(
-      "PLAYER_CHECKED_IN",
-      {
-        tournamentId,
-        rowId,
-        playerId,
-        playerName,
-        partnerIds,
-        adminIds: adminUsernames,
-      },
-      partnerIds
+    NotificationHelper.notifyMultiple(
+      partnerIds,
+      "Din makker er tjekket ind!",
+      `${playerName} er nu tjekket ind til turneringen. Husk at tjekke ind, hvis du ikke allerede har gjort det!`,
+      "info",
+      `/turneringer/check-in?tournamentId=${tournamentId}&rowId=${rowId}`
     );
 
     // Notify all admins (PARTNER_CHECKED_IN)
-    await sendTournamentCheckInNotification(
-      "PARTNER_CHECKED_IN",
-      {
-        tournamentId,
-        rowId,
-        playerId,
-        playerName,
-        partnerIds,
-        adminIds: adminUsernames,
-      },
-      adminUsernames
+    NotificationHelper.notifyMultiple(
+      adminUsernames,
+      "Spiller tjekket ind",
+      `${playerName} er tjekket ind til turneringen (række: ${rowId}).`,
+      "info",
+      `/turneringer/check-in?tournamentId=${tournamentId}&rowId=${rowId}`
     );
 
     logger.info("Check-in status updated successfully", {
@@ -230,31 +221,21 @@ router.post("/check-in/bulk-update", async (req, res) => {
       const { playerId, playerName, partnerIds = [] } = player;
 
       // Notify the partner pair (PLAYER_CHECKED_IN)
-      await sendTournamentCheckInNotification(
-        "PLAYER_CHECKED_IN",
-        {
-          tournamentId,
-          rowId,
-          playerId,
-          playerName,
-          partnerIds,
-          adminIds: adminUsernames,
-        },
-        partnerIds
+      NotificationHelper.notifyMultiple(
+        partnerIds,
+        "Din makker er tjekket ind!",
+        `${playerName} er nu tjekket ind til turneringen. Husk at tjekke ind, hvis du ikke allerede har gjort det!`,
+        "info",
+        `/turneringer/check-in?tournamentId=${tournamentId}&rowId=${rowId}`
       );
 
       // Notify all admins (PARTNER_CHECKED_IN)
-      await sendTournamentCheckInNotification(
-        "PARTNER_CHECKED_IN",
-        {
-          tournamentId,
-          rowId,
-          playerId,
-          playerName,
-          partnerIds,
-          adminIds: adminUsernames,
-        },
-        adminUsernames
+      NotificationHelper.notifyMultiple(
+        adminUsernames,
+        "Spiller tjekket ind",
+        `${playerName} er tjekket ind til turneringen (række: ${rowId}).`,
+        "info",
+        `/turneringer/check-in?tournamentId=${tournamentId}&rowId=${rowId}`
       );
     }
 

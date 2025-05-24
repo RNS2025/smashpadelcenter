@@ -4,6 +4,7 @@ const privateEventService = require("../Services/privateEventService");
 const PrivateEvent = require("../models/PrivateEvent");
 const logger = require("../config/logger");
 const { verifyJWT } = require("../middleware/jwt");
+const NotificationHelper = require("../utils/notificationHelper");
 
 router.use(verifyJWT);
 
@@ -39,14 +40,14 @@ router.post("/:eventId/invite", async (req, res) => {
       usernames
     );
 
-    // Notify the invited users
-    await sendPrivateEventNotification(
-      "INVITATION_SENT",
-      {
-        eventId: req.params.eventId,
-        userIds: usernames,
-      },
-      usernames
+    NotificationHelper.notifyMultiple(
+      usernames,
+      "Du er inviteret til et privat event!",
+      `${event.username} har inviteret dig til eventet '${
+        event.name || event.title || "Event"
+      }'.`,
+      "info",
+      `/privat-arrangementer/${req.params.eventId}`
     );
 
     logger.info("Players invited to private event", {
@@ -90,14 +91,13 @@ router.post("/:eventId/remove-player", async (req, res) => {
       username
     );
 
-    // Notify the removed user
-    await sendPrivateEventNotification(
-      "PLAYER_REMOVED",
-      {
-        eventId: req.params.eventId,
-        requesterId: username,
-      },
-      [username]
+    NotificationHelper.warning(
+      username,
+      "Du er blevet fjernet fra eventet",
+      `Du er blevet fjernet fra eventet '${
+        event.name || event.title || "Event"
+      }' af ${event.username}.`,
+      `/privat-arrangementer/${req.params.eventId}`
     );
 
     logger.info("Player removed from private event", {
@@ -124,25 +124,24 @@ router.post("/:eventId/confirm", async (req, res) => {
       username
     );
 
-    // Notify the user who requested that their request was processed
-    await sendPrivateEventNotification(
-      "INVITATION_PROCESSED",
-      {
-        eventId: req.params.eventId,
-        requesterId: updatedEvent.eventOwner,
-      },
-      [username]
+    NotificationHelper.success(
+      username,
+      "Din invitation er bekræftet!",
+      `Du har bekræftet din deltagelse i eventet '${
+        updatedEvent.name || updatedEvent.title || "Event"
+      }'.`,
+      `/privat-arrangementer/${req.params.eventId}`
     );
 
-    // Check if the event is now full (assuming maxPlayers is a field in the event)
     if (updatedEvent.players.length >= updatedEvent.maxPlayers) {
-      await sendPrivateEventNotification(
-        "EVENT_FULL",
-        {
-          eventId: req.params.eventId,
-          participantIds: updatedEvent.participants,
-        },
-        updatedEvent.players
+      NotificationHelper.notifyMultiple(
+        updatedEvent.players,
+        "Eventet er nu fuldt!",
+        `Alle pladser i eventet '${
+          updatedEvent.name || updatedEvent.title || "Event"
+        }' er nu besat.`,
+        "info",
+        `/privat-arrangementer/${req.params.eventId}`
       );
     }
 
@@ -172,8 +171,6 @@ router.post("/:eventId/decline", async (req, res) => {
       });
       return res.status(404).json({ message: "Event not found" });
     }
-
-    // Allow either the event owner or the invited user to decline
     if (
       username !== req.user.username &&
       event.username !== req.user.username
@@ -194,14 +191,13 @@ router.post("/:eventId/decline", async (req, res) => {
       username
     );
 
-    // Notify the user who requested that their request was processed
-    await sendPrivateEventNotification(
-      "REQUEST_PROCESSED_DECLINED",
-      {
-        eventId: req.params.eventId,
-        requesterId: username,
-      },
-      [username]
+    NotificationHelper.warning(
+      username,
+      "Invitation afvist",
+      `Du har afvist invitationen til eventet '${
+        event.name || event.title || "Event"
+      }'.`,
+      `/privat-arrangementer/${req.params.eventId}`
     );
 
     logger.info("User declined private event", {
@@ -360,15 +356,13 @@ router.post("/:eventId/join", async (req, res) => {
       username
     );
 
-    // Notify all participants (except the event itself) about the join request
-    await sendPrivateEventNotification(
-      "REQUEST_TO_JOIN_EVENT",
-      {
-        eventId: req.params.eventId,
-        requesterId: username,
-        participantIds: event.username,
-      },
-      event.players
+    NotificationHelper.notify(
+      event.username,
+      "Ny anmodning om at deltage i dit event",
+      `${username} har anmodet om at deltage i dit event '${
+        event.name || event.title || "Event"
+      }'.`,
+      `/privat-arrangementer/${req.params.eventId}`
     );
 
     logger.info("User joined private event", {
@@ -412,39 +406,28 @@ router.post("/:eventId/confirm", async (req, res) => {
       username
     );
 
-    // Notify the user who requested that their request was processed
-    await sendPrivateEventNotification(
-      "REQUEST_PROCESSED",
-      {
-        eventId: req.params.eventId,
-        requesterId: updatedEvent.username,
-      },
-      [username]
+    NotificationHelper.success(
+      username,
+      "Din deltagelse er bekræftet!",
+      `Du er nu bekræftet som deltager i eventet '${
+        event.name || event.title || "Event"
+      }'.`,
+      `/privat-arrangementer/${req.params.eventId}`
     );
 
-    // Notify invited participant that the invitation was processed
-    await sendPrivateEventNotification(
-      "REQUEST_PROCESSED",
-      {
-        eventId: req.params.eventId,
-        requesterId: username,
-      },
-      updatedEvent.participants
-    );
-
-    // Check if the event is now full (assuming totalSpots is a field in the event)
     if (
       updatedEvent.participants &&
       Array.isArray(updatedEvent.participants) &&
       updatedEvent.participants.length >= updatedEvent.totalSpots
     ) {
-      await sendPrivateEventNotification(
-        "EVENT_FULL",
-        {
-          eventId: req.params.eventId,
-          participantIds: updatedEvent.participants,
-        },
-        updatedEvent.players
+      NotificationHelper.notifyMultiple(
+        updatedEvent.participants,
+        "Eventet er nu fuldt!",
+        `Alle pladser i eventet '${
+          event.name || event.title || "Event"
+        }' er nu besat.`,
+        "info",
+        `/privat-arrangementer/${req.params.eventId}`
       );
     }
 
@@ -484,14 +467,14 @@ router.delete("/:eventId", async (req, res) => {
         .json({ message: "Only the event creator can delete the event" });
     }
 
-    // Notify all participants (except the event itself) about the cancellation
-    await sendPrivateEventNotification(
-      "EVENT_CANCELED_BY_CREATOR",
-      {
-        eventId: req.params.eventId,
-        participantIds: event.participants,
-      },
-      event.participants
+    NotificationHelper.notifyMultiple(
+      event.participants,
+      "Eventet er blevet aflyst",
+      `Eventet '${event.name || event.title || "Event"}' er blevet aflyst af ${
+        event.username
+      }.`,
+      "warning",
+      `/privat-arrangementer`
     );
 
     const events = await privateEventService.deletePrivateEvent(
