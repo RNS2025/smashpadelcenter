@@ -68,6 +68,7 @@ export const AdminPage = () => {
                     <option value="user">User</option>
                     <option value="admin">Admin</option>
                     <option value="trainer">Trainer</option>
+                    <option value="preRelease">PreRelease</option>
                   </select>
                 </td>
               </tr>
