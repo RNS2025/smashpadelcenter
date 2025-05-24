@@ -10,6 +10,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { WHITELIST_ROUTES } from "./WhitelistRoutes";
 import { User } from "../types/user";
 import api from "../api/api.ts";
+import { notificationService } from "../services/notificationsService";
 
 interface UserContextType {
   user: User | null;
@@ -249,6 +250,13 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
         await api.post("/logout", {}, { withCredentials: true });
       } catch (err) {
         console.error("API logout error:", err);
+      }
+
+      // Unsubscribe from push notifications for this device
+      try {
+        await notificationService.unsubscribeFromPushNotifications();
+      } catch (err) {
+        console.error("Push notification unsubscription error:", err);
       }
 
       localStorage.clear();
