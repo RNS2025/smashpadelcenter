@@ -18,29 +18,77 @@ webPush.setVapidDetails(
   vapidKeys.privateKey
 );
 
+// Require the PushSubscription model
+const PushSubscription = require("../models/PushSubscription");
+
 class PushNotificationService {
   constructor() {
     this.subscribers = new Map(); // Store active connections
     this.notificationQueue = new Map(); // Store notifications for offline users
-    this.pushSubscriptions = new Map(); // Store push subscriptions by username
+    this.pushSubscriptions = new Map(); // In-memory cache of push subscriptions
+
+    // Load existing subscriptions from database
+    this.loadSubscriptionsFromDB();
   }
+
+  /**
+   * Load subscriptions from database into memory
+   */
+  async loadSubscriptionsFromDB() {
+    try {
+      const subscriptions = await PushSubscription.find({});
+      subscriptions.forEach((sub) => {
+        this.pushSubscriptions.set(sub.username, sub.subscription);
+      });
+      logger.info(
+        `Loaded ${subscriptions.length} push subscriptions from database`
+      );
+    } catch (err) {
+      logger.error("Failed to load push subscriptions from database:", err);
+    }
+  }
+
   /**
    * Add a push subscription for a user
    * @param {string} username - Username
    * @param {Object} subscription - Push subscription object
    */
-  addPushSubscription(username, subscription) {
-    this.pushSubscriptions.set(username, subscription);
-    logger.info(`Push subscription added for user ${username}`);
+  async addPushSubscription(username, subscription) {
+    try {
+      // Store in database
+      await PushSubscription.updateOrCreateSubscription(username, subscription);
+
+      // Also cache in memory
+      this.pushSubscriptions.set(username, subscription);
+
+      logger.info(`Push subscription added for user ${username}`);
+    } catch (err) {
+      logger.error(
+        `Failed to store push subscription for user ${username}:`,
+        err
+      );
+    }
   }
 
   /**
    * Remove push subscription for a user
    * @param {string} username - Username
    */
-  removePushSubscription(username) {
-    this.pushSubscriptions.delete(username);
-    logger.info(`Push subscription removed for user ${username}`);
+  async removePushSubscription(username) {
+    try {
+      // Remove from database
+      await PushSubscription.deleteOne({ username });
+
+      // Also remove from memory cache
+      this.pushSubscriptions.delete(username);
+
+      logger.info(`Push subscription removed for user ${username}`);
+    } catch (err) {
+      logger.error(
+        `Failed to remove push subscription for user ${username}:`,
+        err
+      );
+    }
   }
 
   /**
@@ -55,15 +103,40 @@ class PushNotificationService {
    * Send web push notification
    * @param {string} username - Target username
    * @param {Object} notification - Notification data
-   */
-  async sendWebPush(username, notification) {
-    const subscription = this.pushSubscriptions.get(username);
+   */ async sendWebPush(username, notification) {
+    // Try to get subscription from memory cache first
+    let subscription = this.pushSubscriptions.get(username);
+
+    // If not in memory, try to get it from the database
+    if (!subscription) {
+      try {
+        const dbSubscription = await PushSubscription.findOne({ username });
+        if (dbSubscription) {
+          subscription = dbSubscription.subscription;
+          // Update memory cache
+          this.pushSubscriptions.set(username, subscription);
+        }
+      } catch (err) {
+        logger.error(
+          `Failed to fetch subscription for ${username} from DB:`,
+          err
+        );
+      }
+    }
+
     if (!subscription) {
       logger.warn(`No push subscription found for user ${username}`);
       return false;
     }
 
     const payload = JSON.stringify(this.formatNotification(notification));
+
+    // Log the notification being sent for debugging
+    logger.info(`Attempting to send web push to ${username}:`, {
+      title: notification.title,
+      type: notification.type || "info",
+      hasSubscription: !!subscription,
+    });
 
     try {
       await webPush.sendNotification(subscription, payload);
@@ -77,7 +150,7 @@ class PushNotificationService {
 
       // Remove invalid subscription
       if (error.statusCode === 410 || error.statusCode === 404) {
-        this.removePushSubscription(username);
+        await this.removePushSubscription(username);
       }
       return false;
     }
