@@ -146,6 +146,19 @@ function AppContent() {
   // Helper: check if user is preRelease or admin
   const isPreRelease = user?.role === "preRelease" || user?.role === "admin";
 
+  if (!isAuthenticated) {
+    // Always show login page if not authenticated
+    return (
+      <Routes>
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/glemt-adgangskode" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    );
+  }
+
   return (
     <>
       {shouldShowPrompt && (
