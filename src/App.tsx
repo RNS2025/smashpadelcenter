@@ -70,7 +70,7 @@ function AppContent() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   const [isAppInstalled, setIsAppInstalled] = useState(false);
   const [isPromptDismissed, setIsPromptDismissed] = useState(false);
-  const { isAuthenticated, loading } = useUser();
+  const { isAuthenticated, loading, user } = useUser();
   const location = useLocation();
 
   useEffect(() => {
@@ -143,28 +143,32 @@ function AppContent() {
       </div>
     );
   }
+  // Helper: check if user is preRelease or admin
+  const isPreRelease = user?.role === "preRelease" || user?.role === "admin";
+
   return (
     <>
-      {" "}
       {shouldShowPrompt && (
         <InstallPrompt
           deferredPrompt={deferredPrompt}
           onDismiss={handleDismiss}
         />
       )}
-      {/* Only show HomeBar on non-login paths */}
       {location.pathname !== "/" && location.pathname !== "/login" && (
         <HomeBar />
       )}
       <Routes>
-        {/* Public Routes */}
+        {/* Public DPF Univers Routes */}
         <Route path="/" element={<LoginPage />} />
         <Route path="/install" element={<InstallPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/turneringer" element={<TournamentTabs />} />
         <Route path="/turneringer/check-in" element={<CheckInPage />} />
         <Route path="/turneringer/baneoversigt" element={<CourtMapPage />} />
-        <Route path="/turneringer/lodtrækninger" element={<TournamentDrawsPage />} />
+        <Route
+          path="/turneringer/lodtrækninger"
+          element={<TournamentDrawsPage />}
+        />
         <Route path="/turneringer/info" element={<TournamentInfoPage />}>
           <Route index element={<Navigate to="briefing" replace />} />
           <Route path="briefing" element={<TournamentBriefingTab />} />
@@ -185,9 +189,8 @@ function AppContent() {
           path="/turneringer/kommende"
           element={<UpcommingTournaments />}
         />
-
-        {/* Protected Routes */}
-        {isAuthenticated ? (
+        {/* Protected routes only for preRelease or admin role */}
+        {isAuthenticated && isPreRelease ? (
           <>
             <Route path="/profil/:username" element={<ProfilePageWrapper />}>
               <Route index element={<Navigate to="overblik" replace />} />
@@ -198,12 +201,8 @@ function AppContent() {
               <Route path="grupper/opretgruppe" element={<CreateGroupTab />} />
               <Route path="grupper/:groupId" element={<EditGroupTab />} />
             </Route>
-
             <Route path="/hjem" element={<HomePage />} />
             <Route path="/admin" element={<AdminPage />} />
-            {/* <Route path="/book-court" element={<BookCourtPage />} />
-              <Route path="/book-training" element={<BookTrainingPage />} /> */}
-
             <Route path="/makkerbørs" element={<MatchFinderPage />}>
               <Route index element={<Navigate to="allekampe" replace />} />
               <Route path="allekampe" element={<MatchFinderAllMatchesTab />} />
@@ -226,8 +225,6 @@ function AppContent() {
               path="/makkerbørs/match/:matchId/rediger"
               element={<EditMatchPage />}
             />
-
-            {/* Arrangementer */}
             <Route path="/privat-arrangementer" element={<PrivateEventPage />}>
               <Route
                 index
@@ -248,7 +245,6 @@ function AppContent() {
               path="/privat-arrangementer/:eventId/rediger"
               element={<EditEventPage />}
             />
-
             <Route
               path="/turneringer/resultater"
               element={<TournamentsResultsPage />}
@@ -257,7 +253,6 @@ function AppContent() {
               path="/turneringer/info/briefing/redigerbriefing/:briefingId"
               element={<TournamentEditBriefingPage />}
             />
-
             <Route path="/holdligaer" element={<LunarLigaPage />}>
               <Route
                 index
@@ -268,7 +263,6 @@ function AppContent() {
               <Route path="hh-listen" element={<HHTeamsTab />} />
             </Route>
             <Route path="/lunarGlobal" element={<LeagueStandingsPage />} />
-
             <Route
               path="/holdligaer/:teamId"
               element={<LeagueTeamProfilePage />}
@@ -285,7 +279,6 @@ function AppContent() {
                 element={<TeamProfileMatchDetailsTab />}
               />
             </Route>
-
             <Route path="/rangliste" element={<RanglistePage />} />
             <Route path="/news" element={<NewsPage />} />
             <Route path="/coupon" element={<CouponPage />} />
@@ -293,6 +286,9 @@ function AppContent() {
             <Route path="/arrangement" element={<ArrangementPage />} />
             <Route path="/feedback" element={<FeedbackPage />} />
           </>
+        ) : isAuthenticated ? (
+          // If authenticated but not preRelease or admin, redirect to DPF univers only
+          <Route path="*" element={<Navigate to="/turneringer" replace />} />
         ) : (
           <Route path="*" element={<Navigate to="/" replace />} />
         )}

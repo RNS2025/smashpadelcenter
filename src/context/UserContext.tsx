@@ -49,6 +49,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false); // Default to false
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -178,14 +179,15 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     if (
       !authCheckCompleted.current ||
       navigationInProgress.current ||
-      loading
+      loading ||
+      loggingOut // Prevent navigation during logout
     ) {
       return;
     }
 
     const currentPath = location.pathname;
 
-    if (isAuthenticated && currentPath === "/") {
+    if (isAuthenticated && currentPath === "/" && !loggingOut) {
       navigationInProgress.current = true;
       navigate("/hjem", { replace: true });
       navigationInProgress.current = false;
@@ -196,7 +198,8 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       !isAuthenticated &&
       !isPublicRoute(currentPath) &&
       !isRouteWhitelisted(currentPath, WHITELIST_ROUTES) &&
-      !fetchInProgress.current
+      !fetchInProgress.current &&
+      currentPath !== "/"
     ) {
       navigationInProgress.current = true;
       setError("Adgang nægtet - Log ind for at se denne side");
@@ -213,7 +216,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
     if (currentPath === "/") {
       setError(null);
     }
-  }, [isAuthenticated, location.pathname, loading, navigate]);
+  }, [isAuthenticated, location.pathname, loading, navigate, loggingOut]);
 
   const fetchUser = async () => {
     await fetchUserData(true, true); // Force loading state on explicit fetch
@@ -239,6 +242,7 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = async () => {
     try {
+      setLoggingOut(true);
       navigationInProgress.current = true;
 
       try {
@@ -265,10 +269,12 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
 
       navigate("/", { replace: true });
       navigationInProgress.current = false;
+      setLoggingOut(false);
     } catch (error) {
       console.error("Error during logout:", error);
       setError("Fejl ved udlogning. Prøv igen.");
       navigationInProgress.current = false;
+      setLoggingOut(false);
     }
   };
 

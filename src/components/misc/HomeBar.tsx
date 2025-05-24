@@ -439,72 +439,109 @@ const HomeBar = () => {
               {" "}
               {/* Dark style, width, border, shadow, hidden on sm+ */}
               <div className="py-1" role="none">
-                <button // Use button for click events and styling
-                  onClick={() => {
-                    navigate(`/profil/${user?.username}`);
-                    setActivePanel(null);
-                  }}
-                  className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors" // Styled item
-                  role="menuitem" // ARIA role
-                >
-                  Profil
-                </button>
-                <button
-                  onClick={() => {
-                    navigate(`/makkerbørs`);
-                    setActivePanel(null);
-                  }}
-                  className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors"
-                  role="menuitem"
-                >
-                  Makkerbørs
-                </button>
-                <button
-                  onClick={() => {
-                    navigate(`/privat-arrangementer`);
-                    setActivePanel(null);
-                  }}
-                  className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors"
-                  role="menuitem"
-                >
-                  Privat-arrangementer
-                </button>
-                <button
-                  onClick={() => {
-                    navigate(`/holdligaer`);
-                    setActivePanel(null);
-                  }}
-                  className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors"
-                  role="menuitem"
-                >
-                  Holdligaer
-                </button>
-                <button
-                  onClick={() => {
-                    navigate(`/turneringer`);
-                    setActivePanel(null);
-                  }}
-                  className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors"
-                  role="menuitem"
-                >
-                  DPF-universet
-                </button>
-                {user?.role === "admin" && (
-                  <button // Use button
+                {/* Only show extra links if user has preRelease or admin role */}
+                {user.role === "preRelease" || user.role === "admin" ? (
+                  <>
+                    <button
+                      onClick={() => {
+                        navigate(`/profil/${user?.username}`);
+                        setActivePanel(null);
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors"
+                      role="menuitem"
+                    >
+                      Profil
+                    </button>
+                    <button
+                      onClick={() => {
+                        navigate(`/makkerbørs`);
+                        setActivePanel(null);
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors"
+                      role="menuitem"
+                    >
+                      Makkerbørs
+                    </button>
+                    <button
+                      onClick={() => {
+                        navigate(`/privat-arrangementer`);
+                        setActivePanel(null);
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors"
+                      role="menuitem"
+                    >
+                      Privat-arrangementer
+                    </button>
+                    <button
+                      onClick={() => {
+                        navigate(`/holdligaer`);
+                        setActivePanel(null);
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors"
+                      role="menuitem"
+                    >
+                      Holdligaer
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {/* DPF univers homecards for non-preRelease/non-admin users, sorted alphabetically */}
+                    {(
+                      [
+                        {
+                          label: "Baneoversigt",
+                          path: "/turneringer/baneoversigt",
+                        },
+                        { label: "Check-in", path: "/turneringer/check-in" },
+                        {
+                          label: "Indtast resultat",
+                          path: "/turneringer/enter-resultat",
+                        },
+                        { label: "Info", path: "/turneringer/info" },
+                        {
+                          label: "Kommende turneringer",
+                          path: "/turneringer/kommende",
+                        },
+                        {
+                          label: "Lodtrækninger",
+                          path: "/turneringer/lodtrækninger",
+                        },
+                        { label: "Turneringer", path: "/turneringer" },
+                      ] as { label: string; path: string }[]
+                    )
+                      .sort((a, b) => a.label.localeCompare(b.label, "da"))
+                      .map((item: { label: string; path: string }) => (
+                        <button
+                          key={item.path}
+                          onClick={() => {
+                            navigate(item.path);
+                            setActivePanel(null);
+                          }}
+                          className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors"
+                          role="menuitem"
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                  </>
+                )}
+                {/* Admin Panel only for admin */}
+                {user.role === "admin" && (
+                  <button
                     onClick={() => {
                       navigate("/admin");
                       setActivePanel(null);
                     }}
-                    className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors" // Styled item
-                    role="menuitem" // ARIA role
+                    className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors"
+                    role="menuitem"
                   >
                     Admin Panel
                   </button>
                 )}
-                <button // Use button
+                <button
                   onClick={handleLogout}
-                  className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors" // Styled item
-                  role="menuitem" // ARIA role
+                  className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors"
+                  role="menuitem"
                 >
                   Log ud
                 </button>

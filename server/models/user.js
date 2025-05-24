@@ -37,7 +37,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["user", "admin", "Træner"],
+      enum: ["user", "admin", "Træner", "preRelease"],
       default: "user",
     },
     fullName: {
@@ -141,7 +141,6 @@ userSchema.pre("save", async function (next) {
   }
   next();
 });
-
 
 // Compare password
 userSchema.methods.comparePassword = async function (candidatePassword) {
