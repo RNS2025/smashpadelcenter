@@ -80,6 +80,51 @@ router.options("/status", (req, res) => {
   return res.status(200).end();
 });
 
+// Special OPTIONS handler for vapid-public-key endpoint
+router.options("/vapid-public-key", (req, res) => {
+  const origin = req.headers.origin;
+  if (origin) {
+    res.header("Access-Control-Allow-Origin", origin);
+    res.header("Access-Control-Allow-Methods", "GET,OPTIONS");
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, X-Requested-With, Cache-Control"
+    );
+    res.header("Access-Control-Allow-Credentials", "true");
+  }
+  return res.status(200).end();
+});
+
+// Special OPTIONS handler for subscribe-push endpoint
+router.options("/subscribe-push", (req, res) => {
+  const origin = req.headers.origin;
+  if (origin) {
+    res.header("Access-Control-Allow-Origin", origin);
+    res.header("Access-Control-Allow-Methods", "POST,OPTIONS");
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, X-Requested-With, Cache-Control"
+    );
+    res.header("Access-Control-Allow-Credentials", "true");
+  }
+  return res.status(200).end();
+});
+
+// Special OPTIONS handler for unsubscribe-push endpoint
+router.options("/unsubscribe-push", (req, res) => {
+  const origin = req.headers.origin;
+  if (origin) {
+    res.header("Access-Control-Allow-Origin", origin);
+    res.header("Access-Control-Allow-Methods", "POST,OPTIONS");
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, X-Requested-With, Cache-Control"
+    );
+    res.header("Access-Control-Allow-Credentials", "true");
+  }
+  return res.status(200).end();
+});
+
 router.get("/subscribe", async (req, res) => {
   try {
     // Set specific headers for SSE connection to handle CORS
@@ -196,6 +241,13 @@ router.post("/send", verifyJWT, (req, res) => {
 });
 
 router.get("/status", verifyJWT, (req, res) => {
+  // Set CORS headers
+  const origin = req.headers.origin;
+  if (origin) {
+    res.header("Access-Control-Allow-Origin", origin);
+    res.header("Access-Control-Allow-Credentials", "true");
+  }
+
   const username = req.user.username;
 
   res.json({
@@ -205,6 +257,13 @@ router.get("/status", verifyJWT, (req, res) => {
 });
 
 router.post("/test", verifyJWT, (req, res) => {
+  // Set CORS headers
+  const origin = req.headers.origin;
+  if (origin) {
+    res.header("Access-Control-Allow-Origin", origin);
+    res.header("Access-Control-Allow-Credentials", "true");
+  }
+
   const username = req.user.username;
 
   const testNotification = {
@@ -224,6 +283,13 @@ router.post("/test", verifyJWT, (req, res) => {
 });
 
 router.get("/vapid-public-key", (req, res) => {
+  // Set CORS headers
+  const origin = req.headers.origin;
+  if (origin) {
+    res.header("Access-Control-Allow-Origin", origin);
+    res.header("Access-Control-Allow-Credentials", "true");
+  }
+
   res.json({
     publicKey: pushNotificationService.getVapidPublicKey(),
   });
@@ -231,6 +297,13 @@ router.get("/vapid-public-key", (req, res) => {
 
 router.post("/subscribe-push", verifyJWT, (req, res) => {
   try {
+    // Set CORS headers
+    const origin = req.headers.origin;
+    if (origin) {
+      res.header("Access-Control-Allow-Origin", origin);
+      res.header("Access-Control-Allow-Credentials", "true");
+    }
+
     const { subscription } = req.body;
     const username = req.user.username;
 
@@ -253,21 +326,57 @@ router.post("/subscribe-push", verifyJWT, (req, res) => {
 });
 
 router.post("/unsubscribe-push", verifyJWT, (req, res) => {
-  try {
-    const username = req.user.username;
-
-    pushNotificationService.removePushSubscription(username);
-
-    res.json({
-      success: true,
-      message: "Successfully unsubscribed from push notifications",
-    });
-  } catch (error) {
-    logger.error("Error unsubscribing from push notifications:", error);
-    res
-      .status(500)
-      .json({ error: "Failed to unsubscribe from push notifications" });
+  // Set CORS headers
+  const origin = req.headers.origin;
+  if (origin) {
+    res.header("Access-Control-Allow-Origin", origin);
+    res.header("Access-Control-Allow-Credentials", "true");
   }
+
+  const username = req.user.username;
+
+  pushNotificationService.removePushSubscription(username);
+
+  res.json({
+    success: true,
+    message: "Successfully unsubscribed from push notifications",
+  });
+});
+
+router.post("/test-match", verifyJWT, (req, res) => {
+  // Set CORS headers
+  const origin = req.headers.origin;
+  if (origin) {
+    res.header("Access-Control-Allow-Origin", origin);
+    res.header("Access-Control-Allow-Credentials", "true");
+  }
+
+  const username = req.user.username;
+
+  // Create a test match notification
+  const testNotification = {
+    title: "⏰ Kamp påmindelse",
+    message:
+      "Din kamp starter om 30 minutter! Kl. 14:30 på bane 3 mod Lars & Mette",
+    type: "warning",
+    route: `/tournament/player/${req.user.rankedInId || "123456"}`,
+    data: {
+      matchId: "test-match-123",
+      matchTime: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
+      court: "Bane 3",
+      opponents: [
+        { Name: "Lars", Id: "player-1" },
+        { Name: "Mette", Id: "player-2" },
+      ],
+    },
+  };
+
+  pushNotificationService.sendToUser(username, testNotification);
+
+  res.json({
+    success: true,
+    message: "Test match notification sent",
+  });
 });
 
 module.exports = router;

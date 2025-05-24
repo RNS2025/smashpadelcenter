@@ -303,9 +303,20 @@ class NotificationService {
       let publicKey = import.meta.env.VITE_VAPID_PUBLIC_KEY;
 
       if (!publicKey) {
-        const response = await fetch(
-          `${this.apiBaseUrl}/notifications/vapid-public-key`
-        );
+        // Get appropriate URL based on environment
+        let vapidKeyUrl = `${this.apiBaseUrl}notifications/vapid-public-key`;
+
+        // If we're on a production domain, ensure we use the same domain for API calls
+        if (window.location.hostname.includes("rns-apps.dk")) {
+          const protocol = window.location.protocol;
+          const hostname = window.location.hostname;
+          vapidKeyUrl = `${protocol}//${hostname}/api/v1/notifications/vapid-public-key`;
+        }
+
+        const response = await fetch(vapidKeyUrl, {
+          credentials: "include",
+        });
+
         if (!response.ok) {
           throw new Error("Failed to get VAPID public key");
         }
@@ -339,19 +350,27 @@ class NotificationService {
         throw new Error("No auth token found");
       }
 
-      const subscribeResponse = await fetch(
-        `${this.apiBaseUrl}/notifications/subscribe-push`,
-        {
-          method: "POST",
-          headers: {
-            ...this.getAuthHeaders(),
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            subscription: subscription.toJSON(),
-          }),
-        }
-      );
+      // Get appropriate URL based on environment
+      let subscribePushUrl = `${this.apiBaseUrl}notifications/subscribe-push`;
+
+      // If we're on a production domain, ensure we use the same domain for API calls
+      if (window.location.hostname.includes("rns-apps.dk")) {
+        const protocol = window.location.protocol;
+        const hostname = window.location.hostname;
+        subscribePushUrl = `${protocol}//${hostname}/api/v1/notifications/subscribe-push`;
+      }
+
+      const subscribeResponse = await fetch(subscribePushUrl, {
+        method: "POST",
+        headers: {
+          ...this.getAuthHeaders(),
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          subscription: subscription.toJSON(),
+        }),
+      });
 
       if (!subscribeResponse.ok) {
         throw new Error("Failed to subscribe to push notifications on server");
@@ -387,9 +406,20 @@ class NotificationService {
       // Notify server
       const token = this.getAuthToken();
       if (token) {
-        await fetch(`${this.apiBaseUrl}/notifications/unsubscribe-push`, {
+        // Get appropriate URL based on environment
+        let unsubscribeUrl = `${this.apiBaseUrl}notifications/unsubscribe-push`;
+
+        // If we're on a production domain, ensure we use the same domain for API calls
+        if (window.location.hostname.includes("rns-apps.dk")) {
+          const protocol = window.location.protocol;
+          const hostname = window.location.hostname;
+          unsubscribeUrl = `${protocol}//${hostname}/api/v1/notifications/unsubscribe-push`;
+        }
+
+        await fetch(unsubscribeUrl, {
           method: "POST",
           headers: this.getAuthHeaders(),
+          credentials: "include",
         });
       }
 
