@@ -109,6 +109,14 @@ const processUserTournaments = async (user) => {
       (eventStart.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
     );
 
+    // Only send notifications if exactly 7 days or 1 day before the tournament
+    if (timeUntil !== 7 && timeUntil !== 1) {
+      logger.debug(
+        `Skipping notification for ${user.username}, tournament in ${timeUntil} days`
+      );
+      return;
+    }
+
     // Get event matches
     const eventMatches = await rankedInService.getEventMatches(
       upcomingEvent.Id,
@@ -128,14 +136,10 @@ const processUserTournaments = async (user) => {
     // Create notification message
     let message = `Din turnering "${upcomingEvent.Name}" starter ${eventDate}`;
 
-    if (timeUntil === 0) {
-      message += " i dag!";
-    } else if (timeUntil === 1) {
+    if (timeUntil === 1) {
       message += " i morgen!";
-    } else if (timeUntil > 1) {
-      message += ` om ${timeUntil} dage`;
-    } else {
-      message += " og er i gang!";
+    } else if (timeUntil === 6) {
+      message += " om en lille uge!";
     }
 
     if (upcomingMatches.length > 0) {
@@ -159,7 +163,7 @@ const processUserTournaments = async (user) => {
     });
 
     logger.info(
-      `Tournament notification sent to user ${user.username} for tournament ${upcomingEvent.Name}`
+      `Tournament notification sent to user ${user.username} for tournament ${upcomingEvent.Name} (${timeUntil} days remaining)`
     );
   } catch (error) {
     logger.error(

@@ -6,8 +6,8 @@ module.exports = {
   // DATA_UPDATE_SCHEDULE: "0 */12 * * *",
 
   // Tournament notification schedule (cron format)
-  // "0 9,12,17 * * *" means every day at 9 AM, 12 PM, and 5 PM
-  TOURNAMENT_NOTIFICATION_SCHEDULE: "0 9,12,17 * * *",
+  // "0 8,14,20 * * *" means three times a day at 8am, 2pm and 8pm
+  TOURNAMENT_NOTIFICATION_SCHEDULE: "0 8,14,20 * * *",
 
   // Match notification schedule (cron format)
   // "*/5 * * * *" means every 5 minutes

@@ -121,5 +121,3 @@ const PushNotificationSetup: React.FC<PushNotificationSetupProps> = ({
 };
 
 export default PushNotificationSetup;
-
-export default PushNotificationSetup;
