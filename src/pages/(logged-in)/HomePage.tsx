@@ -4,6 +4,7 @@ import { useUser } from "../../context/UserContext.tsx";
 import Animation from "../../components/misc/Animation.tsx";
 import HomeScreenCard from "../../components/HomeScreen/HomeScreenCard.tsx";
 import LoadingSpinner from "../../components/misc/LoadingSpinner.tsx";
+import PushNotificationSetup from "../../components/PushNotificationSetup.tsx";
 import NotificationTest from "../../components/NotificationTest.tsx";
 import {
   AcademicCapIcon,
@@ -223,6 +224,7 @@ export const HomePage = () => {
            © {new Date().getFullYear()} SMASH Platform. All rights reserved.
          </footer> */}
       </div>
+      <PushNotificationSetup />
     </>
   );
 };
