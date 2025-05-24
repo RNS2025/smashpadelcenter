@@ -11,7 +11,70 @@ router.options("/subscribe", (req, res) => {
   if (origin) {
     res.header("Access-Control-Allow-Origin", origin);
     res.header("Access-Control-Allow-Methods", "GET,OPTIONS");
-    res.header("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Requested-With, Cache-Control");
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, X-Requested-With, Cache-Control"
+    );
+    res.header("Access-Control-Allow-Credentials", "true");
+  }
+  return res.status(200).end();
+});
+
+// Special OPTIONS handler for send endpoint
+router.options("/send", (req, res) => {
+  const origin = req.headers.origin;
+  if (origin) {
+    res.header("Access-Control-Allow-Origin", origin);
+    res.header("Access-Control-Allow-Methods", "POST,OPTIONS");
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, X-Requested-With, Cache-Control"
+    );
+    res.header("Access-Control-Allow-Credentials", "true");
+  }
+  return res.status(200).end();
+});
+
+// Special OPTIONS handler for test endpoint
+router.options("/test", (req, res) => {
+  const origin = req.headers.origin;
+  if (origin) {
+    res.header("Access-Control-Allow-Origin", origin);
+    res.header("Access-Control-Allow-Methods", "POST,OPTIONS");
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, X-Requested-With, Cache-Control"
+    );
+    res.header("Access-Control-Allow-Credentials", "true");
+  }
+  return res.status(200).end();
+});
+
+// Special OPTIONS handler for test-match endpoint
+router.options("/test-match", (req, res) => {
+  const origin = req.headers.origin;
+  if (origin) {
+    res.header("Access-Control-Allow-Origin", origin);
+    res.header("Access-Control-Allow-Methods", "POST,OPTIONS");
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, X-Requested-With, Cache-Control"
+    );
+    res.header("Access-Control-Allow-Credentials", "true");
+  }
+  return res.status(200).end();
+});
+
+// Special OPTIONS handler for status endpoint
+router.options("/status", (req, res) => {
+  const origin = req.headers.origin;
+  if (origin) {
+    res.header("Access-Control-Allow-Origin", origin);
+    res.header("Access-Control-Allow-Methods", "GET,OPTIONS");
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Content-Type, Authorization, X-Requested-With, Cache-Control"
+    );
     res.header("Access-Control-Allow-Credentials", "true");
   }
   return res.status(200).end();
@@ -79,6 +142,13 @@ router.get("/subscribe", async (req, res) => {
 
 router.post("/send", verifyJWT, (req, res) => {
   try {
+    // Set CORS headers specifically for this endpoint to prevent redirects
+    const origin = req.headers.origin;
+    if (origin) {
+      res.header("Access-Control-Allow-Origin", origin);
+      res.header("Access-Control-Allow-Credentials", "true");
+    }
+
     const { username, usernames, title, message, type, link, route, data } =
       req.body;
 
