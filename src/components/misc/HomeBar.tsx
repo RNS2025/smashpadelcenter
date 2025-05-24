@@ -332,26 +332,28 @@ const HomeBar = () => {
             {/* User-specific icons - Only show for logged in users */}
             {user && (
               <>
-                {/* Search Icon */}
-                <button
-                  ref={searchIconRef}
-                  onClick={() => togglePanel("search")}
-                  className="rounded"
-                >
-                  {" "}
-                  {/* Wrap in button for focus state */}
-                  <MagnifyingGlassIcon
-                    className={
-                      `size-7 sm:size-8 cursor-pointer transition-colors
+                {/* Search Icon - Only for preRelease or admin */}
+                {(user.role === "preRelease" || user.role === "admin") && (
+                  <button
+                    ref={searchIconRef}
+                    onClick={() => togglePanel("search")}
+                    className="rounded"
+                  >
+                    {" "}
+                    {/* Wrap in button for focus state */}
+                    <MagnifyingGlassIcon
+                      className={
+                        `size-7 sm:size-8 cursor-pointer transition-colors
                                         ${
                                           activePanel === "search"
                                             ? "text-brand-primary"
                                             : "text-slate-400"
                                         }` // Active/inactive color
-                    }
-                    title="Søg Bruger" // Added title
-                  />
-                </button>
+                      }
+                      title="Søg Bruger" // Added title
+                    />
+                  </button>
+                )}
                 {/* Mobile Menu Icon (hidden on large screens) */}
                 <button
                   ref={menuIconRef}
@@ -381,54 +383,55 @@ const HomeBar = () => {
       {user && (
         <>
           {/* Search Panel (Positioned below the header, full width on small screens) */}
-          {activePanel === "search" && (
-            <div
-              ref={searchPanelRef}
-              className="absolute left-0 right-0 z-10 bg-slate-800 shadow-xl border border-slate-700 animate-fadeInDown"
-            >
-              {" "}
-              {/* Dark style, full width horizontal, border */}
-              <div className="p-2 sm:p-3">
+          {(user.role === "preRelease" || user.role === "admin") &&
+            activePanel === "search" && (
+              <div
+                ref={searchPanelRef}
+                className="absolute left-0 right-0 z-10 bg-slate-800 shadow-xl border border-slate-700 animate-fadeInDown"
+              >
                 {" "}
-                {/* Add padding inside the panel */}
-                <input
-                  type="text"
-                  className="w-full h-10 px-3 py-2 text-sm bg-slate-750 text-slate-200 border border-slate-600 rounded-md placeholder-slate-500 transition-all duration-150" // Styled input
-                  placeholder="Søg efter bruger..." // Updated placeholder text
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  // No need for onBlur here as we have click outside logic
-                />
-                {searchQuery && (
-                  <div className="mt-2 bg-slate-700 border border-slate-600 rounded-md overflow-y-auto max-h-40 custom-scrollbar">
-                    {" "}
-                    {/* Styled results container */}
-                    {filteredUsers.length > 0 ? (
-                      filteredUsers.map((user) => (
-                        <div
-                          key={user.id}
-                          onClick={() => handleUserResultClick(user.username)}
-                          className="px-3 py-2 cursor-pointer text-slate-200 text-sm transition-colors truncate" // Styled result item
-                        >
-                          <h1>
-                            {user.fullName
-                              ? `${user.fullName} (${user.username})`
-                              : user.username}
-                          </h1>
+                {/* Dark style, full width horizontal, border */}
+                <div className="p-2 sm:p-3">
+                  {" "}
+                  {/* Add padding inside the panel */}
+                  <input
+                    type="text"
+                    className="w-full h-10 px-3 py-2 text-sm bg-slate-750 text-slate-200 border border-slate-600 rounded-md placeholder-slate-500 transition-all duration-150" // Styled input
+                    placeholder="Søg efter bruger..." // Updated placeholder text
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    // No need for onBlur here as we have click outside logic
+                  />
+                  {searchQuery && (
+                    <div className="mt-2 bg-slate-700 border border-slate-600 rounded-md overflow-y-auto max-h-40 custom-scrollbar">
+                      {" "}
+                      {/* Styled results container */}
+                      {filteredUsers.length > 0 ? (
+                        filteredUsers.map((user) => (
+                          <div
+                            key={user.id}
+                            onClick={() => handleUserResultClick(user.username)}
+                            className="px-3 py-2 cursor-pointer text-slate-200 text-sm transition-colors truncate" // Styled result item
+                          >
+                            <h1>
+                              {user.fullName
+                                ? `${user.fullName} (${user.username})`
+                                : user.username}
+                            </h1>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="px-3 py-2 text-slate-500 text-sm italic">
+                          {" "}
+                          {/* Styled no results message */}
+                          Ingen brugere fundet
                         </div>
-                      ))
-                    ) : (
-                      <div className="px-3 py-2 text-slate-500 text-sm italic">
-                        {" "}
-                        {/* Styled no results message */}
-                        Ingen brugere fundet
-                      </div>
-                    )}
-                  </div>
-                )}
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          )}
+            )}
 
           {/* Mobile Dropdown Menu (Positioned below the header, right aligned, hidden on small screens) */}
           {activePanel === "dropdown" && (

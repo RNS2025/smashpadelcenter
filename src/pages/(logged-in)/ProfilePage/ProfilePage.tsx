@@ -45,7 +45,9 @@ const ProfilePage = () => {
     fetchRankedInProfile().then();
   }, [profile?.fullName]);
 
-
+  // Determine if viewing 'rediger' tab and if user is owner
+  const isOwnProfile = user && profile && user.username === profile.username;
+  const isRedigerTab = window.location.pathname.includes("/rediger");
 
   if (loading) {
     return (
@@ -71,7 +73,14 @@ const ProfilePage = () => {
             </div>
 
             <div className="mt-6">
-              <Outlet />
+              {/* Only show Outlet (tab content) for 'rediger' if it's your own profile */}
+              {isRedigerTab && !isOwnProfile ? (
+                <div className="text-center text-red-400 font-semibold">
+                  Du har ikke adgang til at redigere denne profil.
+                </div>
+              ) : (
+                <Outlet />
+              )}
             </div>
           </div>
         </div>

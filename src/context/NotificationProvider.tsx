@@ -46,22 +46,37 @@ export function NotificationProvider({ children }: NotificationProviderProps) {
   const [isConnected, setIsConnected] = useState(false);
   const { user, isAuthenticated } = useUser();
 
-  // Load notifications from localStorage on mount
-  useEffect(() => {
-    const savedNotifications = localStorage.getItem("notifications");
-    if (savedNotifications) {
-      try {
-        setNotifications(JSON.parse(savedNotifications));
-      } catch (error) {
-        console.error("Error parsing saved notifications:", error);
-      }
-    }
-  }, []);
+  // Helper to get the localStorage key for the current user
+  const getStorageKey = () =>
+    user && user.username ? `notifications_${user.username}` : null;
 
-  // Save notifications to localStorage whenever they change
+  // Load notifications from localStorage when user changes
   useEffect(() => {
-    localStorage.setItem("notifications", JSON.stringify(notifications));
-  }, [notifications]);
+    const key = getStorageKey();
+    if (key) {
+      const savedNotifications = localStorage.getItem(key);
+      if (savedNotifications) {
+        try {
+          setNotifications(JSON.parse(savedNotifications));
+        } catch (error) {
+          console.error("Error parsing saved notifications:", error);
+          setNotifications([]);
+        }
+      } else {
+        setNotifications([]);
+      }
+    } else {
+      setNotifications([]);
+    }
+  }, [user?.username]);
+
+  // Save notifications to localStorage whenever they change (per user)
+  useEffect(() => {
+    const key = getStorageKey();
+    if (key) {
+      localStorage.setItem(key, JSON.stringify(notifications));
+    }
+  }, [notifications, user?.username]);
 
   // Handle new notifications
   const handleNewNotification = useCallback((notification: Notification) => {
