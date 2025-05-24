@@ -49,18 +49,16 @@ class PushNotificationService {
   }
 
   /**
-   * Add a push subscription for a user
+   * Add a push subscription for a user (multiple devices supported)
    * @param {string} username - Username
    * @param {Object} subscription - Push subscription object
    */
   async addPushSubscription(username, subscription) {
     try {
-      // Store in database
-      await PushSubscription.updateOrCreateSubscription(username, subscription);
-
-      // Also cache in memory
-      this.pushSubscriptions.set(username, subscription);
-
+      // Store in database (add or update by endpoint)
+      await PushSubscription.addSubscription(username, subscription);
+      // No longer cache only one per user in memory
+      // Optionally, you can cache all for performance if needed
       logger.info(`Push subscription added for user ${username}`);
     } catch (err) {
       logger.error(
@@ -71,21 +69,19 @@ class PushNotificationService {
   }
 
   /**
-   * Remove push subscription for a user
+   * Remove a specific push subscription for a user (by endpoint)
    * @param {string} username - Username
+   * @param {string} endpoint - Push subscription endpoint
    */
-  async removePushSubscription(username) {
+  async removePushSubscription(username, endpoint) {
     try {
-      // Remove from database
-      await PushSubscription.deleteOne({ username });
-
-      // Also remove from memory cache
-      this.pushSubscriptions.delete(username);
-
-      logger.info(`Push subscription removed for user ${username}`);
+      await PushSubscription.removeSubscription(username, endpoint);
+      logger.info(
+        `Push subscription removed for user ${username} (endpoint: ${endpoint})`
+      );
     } catch (err) {
       logger.error(
-        `Failed to remove push subscription for user ${username}:`,
+        `Failed to remove push subscription for user ${username} (endpoint: ${endpoint}):`,
         err
       );
     }
@@ -100,60 +96,50 @@ class PushNotificationService {
   }
 
   /**
-   * Send web push notification
+   * Send web push notification to all devices for a user
    * @param {string} username - Target username
    * @param {Object} notification - Notification data
-   */ async sendWebPush(username, notification) {
-    // Try to get subscription from memory cache first
-    let subscription = this.pushSubscriptions.get(username);
-
-    // If not in memory, try to get it from the database
-    if (!subscription) {
-      try {
-        const dbSubscription = await PushSubscription.findOne({ username });
-        if (dbSubscription) {
-          subscription = dbSubscription.subscription;
-          // Update memory cache
-          this.pushSubscriptions.set(username, subscription);
-        }
-      } catch (err) {
-        logger.error(
-          `Failed to fetch subscription for ${username} from DB:`,
-          err
-        );
-      }
-    }
-
-    if (!subscription) {
-      logger.warn(`No push subscription found for user ${username}`);
-      return false;
-    }
-
-    const payload = JSON.stringify(this.formatNotification(notification));
-
-    // Log the notification being sent for debugging
-    logger.info(`Attempting to send web push to ${username}:`, {
-      title: notification.title,
-      type: notification.type || "info",
-      hasSubscription: !!subscription,
-    });
-
+   */
+  async sendWebPush(username, notification) {
+    // Get all subscriptions for the user
+    let subscriptions = [];
     try {
-      await webPush.sendNotification(subscription, payload);
-      logger.info(
-        `Web push notification sent to user ${username}:`,
-        notification.title
+      subscriptions = await PushSubscription.getAllForUser(username);
+    } catch (err) {
+      logger.error(
+        `Failed to fetch subscriptions for ${username} from DB:`,
+        err
       );
-      return true;
-    } catch (error) {
-      logger.error(`Failed to send web push to user ${username}:`, error);
-
-      // Remove invalid subscription
-      if (error.statusCode === 410 || error.statusCode === 404) {
-        await this.removePushSubscription(username);
-      }
+    }
+    if (!subscriptions.length) {
+      logger.warn(`No push subscriptions found for user ${username}`);
       return false;
     }
+    const pushPayload = JSON.stringify(this.formatNotification(notification));
+    let success = false;
+    for (const sub of subscriptions) {
+      try {
+        await webPush.sendNotification(sub.subscription, pushPayload);
+        logger.info(
+          `Web push notification sent to user ${username} (endpoint: ${sub.subscription.endpoint}):`,
+          notification.title
+        );
+        success = true;
+      } catch (error) {
+        logger.error(
+          `Failed to send web push to user ${username} (endpoint: ${sub.subscription.endpoint}):`,
+          error
+        );
+        // Remove invalid subscription
+        if (error.statusCode === 410 || error.statusCode === 404) {
+          await this.removePushSubscription(
+            username,
+            sub.subscription.endpoint
+          );
+        }
+      }
+    }
+    return success;
   }
 
   /**
