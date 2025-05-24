@@ -276,8 +276,10 @@ export const UserProvider = ({ children }: { children: React.ReactNode }) => {
       clearTimeout(validationTimeout.current);
 
       navigate("/", { replace: true });
-      navigationInProgress.current = false;
+      // Immediately stop further state updates after navigation to prevent flicker
       setLoggingOut(false);
+      navigationInProgress.current = false;
+      return;
     } catch (error) {
       console.error("Error during logout:", error);
       setError("Fejl ved udlogning. Prøv igen.");
