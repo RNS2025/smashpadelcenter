@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { Helmet } from "react-helmet-async";
 import { useNavigate } from "react-router-dom";
 import { register } from "../../services/auth";
-import axios from "axios";
 import { InformationCircleIcon } from "@heroicons/react/24/outline";
 import api from "../../api/api";
 
@@ -72,7 +71,7 @@ export default function RegisterPage() {
 
     setIsLoading(true);
     try {
-      await register(username, password);
+      await register(username, password, rankedInId); // Pass rankedInId here
 
       // Set success message and start countdown
       setSuccessMessage(
