@@ -7,6 +7,19 @@ const logger = require("../config/logger");
 
 router.get("/subscribe", async (req, res) => {
   try {
+    // Set specific headers for SSE connection to handle CORS
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Content-Type", "text/event-stream");
+    res.setHeader("Connection", "keep-alive");
+    res.setHeader("X-Accel-Buffering", "no"); // Important for NGINX
+
+    // Handle CORS for SSE specifically
+    const origin = req.headers.origin;
+    if (origin) {
+      res.setHeader("Access-Control-Allow-Origin", origin);
+      res.setHeader("Access-Control-Allow-Credentials", "true");
+    }
+
     // Get token from query params or headers
     const token =
       req.query.token ||

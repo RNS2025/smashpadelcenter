@@ -14,7 +14,10 @@ class NotificationService {
   private onConnectionStatusCallback: ((isConnected: boolean) => void) | null =
     null;
   private get apiBaseUrl(): string {
-    return import.meta.env.VITE_API_BASE_URL || "http://localhost:3001/api/v1";
+    const baseUrl =
+      import.meta.env.VITE_API_BASE_URL || "http://localhost:3001/api/v1";
+    // Ensure the URL ends with a trailing slash
+    return baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
   }
   private getAuthToken(): string | null {
     // Get token from localStorage, sessionStorage, or your auth context
@@ -58,6 +61,7 @@ class NotificationService {
       const url = new URL(`${this.apiBaseUrl}notifications/subscribe`);
       url.searchParams.append("token", token);
 
+      console.log(`Connecting to notification stream at: ${url.toString()}`);
       this.eventSource = new EventSource(url.toString());
 
       this.eventSource.onopen = () => {
@@ -139,8 +143,7 @@ class NotificationService {
     if (!token) {
       throw new Error("No auth token found");
     }
-
-    const response = await fetch(`${this.apiBaseUrl}/notifications/test`, {
+    const response = await fetch(`${this.apiBaseUrl}notifications/test`, {
       method: "POST",
       headers: {
         ...this.getAuthHeaders(),
@@ -162,17 +165,13 @@ class NotificationService {
     if (!token) {
       throw new Error("No auth token found");
     }
-
-    const response = await fetch(
-      `${this.apiBaseUrl}/notifications/test-match`,
-      {
-        method: "POST",
-        headers: {
-          ...this.getAuthHeaders(),
-          "Content-Type": "application/json",
-        },
-      }
-    );
+    const response = await fetch(`${this.apiBaseUrl}notifications/test-match`, {
+      method: "POST",
+      headers: {
+        ...this.getAuthHeaders(),
+        "Content-Type": "application/json",
+      },
+    });
 
     if (!response.ok) {
       throw new Error(

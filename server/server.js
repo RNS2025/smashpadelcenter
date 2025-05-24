@@ -47,7 +47,31 @@ app.use(cookieParser());
 app.use(
   cors({
     origin: function (origin, callback) {
-      callback(null, true); // Allow any origin
+      // Allow requests with no origin (like mobile apps, curl, etc)
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      const allowedOrigins = [
+        "http://localhost:3001",
+        "http://localhost:5173",
+        "https://rns-apps.dk",
+        "https://www.rns-apps.dk",
+        "http://rns-apps.dk",
+        "http://www.rns-apps.dk",
+      ];
+
+      // Check if the origin is allowed
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.match(/^https?:\/\/.*\.rns-apps\.dk$/)
+      ) {
+        return callback(null, true);
+      }
+
+      // Log unexpected origins for debugging
+      console.log(`CORS request from unauthorized origin: ${origin}`);
+      callback(null, true); // Still allow for now to prevent breaking changes
     },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
     allowedHeaders: [
@@ -56,6 +80,7 @@ app.use(
       "X-Requested-With",
       "Cache-Control",
     ],
+    exposedHeaders: ["Access-Control-Allow-Origin"],
     credentials: true,
   })
 );

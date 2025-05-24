@@ -87,16 +87,8 @@ class PushNotificationService {
    * Add a new subscriber (client connection)
    * @param {string} username - Username
    * @param {Response} res - Express response object for SSE
-   */
-  addSubscriber(username, res) {
-    // Set up Server-Sent Events headers
-    res.writeHead(200, {
-      "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
-      Connection: "keep-alive",
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Headers": "Cache-Control",
-    });
+   */ addSubscriber(username, res) {
+    // Headers are already set in the route handler, no need to set them here
 
     // Store the connection
     this.subscribers.set(username, res);
