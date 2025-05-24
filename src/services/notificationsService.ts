@@ -55,7 +55,7 @@ class NotificationService {
     try {
       // For EventSource with custom headers, we need to use a different approach
       // since EventSource doesn't support custom headers directly
-      const url = new URL(`${this.apiBaseUrl}/notifications/subscribe`);
+      const url = new URL(`${this.apiBaseUrl}notifications/subscribe`);
       url.searchParams.append("token", token);
 
       this.eventSource = new EventSource(url.toString());
