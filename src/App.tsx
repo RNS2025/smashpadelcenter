@@ -189,18 +189,76 @@ function AppContent() {
           path="/turneringer/kommende"
           element={<UpcommingTournaments />}
         />
-        {/* Protected routes only for preRelease or admin role */}
-        {isAuthenticated && isPreRelease ? (
+        {/* Protected routes for authenticated users */}
+        {isAuthenticated && (
           <>
             <Route path="/profil/:username" element={<ProfilePageWrapper />}>
-              <Route index element={<Navigate to="overblik" replace />} />
-              <Route path="overblik" element={<OverviewTab />} />
-              <Route path="kamphistorik" element={<MatchesTab />} />
+              <Route
+                index
+                element={
+                  <Navigate
+                    to={isPreRelease ? "overblik" : "rediger"}
+                    replace
+                  />
+                }
+              />
+              <Route
+                path="overblik"
+                element={
+                  isPreRelease ? (
+                    <OverviewTab />
+                  ) : (
+                    <Navigate to="rediger" replace />
+                  )
+                }
+              />
+              <Route
+                path="kamphistorik"
+                element={
+                  isPreRelease ? (
+                    <MatchesTab />
+                  ) : (
+                    <Navigate to="rediger" replace />
+                  )
+                }
+              />
+              <Route
+                path="grupper"
+                element={
+                  isPreRelease ? (
+                    <GroupsTab />
+                  ) : (
+                    <Navigate to="rediger" replace />
+                  )
+                }
+              />
+              <Route
+                path="grupper/opretgruppe"
+                element={
+                  isPreRelease ? (
+                    <CreateGroupTab />
+                  ) : (
+                    <Navigate to="rediger" replace />
+                  )
+                }
+              />
+              <Route
+                path="grupper/:groupId"
+                element={
+                  isPreRelease ? (
+                    <EditGroupTab />
+                  ) : (
+                    <Navigate to="rediger" replace />
+                  )
+                }
+              />
               <Route path="rediger" element={<EditTab />} />
-              <Route path="grupper" element={<GroupsTab />} />
-              <Route path="grupper/opretgruppe" element={<CreateGroupTab />} />
-              <Route path="grupper/:groupId" element={<EditGroupTab />} />
             </Route>
+          </>
+        )}
+        {/* Non-profile protected routes only for preRelease or admin role */}
+        {isAuthenticated && isPreRelease && (
+          <>
             <Route path="/hjem" element={<HomePage />} />
             <Route path="/admin" element={<AdminPage />} />
             <Route path="/makkerbørs" element={<MatchFinderPage />}>
@@ -286,10 +344,13 @@ function AppContent() {
             <Route path="/arrangement" element={<ArrangementPage />} />
             <Route path="/feedback" element={<FeedbackPage />} />
           </>
-        ) : isAuthenticated ? (
-          // If authenticated but not preRelease or admin, redirect to DPF univers only
+        )}
+        {/* Redirects for authenticated users without preRelease/admin role */}
+        {isAuthenticated && !isPreRelease && (
           <Route path="*" element={<Navigate to="/turneringer" replace />} />
-        ) : (
+        )}
+        {/* Redirects for unauthenticated users */}
+        {!isAuthenticated && (
           <Route path="*" element={<Navigate to="/" replace />} />
         )}
       </Routes>

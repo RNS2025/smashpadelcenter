@@ -439,19 +439,20 @@ const HomeBar = () => {
               {" "}
               {/* Dark style, width, border, shadow, hidden on sm+ */}
               <div className="py-1" role="none">
+                {/* Profil is always present */}
+                <button
+                  onClick={() => {
+                    navigate(`/profil/${user?.username}`);
+                    setActivePanel(null);
+                  }}
+                  className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors"
+                  role="menuitem"
+                >
+                  Profil
+                </button>
                 {/* Only show extra links if user has preRelease or admin role */}
                 {user.role === "preRelease" || user.role === "admin" ? (
                   <>
-                    <button
-                      onClick={() => {
-                        navigate(`/profil/${user?.username}`);
-                        setActivePanel(null);
-                      }}
-                      className="block w-full text-left px-4 py-2 text-sm text-slate-200 transition-colors"
-                      role="menuitem"
-                    >
-                      Profil
-                    </button>
                     <button
                       onClick={() => {
                         navigate(`/makkerbørs`);
