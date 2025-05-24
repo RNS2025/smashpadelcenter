@@ -1193,14 +1193,14 @@ const getPlayerMatches = async (
       }
     );
 
-    if (response.data && response.data.Matches) {
+    if (response.data && Array.isArray(response.data.Payload)) {
       logger.info(
-        `Found ${response.data.Matches.length} matches for player ${playerId}`
+        `Found ${response.data.Payload.length} matches for player ${playerId}`
       );
       return response.data;
     } else {
       logger.warn(`No matches found for player ${playerId}`);
-      return { Matches: [] };
+      return { Payload: [] };
     }
   } catch (error) {
     const errorDetails = {

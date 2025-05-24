@@ -109,8 +109,8 @@ const processUserTournaments = async (user) => {
       (eventStart.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
     );
 
-    // Only send notifications if exactly 7 days or 1 day before the tournament
-    if (timeUntil !== 7 && timeUntil !== 1) {
+    // Only send notifications if exactly 6 days or 1 day before the tournament
+    if (timeUntil !== 6 && timeUntil !== 1) {
       logger.debug(
         `Skipping notification for ${user.username}, tournament in ${timeUntil} days`
       );
@@ -209,6 +209,8 @@ const checkAndNotifyAboutUpcomingMatches = async () => {
   }
 };
 
+const sentMatchNotifications = new Set(); // key: `${match.MatchId}_${type}`
+
 /**
  * Process upcoming matches for a single user and send notifications if needed
  * @param {Object} user - User object with username and rankedInId
@@ -250,63 +252,99 @@ const processUserUpcomingMatches = async (user) => {
 
     if (
       !matchesResponse ||
-      !matchesResponse.Matches ||
-      !Array.isArray(matchesResponse.Matches) ||
-      matchesResponse.Matches.length === 0
+      !matchesResponse.Payload ||
+      !Array.isArray(matchesResponse.Payload) ||
+      matchesResponse.Payload.length === 0
     ) {
-      logger.info(`No upcoming matches found for user ${user.username}`);
+      logger.info(`No matches found for user ${user.username}`);
       return;
     }
 
     const now = new Date();
-    const THIRTY_MINUTES_MS = 30 * 60 * 1000;
-
-    // Find matches that are starting within the next 30 minutes
-    const upcomingMatches = matchesResponse.Matches.filter((match) => {
-      if (!match.Date) return false;
-
-      const matchDate = new Date(match.Date);
-      const timeDiffMs = matchDate.getTime() - now.getTime();
-
-      // Match starting between now and 30 minutes from now
-      return timeDiffMs > 0 && timeDiffMs <= THIRTY_MINUTES_MS;
-    });
-
-    if (upcomingMatches.length === 0) {
-      logger.debug(
-        `No matches starting within 30 minutes for user ${user.username}`
-      );
-      return;
-    }
-
-    // Send notification for each upcoming match
-    for (const match of upcomingMatches) {
-      const matchTime = moment(match.Date).format("HH:mm");
-      const court = match.Court || "TBD";
-
-      // Create opponent string
-      let opponents = "Modstander";
-      if (match.Opponents && match.Opponents.length > 0) {
-        opponents = match.Opponents.map((o) => o.Name).join(" & ");
+    for (const match of matchesResponse.Payload) {
+      const info = match.Info || {};
+      const matchId = match.MatchId;
+      const matchTimeStr = info.Date || null;
+      const court = info.Court || "TBD";
+      let matchDate = null;
+      if (matchTimeStr) {
+        // Try to parse 'DD/MM/YYYY HH:mm' or ISO
+        matchDate = moment(
+          matchTimeStr,
+          ["DD/MM/YYYY HH:mm", moment.ISO_8601],
+          true
+        );
+        if (!matchDate.isValid()) {
+          logger.warn(
+            `Invalid match date format for matchId ${matchId}: ${matchTimeStr}`
+          );
+          continue;
+        }
+      } else {
+        logger.warn(`Missing match date for matchId ${matchId}`);
+        continue;
       }
 
-      const message = `Din kamp starter om 30 minutter! Kl. ${matchTime} på bane ${court} mod ${opponents}`;
+      const diffMs = matchDate.toDate().getTime() - now.getTime();
+      const diffMin = Math.round(diffMs / 60000);
+
+      // Only send notification if match is in 30 min (±1 min) or at start (±1 min)
+      let type = null;
+      if (diffMin >= 29 && diffMin <= 31) {
+        type = "30min";
+      } else if (diffMin >= -1 && diffMin <= 1) {
+        type = "start";
+      } else {
+        continue;
+      }
+      // Prevent duplicate notifications for the same match and type
+      const notificationKey = `${matchId}_${type}`;
+      if (sentMatchNotifications.has(notificationKey)) {
+        continue;
+      }
+      sentMatchNotifications.add(notificationKey);
+
+      // Build opponents string
+      let opponents = "Modstander";
+      if (info.Challenger && info.Challenged) {
+        const challengerName =
+          info.Challenger.Name || JSON.stringify(info.Challenger);
+        const challengedName =
+          info.Challenged.Name || JSON.stringify(info.Challenged);
+        opponents = `${challengerName} vs ${challengedName}`;
+      }
+
+      let message = "";
+      let title = "";
+      if (type === "30min") {
+        message = `Din kamp starter om 30 minutter! Kl. ${matchDate.format(
+          "HH:mm"
+        )} på bane ${court} mod ${opponents}`;
+        title = "⏰ Kamp påmindelse";
+      } else if (type === "start") {
+        message = `Din kamp starter nu! Kl. ${matchDate.format(
+          "HH:mm"
+        )} på bane ${court} mod ${opponents}`;
+        title = "🎾 Kamp fundet";
+      }
 
       await pushNotificationService.sendToUser(user.username, {
-        title: "⏰ Kamp påmindelse",
+        title,
         message,
-        type: "warning", // Higher priority for imminent matches
+        type: type === "30min" ? "warning" : "info",
         route: `/tournament/player/${user.rankedInId}`,
         data: {
-          matchId: match.Id,
-          matchTime: match.Date,
+          matchId: matchId,
+          matchTime: matchDate.toISOString(),
           court: court,
-          opponents: match.Opponents,
+          opponents: opponents,
         },
       });
 
       logger.info(
-        `Match notification sent to user ${user.username} for match at ${matchTime}`
+        `Match notification (${type}) sent to user ${
+          user.username
+        } for match at ${matchDate.format("HH:mm")}`
       );
     }
   } catch (error) {
